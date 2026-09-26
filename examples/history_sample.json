@@ -1,0 +1,9 @@
+[
+  {"match_id":"demo-1","kickoff":"2026-09-10T12:00:00+00:00","result_received_at":"2026-09-10T14:00:00+00:00","home_team":"Team A","away_team":"Team B","home_goals":2,"away_goals":1,"source":"synthetic-example"},
+  {"match_id":"demo-2","kickoff":"2026-09-11T12:00:00+00:00","result_received_at":"2026-09-11T14:00:00+00:00","home_team":"Team C","away_team":"Team A","home_goals":0,"away_goals":0,"source":"synthetic-example"},
+  {"match_id":"demo-3","kickoff":"2026-09-12T12:00:00+00:00","result_received_at":"2026-09-12T14:00:00+00:00","home_team":"Team A","away_team":"Team B","home_goals":1,"away_goals":0,"source":"synthetic-example"},
+  {"match_id":"demo-4","kickoff":"2026-09-13T12:00:00+00:00","result_received_at":"2026-09-13T14:00:00+00:00","home_team":"Team C","away_team":"Team A","home_goals":1,"away_goals":2,"source":"synthetic-example"},
+  {"match_id":"demo-5","kickoff":"2026-09-14T12:00:00+00:00","result_received_at":"2026-09-14T14:00:00+00:00","home_team":"Team A","away_team":"Team B","home_goals":2,"away_goals":2,"source":"synthetic-example"},
+  {"match_id":"demo-6","kickoff":"2026-09-15T12:00:00+00:00","result_received_at":"2026-09-15T14:00:00+00:00","home_team":"Team C","away_team":"Team A","home_goals":0,"away_goals":1,"source":"synthetic-example"},
+  {"match_id":"demo-7","kickoff":"2026-09-16T12:00:00+00:00","result_received_at":"2026-09-16T14:00:00+00:00","home_team":"Team A","away_team":"Team B","home_goals":0,"away_goals":1,"source":"synthetic-example"}
+]
