@@ -1,14 +1,12 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-if not exist "tests\" (
-    echo ERROR: tests folder is missing. Extract the entire project archive first.
-    pause
-    exit /b 1
+where py >nul 2>nul
+if errorlevel 1 (
+  python test_sefirot.py
+) else (
+  py -3 test_sefirot.py
 )
-py -3 "%~dp0test_sefirot.py"
-set "SEFIROT_TEST_EXIT=%ERRORLEVEL%"
-echo.
-if %SEFIROT_TEST_EXIT% EQU 0 (echo Tests passed.) else (echo Tests failed. Exit code: %SEFIROT_TEST_EXIT%)
+set "SEFIROT_EXIT=%ERRORLEVEL%"
 pause
-exit /b %SEFIROT_TEST_EXIT%
+exit /b %SEFIROT_EXIT%
