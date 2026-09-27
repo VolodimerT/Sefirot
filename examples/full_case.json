@@ -1,0 +1,10 @@
+{
+  "match_id":"synthetic-001","kickoff":"2026-10-01T19:00:00+00:00","as_of":"2026-09-29T12:00:00+00:00","decision_at":"2026-09-29T18:00:00+00:00","league":"Synthetic",
+  "facts":[
+    {"key":"sports.home_team","value":"A","source":"synthetic-fixture","published_at":"2026-09-29T11:00:00+00:00","received_at":"2026-09-29T11:05:00+00:00","kind":"FACT"},
+    {"key":"sports.away_team","value":"B","source":"synthetic-fixture","published_at":"2026-09-29T11:00:00+00:00","received_at":"2026-09-29T11:05:00+00:00","kind":"FACT"}
+  ],
+  "history":[],"scenario":{"thesis":"No validated scenario","branches":[{"home_goals":0,"away_goals":0,"supports_thesis":true,"rationale":"illustrative"}]},
+  "tactical_fit":{"supported":false},"public_trap":{"unresolved":true},"recheck":{"lineup_confirmed":false,"news_checked":false},
+  "price_groups_complete":false,"quotes":[{"kind":"1X2","side":"HOME","odds":2.1,"bookmaker":"synthetic","received_at":"2026-09-29T17:00:00+00:00"}]
+}
