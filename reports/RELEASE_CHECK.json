@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "python": "3.12.14",
+  "platform": "Linux",
+  "elapsed_seconds": 2.507,
+  "test_exit": 0,
+  "demo": {
+    "version": "2.0.0",
+    "synthetic": true,
+    "prediction_id": "07fa00933c482e8792b55b5cba34fe7127ed61cf0e072e45769385497bef61c8",
+    "decision_id": "c0d63ad5937e09e69279989ad1c37ab6c76937cc8eb7ef45719db5b2773a62c7",
+    "decision": "PASS",
+    "verdict": "skip",
+    "class": "D",
+    "reasons": [
+      "POLICY_NOT_APPROVED",
+      "SYNTHETIC_DATA_RESEARCH_ONLY",
+      "NO_ADMISSIBLE_MAIN_MARKET"
+    ],
+    "markets_evaluated": 7,
+    "replay_matches": true,
+    "feedback_rows": 7,
+    "integrity": true,
+    "monetary_stake": 0.0
+  },
+  "backtest_fixtures": 12,
+  "backtest_scored_markets": 84,
+  "statistical_profitability_proven": false,
+  "generated_at": "2026-09-27T08:02:51.458091+00:00"
+}

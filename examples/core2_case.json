@@ -1,0 +1,914 @@
+{
+  "sports": {
+    "match": {
+      "id": "synthetic-001",
+      "home": "A",
+      "away": "B",
+      "league": "SYNTHETIC",
+      "kickoff": "2026-09-26T20:00:00+00:00",
+      "sport": "football",
+      "format": "REGULATION_90"
+    },
+    "as_of": "2026-09-26T17:59:00+00:00",
+    "sources": [
+      {
+        "id": "official",
+        "independence_group": "club",
+        "reliability": 0.95,
+        "enabled": true
+      },
+      {
+        "id": "statistics",
+        "independence_group": "league",
+        "reliability": 0.95,
+        "enabled": true
+      }
+    ],
+    "evidence": [
+      {
+        "id": "fact-home_team",
+        "key": "home_team",
+        "value": "A",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-away_team",
+        "key": "away_team",
+        "value": "B",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-format",
+        "key": "format",
+        "value": "REGULATION_90",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-lineup",
+        "key": "lineup",
+        "value": {
+          "status": "CONFIRMED",
+          "home": [
+            "A-0",
+            "A-1",
+            "A-2",
+            "A-3",
+            "A-4",
+            "A-5",
+            "A-6",
+            "A-7",
+            "A-8",
+            "A-9",
+            "A-10"
+          ],
+          "away": [
+            "B-0",
+            "B-1",
+            "B-2",
+            "B-3",
+            "B-4",
+            "B-5",
+            "B-6",
+            "B-7",
+            "B-8",
+            "B-9",
+            "B-10"
+          ]
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-injuries",
+        "key": "injuries",
+        "value": {
+          "home": [],
+          "away": []
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-coach",
+        "key": "coach",
+        "value": "STABLE",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-rotation",
+        "key": "rotation",
+        "value": "NORMAL",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "fact-tactics",
+        "key": "tactics",
+        "value": {
+          "home_style": "BALANCED",
+          "away_style": "BALANCED",
+          "fit": "SUPPORTED",
+          "key_factor": "historical squad continuity"
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T17:57:00+00:00",
+        "received_at": "2026-09-26T17:58:00+00:00",
+        "observed_at": "2026-09-26T17:56:00+00:00",
+        "critical": true,
+        "supports": []
+      }
+    ],
+    "history": [
+      {
+        "id": "history-0",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-08T18:00:00+00:00",
+        "finished_at": "2026-07-08T20:00:00+00:00",
+        "received_at": "2026-07-08T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-1",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-09T18:00:00+00:00",
+        "finished_at": "2026-07-09T20:00:00+00:00",
+        "received_at": "2026-07-09T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-2",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-10T18:00:00+00:00",
+        "finished_at": "2026-07-10T20:00:00+00:00",
+        "received_at": "2026-07-10T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-3",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-11T18:00:00+00:00",
+        "finished_at": "2026-07-11T20:00:00+00:00",
+        "received_at": "2026-07-11T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-4",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-12T18:00:00+00:00",
+        "finished_at": "2026-07-12T20:00:00+00:00",
+        "received_at": "2026-07-12T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-5",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-13T18:00:00+00:00",
+        "finished_at": "2026-07-13T20:00:00+00:00",
+        "received_at": "2026-07-13T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-6",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-14T18:00:00+00:00",
+        "finished_at": "2026-07-14T20:00:00+00:00",
+        "received_at": "2026-07-14T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-7",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-15T18:00:00+00:00",
+        "finished_at": "2026-07-15T20:00:00+00:00",
+        "received_at": "2026-07-15T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-8",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-16T18:00:00+00:00",
+        "finished_at": "2026-07-16T20:00:00+00:00",
+        "received_at": "2026-07-16T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-9",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-17T18:00:00+00:00",
+        "finished_at": "2026-07-17T20:00:00+00:00",
+        "received_at": "2026-07-17T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-10",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-18T18:00:00+00:00",
+        "finished_at": "2026-07-18T20:00:00+00:00",
+        "received_at": "2026-07-18T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-11",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-19T18:00:00+00:00",
+        "finished_at": "2026-07-19T20:00:00+00:00",
+        "received_at": "2026-07-19T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-12",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-20T18:00:00+00:00",
+        "finished_at": "2026-07-20T20:00:00+00:00",
+        "received_at": "2026-07-20T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-13",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-21T18:00:00+00:00",
+        "finished_at": "2026-07-21T20:00:00+00:00",
+        "received_at": "2026-07-21T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-14",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-22T18:00:00+00:00",
+        "finished_at": "2026-07-22T20:00:00+00:00",
+        "received_at": "2026-07-22T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-15",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-23T18:00:00+00:00",
+        "finished_at": "2026-07-23T20:00:00+00:00",
+        "received_at": "2026-07-23T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-16",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-24T18:00:00+00:00",
+        "finished_at": "2026-07-24T20:00:00+00:00",
+        "received_at": "2026-07-24T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-17",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-25T18:00:00+00:00",
+        "finished_at": "2026-07-25T20:00:00+00:00",
+        "received_at": "2026-07-25T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-18",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-26T18:00:00+00:00",
+        "finished_at": "2026-07-26T20:00:00+00:00",
+        "received_at": "2026-07-26T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-19",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-27T18:00:00+00:00",
+        "finished_at": "2026-07-27T20:00:00+00:00",
+        "received_at": "2026-07-27T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-20",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-28T18:00:00+00:00",
+        "finished_at": "2026-07-28T20:00:00+00:00",
+        "received_at": "2026-07-28T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-21",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-29T18:00:00+00:00",
+        "finished_at": "2026-07-29T20:00:00+00:00",
+        "received_at": "2026-07-29T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-22",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-30T18:00:00+00:00",
+        "finished_at": "2026-07-30T20:00:00+00:00",
+        "received_at": "2026-07-30T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-23",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-07-31T18:00:00+00:00",
+        "finished_at": "2026-07-31T20:00:00+00:00",
+        "received_at": "2026-07-31T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-24",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-01T18:00:00+00:00",
+        "finished_at": "2026-08-01T20:00:00+00:00",
+        "received_at": "2026-08-01T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-25",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-02T18:00:00+00:00",
+        "finished_at": "2026-08-02T20:00:00+00:00",
+        "received_at": "2026-08-02T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-26",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-03T18:00:00+00:00",
+        "finished_at": "2026-08-03T20:00:00+00:00",
+        "received_at": "2026-08-03T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-27",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-04T18:00:00+00:00",
+        "finished_at": "2026-08-04T20:00:00+00:00",
+        "received_at": "2026-08-04T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-28",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-05T18:00:00+00:00",
+        "finished_at": "2026-08-05T20:00:00+00:00",
+        "received_at": "2026-08-05T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-29",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-06T18:00:00+00:00",
+        "finished_at": "2026-08-06T20:00:00+00:00",
+        "received_at": "2026-08-06T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-30",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-07T18:00:00+00:00",
+        "finished_at": "2026-08-07T20:00:00+00:00",
+        "received_at": "2026-08-07T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-31",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-08T18:00:00+00:00",
+        "finished_at": "2026-08-08T20:00:00+00:00",
+        "received_at": "2026-08-08T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-32",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-09T18:00:00+00:00",
+        "finished_at": "2026-08-09T20:00:00+00:00",
+        "received_at": "2026-08-09T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-33",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-10T18:00:00+00:00",
+        "finished_at": "2026-08-10T20:00:00+00:00",
+        "received_at": "2026-08-10T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-34",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-11T18:00:00+00:00",
+        "finished_at": "2026-08-11T20:00:00+00:00",
+        "received_at": "2026-08-11T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-35",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-12T18:00:00+00:00",
+        "finished_at": "2026-08-12T20:00:00+00:00",
+        "received_at": "2026-08-12T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-36",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-13T18:00:00+00:00",
+        "finished_at": "2026-08-13T20:00:00+00:00",
+        "received_at": "2026-08-13T21:00:00+00:00",
+        "home_goals": 0,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-37",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-14T18:00:00+00:00",
+        "finished_at": "2026-08-14T20:00:00+00:00",
+        "received_at": "2026-08-14T21:00:00+00:00",
+        "home_goals": 1,
+        "away_goals": 1,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-38",
+        "home": "B",
+        "away": "A",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-15T18:00:00+00:00",
+        "finished_at": "2026-08-15T20:00:00+00:00",
+        "received_at": "2026-08-15T21:00:00+00:00",
+        "home_goals": 2,
+        "away_goals": 0,
+        "source_id": "statistics"
+      },
+      {
+        "id": "history-39",
+        "home": "A",
+        "away": "B",
+        "league": "SYNTHETIC",
+        "kickoff": "2026-08-16T18:00:00+00:00",
+        "finished_at": "2026-08-16T20:00:00+00:00",
+        "received_at": "2026-08-16T21:00:00+00:00",
+        "home_goals": 3,
+        "away_goals": 1,
+        "source_id": "statistics"
+      }
+    ],
+    "synthetic": true
+  },
+  "markets": [
+    {
+      "kind": "1X2",
+      "side": "HOME"
+    },
+    {
+      "kind": "DOUBLE_CHANCE",
+      "side": "1X"
+    },
+    {
+      "kind": "DNB",
+      "side": "HOME"
+    },
+    {
+      "kind": "HANDICAP",
+      "side": "HOME",
+      "line": -1.0
+    },
+    {
+      "kind": "TOTAL",
+      "side": "OVER",
+      "line": 2.5
+    },
+    {
+      "kind": "BTTS",
+      "side": "YES"
+    },
+    {
+      "kind": "TEAM_TOTAL",
+      "side": "HOME_OVER",
+      "line": 1.5
+    }
+  ],
+  "quotes": [
+    {
+      "market": {
+        "kind": "1X2",
+        "side": "HOME"
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "DOUBLE_CHANCE",
+        "side": "1X"
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "DNB",
+        "side": "HOME"
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "HANDICAP",
+        "side": "HOME",
+        "line": -1.0
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "TOTAL",
+        "side": "OVER",
+        "line": 2.5
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "BTTS",
+        "side": "YES"
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    },
+    {
+      "market": {
+        "kind": "TEAM_TOTAL",
+        "side": "HOME_OVER",
+        "line": 1.5
+      },
+      "bookmaker": "SYNTHETIC_BOOK",
+      "odds": 2.1,
+      "observed_at": "2026-09-26T18:01:00+00:00",
+      "received_at": "2026-09-26T18:01:00+00:00",
+      "phase": "FINAL",
+      "rules": "REGULATION_90"
+    }
+  ],
+  "recheck": {
+    "checked_at": "2026-09-26T18:01:00+00:00",
+    "evidence": [
+      {
+        "id": "recheck-home_team",
+        "key": "home_team",
+        "value": "A",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-away_team",
+        "key": "away_team",
+        "value": "B",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-format",
+        "key": "format",
+        "value": "REGULATION_90",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-lineup",
+        "key": "lineup",
+        "value": {
+          "status": "CONFIRMED",
+          "home": [
+            "A-0",
+            "A-1",
+            "A-2",
+            "A-3",
+            "A-4",
+            "A-5",
+            "A-6",
+            "A-7",
+            "A-8",
+            "A-9",
+            "A-10"
+          ],
+          "away": [
+            "B-0",
+            "B-1",
+            "B-2",
+            "B-3",
+            "B-4",
+            "B-5",
+            "B-6",
+            "B-7",
+            "B-8",
+            "B-9",
+            "B-10"
+          ]
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-injuries",
+        "key": "injuries",
+        "value": {
+          "home": [],
+          "away": []
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-coach",
+        "key": "coach",
+        "value": "STABLE",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-rotation",
+        "key": "rotation",
+        "value": "NORMAL",
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      },
+      {
+        "id": "recheck-tactics",
+        "key": "tactics",
+        "value": {
+          "home_style": "BALANCED",
+          "away_style": "BALANCED",
+          "fit": "SUPPORTED",
+          "key_factor": "historical squad continuity"
+        },
+        "kind": "FACT",
+        "source_id": "official",
+        "published_at": "2026-09-26T18:00:00+00:00",
+        "received_at": "2026-09-26T18:01:00+00:00",
+        "observed_at": "2026-09-26T18:00:00+00:00",
+        "critical": true,
+        "supports": []
+      }
+    ]
+  },
+  "decision_at": "2026-09-26T18:02:00+00:00",
+  "result": {
+    "match_id": "synthetic-001",
+    "status": "FINISHED",
+    "home_goals": 2,
+    "away_goals": 1,
+    "finished_at": "2026-09-26T21:50:00+00:00",
+    "received_at": "2026-09-26T21:51:00+00:00",
+    "source": "SYNTHETIC"
+  }
+}

@@ -1,7 +1,14 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-py -3 run_sefirot.py demo
+where py >nul 2>nul
+if errorlevel 1 (
+  python sefirot.py demo
+) else (
+  py -3 sefirot.py demo
+)
+set "SEFIROT_EXIT=%ERRORLEVEL%"
 echo.
-echo This is a synthetic shadow-mode demonstration. No betting permission.
+if not "%SEFIROT_EXIT%"=="0" echo SEFIROT failed. See error above.
 pause
+exit /b %SEFIROT_EXIT%

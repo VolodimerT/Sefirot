@@ -1,9 +1,12 @@
 [project]
 name = "sefirot-core"
-version = "0.7.0"
-description = "Local shadow-only prematch 1X2 research assistant"
+version = "2.0.0"
+description = "Independent prematch analysis, immutable audit and calibration"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.scripts]
+sefirot = "sefirot.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
