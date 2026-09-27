@@ -16,7 +16,8 @@ def main(argv=None):
     report=analyze(event)
     if args.db:
         args.db.parent.mkdir(parents=True,exist_ok=True)
-        ResearchStore(args.db).record(event,report)
+        with ResearchStore(args.db) as store:
+            store.record(event,report)
     print(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False))
     return 0
 if __name__=='__main__': raise SystemExit(main())
