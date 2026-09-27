@@ -82,18 +82,18 @@ class SystemTests(unittest.TestCase):
     def test_store_results_chain_and_clv(self):
         event=fixture();decision=analyze(event)
         with tempfile.TemporaryDirectory() as temp:
-            store=ResearchStore(Path(temp)/'research.db')
-            store.record(event,decision)
-            with self.assertRaises(sqlite3.IntegrityError):store.record(event,decision)
-            with self.assertRaises(sqlite3.IntegrityError):store.db.execute('DELETE FROM predictions')
-            store.close('target',Market('1X2','HOME'),'Synthetic',2.4,ts(-.05))
-            self.assertAlmostEqual(store.clv()[0]['clv'],2.5/2.4-1)
-            store.result('target',2,1,ts(2))
-            self.assertEqual(len(store.performance()),2)
-            self.assertTrue(store.verify_chain())
-            with self.assertRaises(sqlite3.IntegrityError):store.result('target',0,0,ts(3))
-            store.db.execute("UPDATE audit_logs SET payload='corrupt' WHERE id=1")
-            self.assertFalse(store.verify_chain())
+            with ResearchStore(Path(temp)/'research.db') as store:
+                store.record(event,decision)
+                with self.assertRaises(sqlite3.IntegrityError):store.record(event,decision)
+                with self.assertRaises(sqlite3.IntegrityError):store.db.execute('DELETE FROM predictions')
+                store.close('target',Market('1X2','HOME'),'Synthetic',2.4,ts(-.05))
+                self.assertAlmostEqual(store.clv()[0]['clv'],2.5/2.4-1)
+                store.result('target',2,1,ts(2))
+                self.assertEqual(len(store.performance()),2)
+                self.assertTrue(store.verify_chain())
+                with self.assertRaises(sqlite3.IntegrityError):store.result('target',0,0,ts(3))
+                store.db.execute("UPDATE audit_logs SET payload='corrupt' WHERE id=1")
+                self.assertFalse(store.verify_chain())
 
 if __name__=='__main__': unittest.main()
 
@@ -105,3 +105,14 @@ class GovernanceTests(unittest.TestCase):
         self.assertEqual(competence(('league','1X2','baseline'),[.1]*30,[.2]*30,True).zone,'FROZEN')
         self.assertFalse(paired_version_test([.2]*30,[.1]*30)['automatic_release'])
         self.assertEqual(classify_error(outcome='LOSS',thesis_held=False,sources_correct=True,late_information=False,market_terms_correct=True),('SCENARIO',))
+
+class ResourceLifecycleTests(unittest.TestCase):
+    def test_store_closes_connection_on_exception(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'research.db'
+            with self.assertRaisesRegex(RuntimeError,'interrupted'):
+                with ResearchStore(path) as store:
+                    raise RuntimeError('interrupted')
+            with self.assertRaises(sqlite3.ProgrammingError):
+                store.db.execute('SELECT 1')
+            path.unlink()
