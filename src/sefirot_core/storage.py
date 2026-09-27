@@ -36,6 +36,16 @@ class ResearchStore:
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
 
+    def shutdown(self):
+        """Release the connection (close() is the legacy closing-odds API)."""
+        self.db.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        self.shutdown()
+
     def _log(self, at, event, payload):
         row = self.db.execute('SELECT hash FROM audit_logs ORDER BY id DESC LIMIT 1').fetchone()
         previous = row['hash'] if row else '0' * 64
