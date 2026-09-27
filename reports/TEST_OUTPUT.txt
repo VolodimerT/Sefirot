@@ -117,6 +117,7 @@ test_same_day_result_is_unavailable (test_research.ResearchTests.test_same_day_r
 test_competence_is_contextual_and_cannot_authorize (test_system.GovernanceTests.test_competence_is_contextual_and_cannot_authorize) ... ok
 test_arithmetic_push (test_system.MarketTests.test_arithmetic_push) ... ok
 test_invalid_inputs (test_system.MarketTests.test_invalid_inputs) ... ok
+test_store_closes_connection_on_exception (test_system.ResourceLifecycleTests.test_store_closes_connection_on_exception) ... ok
 test_deterministic_no_execution_and_main_order (test_system.SystemTests.test_deterministic_no_execution_and_main_order) ... ok
 test_future_data_and_live (test_system.SystemTests.test_future_data_and_live) ... ok
 test_novelty_conflict_fragility (test_system.SystemTests.test_novelty_conflict_fragility) ... ok
@@ -124,6 +125,6 @@ test_store_results_chain_and_clv (test_system.SystemTests.test_store_results_cha
 test_unknown_history_and_weak_evidence (test_system.SystemTests.test_unknown_history_and_weak_evidence) ... ok
 
 ----------------------------------------------------------------------
-Ran 124 tests in 2.426s
+Ran 125 tests in 1.864s
 
 OK
