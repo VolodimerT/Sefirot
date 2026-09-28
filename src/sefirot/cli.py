@@ -33,6 +33,7 @@ def main(argv=None):
     validate=sub.add_parser('validate');validate.add_argument('model_id')
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
     research=sub.add_parser('research');research.add_argument('csv',nargs='+');research.add_argument('--output',required=True)
+    diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
     recovery=sub.add_parser('recover');recovery.add_argument('context_key');recovery.add_argument('validation_id');recovery.add_argument('--fix',required=True)
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
@@ -44,7 +45,11 @@ def main(argv=None):
     policy=Policy(**load(args.policy)) if args.policy else Policy()
     repo=None
     try:
-        if args.command=='research':
+        if args.command=='diagnose-p0':
+            from .diagnostics import diagnostics
+            reports=diagnostics(args.csv,args.source_run,args.design,args.output_dir)
+            out={'status':'EXPLORATORY','monetary_permission':False,'reports':{k:v['run_id'] for k,v in reports.items()}}
+        elif args.command=='research':
             from .research import benchmark
             r=benchmark(args.csv,args.output)
             out={k:r[k] for k in ('run_id','status','monetary_permission','split_counts','selected','temperature')}

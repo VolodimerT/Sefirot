@@ -48,7 +48,21 @@ def devig(odds,method='proportional'):
     if len(odds)!=3:raise ValueError('complete 1X2 prices required')
     q=[1/number(o,'odds',1.00000001) for o in odds]
     if method=='proportional':return [x/sum(q) for x in q]
-    if method!='power':raise ValueError('supported methods: proportional, power')
+    if method=='shin':
+        from math import sqrt
+        total=sum(q)
+        if total<1-1e-12: raise ValueError('Shin underround unsupported')
+        if abs(total-1)<=1e-12:return [x/total for x in q]
+        def probabilities(z):
+            return [2*x*x/total/(sqrt(z*z+4*(1-z)*x*x/total)+z) for x in q]
+        lo,hi=0.,1.
+        for _ in range(200):
+            mid=(lo+hi)/2;p=probabilities(mid);residual=sum(p)-1
+            if abs(residual)<=1e-12:return p
+            if residual>0:lo=mid
+            else:hi=mid
+        raise ValueError('Shin failed to converge')
+    if method!='power':raise ValueError('supported methods: proportional, power, shin')
     lo,hi=0.,1.
     while sum(x**hi for x in q)>1:hi*=2
     for _ in range(80):
