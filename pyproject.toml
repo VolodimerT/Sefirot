@@ -1,9 +1,12 @@
 [project]
 name = "sefirot-core"
-version = "2.1.0"
+version = "2.2.0"
 description = "Independent prematch analysis, immutable audit and calibration"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.optional-dependencies]
+sync = ["psycopg[binary]==3.3.6"]
 
 [project.scripts]
 sefirot = "sefirot.cli:main"
