@@ -1,6 +1,7 @@
--- SEFIROT CORE 2.1 proposed private PostgreSQL mirror of the SQLite ledger.
--- This file has not been applied to a cloud project. Apply once to a fresh
--- Supabase project after reviewing the project cost, organization and region.
+-- SEFIROT CORE 2.1 private PostgreSQL mirror of the SQLite ledger.
+-- This file describes the verified cloud schema and is for FRESH databases.
+-- Existing project kxqpwgwihtjmqlcxgfxp used two migrations; do not rerun
+-- these CREATE TABLE statements against it.
 -- No client role can read or write these tables; use a controlled server-side
 -- migration/export process with a private database connection.
 
@@ -108,9 +109,18 @@ create index sefirot_decisions_prediction on sefirot.decisions (prediction_id, a
 create index sefirot_odds_prediction on sefirot.odds_snapshots (prediction_id, at);
 create index sefirot_metrics_prediction on sefirot.calibration_history (prediction_id, at);
 create index sefirot_closing_match on sefirot.closing_odds (match_id, at);
+create index sefirot_bets_decision on sefirot.bets (decision_id);
+create index sefirot_calibration_market on sefirot.calibration_history (market_id);
+create index sefirot_closing_market on sefirot.closing_odds (market_id);
+create index sefirot_matches_away on sefirot.matches (away);
+create index sefirot_matches_home on sefirot.matches (home);
+create index sefirot_odds_market on sefirot.odds_snapshots (market_id);
+create index sefirot_postmatch_decision on sefirot.postmatch_reports (decision_id);
+create index sefirot_postmortems_decision on sefirot.postmortems (decision_id);
+create index sefirot_predictions_model on sefirot.predictions (model_id);
 
 create function sefirot.reject_mutation() returns trigger
-language plpgsql security invoker as $$
+language plpgsql security invoker set search_path = '' as $$
 begin
   raise exception 'immutable SEFIROT ledger: update/delete blocked';
 end;
