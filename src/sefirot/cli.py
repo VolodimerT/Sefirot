@@ -3,9 +3,11 @@ import argparse
 from datetime import datetime,timezone
 from dataclasses import asdict
 import json
+import os
 from pathlib import Path
 import sys
 import sqlite3
+import tempfile
 from .contracts import Policy,VERSION,time
 from .repository import Repository
 from .service import Service
@@ -14,6 +16,26 @@ from .markets import DEFAULT_POOL
 
 
 def load(path):return json.loads(Path(path).read_text(encoding='utf-8'))
+
+def write_quotes(path, payload):
+    """Write a validated quote file and its provenance receipt without overwrites."""
+    destination=Path(path);receipt=Path(str(destination)+'.receipt.json')
+    if destination.exists() or receipt.exists():raise ValueError('odds output already exists; choose a fresh filename')
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    staged=[]
+    try:
+        for target,value in ((receipt,payload['receipt']),(destination,payload['quotes'])):
+            with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=destination.parent,
+                                             prefix='.sefirot-',suffix='.staged',delete=False) as file:
+                json.dump(value,file,ensure_ascii=False,indent=2,allow_nan=False)
+                file.write('\n');staged.append((file.name,target))
+        for temporary,target in staged:os.replace(temporary,target)
+    finally:
+        for temporary,_ in staged:
+            if os.path.exists(temporary):os.unlink(temporary)
+    return {'quotes_file':str(destination.resolve()),'receipt_file':str(receipt.resolve()),
+            'quotes':len(payload['quotes']),'overround':payload['receipt']['overround'],
+            'execution_price_verified':False}
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description='SEFIROT CORE '+VERSION+' — prematch analysis and audit')
@@ -34,6 +56,13 @@ def main(argv=None):
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
     research=sub.add_parser('research');research.add_argument('csv',nargs='+');research.add_argument('--output',required=True)
     diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
+    odds_events=sub.add_parser('odds-events',help='list an exact prematch event for a sealed prediction')
+    odds_events.add_argument('prediction_id');odds_events.add_argument('--sport',required=True)
+    fetch_odds=sub.add_parser('fetch-odds',help='import fresh bookmaker 1X2 after probability seal')
+    fetch_odds.add_argument('prediction_id');fetch_odds.add_argument('--sport',required=True)
+    fetch_odds.add_argument('--event-id',required=True);fetch_odds.add_argument('--bookmaker',required=True)
+    fetch_odds.add_argument('--region',default='eu');fetch_odds.add_argument('--output',required=True)
+    fetch_odds.add_argument('--rules-confirmed',action='store_true',help='operator checked 90-minute bookmaker settlement rules')
     recovery=sub.add_parser('recover');recovery.add_argument('context_key');recovery.add_argument('validation_id');recovery.add_argument('--fix',required=True)
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
@@ -73,7 +102,24 @@ def main(argv=None):
         else:
             path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
             cmd=args.command
-            if cmd=='work':
+            if cmd in ('odds-events','fetch-odds'):
+                from .odds_provider import events,event_candidates,event_odds,quotes_from_event,require_prematch_seal
+                prediction=repo.get('predictions',args.prediction_id)
+                require_prematch_seal(prediction,service.now())
+                if cmd=='odds-events':
+                    data=events(args.sport)
+                    out=event_candidates(data,prediction,args.sport,service.now())
+                else:
+                    if not args.rules_confirmed:raise ValueError('confirm 90-minute bookmaker rules before fetching; PASS')
+                    if not any(c['market']['kind']=='1X2' for c in prediction['candidates']):raise ValueError('1X2 was not in the sealed market pool; PASS')
+                    if Path(args.output).exists() or Path(args.output+'.receipt.json').exists():raise ValueError('odds output already exists')
+                    matched=event_candidates(events(args.sport),prediction,args.sport,service.now())
+                    if matched['event_id']!=args.event_id:raise ValueError('selected event id differs from exact fixture; PASS')
+                    response=event_odds(args.sport,args.event_id,args.region)
+                    payload=quotes_from_event(response,prediction,args.sport,args.event_id,args.bookmaker,service.now(),
+                                              rules_confirmed=True,max_age_seconds=policy.quote_max_age_seconds)
+                    out=write_quotes(args.output,payload)
+            elif cmd=='work':
                 from .worker import process_inbox
                 import time as timer
                 while True:
