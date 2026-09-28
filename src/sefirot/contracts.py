@@ -6,7 +6,7 @@ from hashlib import sha256
 import json
 import math
 
-VERSION = '2.0.0'
+VERSION = '2.1.0'
 MODEL = 'goals-gamma-v1'
 SEPHIROT = ('threshold','witness','scenario','probability','competence','market','opponent','arbiter','chronicler')
 REASONS = ('NEW_INFORMATION','DATA_ERROR','BROKEN_SOURCE','WRONG_LINEUP','TECHNICAL_ERROR')
