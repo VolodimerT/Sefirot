@@ -100,3 +100,17 @@ py -3 sefirot.py --db data/sefirot.sqlite verify
 Прочитан аудит от 2026-09-27. Проверены 1900 реальных матчей АПЛ за пять сезонов с раздельными TRAIN/TUNE/CALIBRATE/TEST. На последних 380 матчах обученный Davidson не обошёл линию без маржи; диагностическая симуляция дала −9.70%. Модель остаётся исследовательской. Подробности, числа и незакрытые вопросы: [ответ на аудит](docs/CROSS_AUDIT_RESPONSE.md), [полный результат](reports/REAL_DATA_BENCHMARK.json).
 
 Для самостоятельного повторения скачайте CSV по `reports/DATA_MANIFEST.json` и запустите `sefirot.py research ... --output data/reproduction.json` по инструкции в ответе на аудит. Этот отчёт не даёт денежного допуска. Честная историческая проверка и проспективная валидация — разные вещи.
+
+## P0: диагностика исходных 312 ставок
+
+P0 не меняет CORE policy и не обучается на просмотренном TEST. Восстанавливаются исходные predictions/ставки по SHA256; сравниваются proportional/power/Shin, cohorts, Davidson/Elo/market, closing-implied EV и условная случайность.
+
+```powershell
+py -3 sefirot.py diagnose-p0 --csv data/E0_2021.csv data/E0_2122.csv data/E0_2223.csv data/E0_2324.csv data/E0_2425.csv --source-run reports/REAL_DATA_BENCHMARK.json --design config/p0_diagnostic_design.json --output-dir data/p0_new_run
+```
+
+CSV: загрузить источники из `reports/DATA_MANIFEST.json`, сохранить указанные имена. Каталог результата должен отсутствовать. Команда создаёт три P0 JSON и Markdown. Полный прогон включает 2000 bootstrap повторов для групп, 10000 Monte Carlo повторов и TRAIN/TUNE-only sensitivity; занимает больше времени, чем demo. Повтор в новом каталоге даёт одинаковые JSON в одной среде.
+
+Дизайн: [P0_EXPERIMENT_DESIGN.md](docs/P0_EXPERIMENT_DESIGN.md). Результат: [P0_DIAGNOSTIC_REPORT.md](docs/P0_DIAGNOSTIC_REPORT.md). Все TEST-разрезы исследовательские: нельзя вводить новые thresholds или freeze по их доходности.
+
+`run_sefirot.py` и `SEFIROT_CORE.py` deprecated. План удаления: CORE 3.0, не раньше 01.01.2027; дата выпуска 3.0 не обещается. Актуальный вход — `sefirot.py`. Исторические отчёты описывают свои версии и не являются актуальной инструкцией запуска.

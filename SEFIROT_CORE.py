@@ -1,5 +1,6 @@
 """Simple Windows/Linux entry point. Research only, no wager execution."""
 import argparse
+# DEPRECATED: use sefirot.py. Planned removal: CORE 3.0, not before 2027-01-01.
 import json
 from pathlib import Path
 import sys
@@ -20,4 +21,6 @@ def main(argv=None):
             store.record(event,report)
     print(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False))
     return 0
-if __name__=='__main__': raise SystemExit(main())
+if __name__=='__main__':
+    print("DEPRECATED: use sefirot.py. Planned removal: CORE 3.0, not before 2027-01-01.",file=sys.stderr)
+    raise SystemExit(main())

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+# DEPRECATED: use sefirot.py. Planned removal: CORE 3.0, not before 2027-01-01.
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -111,4 +112,5 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    print("DEPRECATED: use sefirot.py. Planned removal: CORE 3.0, not before 2027-01-01.", file=sys.stderr)
     raise SystemExit(main())
