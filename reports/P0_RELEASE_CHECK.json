@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_VERIFIED_CI_PENDING",
+  "status": "P0_RELEASE_VERIFIED",
   "tests": 141,
   "original_predictions_replayed": 380,
   "original_bets_replayed": 312,
@@ -8,8 +8,10 @@
   "legacy_entrypoints_help_exit": 0,
   "compileall_exit": 0,
   "environment": "Python 3.12 Linux",
+  "github_pr": "https://github.com/VolodimerT/Sefirot/pull/2",
+  "github_merge_commit": "b18efd344dddbf7d76d24a04783af6894f55dc8e",
+  "github_ci": "8/8 passed on the P0 pull request (Windows/Linux, Python 3.11/3.13)",
   "limitations": [
-    "Windows/Linux CI status must be verified on PR before final release",
     "No independent external auditor",
     "No monetary promotion"
   ]

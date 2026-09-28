@@ -103,6 +103,35 @@ test_model_to_seal_to_price_keeps_the_monetary_gate_closed (test_model.Independe
 test_no_unseen_team_is_silently_assigned_a_confident_rating (test_model.IndependentHistoryTests.test_no_unseen_team_is_silently_assigned_a_confident_rating) ... ok
 test_probability_is_finite_sums_to_one_and_explicitly_uncalibrated (test_model.IndependentHistoryTests.test_probability_is_finite_sums_to_one_and_explicitly_uncalibrated) ... ok
 test_utc_normalization_and_deterministic_order (test_model.IndependentHistoryTests.test_utc_normalization_and_deterministic_order) ... ok
+test_cli_writes_quotes_only_after_capture_and_cannot_overwrite (test_odds_provider.OddsProviderTests.test_cli_writes_quotes_only_after_capture_and_cannot_overwrite) ... {"status": "ERROR", "decision": "PASS", "error": "odds output already exists"}
+ok
+test_cli_wrong_event_does_not_purchase_price_query (test_odds_provider.OddsProviderTests.test_cli_wrong_event_does_not_purchase_price_query) ... {"status": "ERROR", "decision": "PASS", "error": "selected event id differs from exact fixture; PASS"}
+ok
+test_complete_line_from_one_book_and_one_timestamp (test_odds_provider.OddsProviderTests.test_complete_line_from_one_book_and_one_timestamp) ... ok
+test_exact_event_directory_excludes_live_and_ambiguous (test_odds_provider.OddsProviderTests.test_exact_event_directory_excludes_live_and_ambiguous) ... ok
+test_incomplete_duplicated_underround_and_stale_rejected (test_odds_provider.OddsProviderTests.test_incomplete_duplicated_underround_and_stale_rejected) ... ok
+test_live_unsealed_reconstructed_and_future_prices_rejected (test_odds_provider.OddsProviderTests.test_live_unsealed_reconstructed_and_future_prices_rejected) ... ok
+test_missing_settlement_confirmation_fails_before_import (test_odds_provider.OddsProviderTests.test_missing_settlement_confirmation_fails_before_import) ... ok
+test_network_errors_and_redirect_never_expose_secret (test_odds_provider.OddsProviderTests.test_network_errors_and_redirect_never_expose_secret) ... ok
+test_real_response_shape_and_credential_from_environment (test_odds_provider.OddsProviderTests.test_real_response_shape_and_credential_from_environment) ... ok
+test_same_event_two_books_never_mix (test_odds_provider.OddsProviderTests.test_same_event_two_books_never_mix) ... ok
+test_wrong_fixture_and_no_guessing_aliases (test_odds_provider.OddsProviderTests.test_wrong_fixture_and_no_guessing_aliases) ... ok
+test_bootstrap_pairing_seed (test_p0_diagnostics.DiagnosticTests.test_bootstrap_pairing_seed) ... ok
+test_boundaries_and_empty_jaccard (test_p0_diagnostics.DiagnosticTests.test_boundaries_and_empty_jaccard) ... ok
+test_drawdown_initial_zero (test_p0_diagnostics.DiagnosticTests.test_drawdown_initial_zero) ... ok
+test_empty_portfolio (test_p0_diagnostics.DiagnosticTests.test_empty_portfolio) ... ok
+test_exclusive_output (test_p0_diagnostics.DiagnosticTests.test_exclusive_output) ... ok
+test_hand_portfolio (test_p0_diagnostics.DiagnosticTests.test_hand_portfolio) ... ok
+test_hash_mismatch (test_p0_diagnostics.DiagnosticTests.test_hash_mismatch) ... ok
+test_monte_carlo_degenerate (test_p0_diagnostics.DiagnosticTests.test_monte_carlo_degenerate) ... ok
+test_trace_does_not_change_predictions_or_leak (test_p0_diagnostics.DiagnosticTests.test_trace_does_not_change_predictions_or_leak) ... ok
+test_goals_sensitivity_ignores_future_splits (test_p0_diagnostics.P0IntegrationTests.test_goals_sensitivity_ignores_future_splits) ... ok
+test_price_and_closing_cannot_change_sports_trace (test_p0_diagnostics.P0IntegrationTests.test_price_and_closing_cannot_change_sports_trace) ... ok
+test_replay_reproducibility_cohort_totals_and_missing_closing (test_p0_diagnostics.P0IntegrationTests.test_replay_reproducibility_cohort_totals_and_missing_closing) ... ok
+test_cash_ev_independent (test_p0_diagnostics.ShinTests.test_cash_ev_independent) ... ok
+test_external_reference (test_p0_diagnostics.ShinTests.test_external_reference) ... ok
+test_fair_symmetric_extreme_permutations (test_p0_diagnostics.ShinTests.test_fair_symmetric_extreme_permutations) ... ok
+test_rejects_invalid (test_p0_diagnostics.ShinTests.test_rejects_invalid) ... ok
 test_consensus_separates_best_prices (test_research.EvaluationTests.test_consensus_separates_best_prices) ... ok
 test_devig_proportional_and_power (test_research.EvaluationTests.test_devig_proportional_and_power) ... ok
 test_invalid_and_zero_probabilities (test_research.EvaluationTests.test_invalid_and_zero_probabilities) ... ok
@@ -125,6 +154,6 @@ test_store_results_chain_and_clv (test_system.SystemTests.test_store_results_cha
 test_unknown_history_and_weak_evidence (test_system.SystemTests.test_unknown_history_and_weak_evidence) ... ok
 
 ----------------------------------------------------------------------
-Ran 125 tests in 1.864s
+Ran 152 tests in 2.216s
 
 OK
