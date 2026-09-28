@@ -1,0 +1,16 @@
+{
+  "status": "LOCAL_VERIFIED_CI_PENDING",
+  "tests": 141,
+  "original_predictions_replayed": 380,
+  "original_bets_replayed": 312,
+  "two_full_runs_byte_identical": true,
+  "demo_exit": 0,
+  "legacy_entrypoints_help_exit": 0,
+  "compileall_exit": 0,
+  "environment": "Python 3.12 Linux",
+  "limitations": [
+    "Windows/Linux CI status must be verified on PR before final release",
+    "No independent external auditor",
+    "No monetary promotion"
+  ]
+}

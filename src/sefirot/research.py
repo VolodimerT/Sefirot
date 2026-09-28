@@ -47,12 +47,15 @@ def load_csvs(paths):
         'availability':'UNKNOWN_HISTORICAL_TIMESTAMPS','promotable':False}
 
 
-def elo_predictions(rows,k=20.,home=55.,draw=.8,regression=1.,legacy=False):
+def elo_predictions(rows,k=20.,home=55.,draw=.8,regression=1.,legacy=False,trace=None):
     ratings={};counts=[0,0,0];predictions={};current=None
+    team_counts=Counter();season_counts=Counter()
     for date,day_rows in groupby(rows,key=lambda r:r['date']):
         batch=list(day_rows);season=batch[0]['season']
         if season!=current:
             ratings={t:1500+(v-1500)*regression for t,v in ratings.items()};current=season
+        if not season_counts or season_counts.get("__season__")!=season:
+            season_counts=Counter({"__season__":season})
         changes=Counter()
         for r in batch:
             rh=ratings.get(r['home'],1500.);ra=ratings.get(r['away'],1500.)
@@ -64,11 +67,14 @@ def elo_predictions(rows,k=20.,home=55.,draw=.8,regression=1.,legacy=False):
             else:
                 tie=draw*sqrt(strength);den=strength+1+tie;p=[strength/den,tie/den,1/den]
             predictions[r['id']]=p
+            if trace is not None:trace[r['id']]={'ratings':[rh,ra], 'history_counts':[team_counts[r['home']],team_counts[r['away']]],'season_counts':[season_counts[r['home']],season_counts[r['away']]]}
             expected=conditional if legacy else p[0]+.5*p[1]
             delta=k*((1.,.5,0.)[r['y']]-expected)
             changes[r['home']]+=delta;changes[r['away']]-=delta
         for team,delta in changes.items():ratings[team]=ratings.get(team,1500.)+delta
-        for r in batch:counts[r['y']]+=1
+        for r in batch:
+            counts[r['y']]+=1
+            for name in (r['home'],r['away']):team_counts[name]+=1;season_counts[name]+=1
     return predictions
 
 

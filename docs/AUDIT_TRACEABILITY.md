@@ -40,3 +40,7 @@
 - Внешняя защищённая фиксация времени и независимый сторонний аудит.
 - Подключённая Supabase/Tavily инфраструктура: текущий автономный продукт использует SQLite и локальный inbox.
 - Экспрессы и малые рынки остаются в статусе «на доработку», как требует аудит.
+
+## P0 task mapping
+
+P0.1: evaluation.devig(shin), P0_DEVIG_SENSITIVITY.json. P0.2: P0_COHORT_ANALYSIS.json. P0.3: P0_DAVIDSON_VS_ELO.json. P0.4: decay_sensitivity TRAIN/TUNE-only plus stored 54 regression trials. P0.5: uncertainty design in P0_EXPERIMENT_DESIGN.md; individual coverage explicitly null. Tests: test_p0_diagnostics.py. Entry: sefirot.py diagnose-p0.

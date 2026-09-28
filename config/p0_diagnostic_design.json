@@ -1,0 +1,35 @@
+{
+  "version": "p0-approved-v1",
+  "approval": "User approved 2026-09-27",
+  "cash_ev_threshold": 0.02,
+  "odds_boundaries": [
+    1.5,
+    1.8,
+    2.2,
+    3.0
+  ],
+  "ev_boundaries": [
+    0.04,
+    0.08,
+    0.15
+  ],
+  "divergence_boundaries": [
+    0,
+    0.02,
+    0.05,
+    0.1
+  ],
+  "bootstrap_seed": 212200,
+  "monte_carlo_seed": 212201,
+  "bootstrap_repetitions": 2000,
+  "monte_carlo_repetitions": 10000,
+  "block_days": 14,
+  "rolling_window": 50,
+  "small_sample_n": 30,
+  "source_report_sha256": "f7dafbd50f5ed001627091690845f4560f8685999ef70b5c277ed265055e4e32",
+  "source_run_id": "45694d09117187aebfb9a3933aa3d3a4ea1645f208223887b8c7453dfd8c5085",
+  "dataset_hash": "9d2cf06f9998ee96eaaf76777b4d5d709607a552cf351d3b04d79dc022140922",
+  "status": "EXPLORATORY",
+  "monetary_permission": false,
+  "design_sha256": "ecb2449a1786e5b17b0ddae430b54b6bdda5ce11878c46d7a5e3e557abe8afb1"
+}

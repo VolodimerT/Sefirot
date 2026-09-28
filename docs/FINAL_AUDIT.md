@@ -55,3 +55,7 @@
 GitHub Actions обнаружил `WinError 32` при удалении временной базы legacy `ResearchStore`: соединение оставалось открытым. Добавлены `shutdown` и context manager; старый CLI и тест используют гарантированное закрытие. Отдельный регрессионный тест проверяет закрытие при исключении. Локальная проверка после исправления: **125 тестов**, demo/replay/integrity проходят. Окончательный статус Windows CI проверяется по PR #1 и GitHub Actions; прежний красный прогон сохранён в истории.
 
 После исправления коммит cfbc148 прошёл все 8 проверок GitHub CI (Windows/Ubuntu, Python 3.11/3.13; push и pull_request). Ошибка WinError 32 устранена и защищена отдельным регрессионным тестом; всего 125 тестов.
+
+## P0 diagnostic layer
+
+Shin, frozen replay 380 predictions/312 bets, cohort analysis, paired block bootstrap, conditional Monte Carlo and TRAIN/TUNE-only goals sensitivity implemented. See P0_DIAGNOSTIC_REPORT.md. Research defaults and monetary gates unchanged. Full runs in two separate directories produced byte-identical JSON and Markdown. Diagnostics do not establish executable historical prices or individual probability interval coverage.
