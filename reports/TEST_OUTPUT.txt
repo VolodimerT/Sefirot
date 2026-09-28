@@ -23,6 +23,14 @@ test_prevent_backdated_seal_after_late_snapshot (test_capture.CaptureTests.test_
 test_prevent_quote_before_seal_and_backdated_quote (test_capture.CaptureTests.test_prevent_quote_before_seal_and_backdated_quote) ... ok
 test_signal_and_shadow_decision_have_distinct_lineage (test_capture.CaptureTests.test_signal_and_shadow_decision_have_distinct_lineage) ... ok
 test_signal_before_seal_or_after_start_cannot_enter_journal (test_capture.CaptureTests.test_signal_before_seal_or_after_start_cannot_enter_journal) ... ok
+test_conflict_and_remote_extra_fail_closed (test_cloud_sync.CloudSyncTests.test_conflict_and_remote_extra_fail_closed) ... ok
+test_full_round_trip_and_repeat_are_idempotent (test_cloud_sync.CloudSyncTests.test_full_round_trip_and_repeat_are_idempotent) ... ok
+test_local_corruption_and_missing_credentials_rejected (test_cloud_sync.CloudSyncTests.test_local_corruption_and_missing_credentials_rejected) ... ok
+test_noncanonical_payload_rejected_before_network (test_cloud_sync.CloudSyncTests.test_noncanonical_payload_rejected_before_network) ... ok
+test_snapshot_limit_refuses_unbounded_memory (test_cloud_sync.CloudSyncTests.test_snapshot_limit_refuses_unbounded_memory) ... ok
+test_transport_forces_verified_tls_and_atomic_commit (test_cloud_sync.CloudSyncTests.test_transport_forces_verified_tls_and_atomic_commit) ... ok
+test_unprivileged_role_and_partial_failure_cannot_commit (test_cloud_sync.CloudSyncTests.test_unprivileged_role_and_partial_failure_cannot_commit) ... ok
+test_windows_style_entrypoint_local_check_without_cloud_secrets (test_cloud_sync.CloudSyncTests.test_windows_style_entrypoint_local_check_without_cloud_secrets) ... ok
 test_direct_seal_constructor_cannot_bypass_validation (test_core.CoreContractTests.test_direct_seal_constructor_cannot_bypass_validation) ... ok
 test_future_fact_is_rejected_even_when_event_occurred_earlier (test_core.CoreContractTests.test_future_fact_is_rejected_even_when_event_occurred_earlier) ... ok
 test_invalid_probability_and_odds_do_not_silently_normalize (test_core.CoreContractTests.test_invalid_probability_and_odds_do_not_silently_normalize) ... ok
@@ -154,6 +162,6 @@ test_store_results_chain_and_clv (test_system.SystemTests.test_store_results_cha
 test_unknown_history_and_weak_evidence (test_system.SystemTests.test_unknown_history_and_weak_evidence) ... ok
 
 ----------------------------------------------------------------------
-Ran 152 tests in 2.216s
+Ran 160 tests in 2.771s
 
 OK
