@@ -59,3 +59,9 @@ GitHub Actions обнаружил `WinError 32` при удалении врем
 ## P0 diagnostic layer
 
 Shin, frozen replay 380 predictions/312 bets, cohort analysis, paired block bootstrap, conditional Monte Carlo and TRAIN/TUNE-only goals sensitivity implemented. See P0_DIAGNOSTIC_REPORT.md. Research defaults and monetary gates unchanged. Full runs in two separate directories produced byte-identical JSON and Markdown. Diagnostics do not establish executable historical prices or individual probability interval coverage.
+
+## CORE 2.1 integration audit
+
+Optional odds import preserves the probability seal; only a full fresh 1X2 line from one explicitly selected bookmaker and exact fixture is admitted. Adversarial tests cover future/live event, missing draw, duplicate outcomes, underround, stale/future provider timestamp, bookmaker mismatch, wrong teams/kickoff, HTTP redirects and secret-bearing errors. No live API request was possible without a user-provided key, and a provider quote does not prove the price is available in the user's account. Settlement rules are asserted by a human, not verified by the API. Other main markets still require supplied quotes; small markets and express stay deferred.
+
+The private Supabase SQL schema is a reviewed proposal, not a deployed or queried database. Its RLS has no client policies and client role grants are revoked. There is no synchronization or cloud provenance witness; SQLite remains the local source of truth. External independent review, sports data provider, separate forward holdout and model performance remain open. See INTEGRATION_STATUS.md.

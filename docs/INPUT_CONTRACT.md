@@ -11,6 +11,7 @@
 - `history`: id/home/away/league, kickoff < finished_at ≤ received_at, целый неотрицательный счёт, source_id. Недоступные на as_of результаты исключаются. Целевой матч запрещён в истории.
 - `markets`: 1–7 кандидатов, по одному на семейство, объявленных без цены.
 - `quotes`: market, bookmaker, decimal odds >1, observed_at ≤ received_at, phase OPEN/FINAL/ENTRY/CLOSE, rules REGULATION_90. OPEN/FINAL/ENTRY входят после seal. CLOSE — только постматчевый аудит. `line_id` связывает полную 1X2 линию.
+- Необязательный `fetch-odds`: только полная 1X2 одного выбранного букмекера после seal. Требует точного ID события, команд и kickoff; время обновления поставщика обязательно, `--rules-confirmed` подтверждает проверку условий расчёта. Квитанция содержит источник и отмечает, что цена в аккаунте не подтверждена.
 - `recheck`: checked_at и новый полный набор evidence. Простого поля «проверено=true» недостаточно.
 - `result`: match_id, FINISHED/VOID, home_goals/away_goals, finished_at, received_at, source. VOID использует null вместо счёта.
 
