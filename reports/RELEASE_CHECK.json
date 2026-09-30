@@ -1,18 +1,20 @@
 {
-  "version": "2.1.0",
+  "version": "2.3.0",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 2.898,
+  "elapsed_seconds": 5.74,
   "test_exit": 0,
+  "tests": 191,
   "demo": {
-    "version": "2.1.0",
+    "version": "2.3.0",
     "synthetic": true,
-    "prediction_id": "f8f1dde8a313bded307d5d572ba5ff3b9d70c1b2f0b979817224972466851d78",
-    "decision_id": "6bba64786a83da3c18c950af9810dc95834b0a0283a65ae7f3d5876058d72169",
+    "prediction_id": "29f9f36fed6d583de07e04e5997c84f39a7c1483eee181a4398b9bb0c87c896b",
+    "decision_id": "c6c7e5fa1d57592fea9cd41048a3990b3dac147ec57347463a2f1a6fd637df44",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
     "reasons": [
+      "PROBABILITY_RECALCULATION_REQUIRED",
       "POLICY_NOT_APPROVED",
       "SYNTHETIC_DATA_RESEARCH_ONLY",
       "NO_ADMISSIBLE_MAIN_MARKET"
@@ -25,6 +27,15 @@
   },
   "backtest_fixtures": 12,
   "backtest_scored_markets": 84,
+  "audit_cases": 49,
+  "audit_outcomes": {
+    "WIN": 22,
+    "PUSH": 7,
+    "LOSS": 11,
+    "UNSUPPORTED": 9
+  },
+  "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
+  "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-09-28T16:02:05.708046+00:00"
+  "generated_at": "2026-09-30T22:46:42.359698+00:00"
 }

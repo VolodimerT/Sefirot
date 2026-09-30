@@ -1,12 +1,13 @@
 {
-  "version": "2.1.0",
+  "version": "2.3.0",
   "synthetic": true,
-  "prediction_id": "f8f1dde8a313bded307d5d572ba5ff3b9d70c1b2f0b979817224972466851d78",
-  "decision_id": "6bba64786a83da3c18c950af9810dc95834b0a0283a65ae7f3d5876058d72169",
+  "prediction_id": "29f9f36fed6d583de07e04e5997c84f39a7c1483eee181a4398b9bb0c87c896b",
+  "decision_id": "c6c7e5fa1d57592fea9cd41048a3990b3dac147ec57347463a2f1a6fd637df44",
   "decision": "PASS",
   "verdict": "skip",
   "class": "D",
   "reasons": [
+    "PROBABILITY_RECALCULATION_REQUIRED",
     "POLICY_NOT_APPROVED",
     "SYNTHETIC_DATA_RESEARCH_ONLY",
     "NO_ADMISSIBLE_MAIN_MARKET"
