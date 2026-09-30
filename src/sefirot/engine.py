@@ -64,6 +64,7 @@ def recheck(prediction,recheck_data,at,policy):
         issues.append(finding('witness','RECHECK_STALE'))
     merged={**prediction['sports'],'as_of':recheck_data['checked_at'],'evidence':recheck_data['evidence']}
     check=inspect(merged,policy);issues.extend(check['issues'])
+    if check['novelty']:issues.append(finding('competence','UNKNOWN_CONTEXT','BLOCK',detail=','.join(check['novelty'])))
     old=prediction['witness']['resolved'];new=check['resolved']
     for key in ('lineup','injuries','coach','rotation','tactics','format','home_team','away_team'):
         if key in old and key in new and digest(old[key]['value'])!=digest(new[key]['value']):
@@ -169,7 +170,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
     grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
-    unknown=bool(thesis_reviews) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
+    unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
     return {'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
             'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
             'selected_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,
