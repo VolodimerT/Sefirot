@@ -1,6 +1,6 @@
 [project]
 name = "sefirot-core"
-version = "2.2.0"
+version = "2.3.0"
 description = "Independent prematch analysis, immutable audit and calibration"
 requires-python = ">=3.11"
 dependencies = []
