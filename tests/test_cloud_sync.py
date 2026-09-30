@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -148,7 +149,7 @@ class CloudSyncTests(unittest.TestCase):
             sync(self.path, dsn='postgresql://example', ca='/no/cert')
         with self.assertRaisesRegex(ValueError, 'does not exist'):
             snapshot(Path(self.temp.name) / 'missing.sqlite')
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('DROP TRIGGER audit_logs_no_update')
             db.execute("UPDATE audit_logs SET previous_hash=? WHERE id=1", ('a' * 64,))
         with self.assertRaisesRegex(ValueError, 'audit chain'):
@@ -206,7 +207,7 @@ class CloudSyncTests(unittest.TestCase):
         self.assertEqual(arguments['connect_timeout'], 10)
 
     def test_noncanonical_payload_rejected_before_network(self):
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('DROP TRIGGER teams_no_update')
             db.execute('UPDATE teams SET payload=? WHERE id=(SELECT id FROM teams LIMIT 1)',
                        (json.dumps({'z': 1, 'a': 2}),))
