@@ -147,4 +147,7 @@ $$;
 revoke all on all tables in schema sefirot from public, anon, authenticated, service_role;
 alter default privileges in schema sefirot revoke all on tables from public, anon, authenticated, service_role;
 alter default privileges in schema sefirot revoke execute on functions from public, anon, authenticated, service_role;
-comment on schema sefirot is 'Private append-only SEFIROT mirror; SQLite remains the authoritative offline ledger until an audited synchronization exists.';
+comment on schema sefirot is 'Private append-only SEFIROT mirror; SQLite remains the authoritative offline ledger.';
+
+-- For the optional SQLite mirror, apply supabase_ingest_role.sql only after
+-- reviewing access. Its login is disabled until the owner provisions a secret.

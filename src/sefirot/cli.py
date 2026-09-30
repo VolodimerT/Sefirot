@@ -67,6 +67,8 @@ def main(argv=None):
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
     sub.add_parser('report');sub.add_parser('accounting');sub.add_parser('verify')
+    sync_parser=sub.add_parser('sync-supabase',help='explicit, verified SQLite -> private Supabase ledger mirror')
+    sync_parser.add_argument('--check-local',action='store_true',help='validate source ledger without a cloud connection')
     review=sub.add_parser('postmortem');review.add_argument('decision_id');review.add_argument('file')
     execution=sub.add_parser('execution');execution.add_argument('decision_id');execution.add_argument('file')
     approval=sub.add_parser('approve-policy');approval.add_argument('--operator',required=True);approval.add_argument('--statement',required=True)
@@ -99,6 +101,9 @@ def main(argv=None):
                      'reasons':dec['limiting_factors'],'markets_evaluated':len(dec['candidates']),'replay_matches':replay['matches'],
                      'feedback_rows':len(service.report()['performance']),'integrity':repo.verify(),'monetary_stake':dec['risk']['stake']}
                 repo.close();repo=None
+        elif args.command=='sync-supabase':
+            from .cloud_sync import check_local,sync
+            out=check_local(args.db) if args.check_local else sync(args.db)
         else:
             path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
             cmd=args.command
