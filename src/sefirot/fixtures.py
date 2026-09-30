@@ -17,8 +17,8 @@ def example(at=None,match_id='synthetic-001'):
         day=now-timedelta(days=80-i)
         history.append({'id':f'history-{i}','home':'A' if i%2 else 'B','away':'B' if i%2 else 'A','league':'SYNTHETIC',
                         'kickoff':day.isoformat(),'finished_at':(day+timedelta(hours=2)).isoformat(),
-                        'received_at':(day+timedelta(hours=3)).isoformat(),'home_goals':i%4,'away_goals':i%2,'source_id':'statistics'})
-    sports={'match':{'id':match_id,'home':'A','away':'B','league':'SYNTHETIC','kickoff':ts(120),'sport':'football','format':'REGULATION_90'},
+                        'received_at':(day+timedelta(hours=3)).isoformat(),'home_goals':i%4,'away_goals':i%2,'source_id':'statistics','competition_profile':'MEN'})
+    sports={'match':{'id':match_id,'home':'A','away':'B','league':'SYNTHETIC','kickoff':ts(120),'sport':'football','format':'REGULATION_90','competition_profile':'MEN'},
             'as_of':ts(-1),'sources':sources,'evidence':facts,'history':history,'synthetic':True}
     quotes=[{'market':m,'bookmaker':'SYNTHETIC_BOOK','odds':2.1,'observed_at':ts(1),'received_at':ts(1),
              'phase':'FINAL','rules':'REGULATION_90'} for m in DEFAULT_POOL]
