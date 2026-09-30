@@ -1,5 +1,5 @@
 {
-  "version": "research-policy-v1",
+  "version": "research-policy-v2",
   "min_team_games": 8,
   "history_days": 730,
   "half_life_days": 180.0,
@@ -17,6 +17,7 @@
   "min_low_ev": 0.0,
   "max_probability_width": 0.25,
   "divergence": 0.1,
+  "extreme_divergence": 0.2,
   "line_move": 0.1,
   "max_tail": 1e-07,
   "stress_rate_fraction": 0.15,
