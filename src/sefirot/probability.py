@@ -1,8 +1,8 @@
 """Price-blind goals distribution and frozen multiclass reliability calibration."""
 from __future__ import annotations
 from math import exp, sqrt, log
-from .contracts import number,integer,time,digest,MODEL
-from .evidence import eligible_history
+from .contracts import number,integer,time,digest,MODEL,PROFILES
+from .evidence import eligible_history,profile_of
 
 
 def wilson(successes,n,z=1.96):
@@ -25,6 +25,57 @@ def poisson(rate,cap=35):
 def distribution(home,away):
     hp,ht=poisson(home);ap,at=poisson(away)
     return {(h,a):p*q for h,p in enumerate(hp) for a,q in enumerate(ap)}, min(1.,ht+at)
+
+
+def goal_thresholds(mass):
+    """Coherent projections of the sealed score model; not a new calibrated model."""
+    for score in mass:
+        if not isinstance(score,tuple) or len(score)!=2:raise ValueError('two-goal score tuple required')
+        for goal in score:integer(goal,'score',0,50)
+    total=sum(number(p,'score mass',0,1) for p in mass.values())
+    if abs(total-1)>1e-8: raise ValueError('score mass must sum to one')
+    output={}
+    for side,index in (('home',0),('away',1)):
+        output[side]={'p0':sum(p for score,p in mass.items() if score[index]==0),
+                      'p1':sum(p for score,p in mass.items() if score[index]==1),
+                      'p2_plus':sum(p for score,p in mass.items() if score[index]>=2),
+                      'p3_plus':sum(p for score,p in mass.items() if score[index]>=3)}
+    return output
+
+
+def grade_stress(base_ev,stress_min,min_ev=.02):
+    """Unvalidated audit thresholds. A label never grants monetary permission."""
+    number(base_ev,'base EV');number(stress_min,'stress EV');number(min_ev,'minimum EV',0,1)
+    label=('NO_VALUE' if base_ev<min_ev else 'AGGRESSIVE_VALUE' if stress_min<-.10 else
+           'FRAGILE_VALUE' if stress_min<0 else 'ROBUST_VALUE')
+    return {'class':label,'status':'RESEARCH_UNVALIDATED','base_ev':base_ev,'stress_min':stress_min,
+            'candidate':label!='NO_VALUE','monetary_permission':False,
+            'sensitivity_is_confidence_interval':False}
+
+
+def schedule_trace(sports,policy):
+    """Opponent context frozen at each historic kickoff, excluding late results.
+
+    This supplies testable SoS features; weights are diagnostic until a separate
+    fitted model beats the baseline on unseen data. They do not change lambda.
+    """
+    rows,_=eligible_history(sports,policy);targets={sports['match']['home'],sports['match']['away']};out=[]
+    prior=1.225
+    for row in rows:
+        for side in ('home','away'):
+            team=row[side]
+            if team not in targets: continue
+            opponent=row['away' if side=='home' else 'home'];cutoff=time(row['kickoff'])
+            earlier=[r for r in rows if r['id']!=row['id'] and time(r['received_at'])<=cutoff and opponent in (r['home'],r['away'])]
+            n=len(earlier)
+            attack=(sum(r['home_goals'] if r['home']==opponent else r['away_goals'] for r in earlier)+policy.prior_games*prior)/(n+policy.prior_games)
+            defense=(sum(r['away_goals'] if r['home']==opponent else r['home_goals'] for r in earlier)+policy.prior_games*prior)/(n+policy.prior_games)
+            out.append({'history_id':row['id'],'team':team,'opponent':opponent,'frozen_at':row['kickoff'],
+                        'opponent_games':n,'opponent_attack':attack,'opponent_defense':defense,
+                        'schedule_weight':min(1.25,max(.75,1+.1*(attack-defense))),
+                        'used_ids':[r['id'] for r in earlier],'used_in_probability':False,
+                        'status':'RESEARCH_DIAGNOSTIC' if n else 'INSUFFICIENT_OPPONENT_HISTORY'})
+    return out
 
 
 def estimate(sports,policy):
@@ -51,15 +102,19 @@ def estimate(sports,policy):
         m,t=distribution(min(12.,max(.05,lh*hmult)),min(12.,max(.05,la*amult)))
         variants.append(m);tail=max(tail,t)
     top=sorted(mass.items(),key=lambda item:(-item[1],item[0]))[:5]
-    summary={'model_version':MODEL,'rates':{'home':lh,'away':la},'team_games':[hn,an],'effective_games':[he,ae],
+    summary={'model_version':MODEL,'competition_profile':profile_of(match),'rates':{'home':lh,'away':la},'team_games':[hn,an],'effective_games':[he,ae],
              'used_history':[r['id'] for r in rows],'excluded_history':excluded,'history_digest':digest(rows),
-             'tail_bound':tail,'score_scenarios':[{'home':h,'away':a,'probability':p} for (h,a),p in top],
+             'tail_bound':tail,'goal_thresholds':goal_thresholds(mass),'schedule_trace':schedule_trace(sports,policy),
+             'profile_parameters_status':'UNVALIDATED; history and calibration isolated; no fitted profile coefficients',
+             'score_scenarios':[{'home':h,'away':a,'probability':p} for (h,a),p in top],
              'uncertainty_method':'frozen reliability bins plus rate sensitivity; raw sensitivity is not coverage',
              'training_prior':f'{policy.prior_games:g} equivalent games; research policy; not empirically certified'}
     return mass,variants,summary
 
 
-def bin_key(kind,p): return kind+':'+str(min(4,int(number(p,'probability',0,1)*5)))
+def bin_key(kind,p,profile='UNKNOWN'):
+    if profile not in PROFILES: raise ValueError('invalid calibration profile')
+    return profile+':'+kind+':'+str(min(4,int(number(p,'probability',0,1)*5)))
 
 
 def fit_calibrator(records,model_hash,policy_hash,fit_at):
@@ -72,21 +127,21 @@ def fit_calibrator(records,model_hash,policy_hash,fit_at):
         ids.add(key)
         if time(r['received_at'])>time(fit_at): raise ValueError('calibrator cannot see future result')
         if r['outcome'] not in ('WIN','PUSH','LOSS'): raise ValueError('invalid outcome')
-        bucket=bin_key(r['kind'],r['raw_win'])
+        bucket=bin_key(r['kind'],r['raw_win'],r.get('competition_profile','UNKNOWN'))
         groups.setdefault(bucket,[0,0,0])[('WIN','PUSH','LOSS').index(r['outcome'])]+=1
         synthetic=synthetic or bool(r['synthetic'])
         latest=max(latest or r['received_at'],r['received_at'],key=time)
-    out={'version':'reliability-v1','model_hash':model_hash,'policy_hash':policy_hash,'fit_at':fit_at,
+    out={'version':'profile-reliability-v2','model_hash':model_hash,'policy_hash':policy_hash,'fit_at':fit_at,
          'fit_ids':sorted({r['match_id'] for r in records}),'buckets':groups,'synthetic':synthetic,
          'last_result_at':latest,'training_digest':digest(records)}
     out['hash']=digest(out)
     return out
 
 
-def calibrate(kind,raw,artifact,policy):
+def calibrate(kind,raw,artifact,policy,profile='UNKNOWN'):
     if artifact is None:
         return {'base':list(raw),'low':[0.,0.,0.],'high':[1.,1.,1.],'status':'UNCALIBRATED','n':0}
-    counts=artifact['buckets'].get(bin_key(kind,raw[0]))
+    counts=artifact['buckets'].get(bin_key(kind,raw[0],profile))
     if not counts or sum(counts)<policy.min_calibration:
         return {'base':list(raw),'low':[0.,0.,0.],'high':[1.,1.,1.],'status':'INSUFFICIENT_BIN','n':sum(counts or [])}
     n=sum(counts)

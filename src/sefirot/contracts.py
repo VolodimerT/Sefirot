@@ -6,8 +6,9 @@ from hashlib import sha256
 import json
 import math
 
-VERSION = '2.2.0'
+VERSION = '2.3.0'
 MODEL = 'goals-gamma-v1'
+PROFILES = ('MEN','WOMEN','RESERVE','LOWER','UNKNOWN')
 SEPHIROT = ('threshold','witness','scenario','probability','competence','market','opponent','arbiter','chronicler')
 REASONS = ('NEW_INFORMATION','DATA_ERROR','BROKEN_SOURCE','WRONG_LINEUP','TECHNICAL_ERROR')
 
@@ -56,7 +57,7 @@ def strict(obj, required, optional=()):
 @dataclass(frozen=True)
 class Policy:
     """Research defaults are explicit proposals, never labelled empirically certified."""
-    version: str = 'research-policy-v1'
+    version: str = 'research-policy-v2'
     min_team_games: int = 8
     history_days: int = 730
     half_life_days: float = 180.
@@ -74,6 +75,7 @@ class Policy:
     min_low_ev: float = 0.
     max_probability_width: float = .25
     divergence: float = .10
+    extreme_divergence: float = .20
     line_move: float = .10
     max_tail: float = 1e-7
     stress_rate_fraction: float = .15
@@ -96,9 +98,10 @@ class Policy:
             if k in ('min_team_games','history_days','fact_max_age_minutes','recheck_max_age_minutes','quote_max_age_seconds','max_candidates','min_calibration','min_holdout','min_context','max_revisions','health_window','max_severe_errors'):
                 integer(v,k,1)
             else: number(v,k,0)
-        for k in ('max_calibration_error','min_source_reliability','min_ev','min_low_ev','max_probability_width','divergence','line_move','max_tail','stress_rate_fraction','max_stake_fraction','max_match_fraction','max_day_fraction','max_group_fraction','kelly_fraction','max_drawdown','health_delta'):
+        for k in ('max_calibration_error','min_source_reliability','min_ev','min_low_ev','max_probability_width','divergence','extreme_divergence','line_move','max_tail','stress_rate_fraction','max_stake_fraction','max_match_fraction','max_day_fraction','max_group_fraction','kelly_fraction','max_drawdown','health_delta'):
             number(getattr(self,k),k,0,1)
         if self.max_candidates>7: raise ValueError('main market pool limited to seven candidates')
+        if self.extreme_divergence<=self.divergence: raise ValueError('extreme divergence must exceed review threshold')
         if min(self.half_life_days,self.prior_games,self.max_tail)<=0: raise ValueError('positive numerical scales required')
 
     @property

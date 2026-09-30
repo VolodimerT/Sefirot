@@ -45,3 +45,36 @@ def complete_overround(quotes):
             output.append({'bookmaker':key[0],'observed_at':key[1],'line_id':key[2],
                            'overround':margin(tuple(r['odds'] for r in rows))})
     return output
+
+
+def market_reference(quotes,quote,win,push):
+    """No-vig comparison only for an exhaustive simultaneous bookmaker line.
+
+    Integer lines and DNB compare conditional probabilities given no PUSH.
+    A single price remains a labelled break-even proxy, never a sharp consensus.
+    """
+    number(win,'win probability',0,1);number(push,'push probability',0,1)
+    if win+push>1+1e-10:raise ValueError('invalid win/push probabilities')
+    market=market_of(quote['market']);line_id=quote.get('line_id')
+    group=[q for q in quotes if line_id and q.get('line_id')==line_id and
+           (q['bookmaker'],q['observed_at'],q['phase'])==(quote['bookmaker'],quote['observed_at'],quote['phase'])]
+    pairs={}
+    for q in group:
+        m=market_of(q['market'])
+        if m.kind!=market.kind: continue
+        if m.kind in ('TOTAL','TEAM_TOTAL') and m.line!=market.line: continue
+        if m.kind=='TEAM_TOTAL' and m.side.split('_')[0]!=market.side.split('_')[0]: continue
+        if m.kind=='HANDICAP' and m.line!=(market.line if m.side==market.side else -market.line): continue
+        if m.side in pairs: return {'method':'MISSING','reason':'DUPLICATE_LINE_OUTCOME','probability':None,'divergence':None}
+        pairs[m.side]=q
+    sides={'1X2':{'HOME','DRAW','AWAY'},'BTTS':{'YES','NO'},'TOTAL':{'OVER','UNDER'},
+           'DNB':{'HOME','AWAY'},'HANDICAP':{'HOME','AWAY'},
+           'TEAM_TOTAL':{market.side.split('_')[0]+'_OVER',market.side.split('_')[0]+'_UNDER'}}
+    model=win/(1-push) if push<1 else None
+    if model is None: return {'method':'MISSING','reason':'ALL_PUSH','probability':None,'divergence':None}
+    complete=market.kind in sides and set(pairs)==sides[market.kind]
+    overround=sum(implied(q['odds']) for q in pairs.values())-1 if complete else None
+    reference=implied(quote['odds'])/(1+overround) if complete else implied(quote['odds'])
+    return {'method':'PROPORTIONAL_COMPLETE_BOOKMAKER_LINE' if complete else 'SINGLE_PRICE_BREAK_EVEN_PROXY',
+            'probability':reference,'model_probability':model,'divergence':model-reference,
+            'conditional_on_no_push':push>0,'overround':overround,'sharp_consensus':False}

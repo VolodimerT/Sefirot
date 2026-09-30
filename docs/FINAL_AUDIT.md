@@ -77,3 +77,24 @@ Specific weaknesses found in this pass:
 3. Audit hashes protect against accidental row changes. Coordinated truncation of source and mirror or a privileged administrator is not detected without an independently kept, signed snapshot hash.
 4. Optional psycopg was installed on Linux and packaging tested; Windows GitHub CI will install it. A real network connection as `sefirot_ingest` is still untested while NOLOGIN is in force. A pooler or CA incompatibility could surface only at that step.
 5. Cloud rows are a copy, not an alternate decision engine or cloud feedback loop. Real odds provenance and a new forward holdout are still missing; copying historical data cannot authorize monetary recommendations.
+
+## CORE 2.3: аудиты 27–30 сентября
+
+Найдены и устранены два дополнительных технических риска: новая запись решения после kickoff могла передавать старое at; история/калибровка/компетенция не имели явного competition profile. Решение теперь проверяет реальные часы процесса, а данные и доверие изолированы по профилям. Зарегистрированное задним числом внешнее исполнение явно маркируется и не становится SYSTEM_RECOMMENDATION.
+
+Добавлены extreme divergence/recalculation, presealed thesis guard, coherent team thresholds, диагностические SoS/stress grades и доказательные категории review. Подробная сверка каждого F1–F8, открытые P0/P1 и противоречия: AUDIT_UPGRADE_20260930.md. Дополнительных сефир или LLM-агентов нет. Самопроверка отдельно рассмотрела дублирование, власть Арбитра, циклы, рейтинг, future leakage, переобучение и ложную уверенность.
+
+Остаточные слабости этой версии:
+
+1. Профили изолируют данные, но математическая форма и общие priors модели не обучены отдельно для WOMEN/RESERVE/LOWER. Профильная изоляция сама не доказывает хорошую калибровку.
+2. SoS веса заморожены и проверены на leakage, но диагностические, используют доступную ограниченную историю и не меняют lambda. Нет Negative Binomial, численного H2H/player/GK effect или отдельных fitted home/away rates.
+3. Stress grades имеют предварительные пороги и не отменяют существующий veto. Уменьшенная ставка для FRAGILE/AGGRESSIVE пока не сертифицирована; требование аудита о такой денежной реализации остаётся незакрытым.
+4. Расхождение определяется по одному БК или одиночной цене. Это не sharp-market consensus. Рыночный сигнал требует проверки, а не служит доказательством, что исходная вероятность ложна или истинна.
+5. Thesis guard действует на явно объявленные до цены связи. Автоматической проверки семантики текста и обнаружения всех скрытых зависимостей нет. Удаление/ложное объявление связи поставщиком нельзя надёжно обнаружить без внешней проверки.
+6. Четыре новых аудита дают 49 уже известных, независимо не подтверждённых случаев. Проверены settlement и контракты; оригинальных seals/closing нет. Не заявлены реальный replay этих прогнозов, положительная доходность, ложные PASS или новое модельное преимущество.
+7. Review требует ссылок, но не проверяет их содержание. UNKNOWN допустим. Ошибочное causal label человека может исказить роль-рейтинг; поэтому рейтинг не отменяет критический block.
+8. Risk cohorts описывают последние котировки всех рассмотренных рынков, не реальные ставки. Это зависимые наблюдения; positive-EV PASS win rate не равен causal false-negative rate. Нужны новая фиксированная политика, unseen period и paired comparison.
+9. Report и SoS trace полностью читают историю, не оптимизированы для крупных наборов. Локальный администратор может изменить код/часы/подписанные им поля; независимого timestamp witness и внешнего аудитора нет.
+10. Действующий cloud mirror не прошёл реальный клиентский запуск с credentials. В этой работе новые внешние подключения не выполнялись, Tavily исключён. D1/D2, LIVE и догон не реализованы.
+
+Программные результаты: reports/TEST_REPORT.md. Утверждение о полностью выполненных эмпирических требованиях новых аудитов не делается.

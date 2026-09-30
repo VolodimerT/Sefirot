@@ -8,7 +8,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-09-26T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-09-26T17:59:00+00:00",
       "sources": [
@@ -170,7 +171,8 @@
           "received_at": "2026-07-08T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -182,7 +184,8 @@
           "received_at": "2026-07-09T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -194,7 +197,8 @@
           "received_at": "2026-07-10T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -206,7 +210,8 @@
           "received_at": "2026-07-11T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -218,7 +223,8 @@
           "received_at": "2026-07-12T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -230,7 +236,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -242,7 +249,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -254,7 +262,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -266,7 +275,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -278,7 +288,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -290,7 +301,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -302,7 +314,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -314,7 +327,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -326,7 +340,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -338,7 +353,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -350,7 +366,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -362,7 +379,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -374,7 +392,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -386,7 +405,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -398,7 +418,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -410,7 +431,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -422,7 +444,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -434,7 +457,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -446,7 +470,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -458,7 +483,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -470,7 +496,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -482,7 +509,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -494,7 +522,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -506,7 +535,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -518,7 +548,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -530,7 +561,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -542,7 +574,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -554,7 +587,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -566,7 +600,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -578,7 +613,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -590,7 +626,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -602,7 +639,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -614,7 +652,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -626,7 +665,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -638,7 +678,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -922,7 +963,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-09-27T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-09-27T17:59:00+00:00",
       "sources": [
@@ -1084,7 +1126,8 @@
           "received_at": "2026-07-09T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -1096,7 +1139,8 @@
           "received_at": "2026-07-10T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -1108,7 +1152,8 @@
           "received_at": "2026-07-11T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -1120,7 +1165,8 @@
           "received_at": "2026-07-12T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -1132,7 +1178,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -1144,7 +1191,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -1156,7 +1204,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -1168,7 +1217,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -1180,7 +1230,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -1192,7 +1243,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -1204,7 +1256,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -1216,7 +1269,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -1228,7 +1282,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -1240,7 +1295,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -1252,7 +1308,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -1264,7 +1321,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -1276,7 +1334,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -1288,7 +1347,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -1300,7 +1360,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -1312,7 +1373,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -1324,7 +1386,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -1336,7 +1399,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -1348,7 +1412,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -1360,7 +1425,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -1372,7 +1438,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -1384,7 +1451,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -1396,7 +1464,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -1408,7 +1477,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -1420,7 +1490,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -1432,7 +1503,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -1444,7 +1516,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -1456,7 +1529,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -1468,7 +1542,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -1480,7 +1555,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -1492,7 +1568,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -1504,7 +1581,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -1516,7 +1594,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -1528,7 +1607,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -1540,7 +1620,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -1552,7 +1633,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -1836,7 +1918,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-09-28T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-09-28T17:59:00+00:00",
       "sources": [
@@ -1998,7 +2081,8 @@
           "received_at": "2026-07-10T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -2010,7 +2094,8 @@
           "received_at": "2026-07-11T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -2022,7 +2107,8 @@
           "received_at": "2026-07-12T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -2034,7 +2120,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -2046,7 +2133,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -2058,7 +2146,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -2070,7 +2159,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -2082,7 +2172,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -2094,7 +2185,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -2106,7 +2198,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -2118,7 +2211,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -2130,7 +2224,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -2142,7 +2237,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -2154,7 +2250,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -2166,7 +2263,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -2178,7 +2276,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -2190,7 +2289,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -2202,7 +2302,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -2214,7 +2315,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -2226,7 +2328,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -2238,7 +2341,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -2250,7 +2354,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -2262,7 +2367,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -2274,7 +2380,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -2286,7 +2393,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -2298,7 +2406,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -2310,7 +2419,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -2322,7 +2432,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -2334,7 +2445,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -2346,7 +2458,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -2358,7 +2471,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -2370,7 +2484,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -2382,7 +2497,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -2394,7 +2510,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -2406,7 +2523,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -2418,7 +2536,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -2430,7 +2549,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -2442,7 +2562,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -2454,7 +2575,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -2466,7 +2588,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -2750,7 +2873,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-09-29T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-09-29T17:59:00+00:00",
       "sources": [
@@ -2912,7 +3036,8 @@
           "received_at": "2026-07-11T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -2924,7 +3049,8 @@
           "received_at": "2026-07-12T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -2936,7 +3062,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -2948,7 +3075,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -2960,7 +3088,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -2972,7 +3101,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -2984,7 +3114,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -2996,7 +3127,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -3008,7 +3140,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -3020,7 +3153,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -3032,7 +3166,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -3044,7 +3179,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -3056,7 +3192,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -3068,7 +3205,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -3080,7 +3218,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -3092,7 +3231,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -3104,7 +3244,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -3116,7 +3257,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -3128,7 +3270,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -3140,7 +3283,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -3152,7 +3296,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -3164,7 +3309,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -3176,7 +3322,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -3188,7 +3335,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -3200,7 +3348,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -3212,7 +3361,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -3224,7 +3374,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -3236,7 +3387,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -3248,7 +3400,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -3260,7 +3413,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -3272,7 +3426,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -3284,7 +3439,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -3296,7 +3452,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -3308,7 +3465,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -3320,7 +3478,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -3332,7 +3491,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -3344,7 +3504,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -3356,7 +3517,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -3368,7 +3530,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -3380,7 +3543,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -3664,7 +3828,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-09-30T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-09-30T17:59:00+00:00",
       "sources": [
@@ -3826,7 +3991,8 @@
           "received_at": "2026-07-12T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -3838,7 +4004,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -3850,7 +4017,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -3862,7 +4030,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -3874,7 +4043,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -3886,7 +4056,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -3898,7 +4069,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -3910,7 +4082,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -3922,7 +4095,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -3934,7 +4108,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -3946,7 +4121,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -3958,7 +4134,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -3970,7 +4147,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -3982,7 +4160,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -3994,7 +4173,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -4006,7 +4186,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -4018,7 +4199,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -4030,7 +4212,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -4042,7 +4225,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -4054,7 +4238,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -4066,7 +4251,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -4078,7 +4264,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -4090,7 +4277,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -4102,7 +4290,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -4114,7 +4303,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -4126,7 +4316,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -4138,7 +4329,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -4150,7 +4342,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -4162,7 +4355,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -4174,7 +4368,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -4186,7 +4381,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -4198,7 +4394,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -4210,7 +4407,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -4222,7 +4420,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -4234,7 +4433,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -4246,7 +4446,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -4258,7 +4459,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -4270,7 +4472,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -4282,7 +4485,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -4294,7 +4498,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -4578,7 +4783,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-01T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-01T17:59:00+00:00",
       "sources": [
@@ -4740,7 +4946,8 @@
           "received_at": "2026-07-13T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -4752,7 +4959,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -4764,7 +4972,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -4776,7 +4985,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -4788,7 +4998,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -4800,7 +5011,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -4812,7 +5024,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -4824,7 +5037,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -4836,7 +5050,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -4848,7 +5063,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -4860,7 +5076,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -4872,7 +5089,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -4884,7 +5102,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -4896,7 +5115,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -4908,7 +5128,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -4920,7 +5141,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -4932,7 +5154,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -4944,7 +5167,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -4956,7 +5180,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -4968,7 +5193,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -4980,7 +5206,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -4992,7 +5219,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -5004,7 +5232,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -5016,7 +5245,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -5028,7 +5258,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -5040,7 +5271,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -5052,7 +5284,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -5064,7 +5297,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -5076,7 +5310,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -5088,7 +5323,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -5100,7 +5336,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -5112,7 +5349,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -5124,7 +5362,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -5136,7 +5375,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -5148,7 +5388,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -5160,7 +5401,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -5172,7 +5414,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -5184,7 +5427,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -5196,7 +5440,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -5208,7 +5453,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -5492,7 +5738,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-02T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-02T17:59:00+00:00",
       "sources": [
@@ -5654,7 +5901,8 @@
           "received_at": "2026-07-14T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -5666,7 +5914,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -5678,7 +5927,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -5690,7 +5940,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -5702,7 +5953,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -5714,7 +5966,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -5726,7 +5979,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -5738,7 +5992,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -5750,7 +6005,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -5762,7 +6018,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -5774,7 +6031,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -5786,7 +6044,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -5798,7 +6057,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -5810,7 +6070,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -5822,7 +6083,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -5834,7 +6096,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -5846,7 +6109,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -5858,7 +6122,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -5870,7 +6135,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -5882,7 +6148,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -5894,7 +6161,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -5906,7 +6174,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -5918,7 +6187,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -5930,7 +6200,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -5942,7 +6213,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -5954,7 +6226,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -5966,7 +6239,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -5978,7 +6252,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -5990,7 +6265,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -6002,7 +6278,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -6014,7 +6291,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -6026,7 +6304,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -6038,7 +6317,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -6050,7 +6330,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -6062,7 +6343,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -6074,7 +6356,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -6086,7 +6369,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -6098,7 +6382,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -6110,7 +6395,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -6122,7 +6408,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -6406,7 +6693,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-03T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-03T17:59:00+00:00",
       "sources": [
@@ -6568,7 +6856,8 @@
           "received_at": "2026-07-15T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -6580,7 +6869,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -6592,7 +6882,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -6604,7 +6895,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -6616,7 +6908,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -6628,7 +6921,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -6640,7 +6934,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -6652,7 +6947,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -6664,7 +6960,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -6676,7 +6973,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -6688,7 +6986,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -6700,7 +6999,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -6712,7 +7012,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -6724,7 +7025,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -6736,7 +7038,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -6748,7 +7051,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -6760,7 +7064,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -6772,7 +7077,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -6784,7 +7090,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -6796,7 +7103,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -6808,7 +7116,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -6820,7 +7129,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -6832,7 +7142,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -6844,7 +7155,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -6856,7 +7168,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -6868,7 +7181,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -6880,7 +7194,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -6892,7 +7207,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -6904,7 +7220,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -6916,7 +7233,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -6928,7 +7246,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -6940,7 +7259,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -6952,7 +7272,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -6964,7 +7285,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -6976,7 +7298,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -6988,7 +7311,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -7000,7 +7324,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -7012,7 +7337,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -7024,7 +7350,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -7036,7 +7363,8 @@
           "received_at": "2026-08-23T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -7320,7 +7648,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-04T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-04T17:59:00+00:00",
       "sources": [
@@ -7482,7 +7811,8 @@
           "received_at": "2026-07-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -7494,7 +7824,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -7506,7 +7837,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -7518,7 +7850,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -7530,7 +7863,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -7542,7 +7876,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -7554,7 +7889,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -7566,7 +7902,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -7578,7 +7915,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -7590,7 +7928,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -7602,7 +7941,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -7614,7 +7954,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -7626,7 +7967,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -7638,7 +7980,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -7650,7 +7993,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -7662,7 +8006,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -7674,7 +8019,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -7686,7 +8032,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -7698,7 +8045,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -7710,7 +8058,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -7722,7 +8071,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -7734,7 +8084,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -7746,7 +8097,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -7758,7 +8110,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -7770,7 +8123,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -7782,7 +8136,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -7794,7 +8149,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -7806,7 +8162,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -7818,7 +8175,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -7830,7 +8188,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -7842,7 +8201,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -7854,7 +8214,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -7866,7 +8227,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -7878,7 +8240,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -7890,7 +8253,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -7902,7 +8266,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -7914,7 +8279,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -7926,7 +8292,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -7938,7 +8305,8 @@
           "received_at": "2026-08-23T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -7950,7 +8318,8 @@
           "received_at": "2026-08-24T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -8234,7 +8603,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-05T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-05T17:59:00+00:00",
       "sources": [
@@ -8396,7 +8766,8 @@
           "received_at": "2026-07-17T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -8408,7 +8779,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -8420,7 +8792,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -8432,7 +8805,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -8444,7 +8818,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -8456,7 +8831,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -8468,7 +8844,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -8480,7 +8857,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -8492,7 +8870,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -8504,7 +8883,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -8516,7 +8896,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -8528,7 +8909,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -8540,7 +8922,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -8552,7 +8935,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -8564,7 +8948,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -8576,7 +8961,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -8588,7 +8974,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -8600,7 +8987,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -8612,7 +9000,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -8624,7 +9013,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -8636,7 +9026,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -8648,7 +9039,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -8660,7 +9052,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -8672,7 +9065,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -8684,7 +9078,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -8696,7 +9091,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -8708,7 +9104,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -8720,7 +9117,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -8732,7 +9130,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -8744,7 +9143,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -8756,7 +9156,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -8768,7 +9169,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -8780,7 +9182,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -8792,7 +9195,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -8804,7 +9208,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -8816,7 +9221,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -8828,7 +9234,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -8840,7 +9247,8 @@
           "received_at": "2026-08-23T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -8852,7 +9260,8 @@
           "received_at": "2026-08-24T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -8864,7 +9273,8 @@
           "received_at": "2026-08-25T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -9148,7 +9558,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-06T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-06T17:59:00+00:00",
       "sources": [
@@ -9310,7 +9721,8 @@
           "received_at": "2026-07-18T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -9322,7 +9734,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -9334,7 +9747,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -9346,7 +9760,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -9358,7 +9773,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -9370,7 +9786,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -9382,7 +9799,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -9394,7 +9812,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -9406,7 +9825,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -9418,7 +9838,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -9430,7 +9851,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -9442,7 +9864,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -9454,7 +9877,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -9466,7 +9890,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -9478,7 +9903,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -9490,7 +9916,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -9502,7 +9929,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -9514,7 +9942,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -9526,7 +9955,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -9538,7 +9968,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -9550,7 +9981,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -9562,7 +9994,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -9574,7 +10007,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -9586,7 +10020,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -9598,7 +10033,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -9610,7 +10046,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -9622,7 +10059,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -9634,7 +10072,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -9646,7 +10085,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -9658,7 +10098,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -9670,7 +10111,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -9682,7 +10124,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -9694,7 +10137,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -9706,7 +10150,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -9718,7 +10163,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -9730,7 +10176,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -9742,7 +10189,8 @@
           "received_at": "2026-08-23T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -9754,7 +10202,8 @@
           "received_at": "2026-08-24T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -9766,7 +10215,8 @@
           "received_at": "2026-08-25T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -9778,7 +10228,8 @@
           "received_at": "2026-08-26T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true
@@ -10062,7 +10513,8 @@
         "league": "SYNTHETIC",
         "kickoff": "2026-10-07T20:00:00+00:00",
         "sport": "football",
-        "format": "REGULATION_90"
+        "format": "REGULATION_90",
+        "competition_profile": "MEN"
       },
       "as_of": "2026-10-07T17:59:00+00:00",
       "sources": [
@@ -10224,7 +10676,8 @@
           "received_at": "2026-07-19T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-1",
@@ -10236,7 +10689,8 @@
           "received_at": "2026-07-20T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-2",
@@ -10248,7 +10702,8 @@
           "received_at": "2026-07-21T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-3",
@@ -10260,7 +10715,8 @@
           "received_at": "2026-07-22T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-4",
@@ -10272,7 +10728,8 @@
           "received_at": "2026-07-23T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-5",
@@ -10284,7 +10741,8 @@
           "received_at": "2026-07-24T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-6",
@@ -10296,7 +10754,8 @@
           "received_at": "2026-07-25T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-7",
@@ -10308,7 +10767,8 @@
           "received_at": "2026-07-26T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-8",
@@ -10320,7 +10780,8 @@
           "received_at": "2026-07-27T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-9",
@@ -10332,7 +10793,8 @@
           "received_at": "2026-07-28T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-10",
@@ -10344,7 +10806,8 @@
           "received_at": "2026-07-29T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-11",
@@ -10356,7 +10819,8 @@
           "received_at": "2026-07-30T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-12",
@@ -10368,7 +10832,8 @@
           "received_at": "2026-07-31T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-13",
@@ -10380,7 +10845,8 @@
           "received_at": "2026-08-01T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-14",
@@ -10392,7 +10858,8 @@
           "received_at": "2026-08-02T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-15",
@@ -10404,7 +10871,8 @@
           "received_at": "2026-08-03T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-16",
@@ -10416,7 +10884,8 @@
           "received_at": "2026-08-04T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-17",
@@ -10428,7 +10897,8 @@
           "received_at": "2026-08-05T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-18",
@@ -10440,7 +10910,8 @@
           "received_at": "2026-08-06T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-19",
@@ -10452,7 +10923,8 @@
           "received_at": "2026-08-07T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-20",
@@ -10464,7 +10936,8 @@
           "received_at": "2026-08-08T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-21",
@@ -10476,7 +10949,8 @@
           "received_at": "2026-08-09T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-22",
@@ -10488,7 +10962,8 @@
           "received_at": "2026-08-10T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-23",
@@ -10500,7 +10975,8 @@
           "received_at": "2026-08-11T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-24",
@@ -10512,7 +10988,8 @@
           "received_at": "2026-08-12T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-25",
@@ -10524,7 +11001,8 @@
           "received_at": "2026-08-13T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-26",
@@ -10536,7 +11014,8 @@
           "received_at": "2026-08-14T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-27",
@@ -10548,7 +11027,8 @@
           "received_at": "2026-08-15T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-28",
@@ -10560,7 +11040,8 @@
           "received_at": "2026-08-16T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-29",
@@ -10572,7 +11053,8 @@
           "received_at": "2026-08-17T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-30",
@@ -10584,7 +11066,8 @@
           "received_at": "2026-08-18T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-31",
@@ -10596,7 +11079,8 @@
           "received_at": "2026-08-19T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-32",
@@ -10608,7 +11092,8 @@
           "received_at": "2026-08-20T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-33",
@@ -10620,7 +11105,8 @@
           "received_at": "2026-08-21T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-34",
@@ -10632,7 +11118,8 @@
           "received_at": "2026-08-22T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-35",
@@ -10644,7 +11131,8 @@
           "received_at": "2026-08-23T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-36",
@@ -10656,7 +11144,8 @@
           "received_at": "2026-08-24T21:00:00+00:00",
           "home_goals": 0,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-37",
@@ -10668,7 +11157,8 @@
           "received_at": "2026-08-25T21:00:00+00:00",
           "home_goals": 1,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-38",
@@ -10680,7 +11170,8 @@
           "received_at": "2026-08-26T21:00:00+00:00",
           "home_goals": 2,
           "away_goals": 0,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         },
         {
           "id": "history-39",
@@ -10692,7 +11183,8 @@
           "received_at": "2026-08-27T21:00:00+00:00",
           "home_goals": 3,
           "away_goals": 1,
-          "source_id": "statistics"
+          "source_id": "statistics",
+          "competition_profile": "MEN"
         }
       ],
       "synthetic": true

@@ -1,18 +1,25 @@
 """Threshold, Witness and Scenario. Sports inputs never include prices."""
 from __future__ import annotations
-from .contracts import strict,text,time,iso,number,integer,finding,digest
+from .contracts import strict,text,time,iso,number,integer,finding,digest,PROFILES
 
 REQUIRED = ('home_team','away_team','format','lineup','injuries','coach','rotation','tactics')
 
 
+def profile_of(match):
+    profile=match.get('competition_profile','UNKNOWN')
+    if profile not in PROFILES: raise ValueError('invalid competition profile')
+    return profile
+
+
 def inspect(sports, policy):
-    strict(sports,('match','as_of','sources','evidence','history'),('synthetic',))
+    strict(sports,('match','as_of','sources','evidence','history'),('synthetic','thesis_links'))
     match=sports['match']
-    strict(match,('id','home','away','league','kickoff','sport','format'))
+    strict(match,('id','home','away','league','kickoff','sport','format'),('competition_profile',))
     for k in match: text(match[k],k)
     if match['home']==match['away']: raise ValueError('distinct teams required')
     cutoff=time(sports['as_of']); kickoff=time(match['kickoff'])
     issues=[]
+    if profile_of(match)=='UNKNOWN': issues.append(finding('competence','COMPETITION_PROFILE_UNKNOWN'))
     if cutoff>=kickoff: issues.append(finding('threshold','LIVE_FORBIDDEN'))
     if match['sport']!='football' or match['format']!='REGULATION_90': issues.append(finding('threshold','UNSUPPORTED_FORMAT'))
     sources={}
@@ -27,7 +34,7 @@ def inspect(sports, policy):
         strict(e,('id','key','value','kind','source_id','published_at','received_at','observed_at','critical','supports'),('supersedes',))
         text(e['id'],'evidence id');text(e['key'],'evidence key')
         if e['id'] in evidence: raise ValueError('duplicate evidence id')
-        if e['key'] not in REQUIRED+('novelty','context','market_news'): raise ValueError('unknown sports evidence key')
+        if e['key'] not in REQUIRED+('novelty','context','market_news','matchup_signal'): raise ValueError('unknown sports evidence key')
         if e['kind'] not in ('FACT','INFERENCE','ASSUMPTION') or type(e['critical']) is not bool or not isinstance(e['supports'],list): raise ValueError('invalid evidence type')
         if e['source_id'] not in sources: raise ValueError('unknown source')
         published,received,observed=(time(e[k]) for k in ('published_at','received_at','observed_at'))
@@ -41,6 +48,13 @@ def inspect(sports, policy):
         src=sources[e['source_id']]
         bad=not src['enabled'] or src['reliability']<policy.min_source_reliability
         stale=(cutoff-time(e['observed_at'])).total_seconds()>policy.fact_max_age_minutes*60
+        if e['key']=='matchup_signal':
+            if e['kind']!='INFERENCE' or not isinstance(e['value'],dict) or e['value'].get('status') not in ('CONFLICT','CONSISTENT'):
+                raise ValueError('matchup signal must be an explicit inference')
+            if not e['supports'] or any(sources[evidence[ref]['source_id']]['reliability']<policy.min_source_reliability or not sources[evidence[ref]['source_id']]['enabled'] or (cutoff-time(evidence[ref]['observed_at'])).total_seconds()>policy.fact_max_age_minutes*60 for ref in e['supports']):
+                issues.append(finding('witness','MATCHUP_SUPPORT_INSUFFICIENT','BLOCK',[e['id']]))
+            elif not bad and not stale and e['value']['status']=='CONFLICT':
+                issues.append(finding('opponent','MODEL_MATCHUP_CONFLICT','BLOCK',[e['id']],'RECALCULATE with independent sports data'))
         if e['critical'] and (bad or stale or e['kind']=='ASSUMPTION'):
             issues.append(finding('witness','CRITICAL_EVIDENCE_UNRELIABLE',( 'BLOCK'),[e['id']]))
         elif bad or stale:
@@ -99,7 +113,7 @@ def inspect(sports, policy):
 def eligible_history(sports,policy):
     cutoff=time(sports['as_of']); seen=set(); rows=[]; excluded=[]
     for row in sports['history']:
-        strict(row,('id','home','away','league','kickoff','finished_at','received_at','home_goals','away_goals','source_id'))
+        strict(row,('id','home','away','league','kickoff','finished_at','received_at','home_goals','away_goals','source_id'),('competition_profile',))
         for k in ('id','home','away','league','source_id'): text(row[k],k)
         if row['id'] in seen: raise ValueError('duplicate history id')
         seen.add(row['id'])
@@ -108,7 +122,7 @@ def eligible_history(sports,policy):
         start,end,received=(time(row[k]) for k in ('kickoff','finished_at','received_at'))
         if start>=end or end>received: raise ValueError('history result chronology')
         if row['id']==sports['match']['id']: raise ValueError('target result must never be provided as history')
-        if received>cutoff or start>=cutoff or (cutoff-start).days>policy.history_days or row['league']!=sports['match']['league']:
+        if received>cutoff or start>=cutoff or (cutoff-start).days>policy.history_days or row['league']!=sports['match']['league'] or profile_of(row)!=profile_of(sports['match']):
             excluded.append(row['id']);continue
         sources={s['id']:s for s in sports['sources']}
         src=sources.get(row['source_id'])

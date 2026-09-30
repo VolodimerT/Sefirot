@@ -54,6 +54,7 @@ def main(argv=None):
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
+    audit=sub.add_parser('audit-regressions',help='settle reported retrospective audit cases without claiming holdout evidence');audit.add_argument('file')
     research=sub.add_parser('research');research.add_argument('csv',nargs='+');research.add_argument('--output',required=True)
     diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
     odds_events=sub.add_parser('odds-events',help='list an exact prematch event for a sealed prediction')
@@ -76,7 +77,10 @@ def main(argv=None):
     policy=Policy(**load(args.policy)) if args.policy else Policy()
     repo=None
     try:
-        if args.command=='diagnose-p0':
+        if args.command=='audit-regressions':
+            from .retrospective import audit_cases
+            out=audit_cases(load(args.file),policy)
+        elif args.command=='diagnose-p0':
             from .diagnostics import diagnostics
             reports=diagnostics(args.csv,args.source_run,args.design,args.output_dir)
             out={'status':'EXPLORATORY','monetary_permission':False,'reports':{k:v['run_id'] for k,v in reports.items()}}

@@ -8,6 +8,7 @@ from .engine import prepare,decide,code_hash
 from .repository import Repository
 from .markets import market_of,settle,validate_quote
 from .evaluation import log_loss
+from .evidence import profile_of
 from .probability import fit_calibrator
 from .feedback import brier,summary,context_key,competence,ratings,compare_versions
 
@@ -89,7 +90,7 @@ class Service:
         events=self.repo.all('health_events',at)
         validations=self.repo.all('validation_runs',at)
         for c in prediction['candidates']:
-            m=prediction['sports']['match'];key=context_key(m['league'],c['key'],prediction['scenario']['type'],prediction['model_id'])
+            m=prediction['sports']['match'];profile=profile_of(m);key=context_key(m['league'],c['key'],prediction['scenario']['type'],prediction['model_id'],profile)
             selected=[r for r in all_records if r['context_key']==key]
             relevant=sorted([e for e in events if e['context_key']==key],key=lambda e:(time(e['at']),e['id']))
             previous=relevant[-1]['state'] if relevant else 'UNKNOWN'
@@ -99,7 +100,7 @@ class Service:
                 selected=[r for r in selected if time(r['received_at'])>time(relevant[-1]['recovery_after'])]
             severe=len({p['match_id'] for p in post if p['critical_error'] and p['context_key']==key and (not relevant or not relevant[-1].get('recovery_after') or time(p['at'])>time(relevant[-1]['recovery_after']))})
             health[c['key']]=competence(selected,self.policy,previous,severe)
-            role_ratings[c['key']]=ratings(post,m['league'],c['market']['kind'],prediction['scenario']['type'],self.policy,prediction['model_id'])
+            role_ratings[c['key']]=ratings(post,m['league'],c['market']['kind'],prediction['scenario']['type'],self.policy,prediction['model_id'],profile)
             candidates=[v for v in validations if v['model_id']==prediction['model_id'] and v['context_key']==key and v['passed'] and not v['synthetic']]
             releases[c['key']]=max(candidates,key=lambda v:time(v['at'])) if candidates else None
         approvals=[a for a in self.repo.all('policy_approvals',at) if a['policy_hash']==prediction['policy_hash'] and a['code_hash']==prediction['code_hash']]
@@ -112,6 +113,7 @@ class Service:
 
     def decide(self,prediction_id,quotes,recheck,portfolio,at):
         self._time(at);p=self.repo.get('predictions',prediction_id)
+        if time(self.now())>=time(p['sports']['match']['kickoff']):raise ValueError('cannot record a new prematch decision after kickoff; use archived replay or retrospective audit')
         if time(at)<time(p['sealed_at']):raise ValueError('decision precedes stored probability seal')
         strict(portfolio,('bankroll','peak'));number(portfolio['bankroll'],'bankroll',0);number(portfolio['peak'],'peak',portfolio['bankroll'])
         with self.repo.transaction():
@@ -156,8 +158,10 @@ class Service:
                     market=market_of(c['market']);outcome=settle(market,result['home_goals'],result['away_goals'])
                     baseline=[(1-c['raw'][1])/2,c['raw'][1],(1-c['raw'][1])/2]
                     record={'prediction_id':p['id'],'match_id':match['id'],'model_id':p['model_id'],'market':market.key,'kind':market.kind,
-                            'league':match['league'],'scenario':p['scenario']['type'],'context_key':context_key(match['league'],market.key,p['scenario']['type'],p['model_id']),
-                            'raw_win':c['raw'][0],'probabilities':c['base'],'outcome':outcome,'brier':brier(c['base'],outcome),'baseline_brier':brier(baseline,outcome),
+                            'league':match['league'],'competition_profile':profile_of(match),'scenario':p['scenario']['type'],'context_key':context_key(match['league'],market.key,p['scenario']['type'],p['model_id'],profile_of(match)),
+                            'raw_win':c['raw'][0],'raw_probabilities':c['raw'],'probabilities':c['base'],'low':c['low'],'high':c['high'],
+                            'prediction_error':[v-int(i==('WIN','PUSH','LOSS').index(outcome)) for i,v in enumerate(c['base'])],
+                            'outcome':outcome,'brier':brier(c['base'],outcome),'baseline_brier':brier(baseline,outcome),
                             'baseline_log_loss':log_loss(baseline,('WIN','PUSH','LOSS').index(outcome)),
                             'received_at':at,'synthetic':p['synthetic'],'captured_prematch':p['captured_prematch'],
                             'calibration_status':c['calibration'],'sealed_at':p['sealed_at'],'kickoff':match['kickoff'],
@@ -166,8 +170,18 @@ class Service:
             for decision in self.repo.all('decisions',at):
                 if decision['match_id']!=match['id']:continue
                 audit={'decision_id':decision['id'],'match_id':match['id'],'at':at,'quality':'UNDETERMINED',
+                       'competition_profile':profile_of(match),'model_id':decision.get('inputs',{}).get('context',{}).get('model_id') or self.repo.get('predictions',decision['prediction_id'])['model_id'],
                        'causes':['UNKNOWN'],'decision':decision['decision'],'pre_match_blocks':decision['limiting_factors'],
                        'outcomes':{c['key']:('VOID' if result['status']=='VOID' else settle(market_of(c['market']),result['home_goals'],result['away_goals'])) for c in decision['candidates']},
+                       'candidates':[{'market':c['key'],'probabilities':c['base'],'raw_probabilities':c['raw'],
+                                      'low':c['low'],'high':c['high'],'odds':c.get('odds'),'fair_odds':c.get('fair_odds'),
+                                      'base_ev':c.get('ev'),'stress_ev_min':c.get('stress_ev_min'),'stress_grade':c.get('stress_grade'),
+                                      'reasons':[i['code'] for i in c['issues']],'quality':'UNDETERMINED',
+                                      'outcome':'VOID' if result['status']=='VOID' else settle(market_of(c['market']),result['home_goals'],result['away_goals']),
+                                      'brier':None if result['status']=='VOID' else brier(c['base'],settle(market_of(c['market']),result['home_goals'],result['away_goals']))}
+                                     for c in decision['candidates']],
+                       'factual_premises':self.repo.get('predictions',decision['prediction_id'])['scenario']['premises'],
+                       'premise_assessment':'UNKNOWN_REQUIRES_EVIDENCE',
                        'note':'Result and decision quality are separate; causal attribution needs evidence.'}
                 aid=digest(audit);self.repo.insert('postmatch_reports',aid,audit,decision_id=decision['id'],at=iso(at));self.repo.log('AUTOMATIC_POSTMATCH_AUDIT',at,audit)
             for key in sorted({r['context_key'] for r in new_records}):self._monitor(key,at)
@@ -251,9 +265,22 @@ class Service:
     def postmortem(self,decision_id,review,at):
         self._time(at);d=self.repo.get('decisions',decision_id);p=self.repo.get('predictions',d['prediction_id']);r=self.repo.get('results',d['match_id'])
         if time(at)<time(r['received_at']):raise ValueError('postmortem before known result')
-        strict(review,('market','decision_quality','causes','roles','notes'))
+        strict(review,('market','decision_quality','causes','roles','notes'),('category','category_evidence','premise_observations'))
         if review['decision_quality'] not in ('GOOD','WEAK','ERROR','UNDETERMINED'):raise ValueError('invalid decision quality')
         if not set(review['causes'])<=set(('PROBABILITY','SCENARIO','SOURCE','LATE_INFORMATION','MARKET','RANDOMNESS','UNKNOWN')):raise ValueError('invalid error cause')
+        categories=('MODEL_MISS','THRESHOLD_MISS','PRICE_MISS','FACT_MISS','STRUCTURAL_BREAK','GOOD_PASS_BAD_RESULT','BAD_PASS_FALSE_NEGATIVE','NARRATIVE_SUBSTITUTION','MARKET_DIVERGENCE','CORRELATION_EXPOSURE','UNKNOWN')
+        category=review.get('category','UNKNOWN')
+        if category not in categories:raise ValueError('invalid postmortem category')
+        citations=review.get('category_evidence',[])
+        if not isinstance(citations,list) or any(not isinstance(ref,str) or not ref.strip() for ref in citations):raise ValueError('category evidence must contain references')
+        if category!='UNKNOWN' and not citations:raise ValueError('causal category needs evidence beyond the outcome')
+        observations=review.get('premise_observations',[])
+        if not isinstance(observations,list) or len({o.get('premise_id') for o in observations if isinstance(o,dict)})!=len(observations):raise ValueError('distinct premise observations required')
+        for observation in observations:
+            strict(observation,('premise_id','status','evidence'))
+            if observation['premise_id'] not in p['scenario']['premises'] or observation['status'] not in ('HELD','FAILED','UNKNOWN'):raise ValueError('invalid premise observation')
+            if observation['status']!='UNKNOWN' and not observation['evidence']:raise ValueError('premise assessment needs evidence')
+            if not isinstance(observation['evidence'],list) or any(not isinstance(ref,str) or not ref.strip() for ref in observation['evidence']):raise ValueError('premise evidence must contain references')
         for role,obs in review['roles'].items():
             if role not in SEPHIROT:raise ValueError('unknown sephira')
             strict(obs,('correct','severe','evidence'))
@@ -265,9 +292,9 @@ class Service:
         m=p['sports']['match'];market=market_of(candidate['market'])
         outcome='VOID' if r['status']=='VOID' else settle(market,r['home_goals'],r['away_goals'])
         payload={**review,'decision_id':decision_id,'at':at,'match_id':m['id'],'outcome':outcome,
-                 'league':m['league'],'kind':market.kind,'scenario':p['scenario']['type'],'model_id':p['model_id'],
+                 'league':m['league'],'competition_profile':profile_of(m),'kind':market.kind,'scenario':p['scenario']['type'],'model_id':p['model_id'],'category':category,
                  'critical_error':any(o['severe'] for o in review['roles'].values()),
-                 'context_key':context_key(m['league'],market.key,p['scenario']['type'],p['model_id'])}
+                 'context_key':context_key(m['league'],market.key,p['scenario']['type'],p['model_id'],profile_of(m))}
         with self.repo.transaction():
             # One attribution per decision-market; corrections require a new explicit review protocol.
             rid=digest([decision_id,market.key])
@@ -290,8 +317,8 @@ class Service:
 
     def report(self,at=None):
         records=self._records(at);grouped={}
-        for r in records:grouped.setdefault((r['league'],r['market'],r['scenario'],r['model_id']),[]).append(r)
-        performance=[{'league':k[0],'market':k[1],'scenario':k[2],'model_id':k[3],**summary(v)} for k,v in sorted(grouped.items())]
+        for r in records:grouped.setdefault((r['league'],r['market'],r['scenario'],r['model_id'],r.get('competition_profile','UNKNOWN')),[]).append(r)
+        performance=[{'league':k[0],'market':k[1],'scenario':k[2],'model_id':k[3],'competition_profile':k[4],**summary(v)} for k,v in sorted(grouped.items())]
         closes=self.repo.all('closing_odds',at);clv=[]
         for d in self.repo.all('decisions',at):
             for c in d['candidates']:
@@ -300,8 +327,39 @@ class Service:
                 if matching:
                     close=max(matching,key=lambda x:time(x['observed_at']))
                     clv.append({'decision_id':d['id'],'market':c['key'],'entry':q['odds'],'closing':close['odds'],'clv':q['odds']/close['odds']-1,'kind':'DECISION_QUOTE_NOT_EXECUTION'})
+        for bet in self.repo.all('bets',at):
+            matching=[x for x in closes if x['match_id']==bet['match_id'] and market_of(x['market']).key==bet['market'] and x['bookmaker']==bet['bookmaker'] and time(x['observed_at'])>=time(bet['at'])]
+            if matching:
+                close=max(matching,key=lambda x:time(x['observed_at']))
+                clv.append({'bet_id':bet['id'],'decision_id':bet['decision_id'],'market':bet['market'],'entry':bet['odds'],
+                            'closing':close['odds'],'clv':bet['odds']/close['odds']-1,'kind':'RECORDED_EXECUTION',
+                            'origin':bet['origin'],'policy_flags':bet['flags']})
+        results={r['match_id']:r for r in self.repo.all('results',at)};latest={};observations=[]
+        for d in self.repo.all('decisions',at):
+            if d['match_id'] not in results or results[d['match_id']]['status']!='FINISHED':continue
+            prediction=self.repo.get('predictions',d['prediction_id']);key=(d['match_id'],prediction['model_id'])
+            if key not in latest or (time(d['at']),d['id'])>(time(latest[key][0]['at']),latest[key][0]['id']):latest[key]=(d,prediction)
+        for d,p in latest.values():
+            result=results[d['match_id']]
+            for c in d['candidates']:
+                if c.get('ev') is None:continue
+                outcome=settle(market_of(c['market']),result['home_goals'],result['away_goals'])
+                observations.append({'match_id':d['match_id'],'model_id':p['model_id'],'competition_profile':profile_of(p['sports']['match']),
+                                     'kind':c['market']['kind'],'stress_class':c.get('stress_grade',{}).get('class','UNCLASSIFIED_LEGACY'),'ev':c['ev'],
+                                     'outcome':outcome,'decision':d['decision'],
+                                     'unit_return':c['odds']-1 if outcome=='WIN' else 0. if outcome=='PUSH' else -1.})
+        cohorts=[]
+        keys={(r['competition_profile'],r['kind'],r['model_id'],r['stress_class']) for r in observations}
+        for profile,kind,model_id,risk in sorted(keys):
+            rows=[r for r in observations if (r['competition_profile'],r['kind'],r['model_id'],r['stress_class'])==(profile,kind,model_id,risk)]
+            positives=[r for r in rows if r['decision']=='PASS' and r['ev']>=self.policy.min_ev]
+            cohorts.append({'competition_profile':profile,'kind':kind,'model_id':model_id,'stress_class':risk,'n':len(rows),
+                            'expected_ev':sum(r['ev'] for r in rows)/len(rows),'realized_unit_return':sum(r['unit_return'] for r in rows)/len(rows),
+                            'positive_ev_pass_n':len(positives),'positive_ev_pass_win_rate':sum(r['outcome']=='WIN' for r in positives)/len(positives) if positives else None,
+                            'kind_of_record':'LATEST_DECISION_QUOTE_DIAGNOSTIC; not execution P/L or a causal false-negative rate'})
         return {'integrity':self.repo.verify(),'performance':performance,'clv':clv,'health':self.repo.all('health_events',at),'validation':self.repo.all('validation_runs',at),
-                'postmatch_audits':self.repo.all('postmatch_reports',at),'ratings':{str(k):ratings(self.repo.all('postmortems',at),k[0],market_of({'kind':k[1].split(':')[0],'side':k[1].split(':')[1],**({'line':float(k[1].split(':')[2])} if len(k[1].split(':'))>2 else {})}).kind,k[2],self.policy,k[3]) for k in grouped}}
+                'risk_cohorts':cohorts,
+                'postmatch_audits':self.repo.all('postmatch_reports',at),'ratings':{str(k):ratings(self.repo.all('postmortems',at),k[0],market_of({'kind':k[1].split(':')[0],'side':k[1].split(':')[1],**({'line':float(k[1].split(':')[2])} if len(k[1].split(':'))>2 else {})}).kind,k[2],self.policy,k[3],k[4]) for k in grouped}}
 
     def execution(self,decision_id,entry,at):
         """Record a human execution; never place a bet or convert PASS into permission."""
@@ -314,6 +372,7 @@ class Service:
         if not candidate or not candidate.get('quote'):raise ValueError('execution market missing')
         if time(at)<time(d['at']) or time(at)>=time(p['sports']['match']['kickoff']):raise ValueError('prematch execution window')
         flags=[]
+        if time(self.now())>=time(p['sports']['match']['kickoff']):flags.append('RETROSPECTIVE_EXECUTION_RECORD')
         if d['decision']!='BET':flags.append('EXECUTED_AGAINST_PASS')
         if entry['market']!=d['selected_market']:flags.append('DIFFERENT_MARKET')
         if entry['odds']<candidate['odds']:flags.append('WORSE_PRICE_RECHECK_REQUIRED')

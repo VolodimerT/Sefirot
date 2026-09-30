@@ -4,8 +4,8 @@ from dataclasses import asdict
 from pathlib import Path
 from .contracts import VERSION,MODEL,Policy,digest,time,number,finding,strict
 from .evidence import inspect
-from .probability import estimate,calibrate,ev_bounds
-from .markets import pool,probabilities,settle,market_of,validate_quote,payoff_ev,implied,fair_odds,complete_overround
+from .probability import estimate,calibrate,ev_bounds,grade_stress
+from .markets import pool,probabilities,settle,market_of,validate_quote,payoff_ev,implied,fair_odds,complete_overround,market_reference
 from .risk import size_risk
 
 
@@ -17,6 +17,16 @@ def code_hash():
 def prepare(sports,markets,policy,calibrator=None):
     if any(e.get('key')=='market_news' for e in sports.get('evidence',[])):raise ValueError('market evidence enters only after sports probability seal')
     witness=inspect(sports,policy); issues=list(witness['issues']); declared=pool(markets,policy)
+    links=sports.get('thesis_links',[])
+    if not isinstance(links,list) or len(links)>policy.max_candidates:raise ValueError('bounded thesis links required')
+    known={m.key for m in declared};facts={e['id'] for e in witness['resolved'].values()};seen=set()
+    for link in links:
+        strict(link,('id','markets','premise_ids'))
+        if not isinstance(link['id'],str) or not link['id'] or link['id'] in seen:raise ValueError('unique thesis id required')
+        seen.add(link['id'])
+        if not isinstance(link['markets'],list) or not 2<=len(link['markets'])<=policy.max_candidates or len(set(link['markets']))!=len(link['markets']) or not set(link['markets'])<=known:
+            raise ValueError('thesis markets must belong to the sealed pool')
+        if not isinstance(link['premise_ids'],list) or not link['premise_ids'] or not set(link['premise_ids'])<=facts:raise ValueError('thesis requires resolved sports fact premises')
     mass,variants,model=estimate(sports,policy)
     if min(model['team_games'])<policy.min_team_games:issues.append(finding('probability','INSUFFICIENT_HISTORY'))
     if model['tail_bound']>policy.max_tail:issues.append(finding('probability','SCORE_TAIL_TOO_LARGE'))
@@ -28,7 +38,7 @@ def prepare(sports,markets,policy,calibrator=None):
         if time(calibrator['fit_at'])>time(sports['as_of']) or sports['match']['id'] in calibrator['fit_ids']:raise ValueError('calibration leakage')
     candidates=[]
     for m in declared:
-        raw=probabilities(m,mass); cal=calibrate(m.kind,raw,calibrator,policy)
+        raw=probabilities(m,mass); cal=calibrate(m.kind,raw,calibrator,policy,model['competition_profile'])
         stressed=[probabilities(m,v) for v in variants]
         # Union empirical reliability uncertainty with sporting sensitivity. Never shrink
         # uncertainty because a price looks attractive.
@@ -42,7 +52,7 @@ def prepare(sports,markets,policy,calibrator=None):
     result={'version':VERSION,'model_version':MODEL,'code_hash':code_hash(),'policy':asdict(policy),'policy_hash':policy.fingerprint,
             'sports':sports,'market_pool':markets,'witness':witness,'scenario':{**witness['scenario'],'score_scenarios':model['score_scenarios']},
             'model':model,'calibrator':calibrator,'candidates':candidates,'issues':issues,'as_of':sports['as_of'],
-            'synthetic':bool(sports.get('synthetic',False)),'mode':'UNKNOWN' if witness['novelty'] or min(model['team_games'])<policy.min_team_games else 'NORMAL'}
+            'synthetic':bool(sports.get('synthetic',False)),'mode':'UNKNOWN' if witness['novelty'] or min(model['team_games'])<policy.min_team_games or any(i['code'] in ('COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT') for i in issues) else 'NORMAL'}
     result['id']=digest(result)
     return result
 
@@ -54,6 +64,7 @@ def recheck(prediction,recheck_data,at,policy):
         issues.append(finding('witness','RECHECK_STALE'))
     merged={**prediction['sports'],'as_of':recheck_data['checked_at'],'evidence':recheck_data['evidence']}
     check=inspect(merged,policy);issues.extend(check['issues'])
+    if check['novelty']:issues.append(finding('competence','UNKNOWN_CONTEXT','BLOCK',detail=','.join(check['novelty'])))
     old=prediction['witness']['resolved'];new=check['resolved']
     for key in ('lineup','injuries','coach','rotation','tactics','format','home_team','away_team'):
         if key in old and key in new and digest(old[key]['value'])!=digest(new[key]['value']):
@@ -98,7 +109,12 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         if not release or not release.get('passed'):local.append(finding('competence','HOLDOUT_UNVALIDATED'))
         # Wider disagreement needs independent corroboration of each critical premise.
         edge=win-(1-push)/odd
-        if abs(edge)>policy.divergence:
+        reference=market_reference(quotes,q,win,push)
+        divergence=reference['divergence']
+        if divergence is None:local.append(finding('market','MARKET_REFERENCE_MISSING'))
+        elif abs(divergence)>=policy.extreme_divergence:
+            local.append(finding('opponent','MODEL_MARKET_DIVERGENCE','BLOCK',detail='Extreme discrepancy requires a new sports-only seal; reference='+reference['method']))
+        if divergence is not None and abs(divergence)>policy.divergence:
             per_key={key:set() for key in ('lineup','injuries','tactics')}
             for e in recheck_data['evidence']:
                 if e['key'] in per_key and e['kind']=='FACT':
@@ -119,10 +135,21 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         # A losing score alone is not a veto: plausible bets always have loss branches.
         public_trap={'status':'CHECKED','rule':'no popularity or market movement may replace sports evidence',
                      'unexplained_movement':any(x['code']=='UNEXPLAINED_LINE_MOVEMENT' for x in local)}
-        evaluations.append({**c,'odds':odd,'quote':q,'implied_probability':implied(odd),
+        evaluations.append({**c,'odds':odd,'quote':q,'implied_probability':implied(odd),'market_reference':reference,
                             'fair_odds':fair_odds(win,push) if win>0 else None,'edge':edge,'ev':ev,'ev_low':low_ev,'ev_high':high_ev,
-                            'uncertainty':width,'stress_ev_min':min(stress_evs),'line_movement':movement,'public_trap':public_trap,
+                            'uncertainty':width,'stress_ev_min':min(stress_evs),'stress_ev_max':max(stress_evs),'stress_grade':grade_stress(ev,min(stress_evs),policy.min_ev),'line_movement':movement,'public_trap':public_trap,
                             'competence':health,'issues':local,'eligible':not any(x['severity']=='BLOCK' for x in local)})
+    thesis_reviews=[]
+    if any(i['code']=='MODEL_MARKET_DIVERGENCE' for c in evaluations for i in c['issues']):
+        issues.append(finding('probability','PROBABILITY_RECALCULATION_REQUIRED','BLOCK',detail='Extreme divergence affects the shared sports distribution; seal new independent data'))
+    for link in prediction['sports'].get('thesis_links',[]):
+        members=[c for c in evaluations if c['key'] in link['markets']]
+        weakened=[c['key'] for c in members if c.get('line_movement') is not None and c['line_movement']>=policy.line_move]
+        if weakened:
+            thesis_reviews.append({'thesis_id':link['id'],'weakened_markets':weakened,'action':'RECALCULATE','premise_ids':link['premise_ids']})
+            for c in members:
+                c['issues'].append(finding('opponent','THESIS_REPLACEMENT_GUARD','BLOCK',link['premise_ids'],'Adverse price signal requires sports premise review; not proof the thesis is false'))
+                c['eligible']=False
     if not context['policy_approved']:issues.append(finding('arbiter','POLICY_NOT_APPROVED'))
     if prediction['synthetic']:issues.append(finding('arbiter','SYNTHETIC_DATA_RESEARCH_ONLY'))
     if not context['captured_prematch']:issues.append(finding('chronicler','RETROSPECTIVE_CAPTURE'))
@@ -143,9 +170,10 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
     grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
-    return {'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':prediction['mode'],
+    unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
+    return {'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
             'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
-            'selected_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,
+            'selected_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,
             'conditions':[i for i in issues+(selected['issues'] if selected else []) if i['severity']=='WARN'],'risk':risk,'execution_enabled':False,
             'selection_reason':'fewest additional assumptions, then robust stress EV within sealed pool',
             'overrounds':complete_overround(quotes),'inputs':{'quotes':quotes,'recheck':recheck_data,'context':context,'portfolio':portfolio},

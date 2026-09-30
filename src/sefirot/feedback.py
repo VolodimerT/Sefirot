@@ -32,7 +32,7 @@ def summary(records):
                             'interval':wilson(sum(r['outcome']=='WIN' for r in v),len(v))} for k,v in sorted(bins.items())]}
 
 
-def context_key(league,market,scenario,model_id): return digest([league,market,scenario,model_id])
+def context_key(league,market,scenario,model_id,profile='UNKNOWN'): return digest([league,profile,market,scenario,model_id])
 
 
 def competence(records,policy,previous='UNKNOWN',severe=0):
@@ -54,9 +54,9 @@ def competence(records,policy,previous='UNKNOWN',severe=0):
     return {**report,'state':state,'trust':trust,'reason':reason,'sample_uncertainty':1/sqrt(n) if n else None}
 
 
-def ratings(postmortems,league,kind,scenario,policy,model_id=None):
+def ratings(postmortems,league,kind,scenario,policy,model_id=None,profile=None):
     output={}
-    relevant=[p for p in postmortems if (p['league'],p['kind'],p['scenario'])==(league,kind,scenario) and (model_id is None or p.get('model_id')==model_id)]
+    relevant=[p for p in postmortems if (p['league'],p['kind'],p['scenario'])==(league,kind,scenario) and (model_id is None or p.get('model_id')==model_id) and (profile is None or p.get('competition_profile','UNKNOWN')==profile)]
     for role in SEPHIROT:
         by_match={}
         for p in sorted(relevant,key=lambda r:time(r['at'])):
@@ -73,6 +73,7 @@ def compare_versions(old,new,policy):
     a={key(r):r for r in old};b={key(r):r for r in new};common=sorted(set(a)&set(b))
     if len(a)!=len(old) or len(b)!=len(new):raise ValueError('duplicate paired records')
     if any(a[k]['outcome']!=b[k]['outcome'] for k in common):raise ValueError('paired outcomes disagree')
+    if any(a[k].get('competition_profile','UNKNOWN')!=b[k].get('competition_profile','UNKNOWN') for k in common):raise ValueError('paired competition profiles disagree')
     delta=[a[k]['brier']-b[k]['brier'] for k in common]
     n=len(delta);mean=sum(delta)/n if n else 0.
     se=sqrt(sum((d-mean)**2 for d in delta)/(n-1)/n) if n>1 else 1.
