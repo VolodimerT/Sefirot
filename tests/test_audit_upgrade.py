@@ -183,6 +183,26 @@ class MarketRiskTests(unittest.TestCase):
         p=prepare(case['sports'],case['markets'],Policy());self.assertEqual(p['mode'],'UNKNOWN')
         self.assertIn('UNKNOWN_CONTEXT',[i['code'] for i in p['issues']])
 
+    def test_final_recheck_novel_context_cannot_keep_prior_bet_permission(self):
+        p,case,q,context=controlled()
+        self.assertEqual(decision(p,case,q,context)['decision'],'BET')
+        stamp=case['recheck']['checked_at']
+        fact={**case['recheck']['evidence'][0],'id':'late-novelty','key':'novelty','value':['UNFAMILIAR_CONTEXT'],
+              'observed_at':stamp,'published_at':stamp,'received_at':stamp}
+        case['recheck']['evidence'].append(fact)
+        out=decision(p,case,q,context)
+        self.assertEqual(out['decision'],'PASS');self.assertEqual(out['mode'],'UNKNOWN')
+        self.assertIn('UNKNOWN_CONTEXT',out['limiting_factors']);self.assertEqual(out['risk']['stake'],0.)
+
+    def test_final_recheck_matchup_conflict_enters_unknown(self):
+        p,case,q,context=controlled();stamp=case['recheck']['checked_at']
+        case['recheck']['evidence'].append({'id':'late-matchup','key':'matchup_signal','value':{'status':'CONFLICT'},
+            'kind':'INFERENCE','source_id':'statistics','observed_at':stamp,'published_at':stamp,'received_at':stamp,
+            'critical':True,'supports':[next(e['id'] for e in case['recheck']['evidence'] if e['key']=='tactics')]})
+        out=decision(p,case,q,context)
+        self.assertEqual(out['decision'],'PASS');self.assertEqual(out['mode'],'UNKNOWN')
+        self.assertIn('MODEL_MATCHUP_CONFLICT',out['limiting_factors'])
+
     def test_protected_integer_lines_settle_push_exactly(self):
         self.assertEqual(settle(market_of({'kind':'HANDICAP','side':'AWAY','line':1}),2,1),'PUSH')
         self.assertEqual(settle(market_of({'kind':'TEAM_TOTAL','side':'AWAY_UNDER','line':2}),2,2),'PUSH')
