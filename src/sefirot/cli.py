@@ -1,4 +1,4 @@
-"""Dependency-free CLI; default workflows operate on local, user-supplied sources."""
+"""UTF-8 CLI; default workflows operate on local, user-supplied sources."""
 import argparse
 from datetime import datetime,timezone
 from dataclasses import asdict
@@ -38,6 +38,10 @@ def write_quotes(path, payload):
             'execution_price_verified':False}
 
 def main(argv=None):
+    # Windows redirected streams can default to an encoding without Cyrillic.
+    # The CLI's JSON and Russian cards use UTF-8 in both pipes and terminals.
+    for stream in (sys.stdout,sys.stderr):
+        if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
     parser=argparse.ArgumentParser(description='SEFIROT CORE '+VERSION+' — prematch analysis and audit')
     parser.add_argument('--db',default='data/sefirot.sqlite')
     parser.add_argument('--policy',help='versioned experimental JSON policy')
