@@ -44,12 +44,16 @@ def main(argv=None):
     sub=parser.add_subparsers(dest='command',required=True)
     worker=sub.add_parser('work');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
     demo=sub.add_parser('demo',help='complete synthetic workflow in a temporary database')
+    demo.add_argument('--text',action='store_true',help='concise Russian decision card')
     fixture=sub.add_parser('fixture',help='write synthetic JSON input files');fixture.add_argument('directory')
     capture=sub.add_parser('capture',help='seal sports-only probability before reading any prices');capture.add_argument('sports');capture.add_argument('--markets');capture.add_argument('--calibrator');capture.add_argument('--parent');capture.add_argument('--reason')
     decision=sub.add_parser('decide');decision.add_argument('prediction_id');decision.add_argument('quotes');decision.add_argument('recheck');decision.add_argument('--bankroll',type=float,default=1000);decision.add_argument('--peak',type=float,default=1000)
+    decision.add_argument('--text',action='store_true',help='print the decision card; save the full decision in the ledger')
     result=sub.add_parser('result');result.add_argument('file')
     closing=sub.add_parser('closing');closing.add_argument('match_id');closing.add_argument('file')
     replay=sub.add_parser('replay');replay.add_argument('decision_id')
+    explain=sub.add_parser('explain',help='read the recorded decision card; no new prediction or admission')
+    explain.add_argument('decision_id');explain.add_argument('--text',action='store_true',help='concise Russian output')
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
@@ -103,8 +107,25 @@ def main(argv=None):
                 replay=service.replay(dec['id']);clock[0]=time(case['result']['received_at']);service.result(case['result'])
                 out={'version':VERSION,'synthetic':True,'prediction_id':pred['id'],'decision_id':dec['id'],'decision':dec['decision'],'verdict':dec['verdict'],'class':dec['class'],
                      'reasons':dec['limiting_factors'],'markets_evaluated':len(dec['candidates']),'replay_matches':replay['matches'],
-                     'feedback_rows':len(service.report()['performance']),'integrity':repo.verify(),'monetary_stake':dec['risk']['stake']}
+                     'feedback_rows':len(service.report()['performance']),'integrity':repo.verify(),'monetary_stake':dec['risk']['stake'],
+                     'decision_card':dec['decision_card']}
                 repo.close();repo=None
+        elif args.command=='explain':
+            # Open in read-only mode: explaining an absent ledger must not create
+            # it, migrate its schema, or rewrite an archived decision.
+            from .decision_card import render_card
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            connection=sqlite3.connect(database.as_uri()+'?mode=ro',uri=True)
+            try:
+                row=connection.execute('SELECT payload FROM decisions WHERE id=?',(args.decision_id,)).fetchone()
+                if row is None:raise ValueError('decision not found')
+                recorded=json.loads(row[0])
+            finally:connection.close()
+            if 'decision_card' not in recorded:raise ValueError('archived decision has no card; use its original code for replay, do not reinterpret it')
+            out=recorded['decision_card']
+            if args.text:
+                print(render_card(out));return 0
         elif args.command=='sync-supabase':
             from .cloud_sync import check_local,sync
             out=check_local(args.db) if args.check_local else sync(args.db)
@@ -158,7 +179,11 @@ def main(argv=None):
             elif cmd=='postmortem':out=service.postmortem(args.decision_id,load(args.file),now)
             elif cmd=='execution':out=service.execution(args.decision_id,load(args.file),now)
             elif cmd=='approve-policy':out=service.approve_policy(args.operator,args.statement,now)
-        print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False));return 0
+        if args.command in ('decide','demo') and args.text:
+            from .decision_card import render_card
+            print(render_card(out['decision_card']))
+        else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
+        return 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:

@@ -4,7 +4,8 @@ from dataclasses import asdict
 from pathlib import Path
 from .contracts import VERSION,MODEL,Policy,digest,time,number,finding,strict
 from .evidence import inspect
-from .probability import estimate,calibrate,ev_bounds,grade_stress
+from .probability import estimate,calibrate,ev_bounds,grade_stress,worst_case_probabilities
+from .decision_card import build_card,candidate_rank
 from .markets import pool,probabilities,settle,market_of,validate_quote,payoff_ev,implied,fair_odds,complete_overround,market_reference
 from .risk import size_risk
 
@@ -89,15 +90,9 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         quote_map.setdefault(m.key,[]).append(q)
     for c in prediction['candidates']:
         local=[];available=[q for q in quote_map.get(c['key'],[]) if q['phase'] in ('FINAL','ENTRY')]
-        if not available:
-            evaluations.append({**c,'eligible':False,'issues':[finding('market','MISSING_CURRENT_PRICE')],'ev':None});continue
-        q=max(available,key=lambda x:(time(x['observed_at']),time(x['received_at']),x['bookmaker']))
-        odd=q['odds'];win,push,loss=c['base'];ev=payoff_ev(win,push,odd);low_ev,high_ev=ev_bounds(c['low'],c['high'],odd)
-        if (time(at)-time(q['observed_at'])).total_seconds()>policy.quote_max_age_seconds:local.append(finding('market','PRICE_STALE'))
         if c['calibration']!='CALIBRATED_BIN':local.append(finding('probability','CALIBRATION_INSUFFICIENT'))
         width=c['high'][0]-c['low'][0]
         if width>policy.max_probability_width:local.append(finding('probability','UNCERTAINTY_TOO_WIDE'))
-        if ev<policy.min_ev or low_ev<policy.min_low_ev:local.append(finding('arbiter','ROBUST_EV_INSUFFICIENT'))
         health=context['health'].get(c['key'],{'state':'UNKNOWN','trust':'INSUFFICIENT'})
         if health['state'] in ('UNKNOWN','WEAK','FROZEN'):local.append(finding('competence','CONTEXT_'+health['state']))
         roles=context.get('sephirot_ratings',{}).get(c['key'],{})
@@ -107,6 +102,13 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
             elif trust=='LOW':local.append(finding('competence','SEPHIRA_LOW_TRUST','WARN',detail=role))
         release=context['releases'].get(c['key'])
         if not release or not release.get('passed'):local.append(finding('competence','HOLDOUT_UNVALIDATED'))
+        if not available:
+            local.append(finding('market','MISSING_CURRENT_PRICE'))
+            evaluations.append({**c,'eligible':False,'issues':local,'competence':health,'ev':None});continue
+        q=max(available,key=lambda x:(time(x['observed_at']),time(x['received_at']),x['bookmaker']))
+        odd=q['odds'];win,push,loss=c['base'];ev=payoff_ev(win,push,odd);low_ev,high_ev=ev_bounds(c['low'],c['high'],odd)
+        if (time(at)-time(q['observed_at'])).total_seconds()>policy.quote_max_age_seconds:local.append(finding('market','PRICE_STALE'))
+        if ev<policy.min_ev or low_ev<policy.min_low_ev:local.append(finding('arbiter','ROBUST_EV_INSUFFICIENT'))
         # Wider disagreement needs independent corroboration of each critical premise.
         edge=win-(1-push)/odd
         reference=market_reference(quotes,q,win,push)
@@ -154,8 +156,9 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     if prediction['synthetic']:issues.append(finding('arbiter','SYNTHETIC_DATA_RESEARCH_ONLY'))
     if not context['captured_prematch']:issues.append(finding('chronicler','RETROSPECTIVE_CAPTURE'))
     viable=[c for c in evaluations if c['eligible']]
-    # Choose fewer assumptions and robust cross-scenario value within the sealed pool.
-    viable.sort(key=lambda c:(c['additional_assumptions'],-c['stress_ev_min'],-c['ev_low'],c['key']))
+    # Sporting gates precede ranking. Do not put a coarse market-family penalty
+    # ahead of measurable conservative value within the already sealed pool.
+    viable.sort(key=candidate_rank)
     selected=viable[0] if viable else None
     if selected is None:issues.append(finding('arbiter','NO_ADMISSIBLE_MAIN_MARKET'))
     blocked=any(x['severity']=='BLOCK' for x in issues)
@@ -163,18 +166,23 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     conditional=any(x['severity']=='WARN' for x in issues+(selected['issues'] if selected else []))
     if selected and not blocked:
         quality=.5 if conditional else 1.
-        risk=size_risk(win=selected['low'][0],push=selected['low'][1],odds=selected['odds'],bankroll=portfolio['bankroll'],peak=portfolio['peak'],
+        adverse=worst_case_probabilities(selected['low'],selected['high'],selected['odds'])
+        risk=size_risk(win=adverse[0],push=adverse[1],odds=selected['odds'],bankroll=portfolio['bankroll'],peak=portfolio['peak'],
                        quality=quality,exposures=context['exposures'],match=match,model=prediction['model_version'],scenario=prediction['scenario']['type'],
                        factors=prediction['scenario']['novelty'],at=at,policy=policy)
+        risk['probabilities_used']=adverse
         if risk['stake']==0:issues.append(finding('arbiter','RISK_LIMIT'));blocked=True
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
     grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
     unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
-    return {'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
+    out={'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
             'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
-            'selected_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,
+            'selected_market':selected['key'] if final=='BET' else None,
+            'screened_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,
             'conditions':[i for i in issues+(selected['issues'] if selected else []) if i['severity']=='WARN'],'risk':risk,'execution_enabled':False,
-            'selection_reason':'fewest additional assumptions, then robust stress EV within sealed pool',
+            'selection_reason':'all sporting gates, then Low EV, stress EV, Base EV, loss probability, additional assumptions; sealed pool only',
             'overrounds':complete_overround(quotes),'inputs':{'quotes':quotes,'recheck':recheck_data,'context':context,'portfolio':portfolio},
-            'limiting_factors':[i['code'] for i in issues if i['severity']=='BLOCK']}
+            'limiting_factors':sorted({i['code'] for i in issues+(selected['issues'] if selected else [i for c in evaluations for i in c['issues']]) if i['severity']=='BLOCK'})}
+    out['decision_card']=build_card(out,prediction,policy)
+    return out

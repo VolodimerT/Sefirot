@@ -153,9 +153,8 @@ def calibrate(kind,raw,artifact,policy,profile='UNKNOWN'):
     return {'base':base,'low':low,'high':high,'status':'CALIBRATED_BIN','n':n}
 
 
-def ev_bounds(low,high,odds):
-    """Exact extrema of linear WIN/PUSH/LOSS payoff over interval-simplex polytope."""
-    number(odds,'odds',1.00000001)
+def _bound_vertices(low,high):
+    """Feasible vertices, shared by EV extrema and price thresholds."""
     if len(low)!=3 or len(high)!=3: raise ValueError('three category bounds required')
     for l,h in zip(low,high):
         number(l,'low',0,1);number(h,'high',l,1)
@@ -166,6 +165,48 @@ def ev_bounds(low,high,odds):
             for b in (low[fixed[1]],high[fixed[1]]):
                 point=[0.,0.,0.];point[fixed[0]]=a;point[fixed[1]]=b;point[free]=1-a-b
                 if low[free]-1e-10<=point[free]<=high[free]+1e-10:
-                    vertices.append(point[0]*(odds-1)-point[2])
+                    vertices.append([max(0.,min(1.,p)) for p in point])
     if not vertices: raise ValueError('infeasible probability bounds')
+    return vertices
+
+
+def ev_bounds(low,high,odds):
+    """Exact extrema of linear WIN/PUSH/LOSS payoff over interval-simplex polytope."""
+    number(odds,'odds',1.00000001)
+    vertices=[p[0]*(odds-1)-p[2] for p in _bound_vertices(low,high)]
     return min(vertices),max(vertices)
+
+
+def worst_case_probabilities(low,high,odds):
+    """A feasible adverse distribution for sizing; component lows need not sum to one."""
+    number(odds,'odds',1.00000001)
+    return min(_bound_vertices(low,high),key=lambda p:(p[0]*(odds-1)-p[2],p))
+
+
+def price_requirements(base,low,high,stress,policy):
+    """Price-only floors for the existing gates; never an admission permission.
+
+    EV = p_win * (odds - 1) - p_loss. PUSH is neither a win nor
+    a loss. Low/High are category bounds, not a standalone probability
+    vector: every feasible simplex vertex must clear the Low-EV gate.
+    """
+    def floor(vectors,target):
+        floors=[]
+        for p in vectors:
+            if len(p)!=3:raise ValueError('three probabilities required')
+            win,push,loss=[number(x,'probability',0,1) for x in p]
+            if abs(win+push+loss-1)>1e-8:raise ValueError('probabilities must sum to one')
+            if win==0:
+                if loss+target>0:return None
+                floors.append(1.)
+            else:floors.append(1+(loss+target)/win)
+        if not floors:raise ValueError('nonempty stress scenarios required')
+        return max(floors)
+    base_floor=floor([base],policy.min_ev)
+    low_floor=floor(_bound_vertices(low,high),policy.min_low_ev)
+    stress_floor=floor(stress,0.)
+    values=[base_floor,low_floor,stress_floor]
+    return {'base_min_odds':base_floor,'low_min_odds':low_floor,'stress_min_odds':stress_floor,
+            'required_odds':max(values) if all(v is not None for v in values) else None,
+            'scope':'PRICE_GATES_ONLY','monetary_permission':False,
+            'requires_fresh_quote_and_full_recheck':True}

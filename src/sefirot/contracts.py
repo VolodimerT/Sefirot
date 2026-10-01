@@ -6,7 +6,7 @@ from hashlib import sha256
 import json
 import math
 
-VERSION = '2.3.0'
+VERSION = '2.4.0'
 MODEL = 'goals-gamma-v1'
 PROFILES = ('MEN','WOMEN','RESERVE','LOWER','UNKNOWN')
 SEPHIROT = ('threshold','witness','scenario','probability','competence','market','opponent','arbiter','chronicler')
@@ -57,7 +57,7 @@ def strict(obj, required, optional=()):
 @dataclass(frozen=True)
 class Policy:
     """Research defaults are explicit proposals, never labelled empirically certified."""
-    version: str = 'research-policy-v2'
+    version: str = 'research-policy-v3'
     min_team_games: int = 8
     history_days: int = 730
     half_life_days: float = 180.
