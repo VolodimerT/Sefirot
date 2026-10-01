@@ -1,5 +1,5 @@
 {
-  "version": "research-policy-v2",
+  "version": "research-policy-v3",
   "min_team_games": 8,
   "history_days": 730,
   "half_life_days": 180.0,
