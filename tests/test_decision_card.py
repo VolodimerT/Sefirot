@@ -1,6 +1,7 @@
 """Controlled admission cases and exact price arithmetic; no real-match retuning."""
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -167,8 +168,13 @@ class FinalDecisionTests(unittest.TestCase):
 
 
 class ExplainCommandTests(unittest.TestCase):
+    def run_cli(self,args):
+        # Reproduce a restricted redirected encoding even on a UTF-8 host.
+        return subprocess.run([sys.executable,str(ROOT/'sefirot.py')]+args,capture_output=True,
+                              encoding='utf-8',env={**os.environ,'PYTHONIOENCODING':'ascii'})
+
     def test_demo_text_is_concise_russian_and_still_passes_synthetic_data(self):
-        run=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'demo','--text'],capture_output=True,text=True)
+        run=self.run_cli(['demo','--text'])
         self.assertEqual(run.returncode,0,run.stderr);self.assertIn('Вердикт: пропуск',run.stdout)
         self.assertNotIn('prediction_id',run.stdout)
 
@@ -180,18 +186,18 @@ class ExplainCommandTests(unittest.TestCase):
             repo.db.execute('PRAGMA foreign_keys=OFF')
             repo.insert('decisions','test-id',out,prediction_id='controlled',at=NOW.isoformat());repo.close()
             before=path.read_bytes()
-            args=[sys.executable,str(ROOT/'sefirot.py'),'--db',str(path),'explain','test-id']
-            run=subprocess.run(args,capture_output=True,text=True)
+            args=['--db',str(path),'explain','test-id']
+            run=self.run_cli(args)
             self.assertEqual(run.returncode,0,run.stderr);self.assertEqual(json.loads(run.stdout),out['decision_card'])
             self.assertEqual(before,path.read_bytes())
-            run=subprocess.run(args+['--text'],capture_output=True,text=True)
+            run=self.run_cli(args+['--text'])
             self.assertEqual(run.returncode,0,run.stderr);self.assertIn('Вердикт: играбельно',run.stdout)
             self.assertEqual(before,path.read_bytes())
 
     def test_explain_missing_ledger_cannot_create_it(self):
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'absent.sqlite'
-            run=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'--db',str(path),'explain','id'],capture_output=True,text=True)
+            run=self.run_cli(['--db',str(path),'explain','id'])
             self.assertEqual(run.returncode,2);self.assertFalse(path.exists())
 
 
