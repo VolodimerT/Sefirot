@@ -20,7 +20,7 @@ def main():
     (report_dir/'TEST_OUTPUT.txt').write_text(test.stdout+test.stderr,encoding='utf-8')
     if test.returncode:
         print(test.stderr,file=sys.stderr);return test.returncode
-    demo=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'demo'],cwd=ROOT,capture_output=True,text=True)
+    demo=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'demo'],cwd=ROOT,capture_output=True,encoding='utf-8')
     if demo.returncode:
         print(demo.stderr,file=sys.stderr);return demo.returncode
     demo_result=json.loads(demo.stdout)
