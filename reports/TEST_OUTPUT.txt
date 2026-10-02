@@ -216,6 +216,6 @@ test_store_results_chain_and_clv (test_system.SystemTests.test_store_results_cha
 test_unknown_history_and_weak_evidence (test_system.SystemTests.test_unknown_history_and_weak_evidence) ... ok
 
 ----------------------------------------------------------------------
-Ran 214 tests in 5.206s
+Ran 214 tests in 4.289s
 
 OK

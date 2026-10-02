@@ -1,8 +1,8 @@
 {
   "version": "2.4.0",
   "synthetic": true,
-  "prediction_id": "39baf8fc04cb6210fc391335cee70bea9fc98a5302f3b8e9fcf5bee74c159a48",
-  "decision_id": "872cd90e5c811c7ec9422e5370d88ba002586aa4d99d78540e42d6225af2010e",
+  "prediction_id": "a07e31cf1e49eed994c6b60fc085b57a7267cd35f84ecfbc896f0810f26845ad",
+  "decision_id": "be8cd2bff20c6c1c46db14e8a6dacf1ece518e85a3380ec583811e084c234c9c",
   "decision": "PASS",
   "verdict": "skip",
   "class": "D",
@@ -34,14 +34,14 @@
     "verdict_ru": "пропуск",
     "class": "D",
     "status": "RECALCULATE",
-    "at": "2026-10-01T20:43:09+00:00",
+    "at": "2026-10-01T21:10:02+00:00",
     "match": {
       "away": "B",
       "competition_profile": "MEN",
       "format": "REGULATION_90",
       "home": "A",
       "id": "synthetic-001",
-      "kickoff": "2026-10-01T22:41:09+00:00",
+      "kickoff": "2026-10-01T23:08:02+00:00",
       "league": "SYNTHETIC",
       "sport": "football"
     },
@@ -173,7 +173,7 @@
       }
     ],
     "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-    "deadline": "2026-10-01T22:41:09+00:00",
+    "deadline": "2026-10-01T23:08:02+00:00",
     "alternatives": [
       {
         "market": "1X2:HOME",
