@@ -18,8 +18,8 @@ def process_inbox(service,directory):
                 output.append({'id':jid,'status':'ALREADY_PROCESSED'});continue
             kind=job['type'];data=job['payload'];at=service.now()
             if kind=='CAPTURE':
-                strict(data,('sports','markets'),('calibrator_id','parent','reason'))
-                result=service.capture(data['sports'],data['markets'],data.get('calibrator_id'),parent=data.get('parent'),reason=data.get('reason'))
+                strict(data,('sports','markets'),('calibrator_id','parent','reason','goal_model'))
+                result=service.capture(data['sports'],data['markets'],data.get('calibrator_id'),parent=data.get('parent'),reason=data.get('reason'),goal_model=data.get('goal_model'))
             elif kind=='DECIDE':
                 strict(data,('prediction_id','quotes','recheck','portfolio'))
                 result=service.decide(data['prediction_id'],data['quotes'],data['recheck'],data['portfolio'],at)

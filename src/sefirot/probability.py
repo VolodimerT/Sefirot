@@ -3,6 +3,9 @@ from __future__ import annotations
 from math import exp, sqrt, log
 from .contracts import number,integer,time,digest,MODEL,PROFILES
 from .evidence import eligible_history,profile_of
+from .markets import Market,market_from_key
+
+CALIBRATION_SCHEMA='contract-reliability-v4'
 
 
 def wilson(successes,n,z=1.96):
@@ -78,7 +81,11 @@ def schedule_trace(sports,policy):
     return out
 
 
-def estimate(sports,policy):
+def estimate(sports,policy,goal_model=None):
+    if policy.goal_model=='SOS_THRESHOLD_V2':
+        from .goal_model import estimate as estimate_sos
+        return estimate_sos(sports,policy,goal_model)
+    if goal_model is not None:raise ValueError('goal artifact requires SOS_THRESHOLD_V2')
     rows,excluded=eligible_history(sports,policy)
     now=time(sports['as_of']);match=sports['match']
     weights=[exp(-log(2)*(now-time(r['kickoff'])).total_seconds()/86400/policy.half_life_days) for r in rows]
@@ -112,50 +119,68 @@ def estimate(sports,policy):
     return mass,variants,summary
 
 
-def bin_key(kind,p,profile='UNKNOWN'):
+def bin_key(market,p,profile='UNKNOWN'):
     if profile not in PROFILES: raise ValueError('invalid calibration profile')
-    return profile+':'+kind+':'+str(min(4,int(number(p,'probability',0,1)*5)))
+    if not isinstance(market,Market):raise ValueError('full market contract required for calibration')
+    return profile+':'+market.key+':'+str(min(4,int(number(p,'probability',0,1)*5)))
 
 
 def fit_calibrator(records,model_hash,policy_hash,fit_at):
     """Calibration records are produced by settled sealed predictions, not prices."""
     if not records: raise ValueError('no calibration records')
     groups={}; ids=set(); synthetic=False; latest=None
+    goal_hashes={r.get('goal_model_hash') for r in records}
+    if len(goal_hashes)!=1:raise ValueError('calibration cannot mix fitted goal models')
     for r in records:
         key=(r['match_id'],r['market'])
         if key in ids: raise ValueError('duplicate calibration event-market')
         ids.add(key)
         if time(r['received_at'])>time(fit_at): raise ValueError('calibrator cannot see future result')
         if r['outcome'] not in ('WIN','PUSH','LOSS'): raise ValueError('invalid outcome')
-        bucket=bin_key(r['kind'],r['raw_win'],r.get('competition_profile','UNKNOWN'))
+        market=market_from_key(r['market'])
+        if market.kind!=r['kind']:raise ValueError('calibration market/kind mismatch')
+        if r['outcome']=='PUSH' and not market.push_possible:raise ValueError('PUSH impossible for calibration contract')
+        if r.get('model_hash',model_hash)!=model_hash:raise ValueError('calibration record model hash mismatch')
+        bucket=bin_key(market,r['raw_win'],r.get('competition_profile','UNKNOWN'))
         groups.setdefault(bucket,[0,0,0])[('WIN','PUSH','LOSS').index(r['outcome'])]+=1
         synthetic=synthetic or bool(r['synthetic'])
         latest=max(latest or r['received_at'],r['received_at'],key=time)
-    out={'version':'profile-reliability-v2','model_hash':model_hash,'policy_hash':policy_hash,'fit_at':fit_at,
+    out={'version':CALIBRATION_SCHEMA,'model_hash':model_hash,'policy_hash':policy_hash,'fit_at':fit_at,
+         'goal_model_hash':next(iter(goal_hashes)),
          'fit_ids':sorted({r['match_id'] for r in records}),'buckets':groups,'synthetic':synthetic,
          'last_result_at':latest,'training_digest':digest(records)}
     out['hash']=digest(out)
     return out
 
 
-def calibrate(kind,raw,artifact,policy,profile='UNKNOWN'):
+def calibrate(market,raw,artifact,policy,profile='UNKNOWN'):
+    if len(raw)!=3 or abs(sum(number(p,'probability',0,1) for p in raw)-1)>1e-8:
+        raise ValueError('three normalized calibration probabilities required')
+    bucket=bin_key(market,raw[0],profile)
+    if not market.push_possible and raw[1]!=0:raise ValueError('PUSH impossible for raw contract')
+    fallback={'base':list(raw),'low':[0.,0.,0.],'high':[1.,1. if market.push_possible else 0.,1.], 'n':0}
     if artifact is None:
-        return {'base':list(raw),'low':[0.,0.,0.],'high':[1.,1.,1.],'status':'UNCALIBRATED','n':0}
-    counts=artifact['buckets'].get(bin_key(kind,raw[0],profile))
+        return {**fallback,'status':'UNCALIBRATED'}
+    if artifact['version']!=CALIBRATION_SCHEMA:raise ValueError('calibration schema mismatch; refit from archived contracts')
+    counts=artifact['buckets'].get(bucket)
+    if counts is not None:
+        if not isinstance(counts,list) or len(counts)!=3:raise ValueError('three calibration counts required')
+        for count in counts:integer(count,'calibration count')
+        if not market.push_possible and counts[1]:raise ValueError('PUSH impossible for calibrated contract')
     if not counts or sum(counts)<policy.min_calibration:
-        return {'base':list(raw),'low':[0.,0.,0.],'high':[1.,1.,1.],'status':'INSUFFICIENT_BIN','n':sum(counts or [])}
+        return {**fallback,'status':'INSUFFICIENT_BIN','n':sum(counts or [])}
     n=sum(counts)
     # Laplace shrinkage toward raw distribution preserves the simplex; observed
     # bin frequencies drive the posterior as the sample grows.
     base=[(count+2*p)/(n+2) for count,p in zip(counts,raw)]
     bounds=[wilson(c,n) for c in counts]
     low=[min(p,b[0]) for p,b in zip(base,bounds)];high=[max(p,b[1]) for p,b in zip(base,bounds)]
+    if not market.push_possible:base[1]=low[1]=high[1]=0.
     return {'base':base,'low':low,'high':high,'status':'CALIBRATED_BIN','n':n}
 
 
-def ev_bounds(low,high,odds):
-    """Exact extrema of linear WIN/PUSH/LOSS payoff over interval-simplex polytope."""
-    number(odds,'odds',1.00000001)
+def _bound_vertices(low,high):
+    """Feasible vertices, shared by EV extrema and price thresholds."""
     if len(low)!=3 or len(high)!=3: raise ValueError('three category bounds required')
     for l,h in zip(low,high):
         number(l,'low',0,1);number(h,'high',l,1)
@@ -166,6 +191,51 @@ def ev_bounds(low,high,odds):
             for b in (low[fixed[1]],high[fixed[1]]):
                 point=[0.,0.,0.];point[fixed[0]]=a;point[fixed[1]]=b;point[free]=1-a-b
                 if low[free]-1e-10<=point[free]<=high[free]+1e-10:
-                    vertices.append(point[0]*(odds-1)-point[2])
+                    vertices.append([max(0.,min(1.,p)) for p in point])
     if not vertices: raise ValueError('infeasible probability bounds')
+    return vertices
+
+
+def ev_bounds(low,high,odds):
+    """Exact extrema of linear WIN/PUSH/LOSS payoff over interval-simplex polytope."""
+    number(odds,'odds',1.00000001)
+    vertices=[p[0]*(odds-1)-p[2] for p in _bound_vertices(low,high)]
     return min(vertices),max(vertices)
+
+
+def worst_case_probabilities(low,high,odds):
+    """A feasible adverse distribution for sizing; component lows need not sum to one."""
+    number(odds,'odds',1.00000001)
+    return min(_bound_vertices(low,high),key=lambda p:(p[0]*(odds-1)-p[2],p))
+
+
+def price_requirements(base,low,high,stress,policy):
+    """Price-only floors for the existing gates; never an admission permission.
+
+    EV = p_win * (odds - 1) - p_loss. PUSH is neither a win nor
+    a loss. Low/High are category bounds, not a standalone probability
+    vector: every feasible simplex vertex must clear the Low-EV gate.
+    """
+    def floor(vectors,target):
+        floors=[]
+        for p in vectors:
+            if len(p)!=3:raise ValueError('three probabilities required')
+            win,push,loss=[number(x,'probability',0,1) for x in p]
+            if abs(win+push+loss-1)>1e-8:raise ValueError('probabilities must sum to one')
+            if win==0:
+                if loss+target>0:return None
+                floors.append(1.)
+            else:floors.append(max(1.,1+(loss+target)/win))
+        if not floors:raise ValueError('nonempty stress scenarios required')
+        return max(floors)
+    base_floor=floor([base],policy.min_ev)
+    low_floor=floor(_bound_vertices(low,high),policy.min_low_ev)
+    stress_target=0. if policy.stress_mode=='STRICT' else policy.aggressive_stress_floor
+    stress_floor=floor(stress,stress_target)
+    values=[base_floor,low_floor,stress_floor]
+    return {'base_min_odds':base_floor,'low_min_odds':low_floor,'stress_min_odds':stress_floor,
+            'required_odds':max(values) if all(v is not None for v in values) else None,
+            'scope':'PRICE_GATES_ONLY','monetary_permission':False,
+            'stress_mode':policy.stress_mode,'stress_ev_floor':stress_target,
+            'requires_stress_class_validation':policy.stress_mode=='GRADED',
+            'requires_fresh_quote_and_full_recheck':True}
