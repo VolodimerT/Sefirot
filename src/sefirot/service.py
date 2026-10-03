@@ -4,12 +4,12 @@ from dataclasses import asdict
 from datetime import datetime,timezone,timedelta
 from math import sqrt
 from .contracts import Policy,REASONS,SEPHIROT,digest,time,iso,number,integer,text,strict
-from .engine import prepare,decide,code_hash
+from .engine import prepare,decide,code_hash,model_code_hash
 from .repository import Repository
 from .markets import market_of,settle,validate_quote
 from .evaluation import log_loss
 from .evidence import profile_of
-from .probability import fit_calibrator
+from .probability import fit_calibrator,worst_case_probabilities
 from .feedback import brier,summary,context_key,competence,ratings,compare_versions
 
 
@@ -24,7 +24,7 @@ class Service:
         if stamp>time(self.now()):raise ValueError('operation timestamp is in the future')
         return stamp
 
-    def capture(self,sports,markets,calibrator_id=None,*,parent=None,reason=None,replay=False):
+    def capture(self,sports,markets,calibrator_id=None,*,parent=None,reason=None,replay=False,goal_model=None):
         now=self.now();self._time(sports['as_of'])
         if not replay and time(now)>=time(sports['match']['kickoff']):raise ValueError('capture is no longer prematch')
         if calibrator_id is None:
@@ -32,9 +32,12 @@ class Service:
             if routes:
                 active=self.repo.get('model_versions',routes[-1]['model_id'])
                 if active['code_hash']!=code_hash():raise ValueError('active model requires its archived code version')
+                routed=active.get('goal_model')
+                if goal_model is not None and digest(goal_model)!=digest(routed):raise ValueError('explicit goal model differs from active route')
+                goal_model=routed
                 calibrator_id=active['calibrator_id']
         calibrator=self.repo.get('calibrators',calibrator_id) if calibrator_id else None
-        prepared=prepare(sports,markets,self.policy,calibrator)
+        prepared=prepare(sports,markets,self.policy,calibrator,goal_model)
         revision=0
         if parent:
             prior=self.repo.get('predictions',parent)
@@ -48,7 +51,7 @@ class Service:
         prepared.update({'sealed_at':now,'captured_prematch':not replay and time(now)<time(sports['match']['kickoff']),
                          'reconstructed':bool(replay),'revision':revision,'parent':parent,'override_reason':reason})
         prepared.pop('id');prepared['id']=digest(prepared)
-        model_id=digest([prepared['code_hash'],prepared['policy_hash'],calibrator_id])
+        model_id=digest([prepared['code_hash'],prepared['policy_hash'],calibrator_id,goal_model['hash'] if goal_model else None])
         prepared['model_id']=model_id
         # id binds model_id too, preventing ambiguity between calibrated versions.
         prepared.pop('id');prepared['id']=digest(prepared)
@@ -63,7 +66,7 @@ class Service:
             for team in (match['home'],match['away']):self.repo.insert('teams',team,{'name':team})
             self.repo.insert('matches',match['id'],match,home=match['home'],away=match['away'],kickoff=iso(match['kickoff']),league=match['league'])
             try:self.repo.get('model_versions',model_id)
-            except ValueError:self.repo.insert('model_versions',model_id,{'id':model_id,'code_hash':prepared['code_hash'],'policy_hash':prepared['policy_hash'],'calibrator_id':calibrator_id,'registered_at':now},at=now)
+            except ValueError:self.repo.insert('model_versions',model_id,{'id':model_id,'code_hash':prepared['code_hash'],'model_hash':prepared['model_hash'],'policy_hash':prepared['policy_hash'],'calibrator_id':calibrator_id,'goal_model':goal_model,'registered_at':now},at=now)
             for m in prepared['market_pool']:
                 market=market_of(m);self.repo.insert('markets',market.key,m)
             if self.repo.insert('predictions',prepared['id'],prepared,match_id=match['id'],model_id=model_id,at=now):
@@ -158,12 +161,14 @@ class Service:
                     market=market_of(c['market']);outcome=settle(market,result['home_goals'],result['away_goals'])
                     baseline=[(1-c['raw'][1])/2,c['raw'][1],(1-c['raw'][1])/2]
                     record={'prediction_id':p['id'],'match_id':match['id'],'model_id':p['model_id'],'market':market.key,'kind':market.kind,
+                            'model_hash':p.get('model_hash'),
                             'league':match['league'],'competition_profile':profile_of(match),'scenario':p['scenario']['type'],'context_key':context_key(match['league'],market.key,p['scenario']['type'],p['model_id'],profile_of(match)),
                             'raw_win':c['raw'][0],'raw_probabilities':c['raw'],'probabilities':c['base'],'low':c['low'],'high':c['high'],
                             'prediction_error':[v-int(i==('WIN','PUSH','LOSS').index(outcome)) for i,v in enumerate(c['base'])],
                             'outcome':outcome,'brier':brier(c['base'],outcome),'baseline_brier':brier(baseline,outcome),
                             'baseline_log_loss':log_loss(baseline,('WIN','PUSH','LOSS').index(outcome)),
                             'received_at':at,'synthetic':p['synthetic'],'captured_prematch':p['captured_prematch'],
+                            'goal_model_hash':p.get('goal_model',{}).get('hash') if p.get('goal_model') else None,
                             'calibration_status':c['calibration'],'sealed_at':p['sealed_at'],'kickoff':match['kickoff'],
                             'calibrator_id':p['calibrator']['hash'] if p['calibrator'] else None}
                     rid=digest(record);self.repo.insert('calibration_history',rid,record,prediction_id=p['id'],market_id=market.key,at=iso(at));new_records.append(record)
@@ -171,11 +176,11 @@ class Service:
                 if decision['match_id']!=match['id']:continue
                 audit={'decision_id':decision['id'],'match_id':match['id'],'at':at,'quality':'UNDETERMINED',
                        'competition_profile':profile_of(match),'model_id':decision.get('inputs',{}).get('context',{}).get('model_id') or self.repo.get('predictions',decision['prediction_id'])['model_id'],
-                       'causes':['UNKNOWN'],'decision':decision['decision'],'pre_match_blocks':decision['limiting_factors'],
+                       'causes':['UNKNOWN'],'decision':decision['decision'],'class':decision['class'],'pre_match_blocks':decision['limiting_factors'],
                        'outcomes':{c['key']:('VOID' if result['status']=='VOID' else settle(market_of(c['market']),result['home_goals'],result['away_goals'])) for c in decision['candidates']},
-                       'candidates':[{'market':c['key'],'probabilities':c['base'],'raw_probabilities':c['raw'],
+                       'candidates':[{'market':c['key'],'market_contract':c['market'],'probabilities':c['base'],'raw_probabilities':c['raw'],
                                       'low':c['low'],'high':c['high'],'odds':c.get('odds'),'fair_odds':c.get('fair_odds'),
-                                      'base_ev':c.get('ev'),'stress_ev_min':c.get('stress_ev_min'),'stress_grade':c.get('stress_grade'),
+                                      'base_ev':c.get('ev'),'stress_ev_min':c.get('stress_ev_min'),'stress_ev_max':c.get('stress_ev_max'),'stress_grade':c.get('stress_grade'),
                                       'reasons':[i['code'] for i in c['issues']],'quality':'UNDETERMINED',
                                       'outcome':'VOID' if result['status']=='VOID' else settle(market_of(c['market']),result['home_goals'],result['away_goals']),
                                       'brier':None if result['status']=='VOID' else brier(c['base'],settle(market_of(c['market']),result['home_goals'],result['away_goals']))}
@@ -217,13 +222,17 @@ class Service:
         records=[r for r in self._records(at) if assign.get(r['match_id'],{}).get('role')=='CALIBRATION' and r['calibrator_id'] is None]
         # One frozen base model at a time: mixing different code policies is forbidden.
         if len({r['model_id'] for r in records})!=1:raise ValueError('calibration requires one base model')
-        artifact=fit_calibrator(records,code_hash(),self.policy.fingerprint,at)
+        base=self.repo.get('model_versions',records[0]['model_id'])
+        if base.get('model_hash')!=model_code_hash() or base['policy_hash']!=self.policy.fingerprint:
+            raise ValueError('calibration requires matching probability model and policy; old records cannot be relabelled')
+        artifact=fit_calibrator(records,model_code_hash(),self.policy.fingerprint,at)
         with self.repo.transaction():
             if self.repo.insert('calibrators',artifact['hash'],artifact,at=iso(at)):self.repo.record_log('calibrators',artifact['hash'],at,artifact)
         return artifact
 
     def validate(self,model_id,at):
         self._time(at);model=self.repo.get('model_versions',model_id)
+        if model['code_hash']!=code_hash() or model['policy_hash']!=self.policy.fingerprint:raise ValueError('validation requires matching archived code and policy')
         if not model['calibrator_id']:raise ValueError('frozen calibrator required for holdout')
         artifact=self.repo.get('calibrators',model['calibrator_id']);assign={a['match_id']:a for a in self.repo.all('split_assignments',at)}
         records=[r for r in self._records(at) if r['model_id']==model_id and assign.get(r['match_id'],{}).get('role')=='HOLDOUT']
@@ -248,6 +257,29 @@ class Service:
             if synthetic:reasons.append('SYNTHETIC_NOT_PROOF')
             report={**s,'model_id':model_id,'context_key':key,'at':at,'passed':not reasons,'reasons':reasons,'synthetic':synthetic,
                     'ids':sorted({r['match_id'] for r in subset}),'policy_hash':model['policy_hash'],'code_hash':model['code_hash'],'mean_delta':mean,'delta_interval':[mean-1.96*se,mean+1.96*se]}
+            if self.policy.stress_mode=='GRADED':
+                from .feedback import validate_stress_classes
+                by_prediction={(r['prediction_id'],r['market']):r for r in subset}
+                latest={}
+                for d in self.repo.all('decisions',at):
+                    p=self.repo.get('predictions',d['prediction_id'])
+                    if p['model_id']!=model_id:continue
+                    for c in d['candidates']:
+                        record=by_prediction.get((p['id'],c['key']))
+                        if record is None or c.get('ev') is None or c['ev']<self.policy.min_ev:continue
+                        pair=(record['match_id'],record['market'])
+                        order=(time(d['at']),d['id'])
+                        if pair not in latest or order>latest[pair][0]:latest[pair]=(order,d,c,p,record)
+                class_rows=[]
+                # Ignore only the gates that holdout itself is intended to establish.
+                validation_only={'CONTEXT_UNKNOWN','SEPHIRA_HISTORY_INSUFFICIENT','HOLDOUT_UNVALIDATED',
+                                 'GRADED_DEATH_TEST_UNVALIDATED','POLICY_NOT_APPROVED','NO_ADMISSIBLE_MAIN_MARKET'}
+                for _,d,c,p,r in latest.values():
+                    blockers=[i['code'] for i in p['issues']+d['issues']+c['issues'] if i['severity']=='BLOCK' and i['code'] not in validation_only]
+                    class_rows.append({**r,'stress_class':c['stress_grade']['class'],'ev':c['ev'],
+                                       'ev_low':c['ev_low'],'sports_gates_passed':not blockers,
+                                       'unit_return':c['odds']-1 if r['outcome']=='WIN' else 0. if r['outcome']=='PUSH' else -1.})
+                report['stress_classes']=validate_stress_classes(class_rows,self.policy)
             report['id']=digest(report);output.append(report)
         with self.repo.transaction():
             for report in output:
@@ -359,7 +391,52 @@ class Service:
                             'kind_of_record':'LATEST_DECISION_QUOTE_DIAGNOSTIC; not execution P/L or a causal false-negative rate'})
         return {'integrity':self.repo.verify(),'performance':performance,'clv':clv,'health':self.repo.all('health_events',at),'validation':self.repo.all('validation_runs',at),
                 'risk_cohorts':cohorts,
-                'postmatch_audits':self.repo.all('postmatch_reports',at),'ratings':{str(k):ratings(self.repo.all('postmortems',at),k[0],market_of({'kind':k[1].split(':')[0],'side':k[1].split(':')[1],**({'line':float(k[1].split(':')[2])} if len(k[1].split(':'))>2 else {})}).kind,k[2],self.policy,k[3],k[4]) for k in grouped}}
+                'postmatch_audits':self.settlement_audits(at),'ratings':{str(k):ratings(self.repo.all('postmortems',at),k[0],market_of({'kind':k[1].split(':')[0],'side':k[1].split(':')[1],**({'line':float(k[1].split(':')[2])} if len(k[1].split(':'))>2 else {})}).kind,k[2],self.policy,k[3],k[4]) for k in grouped}}
+
+    def settlement_audits(self,at=None):
+        """Current read view over immutable result/quote/execution/review records.
+
+        Late closing and causal evidence enrich the view without rewriting the
+        automatic postmatch snapshot or pretending a quote was an execution.
+        """
+        results={r['match_id']:r for r in self.repo.all('results',at)}
+        closes=self.repo.all('closing_odds',at);bets=self.repo.all('bets',at)
+        reviews=self.repo.all('postmortems',at);output=[]
+        for saved in self.repo.all('postmatch_reports',at):
+            d=self.repo.get('decisions',saved['decision_id']);p=self.repo.get('predictions',d['prediction_id'])
+            result=results[d['match_id']];candidates=[]
+            def closing(market,book,observed):
+                matching=[q for q in closes if q['match_id']==d['match_id'] and market_of(q['market']).key==market
+                          and q['bookmaker']==book and time(q['observed_at'])>=time(observed)]
+                return max(matching,key=lambda q:(time(q['observed_at']),time(q['received_at']),digest(q))) if matching else None
+            for stored in saved['candidates']:
+                c=next(c for c in d['candidates'] if c['key']==stored['market'])
+                q=c.get('quote');close=closing(c['key'],q['bookmaker'],q['observed_at']) if q else None
+                review=next((r for r in reviews if r['decision_id']==d['id'] and r['market']==c['key']),None)
+                observations={o['premise_id']:o for o in (review or {}).get('premise_observations',[])}
+                premises=[]
+                for fact in p['witness']['resolved'].values():
+                    premises.append({**fact,'assessment':observations.get(fact['id'],{'status':'UNKNOWN','evidence':[]})})
+                executions=[]
+                for b in bets:
+                    if b['decision_id']!=d['id'] or b['market']!=c['key']:continue
+                    bc=closing(c['key'],b['bookmaker'],b['at'])
+                    outcome=stored['outcome']
+                    payout=b['stake']*b['odds'] if outcome=='WIN' else b['stake'] if outcome in ('PUSH','VOID') else 0.
+                    executions.append({'id':b['id'],'entry_odds':b['odds'],'bookmaker':b['bookmaker'],'stake':b['stake'],
+                                       'origin':b['origin'],'flags':b['flags'],'outcome':outcome,'payout':payout,'pnl':payout-b['stake'],
+                                       'closing_odds':bc['odds'] if bc else None,'clv':b['odds']/bc['odds']-1 if bc else None})
+                candidates.append({**stored,'decision_odds':c.get('odds'),
+                                   'entry_odds':executions[0]['entry_odds'] if len(executions)==1 else None,
+                                   'closing_odds':close['odds'] if close else None,
+                                   'quote_clv':q['odds']/close['odds']-1 if q and close else None,
+                                   'executions':executions,'factual_premises':premises,
+                                   'premise_assessment':'REVIEWED' if observations else 'UNKNOWN_REQUIRES_EVIDENCE',
+                                   'postmortem_category':(review or {}).get('category','UNKNOWN'),
+                                   'quality':(review or {}).get('decision_quality','UNDETERMINED'),
+                                   'category_evidence':(review or {}).get('category_evidence',[])})
+            output.append({**saved,'result':result,'candidates':candidates,'view':'IMMUTABLE_RECORD_JOIN'})
+        return output
 
     def execution(self,decision_id,entry,at):
         """Record a human execution; never place a bet or convert PASS into permission."""
@@ -392,10 +469,19 @@ class Service:
             existing=self.repo.all('bets',at)
             if any(b['match_id']==d['match_id'] and b['id']!=entry['id'] for b in existing):flags.append('DUPLICATE_EVENT_EXPOSURE')
             if entry['origin']=='SYSTEM_RECOMMENDATION':
+                if p['code_hash']!=code_hash() or p['policy_hash']!=self.policy.fingerprint:
+                    flags.append('EXECUTION_VERSION_MISMATCH')
                 fresh=self.context(p,at);state=fresh['health'].get(entry['market'],{}).get('state','UNKNOWN')
                 if not fresh['journal_ok'] or state!='WORKING':flags.append('ADMISSION_STATE_CHANGED')
+                if self.policy.stress_mode=='GRADED':
+                    release=fresh['releases'].get(entry['market']) or {}
+                    if not release.get('stress_classes',{}).get(candidate['stress_grade']['class'],{}).get('passed'):flags.append('STRESS_CLASS_RELEASE_CHANGED')
                 from .risk import size_risk
-                remaining=size_risk(win=candidate['low'][0],push=candidate['low'][1],odds=entry['odds'],bankroll=d['inputs']['portfolio']['bankroll'],peak=d['inputs']['portfolio']['peak'],quality=.5 if d['conditions'] else 1.,exposures=fresh['exposures'],match=p['sports']['match'],model=p['model_version'],scenario=p['scenario']['type'],factors=p['scenario']['novelty'],at=at,policy=self.policy)
+                bounds=candidate.get('admission_low',candidate['low'])
+                upper=candidate.get('admission_high',candidate['high'])
+                adverse=worst_case_probabilities(bounds,upper,entry['odds'])
+                quality=min(.5 if d['conditions'] else 1.,candidate.get('stake_multiplier',1.))
+                remaining=size_risk(win=adverse[0],push=adverse[1],odds=entry['odds'],bankroll=d['inputs']['portfolio']['bankroll'],peak=d['inputs']['portfolio']['peak'],quality=quality,exposures=fresh['exposures'],match=p['sports']['match'],model=p['model_version'],scenario=p['scenario']['type'],factors=p['scenario']['novelty'],at=at,policy=self.policy)
                 if entry['stake']>remaining['stake']:flags.append('PORTFOLIO_LIMIT_CHANGED')
             if entry['origin']=='SYSTEM_RECOMMENDATION' and flags:raise ValueError('execution failed current permission: '+','.join(flags))
             if self.repo.insert('bets',entry['id'],payload,decision_id=decision_id,at=iso(at)):self.repo.record_log('bets',entry['id'],at,payload)

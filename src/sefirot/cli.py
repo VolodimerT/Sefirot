@@ -50,7 +50,7 @@ def main(argv=None):
     demo=sub.add_parser('demo',help='complete synthetic workflow in a temporary database')
     demo.add_argument('--text',action='store_true',help='concise Russian decision card')
     fixture=sub.add_parser('fixture',help='write synthetic JSON input files');fixture.add_argument('directory')
-    capture=sub.add_parser('capture',help='seal sports-only probability before reading any prices');capture.add_argument('sports');capture.add_argument('--markets');capture.add_argument('--calibrator');capture.add_argument('--parent');capture.add_argument('--reason')
+    capture=sub.add_parser('capture',help='seal sports-only probability before reading any prices');capture.add_argument('sports');capture.add_argument('--markets');capture.add_argument('--calibrator');capture.add_argument('--parent');capture.add_argument('--reason');capture.add_argument('--goal-model',help='frozen sports-only SoS/count artifact')
     decision=sub.add_parser('decide');decision.add_argument('prediction_id');decision.add_argument('quotes');decision.add_argument('recheck');decision.add_argument('--bankroll',type=float,default=1000);decision.add_argument('--peak',type=float,default=1000)
     decision.add_argument('--text',action='store_true',help='print the decision card; save the full decision in the ledger')
     result=sub.add_parser('result');result.add_argument('file')
@@ -64,6 +64,10 @@ def main(argv=None):
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
     audit=sub.add_parser('audit-regressions',help='settle reported retrospective audit cases without claiming holdout evidence');audit.add_argument('file')
     research=sub.add_parser('research');research.add_argument('csv',nargs='+');research.add_argument('--output',required=True)
+    goal_fit=sub.add_parser('fit-goal-model',help='fit profile priors and four-count bins without prices or monetary permission')
+    goal_fit.add_argument('training_sports');goal_fit.add_argument('--samples',required=True);goal_fit.add_argument('--output',required=True)
+    upgrade=sub.add_parser('p0-upgrade-benchmark',help='compare frozen baseline and SoS/count model on a declared chronological split')
+    upgrade.add_argument('--csv',nargs='+',required=True);upgrade.add_argument('--design',required=True);upgrade.add_argument('--output-dir',required=True)
     diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
     odds_events=sub.add_parser('odds-events',help='list an exact prematch event for a sealed prediction')
     odds_events.add_argument('prediction_id');odds_events.add_argument('--sport',required=True)
@@ -72,6 +76,18 @@ def main(argv=None):
     fetch_odds.add_argument('--event-id',required=True);fetch_odds.add_argument('--bookmaker',required=True)
     fetch_odds.add_argument('--region',default='eu');fetch_odds.add_argument('--output',required=True)
     fetch_odds.add_argument('--rules-confirmed',action='store_true',help='operator checked 90-minute bookmaker settlement rules')
+    health=sub.add_parser('api-health',help='check both API credentials and quotas without fetching prices')
+    health.add_argument('--output',help='save a credential-free connection report')
+    football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
+    football.add_argument('--endpoint',required=True,choices=['leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries'])
+    football.add_argument('--param',action='append',default=[],help='provider filter NAME=VALUE; repeat as needed')
+    football.add_argument('--output',required=True)
+    normalize=sub.add_parser('football-normalize',help='convert collected API fixtures to sports input; missing facts stay missing')
+    normalize.add_argument('target');normalize.add_argument('--fixture-id',required=True,type=int)
+    normalize.add_argument('--history',nargs='*',default=[])
+    normalize.add_argument('--profile',required=True,choices=['MEN','WOMEN','RESERVE','LOWER'])
+    normalize.add_argument('--source-reliability',required=True,type=float,help='explicit operator assertion, not provider certification')
+    normalize.add_argument('--output',required=True)
     recovery=sub.add_parser('recover');recovery.add_argument('context_key');recovery.add_argument('validation_id');recovery.add_argument('--fix',required=True)
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
@@ -82,10 +98,54 @@ def main(argv=None):
     execution=sub.add_parser('execution');execution.add_argument('decision_id');execution.add_argument('file')
     approval=sub.add_parser('approve-policy');approval.add_argument('--operator',required=True);approval.add_argument('--statement',required=True)
     args=parser.parse_args(argv)
-    policy=Policy(**load(args.policy)) if args.policy else Policy()
     repo=None
     try:
-        if args.command=='audit-regressions':
+        policy=Policy(**load(args.policy)) if args.policy else Policy()
+        if args.command=='api-health':
+            from .api_health import check
+            out=check()
+            if args.output:
+                path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
+                with path.open('x',encoding='utf-8') as file:json.dump(out,file,ensure_ascii=False,indent=2,allow_nan=False)
+                out['report']=str(path.resolve())
+        elif args.command=='football-fetch':
+            from .football_provider import get
+            params={}
+            for entry in args.param:
+                if '=' not in entry:raise ValueError('sports filter must be NAME=VALUE')
+                key,value=entry.split('=',1)
+                if key in params:raise ValueError('duplicate sports filter')
+                params[key]=value
+            path=Path(args.output)
+            if path.exists():raise ValueError('sports output already exists')
+            packet=get(args.endpoint,params)
+            path.parent.mkdir(parents=True,exist_ok=True)
+            with path.open('x',encoding='utf-8') as file:json.dump(packet,file,ensure_ascii=False,indent=2,allow_nan=False)
+            out={'status':'SPORTS_API_RECEIVED','results':packet['data']['results'],'receipt':packet['receipt'],'file':str(path.resolve()),'execution_enabled':False}
+        elif args.command=='football-normalize':
+            from .football_provider import normalize_sports
+            packet=normalize_sports(load(args.target),args.fixture_id,[load(p) for p in args.history],
+                                    profile=args.profile,source_reliability=args.source_reliability)
+            path=Path(args.output);receipt=Path(str(path)+'.receipt.json')
+            if path.exists() or receipt.exists():raise ValueError('sports output already exists')
+            path.parent.mkdir(parents=True,exist_ok=True)
+            for target,value in ((path,packet['sports']),(receipt,packet['receipt'])):
+                with target.open('x',encoding='utf-8') as file:json.dump(value,file,ensure_ascii=False,indent=2,allow_nan=False)
+            out={'status':packet['receipt']['status'],'history_rows':len(packet['sports']['history']),
+                 'missing_facts':packet['receipt']['missing_facts'],'sports_file':str(path.resolve()),'receipt_file':str(receipt.resolve())}
+        elif args.command=='fit-goal-model':
+            from .goal_model import fit_goal_model
+            from .engine import model_code_hash
+            out=fit_goal_model(load(args.training_sports),load(args.samples),policy,datetime.now(timezone.utc).isoformat(),model_code_hash())
+            path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
+            with path.open('x',encoding='utf-8') as file:json.dump(out,file,ensure_ascii=False,indent=2,allow_nan=False)
+            out={'hash':out['hash'],'status':out['status'],'monetary_permission':False,'report':str(path.resolve())}
+        elif args.command=='p0-upgrade-benchmark':
+            from .goal_research import benchmark_upgrade
+            report=benchmark_upgrade(args.csv,load(args.design),args.output_dir,policy)
+            out={k:report[k] for k in ('run_id','status','can_certify_release','monetary_permission','split_counts')}
+            out['comparison']=report['comparison'];out['report_dir']=str(Path(args.output_dir).resolve())
+        elif args.command=='audit-regressions':
             from .retrospective import audit_cases
             out=audit_cases(load(args.file),policy)
         elif args.command=='diagnose-p0':
@@ -161,7 +221,7 @@ def main(argv=None):
                     if not args.watch:break
                     print(json.dumps(out,ensure_ascii=False),flush=True)
                     timer.sleep(5)
-            elif cmd=='capture':out=service.capture(load(args.sports),load(args.markets) if args.markets else DEFAULT_POOL,args.calibrator,parent=args.parent,reason=args.reason)
+            elif cmd=='capture':out=service.capture(load(args.sports),load(args.markets) if args.markets else DEFAULT_POOL,args.calibrator,parent=args.parent,reason=args.reason,goal_model=load(args.goal_model) if args.goal_model else None)
             elif cmd=='decide':out=service.decide(args.prediction_id,load(args.quotes),load(args.recheck),{'bankroll':args.bankroll,'peak':args.peak},now)
             elif cmd=='result':out=service.result(load(args.file))
             elif cmd=='closing':out=service.closing(args.match_id,load(args.file))
@@ -187,7 +247,7 @@ def main(argv=None):
             from .decision_card import render_card
             print(render_card(out['decision_card']))
         else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
-        return 0
+        return 2 if args.command=='api-health' and out['status']!='API_READY' else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:

@@ -40,6 +40,11 @@ class Market:
     def key(self) -> str:
         return f"{self.kind}:{self.side}" + (f":{self.line:g}" if self.line is not None else "")
 
+    @property
+    def push_possible(self) -> bool:
+        """Settlement support, independent of the estimated score distribution."""
+        return self.kind == 'DNB' or (self.line is not None and float(self.line).is_integer())
+
 
 def settle(market: Market, home: int, away: int) -> str:
     if any(isinstance(v, bool) or not isinstance(v, int) or v < 0 for v in (home, away)):

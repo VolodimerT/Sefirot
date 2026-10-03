@@ -6,7 +6,7 @@ from hashlib import sha256
 import json
 import math
 
-VERSION = '2.4.0'
+VERSION = '2.4.2'
 MODEL = 'goals-gamma-v1'
 PROFILES = ('MEN','WOMEN','RESERVE','LOWER','UNKNOWN')
 SEPHIROT = ('threshold','witness','scenario','probability','competence','market','opponent','arbiter','chronicler')
@@ -58,6 +58,17 @@ def strict(obj, required, optional=()):
 class Policy:
     """Research defaults are explicit proposals, never labelled empirically certified."""
     version: str = 'research-policy-v3'
+    goal_model: str = 'BASELINE_V1'
+    stress_mode: str = 'STRICT'
+    min_profile_games: int = 60
+    min_threshold_bin: int = 30
+    threshold_prior_games: float = 30.
+    sos_weight_min: float = .67
+    sos_weight_max: float = 1.5
+    aggressive_stress_floor: float = -.25
+    fragile_stake_multiplier: float = .5
+    aggressive_stake_multiplier: float = .2
+    reference_bookmakers: tuple = ('pinnacle',)
     min_team_games: int = 8
     history_days: int = 730
     half_life_days: float = 180.
@@ -93,16 +104,27 @@ class Policy:
 
     def __post_init__(self):
         text(self.version,'policy version')
+        if self.goal_model not in ('BASELINE_V1','SOS_THRESHOLD_V2'): raise ValueError('invalid goal model')
+        if self.stress_mode not in ('STRICT','GRADED'): raise ValueError('invalid stress mode')
+        if not isinstance(self.reference_bookmakers,(list,tuple)) or any(not isinstance(b,str) or not b.strip() for b in self.reference_bookmakers):
+            raise ValueError('explicit reference bookmakers required')
+        if len(set(self.reference_bookmakers))!=len(self.reference_bookmakers): raise ValueError('duplicate reference bookmaker')
+        object.__setattr__(self,'reference_bookmakers',tuple(self.reference_bookmakers))
         for k,v in asdict(self).items():
-            if k=='version': continue
-            if k in ('min_team_games','history_days','fact_max_age_minutes','recheck_max_age_minutes','quote_max_age_seconds','max_candidates','min_calibration','min_holdout','min_context','max_revisions','health_window','max_severe_errors'):
+            if k in ('version','goal_model','stress_mode','reference_bookmakers'): continue
+            if k in ('min_profile_games','min_threshold_bin','min_team_games','history_days','fact_max_age_minutes','recheck_max_age_minutes','quote_max_age_seconds','max_candidates','min_calibration','min_holdout','min_context','max_revisions','health_window','max_severe_errors'):
                 integer(v,k,1)
+            elif k=='aggressive_stress_floor': number(v,k,-1,0)
             else: number(v,k,0)
         for k in ('max_calibration_error','min_source_reliability','min_ev','min_low_ev','max_probability_width','divergence','extreme_divergence','line_move','max_tail','stress_rate_fraction','max_stake_fraction','max_match_fraction','max_day_fraction','max_group_fraction','kelly_fraction','max_drawdown','health_delta'):
             number(getattr(self,k),k,0,1)
         if self.max_candidates>7: raise ValueError('main market pool limited to seven candidates')
         if self.extreme_divergence<=self.divergence: raise ValueError('extreme divergence must exceed review threshold')
         if min(self.half_life_days,self.prior_games,self.max_tail)<=0: raise ValueError('positive numerical scales required')
+        if not 0<self.sos_weight_min<=1<=self.sos_weight_max: raise ValueError('SoS weights must bracket one')
+        if not 0<self.aggressive_stake_multiplier<=self.fragile_stake_multiplier<=1: raise ValueError('graded stake caps must decrease with fragility')
+        if self.aggressive_stress_floor>=-.10: raise ValueError('aggressive floor must be below fragile boundary')
+        if self.threshold_prior_games<=0: raise ValueError('positive threshold shrinkage required')
 
     @property
     def fingerprint(self): return digest(asdict(self))

@@ -3,7 +3,7 @@ from .probability import price_requirements
 
 
 PRICE_CODES={'ROBUST_EV_INSUFFICIENT','DEATH_TEST_PRICE_FRAGILITY',
-             'PRICE_STALE','MISSING_CURRENT_PRICE','MARKET_REFERENCE_MISSING'}
+             'DEATH_TEST_SEVERE_FRAGILITY','PRICE_STALE','MISSING_CURRENT_PRICE','MARKET_REFERENCE_MISSING'}
 RECALCULATE_CODES={'PROBABILITY_RECALCULATION_REQUIRED','SPORTS_CHANGED_RECALCULATE',
                    'MODEL_MATCHUP_CONFLICT','MODEL_MARKET_DIVERGENCE',
                    'DIVERGENCE_NEEDS_CORROBORATION','THESIS_REPLACEMENT_GUARD',
@@ -14,6 +14,13 @@ REASON_TEXT={
     'ROBUST_EV_INSUFFICIENT':'цена не проходит Base/Low EV',
     'DEATH_TEST_PRICE_FRAGILITY':'цена не выдерживает стресс-сценарий',
     'CALIBRATION_INSUFFICIENT':'недостаточно калибровочных данных',
+    'STRESS_CALIBRATION_INSUFFICIENT':'недостаточно калибровки стресс-сценариев',
+    'GRADED_DEATH_TEST_UNVALIDATED':'стресс-класс не прошёл независимую проверку',
+    'DEATH_TEST_SEVERE_FRAGILITY':'цена не проходит нижний предел стресс-EV',
+    'PROFILE_MODEL_UNFITTED':'модель профиля турнира не обучена',
+    'THRESHOLD_MODEL_UNFITTED':'не обучены вероятности порогов голов',
+    'THRESHOLD_STRESS_BIN_UNFITTED':'не обучены пороги голов для стресс-сценариев',
+    'GOAL_ARTIFACT_SYNTHETIC_RESEARCH_ONLY':'модель голов обучена на синтетических данных',
     'UNCERTAINTY_TOO_WIDE':'слишком широкий диапазон вероятности',
     'HOLDOUT_UNVALIDATED':'модель не прошла независимую проверку',
     'CONTEXT_UNKNOWN':'компетенция в этом контексте неизвестна',
@@ -74,7 +81,7 @@ def _status(candidate,global_codes,policy):
     if 'RISK_LIMIT' in codes:return 'RISK_LIMIT'
     if candidate.get('ev') is None:return 'PRICE_MISSING'
     if candidate['ev']<policy.min_ev:return 'NO_EDGE'
-    if codes&{'ROBUST_EV_INSUFFICIENT','DEATH_TEST_PRICE_FRAGILITY'}:return 'PRICE_FRAGILE'
+    if codes&{'ROBUST_EV_INSUFFICIENT','DEATH_TEST_PRICE_FRAGILITY','DEATH_TEST_SEVERE_FRAGILITY'}:return 'PRICE_FRAGILE'
     if codes&PRICE_CODES:return 'PRICE_RECHECK'
     return 'ADMISSIBLE'
 
@@ -85,13 +92,17 @@ def build_card(decision,prediction,policy):
     rows=[]
     for c in decision['candidates']:
         local=_codes(c['issues'])
-        thresholds=price_requirements(c['base'],c['low'],c['high'],c['stress_probabilities'],policy)
+        low=c.get('admission_low',c['calibration_low'] if policy.stress_mode=='GRADED' else c['low'])
+        high=c.get('admission_high',c['calibration_high'] if policy.stress_mode=='GRADED' else c['high'])
+        thresholds=price_requirements(c['base'],low,high,c['stress_probabilities'],policy)
         status=_status(c,global_codes,policy)
         rows.append({'market':c['key'],'status':status,'eligible':c['eligible'],
                      'odds':c.get('odds'),'implied_probability':c.get('implied_probability'),
                      'raw_probability':c['raw'][0],'model_probability':c['base'][0],
                      'push_probability':c['base'][1],'loss_probability':c['base'][2],
                      'probability_low':c['low'][0],'probability_high':c['high'][0],
+                     'admission_probability_low':low[0],'admission_probability_high':high[0],
+                     'probability_bound_basis':c.get('probability_bound_basis','CALIBRATION_ONLY' if policy.stress_mode=='GRADED' else 'CALIBRATION_AND_SENSITIVITY'),
                      'calibration':c['calibration'],'fair_odds':c.get('fair_odds'),
                      'ev':c.get('ev'),'ev_low':c.get('ev_low'),
                      'edge':c.get('edge'),'market_reference':c.get('market_reference'),
