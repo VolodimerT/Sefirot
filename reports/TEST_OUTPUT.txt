@@ -276,6 +276,6 @@ test_graded_execution_uses_calibration_bounds_and_stake_caps (test_version_audit
 test_real_exposure_change_remains_a_block (test_version_audit_regressions.ExecutionConsistencyTests.test_real_exposure_change_remains_a_block) ... ok
 
 ----------------------------------------------------------------------
-Ran 274 tests in 8.647s
+Ran 274 tests in 8.752s
 
 OK
