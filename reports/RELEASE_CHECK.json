@@ -1,17 +1,17 @@
 {
   "version": "2.4.2",
-  "code_hash": "cff8f1021dd1f308e70cfced313ba37b461758a4b02142ad2c21321819968b50",
-  "model_hash": "c3e1f67045919c9370ebc904ddb4590fdc1d1de485ddf4e01f3a5c7e381e6114",
+  "code_hash": "49fbf90cc34c53dfaddf052f7fe1000095913d45a9963ed9b3758355ad04905d",
+  "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 9.496,
+  "elapsed_seconds": 7.663,
   "test_exit": 0,
-  "tests": 274,
+  "tests": 297,
   "demo": {
     "version": "2.4.2",
     "synthetic": true,
-    "prediction_id": "51acf793161cf0411504026b45b44e9aa6d4e9730723237d9b0f1430fc23b77c",
-    "decision_id": "9a54b09a16ab98d93feba4c7d1d62dbf08b0dffe72b954a0a280859a08c50f20",
+    "prediction_id": "0ff8f2cd5d1bb4a67a93ba1b295cdc1f90999317b51ac1d02193e65d2210e7f7",
+    "decision_id": "a57c7a718d9da72f37966190322fc79fe50a209883feac6c30e9cfc8d0980185",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
@@ -43,14 +43,14 @@
       "verdict_ru": "пропуск",
       "class": "D",
       "status": "RECALCULATE",
-      "at": "2026-10-03T05:41:20+00:00",
+      "at": "2026-10-03T10:13:20+00:00",
       "match": {
         "away": "B",
         "competition_profile": "MEN",
         "format": "REGULATION_90",
         "home": "A",
         "id": "synthetic-001",
-        "kickoff": "2026-10-03T07:39:20+00:00",
+        "kickoff": "2026-10-03T12:11:20+00:00",
         "league": "SYNTHETIC",
         "sport": "football"
       },
@@ -188,7 +188,7 @@
         }
       ],
       "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-      "deadline": "2026-10-03T07:39:20+00:00",
+      "deadline": "2026-10-03T12:11:20+00:00",
       "alternatives": [
         {
           "market": "1X2:HOME",
@@ -866,5 +866,5 @@
   "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-03T05:39:20.729883+00:00"
+  "generated_at": "2026-10-03T10:11:20.378182+00:00"
 }
