@@ -58,6 +58,8 @@ def main(argv=None):
     replay=sub.add_parser('replay');replay.add_argument('decision_id')
     explain=sub.add_parser('explain',help='read the recorded decision card; no new prediction or admission')
     explain.add_argument('decision_id');explain.add_argument('--text',action='store_true',help='concise Russian output')
+    readiness=sub.add_parser('readiness',help='check existing model/data blockers before requesting prices; no new seal')
+    readiness.add_argument('prediction_id');readiness.add_argument('--text',action='store_true',help='concise Russian output')
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
@@ -190,6 +192,14 @@ def main(argv=None):
             out=recorded['decision_card']
             if args.text:
                 print(render_card(out));return 0
+        elif args.command=='readiness':
+            from .readiness import inspect_readiness,render_readiness
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            out=inspect_readiness(service,args.prediction_id,service.now())
+            if args.text:
+                print(render_readiness(out));return 0
         elif args.command=='sync-supabase':
             from .cloud_sync import check_local,sync
             out=check_local(args.db) if args.check_local else sync(args.db)

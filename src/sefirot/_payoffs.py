@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 from math import isfinite
 
 MAIN_ORDER = ("1X2", "DOUBLE_CHANCE", "DNB", "HANDICAP", "TOTAL", "BTTS", "TEAM_TOTAL")
@@ -94,13 +95,35 @@ def fair_odds(win: float, push: float) -> float:
     return (1 - push) / win
 
 
+@lru_cache(maxsize=64)
+def _score_outcomes(market: Market, scores: tuple[tuple[int, int], ...]) -> tuple[str, ...]:
+    """Cache settlement rules only; probabilities and prices are never cached."""
+    return tuple(settle(market, home, away) for home, away in scores)
+
+
 def probabilities(market: Market, score_mass: dict[tuple[int, int], float]) -> tuple[float, float, float]:
-    result = {"WIN": 0., "PUSH": 0., "LOSS": 0.}
-    for (home, away), p in score_mass.items():
+    scores = tuple(score_mass)
+    values = []
+    for (home, away), p in zip(scores, score_mass.values()):
         value = number(p, "score probability")
         if value < 0:
             raise ValueError("negative probability")
-        result[settle(market, home, away)] += value
+        # Validate every call before cache lookup: bool/float keys compare equal
+        # to integer keys in Python and must not inherit a cached valid result.
+        if type(home) is int and type(away) is int:
+            invalid = home < 0 or away < 0
+        else:
+            invalid = any(isinstance(v, bool) or not isinstance(v, int) or v < 0 for v in (home, away))
+        if invalid:
+            raise ValueError("scores must be nonnegative integers")
+        values.append(value)
+    # Bound both cache entry count and support size. Preserve the uncached path
+    # for larger grids and duck-typed callers of the original public function.
+    outcomes = (_score_outcomes(market, scores) if isinstance(market, Market) and len(scores) <= 4096
+                else tuple(settle(market, home, away) for home, away in scores))
+    result = {"WIN": 0., "PUSH": 0., "LOSS": 0.}
+    for outcome, value in zip(outcomes, values):
+        result[outcome] += value
     if abs(sum(result.values()) - 1) > 1e-8:
         raise ValueError("score mass must sum to one")
     return result["WIN"], result["PUSH"], result["LOSS"]

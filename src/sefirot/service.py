@@ -37,6 +37,22 @@ class Service:
                 goal_model=routed
                 calibrator_id=active['calibrator_id']
         calibrator=self.repo.get('calibrators',calibrator_id) if calibrator_id else None
+        if not parent:
+            # An exact retry has already passed sporting validation. Match all
+            # inputs and current build/policy; a changed fact, fit or pool must
+            # still take the normal validation and explicit-revision path.
+            with self.repo.transaction():
+                prior=self.repo.all('predictions',match_id=sports['match']['id'])
+                build=code_hash();policy_hash=self.policy.fingerprint
+                fit_hash=goal_model.get('hash') if isinstance(goal_model,dict) else None
+                expected_model=digest([build,policy_hash,calibrator_id,fit_hash])
+                if not any(digest(p['market_pool'])!=digest(markets) for p in prior):
+                    for p in prior:
+                        if (p['parent'] is None and p['model_id']==expected_model and p['code_hash']==build and p['policy_hash']==policy_hash
+                            and p['reconstructed']==bool(replay) and digest(p['sports'])==digest(sports)
+                            and digest(p.get('calibrator'))==digest(calibrator)
+                            and digest(p.get('goal_model'))==digest(goal_model)):
+                            return p
         prepared=prepare(sports,markets,self.policy,calibrator,goal_model)
         revision=0
         if parent:
@@ -57,7 +73,7 @@ class Service:
         prepared.pop('id');prepared['id']=digest(prepared)
         match=sports['match']
         with self.repo.transaction():
-            prior_fixtures=[p for p in self.repo.all('predictions') if p['sports']['match']['id']==match['id']]
+            prior_fixtures=self.repo.all('predictions',match_id=match['id'])
             if any(digest(p['market_pool'])!=digest(markets) for p in prior_fixtures):raise ValueError('cannot shop additional markets for an existing match')
             if not parent:
                 same=[p for p in prior_fixtures if p['model_id']==model_id and p['parent'] is None and digest(p['sports'])==digest(sports) and p['reconstructed']==bool(replay)]
@@ -82,7 +98,7 @@ class Service:
         with self.repo.transaction():
             for mid in match_ids:
                 text(mid,'match id')
-                if any(p['sports']['match']['id']==mid for p in self.repo.all('predictions')):raise ValueError('split must be reserved before prediction')
+                if self.repo.all('predictions',match_id=mid):raise ValueError('split must be reserved before prediction')
                 row={'match_id':mid,'role':role,'at':at}
                 self.repo.insert('split_assignments',mid,row,at=iso(at));self.repo.log('SPLIT_RESERVED',at,row)
 
@@ -149,7 +165,7 @@ class Service:
             inserted=self.repo.insert('results',result['match_id'],result,at=iso(at))
             if not inserted:return {'idempotent':True,'records':0}
             self.repo.record_log('results',result['match_id'],at,result)
-            predictions=[p for p in self.repo.all('predictions') if p['sports']['match']['id']==match['id']]
+            predictions=self.repo.all('predictions',match_id=match['id'])
             # Latest prematch revision per model; all other sealed predictions stay stored.
             latest={}
             for p in predictions:
@@ -172,7 +188,8 @@ class Service:
                             'calibration_status':c['calibration'],'sealed_at':p['sealed_at'],'kickoff':match['kickoff'],
                             'calibrator_id':p['calibrator']['hash'] if p['calibrator'] else None}
                     rid=digest(record);self.repo.insert('calibration_history',rid,record,prediction_id=p['id'],market_id=market.key,at=iso(at));new_records.append(record)
-            for decision in self.repo.all('decisions',at):
+            decisions=sorted((d for p in predictions for d in self.repo.all('decisions',at,prediction_id=p['id'])),key=lambda d:d['id'])
+            for decision in decisions:
                 if decision['match_id']!=match['id']:continue
                 audit={'decision_id':decision['id'],'match_id':match['id'],'at':at,'quality':'UNDETERMINED',
                        'competition_profile':profile_of(match),'model_id':decision.get('inputs',{}).get('context',{}).get('model_id') or self.repo.get('predictions',decision['prediction_id'])['model_id'],
@@ -189,19 +206,26 @@ class Service:
                        'premise_assessment':'UNKNOWN_REQUIRES_EVIDENCE',
                        'note':'Result and decision quality are separate; causal attribution needs evidence.'}
                 aid=digest(audit);self.repo.insert('postmatch_reports',aid,audit,decision_id=decision['id'],at=iso(at));self.repo.log('AUTOMATIC_POSTMATCH_AUDIT',at,audit)
-            for key in sorted({r['context_key'] for r in new_records}):self._monitor(key,at)
+            if new_records:
+                monitor_records=self._records(at)
+                monitor_events=self.repo.all('health_events',at)
+                monitor_post=self.repo.all('postmortems',at)
+                for key in sorted({r['context_key'] for r in new_records}):
+                    self._monitor(key,at,records=monitor_records,events=monitor_events,post=monitor_post)
             self.repo.log('FEEDBACK',at,{'match_id':match['id'],'metrics':len(new_records)})
         return {'idempotent':False,'records':len(new_records)}
 
-    def _monitor(self,key,at):
-        records=[r for r in self._records(at) if r['context_key']==key]
-        prior=sorted([h for h in self.repo.all('health_events',at) if h['context_key']==key],key=lambda e:(time(e['at']),e['id']))
+    def _monitor(self,key,at,*,records=None,events=None,post=None):
+        records=[r for r in (self._records(at) if records is None else records) if r['context_key']==key]
+        events=self.repo.all('health_events',at) if events is None else events
+        post=self.repo.all('postmortems',at) if post is None else post
+        prior=sorted([h for h in events if h['context_key']==key],key=lambda e:(time(e['at']),e['id']))
         previous=prior[-1]['state'] if prior else 'UNKNOWN'
-        severe=len({p['match_id'] for p in self.repo.all('postmortems',at) if p['critical_error'] and p['context_key']==key})
+        severe=len({p['match_id'] for p in post if p['critical_error'] and p['context_key']==key})
         recovered=next((h.get('recovery_after') for h in reversed(prior) if h.get('recovery_after')),None)
         if recovered:
             records=[r for r in records if time(r['received_at'])>time(recovered)]
-            severe=len({p['match_id'] for p in self.repo.all('postmortems',at) if p['critical_error'] and p['context_key']==key and time(p['at'])>time(recovered)})
+            severe=len({p['match_id'] for p in post if p['critical_error'] and p['context_key']==key and time(p['at'])>time(recovered)})
         report=competence(records,self.policy,previous,severe)
         event={'context_key':key,'at':at,**report,**({'recovery_after':recovered} if recovered else {})};event['id']=digest(event)
         self.repo.insert('health_events',event['id'],event,at=iso(at));self.repo.log('HEALTH',at,event)
