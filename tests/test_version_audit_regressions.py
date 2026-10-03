@@ -81,6 +81,13 @@ class CurrentEvidenceTests(unittest.TestCase):
 
 
 class ExecutionConsistencyTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        # unittest cleanups run in reverse order. Register the directory first
+        # so every Repository registered below closes before Windows removes it.
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+
     def setup_execution(self, root, push=True, graded=False):
         p,case,quotes,ctx=controlled([{'kind':'DNB','side':'HOME'}] if push else [{'kind':'1X2','side':'HOME'}],odds=1.6 if push else 1.5)
         policy=replace(Policy(),stress_mode='GRADED') if graded else Policy()
@@ -111,48 +118,43 @@ class ExecutionConsistencyTests(unittest.TestCase):
         return svc,repo,d,entry,at,ctx,saved
 
     def test_allowed_push_stake_can_be_recorded_and_retried(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            svc,repo,d,entry,at,ctx,_=self.setup_execution(Path(tmp))
-            with patch.object(svc,'context',return_value=ctx):
-                result=svc.execution(d['id'],entry,at)
-                retry=svc.execution(d['id'],entry,at)
-            self.assertEqual(result['flags'],[])
-            self.assertEqual(result,retry)
-            self.assertEqual(len(repo.all('bets')),1)
-            self.assertTrue(repo.verify())
+        svc,repo,d,entry,at,ctx,_=self.setup_execution(self.root)
+        with patch.object(svc,'context',return_value=ctx):
+            result=svc.execution(d['id'],entry,at)
+            retry=svc.execution(d['id'],entry,at)
+        self.assertEqual(result['flags'],[])
+        self.assertEqual(result,retry)
+        self.assertEqual(len(repo.all('bets')),1)
+        self.assertTrue(repo.verify())
 
     def test_graded_execution_uses_calibration_bounds_and_stake_caps(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            svc,repo,d,entry,at,ctx,_=self.setup_execution(Path(tmp),graded=True)
-            self.assertEqual(d['risk']['probability_bound_basis'],'CALIBRATION_ONLY')
-            self.assertEqual(d['risk']['stake'],5.)
-            with patch.object(svc,'context',return_value=ctx):
-                result=svc.execution(d['id'],entry,at)
-            self.assertEqual(result['flags'],[])
-            self.assertTrue(repo.verify())
+        svc,repo,d,entry,at,ctx,_=self.setup_execution(self.root,graded=True)
+        self.assertEqual(d['risk']['probability_bound_basis'],'CALIBRATION_ONLY')
+        self.assertEqual(d['risk']['stake'],5.)
+        with patch.object(svc,'context',return_value=ctx):
+            result=svc.execution(d['id'],entry,at)
+        self.assertEqual(result['flags'],[])
+        self.assertTrue(repo.verify())
 
     def test_real_exposure_change_remains_a_block(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            svc,repo,d,entry,at,ctx,p=self.setup_execution(Path(tmp))
-            ctx['exposures']=[{'at':at,'stake':1.,'groups':['match:'+p['sports']['match']['id']]}]
-            with patch.object(svc,'context',return_value=ctx), self.assertRaisesRegex(ValueError,'PORTFOLIO_LIMIT_CHANGED'):
-                svc.execution(d['id'],entry,at)
-            self.assertEqual(repo.all('bets'),[])
+        svc,repo,d,entry,at,ctx,p=self.setup_execution(self.root)
+        ctx['exposures']=[{'at':at,'stake':1.,'groups':['match:'+p['sports']['match']['id']]}]
+        with patch.object(svc,'context',return_value=ctx), self.assertRaisesRegex(ValueError,'PORTFOLIO_LIMIT_CHANGED'):
+            svc.execution(d['id'],entry,at)
+        self.assertEqual(repo.all('bets'),[])
 
     def test_different_policy_cannot_reuse_old_permission(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            svc,repo,d,entry,at,ctx,_=self.setup_execution(Path(tmp),push=False)
-            svc.policy=replace(Policy(),max_stake_fraction=.01)
-            with patch.object(svc,'context',return_value=ctx),self.assertRaisesRegex(ValueError,'EXECUTION_VERSION_MISMATCH'):
-                svc.execution(d['id'],entry,at)
-            self.assertEqual(repo.all('bets'),[])
+        svc,repo,d,entry,at,ctx,_=self.setup_execution(self.root,push=False)
+        svc.policy=replace(Policy(),max_stake_fraction=.01)
+        with patch.object(svc,'context',return_value=ctx),self.assertRaisesRegex(ValueError,'EXECUTION_VERSION_MISMATCH'):
+            svc.execution(d['id'],entry,at)
+        self.assertEqual(repo.all('bets'),[])
 
     def test_different_build_cannot_reuse_old_permission(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            svc,repo,d,entry,at,ctx,_=self.setup_execution(Path(tmp),push=False)
-            with patch.object(svc,'context',return_value=ctx),patch('sefirot.service.code_hash',return_value='another-build'),self.assertRaisesRegex(ValueError,'EXECUTION_VERSION_MISMATCH'):
-                svc.execution(d['id'],entry,at)
-            self.assertEqual(repo.all('bets'),[])
+        svc,repo,d,entry,at,ctx,_=self.setup_execution(self.root,push=False)
+        with patch.object(svc,'context',return_value=ctx),patch('sefirot.service.code_hash',return_value='another-build'),self.assertRaisesRegex(ValueError,'EXECUTION_VERSION_MISMATCH'):
+            svc.execution(d['id'],entry,at)
+        self.assertEqual(repo.all('bets'),[])
 
 
 if __name__=='__main__':unittest.main()
