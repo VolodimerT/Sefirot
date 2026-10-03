@@ -1,15 +1,17 @@
 {
-  "version": "2.4.0",
+  "version": "2.4.2",
+  "code_hash": "cff8f1021dd1f308e70cfced313ba37b461758a4b02142ad2c21321819968b50",
+  "model_hash": "c3e1f67045919c9370ebc904ddb4590fdc1d1de485ddf4e01f3a5c7e381e6114",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 4.997,
+  "elapsed_seconds": 9.363,
   "test_exit": 0,
-  "tests": 214,
+  "tests": 274,
   "demo": {
-    "version": "2.4.0",
+    "version": "2.4.2",
     "synthetic": true,
-    "prediction_id": "a07e31cf1e49eed994c6b60fc085b57a7267cd35f84ecfbc896f0810f26845ad",
-    "decision_id": "be8cd2bff20c6c1c46db14e8a6dacf1ece518e85a3380ec583811e084c234c9c",
+    "prediction_id": "2c2f13ffdae39c136abac18500b446a4f6685f1427826b9c7270a3c805797b3d",
+    "decision_id": "cc96240cb108660fa3440cb4d403faedbaaf2d61e5c7058f683bfed9e9400eed",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
@@ -35,20 +37,20 @@
     "monetary_stake": 0.0,
     "decision_card": {
       "schema": "decision-card-v1",
-      "version": "2.4.0",
+      "version": "2.4.2",
       "decision": "PASS",
       "verdict": "skip",
       "verdict_ru": "пропуск",
       "class": "D",
       "status": "RECALCULATE",
-      "at": "2026-10-01T21:10:02+00:00",
+      "at": "2026-10-03T04:44:00+00:00",
       "match": {
         "away": "B",
         "competition_profile": "MEN",
         "format": "REGULATION_90",
         "home": "A",
         "id": "synthetic-001",
-        "kickoff": "2026-10-01T23:08:02+00:00",
+        "kickoff": "2026-10-03T06:42:00+00:00",
         "league": "SYNTHETIC",
         "sport": "football"
       },
@@ -66,6 +68,9 @@
         "loss_probability": 0.14075105329453946,
         "probability_low": 0.0,
         "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
         "calibration": "UNCALIBRATED",
         "fair_odds": 1.1638070710871486,
         "ev": 0.8044227880814683,
@@ -89,6 +94,9 @@
           "required_odds": null,
           "scope": "PRICE_GATES_ONLY",
           "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
           "requires_fresh_quote_and_full_recheck": true
         },
         "blockers": [
@@ -180,7 +188,7 @@
         }
       ],
       "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-      "deadline": "2026-10-01T23:08:02+00:00",
+      "deadline": "2026-10-03T06:42:00+00:00",
       "alternatives": [
         {
           "market": "1X2:HOME",
@@ -194,6 +202,9 @@
           "loss_probability": 0.4065760395439942,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 1.6851358668287806,
           "ev": 0.24619031695761306,
@@ -217,6 +228,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -281,6 +295,9 @@
           "loss_probability": 0.14075105329453946,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 1.1638070710871486,
           "ev": 0.8044227880814683,
@@ -304,6 +321,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -359,6 +379,9 @@
           "loss_probability": 0.14075105329453946,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 1.2371846482005568,
           "ev": 0.5120153032070679,
@@ -382,6 +405,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -437,6 +463,9 @@
           "loss_probability": 0.4065760395439942,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 2.3179594587640966,
           "ev": -0.0672381027627047,
@@ -460,6 +489,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -524,6 +556,9 @@
           "loss_probability": 0.6733972805327857,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 3.0618238624323046,
           "ev": -0.31413428911885033,
@@ -547,6 +582,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -623,6 +661,9 @@
           "loss_probability": 0.6731495392575251,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 3.0595031064921723,
           "ev": -0.31361403244080255,
@@ -646,6 +687,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -717,6 +761,9 @@
           "loss_probability": 0.5724036641969793,
           "probability_low": 0.0,
           "probability_high": 1.0,
+          "admission_probability_low": 0.0,
+          "admission_probability_high": 1.0,
+          "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
           "calibration": "UNCALIBRATED",
           "fair_odds": 2.3386542780400874,
           "ev": -0.10204769481365666,
@@ -740,6 +787,9 @@
             "required_odds": null,
             "scope": "PRICE_GATES_ONLY",
             "monetary_permission": false,
+            "stress_mode": "STRICT",
+            "stress_ev_floor": 0.0,
+            "requires_stress_class_validation": false,
             "requires_fresh_quote_and_full_recheck": true
           },
           "blockers": [
@@ -816,5 +866,5 @@
   "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-01T21:08:02.726905+00:00"
+  "generated_at": "2026-10-03T04:42:01.256929+00:00"
 }
