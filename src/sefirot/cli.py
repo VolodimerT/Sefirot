@@ -17,6 +17,13 @@ from .markets import DEFAULT_POOL
 
 def load(path):return json.loads(Path(path).read_text(encoding='utf-8'))
 
+def write_new_json(path, value):
+    destination=Path(path);destination.parent.mkdir(parents=True,exist_ok=True)
+    with destination.open('x',encoding='utf-8') as file:
+        json.dump(value,file,ensure_ascii=False,indent=2,allow_nan=False);file.write('\n')
+    return {'output':str(destination.resolve()),'hash':value.get('hash'),
+            'candidates':len(value.get('candidates',[])),'monetary_permission':False}
+
 def write_quotes(path, payload):
     """Write a validated quote file and its provenance receipt without overwrites."""
     destination=Path(path);receipt=Path(str(destination)+'.receipt.json')
@@ -60,6 +67,15 @@ def main(argv=None):
     explain.add_argument('decision_id');explain.add_argument('--text',action='store_true',help='concise Russian output')
     readiness=sub.add_parser('readiness',help='check existing model/data blockers before requesting prices; no new seal')
     readiness.add_argument('prediction_id');readiness.add_argument('--text',action='store_true',help='concise Russian output')
+    session=sub.add_parser('session',help='review existing seals as one price-blind session; no new forecasts')
+    session.add_argument('--prediction-id',action='append');session.add_argument('--limit',type=int,default=200)
+    session.add_argument('--text',action='store_true');session.add_argument('--output')
+    tickets=sub.add_parser('ticket-audit',help='audit reported singles, repeated event exposure and recorded decision mismatches')
+    tickets.add_argument('file');tickets.add_argument('--link-ledger',action='store_true');tickets.add_argument('--output')
+    grid=sub.add_parser('market-grid',help='freeze fifty price-blind research contracts from an existing seal')
+    grid.add_argument('prediction_id');grid.add_argument('--output',required=True)
+    compare_grid=sub.add_parser('compare-grid',help='compare fresh API quotes with a frozen research grid; no monetary permission')
+    compare_grid.add_argument('grid');compare_grid.add_argument('quotes');compare_grid.add_argument('--output',required=True)
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
@@ -73,11 +89,14 @@ def main(argv=None):
     diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
     odds_events=sub.add_parser('odds-events',help='list an exact prematch event for a sealed prediction')
     odds_events.add_argument('prediction_id');odds_events.add_argument('--sport',required=True)
-    fetch_odds=sub.add_parser('fetch-odds',help='import fresh bookmaker 1X2 after probability seal')
+    fetch_odds=sub.add_parser('fetch-odds',help='import fresh bookmaker main markets after probability seal')
     fetch_odds.add_argument('prediction_id');fetch_odds.add_argument('--sport',required=True)
     fetch_odds.add_argument('--event-id',required=True);fetch_odds.add_argument('--bookmaker',required=True)
     fetch_odds.add_argument('--region',default='eu');fetch_odds.add_argument('--output',required=True)
     fetch_odds.add_argument('--rules-confirmed',action='store_true',help='operator checked 90-minute bookmaker settlement rules')
+    market_scope=fetch_odds.add_mutually_exclusive_group()
+    market_scope.add_argument('--main-markets',action='store_true',help='request supported families in the sealed pool; quota depends on returned markets')
+    market_scope.add_argument('--grid',help='frozen market-grid JSON; enables alternate main lines for research only')
     health=sub.add_parser('api-health',help='check both API credentials and quotas without fetching prices')
     health.add_argument('--output',help='save a credential-free connection report')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
@@ -90,6 +109,14 @@ def main(argv=None):
     normalize.add_argument('--profile',required=True,choices=['MEN','WOMEN','RESERVE','LOWER'])
     normalize.add_argument('--source-reliability',required=True,type=float,help='explicit operator assertion, not provider certification')
     normalize.add_argument('--output',required=True)
+    archive=sub.add_parser('football-archive',help='archive already received API fixture packets; no HTTP requests')
+    archive.add_argument('files',nargs='+');archive.add_argument('--directory',default='data/sports-archive')
+    archive.add_argument('--output')
+    archived=sub.add_parser('football-from-archive',help='deduplicate observed FT history and explain sports data gaps')
+    archived.add_argument('--fixture-id',required=True,type=int);archived.add_argument('--directory',default='data/sports-archive')
+    archived.add_argument('--profile',required=True,choices=['MEN','WOMEN','RESERVE','LOWER'])
+    archived.add_argument('--source-reliability',required=True,type=float);archived.add_argument('--as-of')
+    archived.add_argument('--output',required=True)
     recovery=sub.add_parser('recover');recovery.add_argument('context_key');recovery.add_argument('validation_id');recovery.add_argument('--fix',required=True)
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
@@ -110,6 +137,24 @@ def main(argv=None):
                 path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
                 with path.open('x',encoding='utf-8') as file:json.dump(out,file,ensure_ascii=False,indent=2,allow_nan=False)
                 out['report']=str(path.resolve())
+        elif args.command=='football-archive':
+            from .sports_archive import archive_packets
+            if args.output and Path(args.output).exists():raise ValueError('archive report already exists')
+            out=archive_packets([load(p) for p in args.files],args.directory,datetime.now(timezone.utc).isoformat())
+            if args.output:write_new_json(args.output,out)
+        elif args.command=='football-from-archive':
+            from .sports_archive import export_sports
+            at=args.as_of or datetime.now(timezone.utc).isoformat()
+            if time(at)>datetime.now(timezone.utc):raise ValueError('archive cutoff cannot be in the future')
+            outputs=[Path(args.output),Path(args.output+'.receipt.json'),Path(args.output+'.coverage.json')]
+            if any(p.exists() for p in outputs):raise ValueError('archive export output already exists')
+            imported=export_sports(args.directory,args.fixture_id,at,profile=args.profile,
+                                   source_reliability=args.source_reliability,policy=policy)
+            for destination,field in zip(outputs,('sports','receipt','coverage')):write_new_json(destination,imported[field])
+            out={'status':imported['coverage']['status'],'sports_file':str(outputs[0].resolve()),
+                 'receipt_file':str(outputs[1].resolve()),'coverage_file':str(outputs[2].resolve()),
+                 'history_rows':imported['coverage']['eligible_history_rows'],'teams':imported['coverage']['teams'],
+                 'blockers':imported['coverage']['blockers'],'monetary_permission':False}
         elif args.command=='football-fetch':
             from .football_provider import get
             params={}
@@ -192,6 +237,40 @@ def main(argv=None):
             out=recorded['decision_card']
             if args.text:
                 print(render_card(out));return 0
+        elif args.command in ('market-grid','compare-grid'):
+            from .market_grid import create_grid,compare_grid as compare_frozen_grid
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if Path(args.output).exists():raise ValueError('research output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            if not repo.verify():raise ValueError('journal integrity failed')
+            if args.command=='market-grid':
+                prediction=repo.get('predictions',args.prediction_id)
+                out=write_new_json(args.output,create_grid(prediction,policy,service.now()))
+            else:
+                grid=load(args.grid);prediction=repo.get('predictions',grid['prediction_id'])
+                receipt=load(args.quotes+'.receipt.json')
+                out=write_new_json(args.output,compare_frozen_grid(grid,prediction,load(args.quotes),policy,service.now(),receipt))
+        elif args.command=='session':
+            from .session import inspect_session,render_session
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if args.output and Path(args.output).exists():raise ValueError('session output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            out=inspect_session(service,service.now(),args.prediction_id,args.limit)
+            if args.output:write_new_json(args.output,out)
+            if args.text:
+                print(render_session(out));return 0
+        elif args.command=='ticket-audit':
+            from .ticket_audit import audit_tickets
+            if args.output and Path(args.output).exists():raise ValueError('ticket audit output already exists')
+            service=None
+            if args.link_ledger:
+                database=Path(args.db).resolve()
+                if not database.is_file():raise ValueError('ledger does not exist')
+                repo=Repository(database,read_only=True);service=Service(repo,policy)
+            out=audit_tickets(load(args.file),service=service,policy=policy)
+            if args.output:write_new_json(args.output,out)
         elif args.command=='readiness':
             from .readiness import inspect_readiness,render_readiness
             database=Path(args.db).resolve()
@@ -207,21 +286,35 @@ def main(argv=None):
             path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
             cmd=args.command
             if cmd in ('odds-events','fetch-odds'):
-                from .odds_provider import events,event_candidates,event_odds,quotes_from_event,require_prematch_seal
+                from .odds_provider import events,event_candidates,event_odds,quotes_from_event,require_prematch_seal,keys_for_candidates
+                from .identity import code_hash
                 prediction=repo.get('predictions',args.prediction_id)
+                if not repo.verify():raise ValueError('journal integrity failed')
+                if prediction['code_hash']!=code_hash() or prediction['policy_hash']!=policy.fingerprint:
+                    raise ValueError('odds import requires the original prediction build and policy')
                 require_prematch_seal(prediction,service.now())
                 if cmd=='odds-events':
                     data=events(args.sport)
                     out=event_candidates(data,prediction,args.sport,service.now())
                 else:
                     if not args.rules_confirmed:raise ValueError('confirm 90-minute bookmaker rules before fetching; PASS')
-                    if not any(c['market']['kind']=='1X2' for c in prediction['candidates']):raise ValueError('1X2 was not in the sealed market pool; PASS')
+                    grid=None;quote_prediction=prediction
+                    if args.grid:
+                        from .market_grid import validate_grid
+                        grid=validate_grid(load(args.grid),prediction,policy,service.now())
+                        quote_prediction={**prediction,'candidates':grid['candidates'],'sealed_at':grid['sealed_at']}
+                        market_keys=keys_for_candidates(grid['candidates'],alternate=True)
+                    elif args.main_markets:market_keys=keys_for_candidates(prediction['candidates'])
+                    else:
+                        if not any(c['market']['kind']=='1X2' for c in prediction['candidates']):raise ValueError('1X2 was not in the sealed market pool; PASS')
+                        market_keys=('h2h',)
                     if Path(args.output).exists() or Path(args.output+'.receipt.json').exists():raise ValueError('odds output already exists')
                     matched=event_candidates(events(args.sport),prediction,args.sport,service.now())
                     if matched['event_id']!=args.event_id:raise ValueError('selected event id differs from exact fixture; PASS')
-                    response=event_odds(args.sport,args.event_id,args.region)
-                    payload=quotes_from_event(response,prediction,args.sport,args.event_id,args.bookmaker,service.now(),
-                                              rules_confirmed=True,max_age_seconds=policy.quote_max_age_seconds)
+                    response=event_odds(args.sport,args.event_id,args.region,market_keys=market_keys,bookmaker_key=args.bookmaker)
+                    payload=quotes_from_event(response,quote_prediction,args.sport,args.event_id,args.bookmaker,service.now(),
+                                              rules_confirmed=True,max_age_seconds=policy.quote_max_age_seconds,market_keys=market_keys)
+                    if grid:payload['receipt'].update(grid_hash=grid['hash'],monetary_permission=False)
                     out=write_quotes(args.output,payload)
             elif cmd=='work':
                 from .worker import process_inbox
