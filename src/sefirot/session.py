@@ -37,6 +37,7 @@ def inspect_session(service, at, prediction_ids=None, limit=200):
               'predictions_in_scope': total, 'closed_fixtures_excluded': closed,
               'shown': len(rows), 'truncated': total > limit,
               'status_counts': dict(sorted(Counter(r['status'] for r in rows).items())),
+              'stage_counts': dict(sorted(Counter(r['stage'] for r in rows).items())),
               'blocker_match_counts': dict(sorted(blockers.items())),
               'price_recheck_prediction_ids': [r['prediction_id'] for r in rows if r['quote_recheck_useful']],
               'rows': rows, 'new_prices_read': False, 'forecasts_created': 0,
@@ -50,8 +51,10 @@ def render_session(view):
     for row in view['rows']:
         match = row['match']
         codes = sorted({b['code'] for market in row['markets'] for b in market['blockers']})
-        lines.append(f"{match['home']} — {match['away']}: {row['status']}" +
+        lines.append(f"{match['home']} — {match['away']}: {row['status']} | {row['stage']}" +
                      ('; ' + ', '.join(codes) if codes else ''))
+        for task in row['action_plan']:
+            lines.append('  '+task['category']+': '+task['action'])
     if view['truncated']:
         lines.append('Показана только часть сессии; расширьте limit или задайте ID.')
     lines.append('Новых цен и прогнозов нет. Разрешения на ставку нет.')

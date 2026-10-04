@@ -1,9 +1,8 @@
 """Arbiter presentation of sealed decisions; no model, veto or betting authority."""
 from .probability import price_requirements
+from .action_plan import passport, action_plan, PRICE_CODES
 
 
-PRICE_CODES={'ROBUST_EV_INSUFFICIENT','DEATH_TEST_PRICE_FRAGILITY',
-             'DEATH_TEST_SEVERE_FRAGILITY','PRICE_STALE','MISSING_CURRENT_PRICE','MARKET_REFERENCE_MISSING'}
 RECALCULATE_CODES={'PROBABILITY_RECALCULATION_REQUIRED','SPORTS_CHANGED_RECALCULATE',
                    'MODEL_MATCHUP_CONFLICT','MODEL_MARKET_DIVERGENCE',
                    'DIVERGENCE_NEEDS_CORROBORATION','THESIS_REPLACEMENT_GUARD',
@@ -145,7 +144,10 @@ def build_card(decision,prediction,policy):
         'RISK_LIMIT':'Пропустить: текущая экспозиция или просадка не допускают ставку.',
         'NOT_EVALUABLE':'Закрыть пробелы данных, калибровки и валидации; текущий расчёт не даёт допуска.',
     }
+    tasks=action_plan(relevant,prediction['sports']['match']['kickoff'],decision['at'])
     return {'schema':'decision-card-v1','version':decision['version'],'decision':decision['decision'],
+            'passport':passport(prediction),'action_plan':tasks,
+            'stage':'FINAL' if decision['decision']=='BET' else 'PREVIEW' if status in ('RECALCULATE','NOT_EVALUABLE') else 'READY',
             'verdict':decision['verdict'],'verdict_ru':VERDICTS[decision['verdict']],
             'class':decision['class'],'status':status,'at':decision['at'],
             'match':prediction['sports']['match'],
@@ -164,6 +166,9 @@ def render_card(card):
     match=card['match']
     lines=[f"{match['home']} — {match['away']}",
            f"Вердикт: {card['verdict_ru']} | {card['decision']} | класс {card['class']} | {card['status']}"]
+    if card.get('passport'):
+        identity=card['passport']
+        lines.append(f"Сборка {identity['version']} / {identity['code_hash'][:12]}; модель {identity['model_hash'][:12]}; калибратор {identity['calibrator_hash'][:12] if identity['calibrator_hash'] else 'нет'}.")
     focus=next((r for r in card['alternatives'] if r['market']==card['selected_market']),None)
     if focus:lines.append('Выбранный рынок: '+focus['market'])
     elif card['research_candidate']:
@@ -175,5 +180,7 @@ def render_card(card):
         floor=focus['price_requirements']['required_odds']
         lines.append(f"Порог только по цене: {floor:.4f}; все проверки допуска сохраняются." if floor is not None else 'Конечного порога цены нет при текущем диапазоне вероятности.')
     if card['reasons']:lines.append('Причины: '+'; '.join(r['text'] for r in card['reasons']))
+    for task in card.get('action_plan',[]):
+        lines.append(task['category']+': '+task['action'])
     lines.append(f"Лимит ставки: {card['stake']:.2f}. {card['next_action']}")
     return '\n'.join(lines)

@@ -76,6 +76,10 @@ def main(argv=None):
     grid.add_argument('prediction_id');grid.add_argument('--output',required=True)
     compare_grid=sub.add_parser('compare-grid',help='compare fresh API quotes with a frozen research grid; no monetary permission')
     compare_grid.add_argument('grid');compare_grid.add_argument('quotes');compare_grid.add_argument('--output',required=True)
+    robustness=sub.add_parser('goal-robustness',help='freeze raw history sensitivity from an existing market grid; no model or admission changes')
+    robustness.add_argument('grid');robustness.add_argument('--output',required=True);robustness.add_argument('--text',action='store_true')
+    compare_robustness=sub.add_parser('compare-robustness',help='compare fresh API quotes with frozen history perturbations; research only')
+    compare_robustness.add_argument('report');compare_robustness.add_argument('quotes');compare_robustness.add_argument('--output',required=True)
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
@@ -237,6 +241,21 @@ def main(argv=None):
             out=recorded['decision_card']
             if args.text:
                 print(render_card(out));return 0
+        elif args.command in ('goal-robustness','compare-robustness'):
+            from .goal_robustness import create_robustness,compare_robustness as compare_history,render_robustness
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if Path(args.output).exists():raise ValueError('research output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            if not repo.verify():raise ValueError('journal integrity failed')
+            if args.command=='goal-robustness':
+                grid=load(args.grid);prediction=repo.get('predictions',grid['prediction_id'])
+                out=write_new_json(args.output,create_robustness(grid,prediction,policy,service.now()))
+                if args.text:
+                    print(render_robustness(out));return 0
+            else:
+                report=load(args.report);prediction=repo.get('predictions',report['prediction_id'])
+                out=write_new_json(args.output,compare_history(report,prediction,load(args.quotes),policy,service.now(),load(args.quotes+'.receipt.json')))
         elif args.command in ('market-grid','compare-grid'):
             from .market_grid import create_grid,compare_grid as compare_frozen_grid
             database=Path(args.db).resolve()
