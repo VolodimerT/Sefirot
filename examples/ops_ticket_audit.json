@@ -1,0 +1,12 @@
+{
+  "schema": "ticket-audit-input-v1",
+  "status": "REPORTED_UNVERIFIED",
+  "source": "Fully synthetic example; not actual tickets or financial accounting",
+  "currency": "UAH",
+  "timezone": "Europe/Kyiv",
+  "tickets": [
+    {"id": "example-1", "match_id": "synthetic-event-a", "day": "2030-01-01", "market": {"kind": "TEAM_TOTAL", "side": "HOME_OVER", "line": 1.5}, "odds": 2.0, "stake": 10, "outcome": "WIN", "reported_decision": "SHADOW"},
+    {"id": "example-2", "match_id": "synthetic-event-a", "day": "2030-01-01", "market": {"kind": "TEAM_TOTAL", "side": "HOME_OVER", "line": 2.0}, "odds": 3.0, "stake": 5, "outcome": "PUSH", "reported_decision": "SHADOW"},
+    {"id": "example-3", "match_id": "synthetic-event-b", "day": "2030-01-01", "market": {"kind": "TOTAL", "side": "UNDER", "line": 3.0}, "odds": 1.9, "stake": 5, "outcome": "PENDING"}
+  ]
+}
