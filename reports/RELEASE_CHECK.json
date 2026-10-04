@@ -1,17 +1,17 @@
 {
   "version": "2.4.2",
-  "code_hash": "49fbf90cc34c53dfaddf052f7fe1000095913d45a9963ed9b3758355ad04905d",
+  "code_hash": "718c88f2e6073aca9a532f90a436af5bf884a6e002e25c59438c4fa00fd4a007",
   "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 7.663,
+  "elapsed_seconds": 10.046,
   "test_exit": 0,
-  "tests": 297,
+  "tests": 343,
   "demo": {
     "version": "2.4.2",
     "synthetic": true,
-    "prediction_id": "0ff8f2cd5d1bb4a67a93ba1b295cdc1f90999317b51ac1d02193e65d2210e7f7",
-    "decision_id": "a57c7a718d9da72f37966190322fc79fe50a209883feac6c30e9cfc8d0980185",
+    "prediction_id": "ee9433c76aa25c5e50fbebaf4bb858a3c2a31c8ebf317d9b2d5e583dd887d188",
+    "decision_id": "867330135798edf452d959abadde0bce33a0c2b65dd60d39d05503c245111608",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
@@ -43,14 +43,14 @@
       "verdict_ru": "пропуск",
       "class": "D",
       "status": "RECALCULATE",
-      "at": "2026-10-03T10:13:20+00:00",
+      "at": "2026-10-04T06:03:25+00:00",
       "match": {
         "away": "B",
         "competition_profile": "MEN",
         "format": "REGULATION_90",
         "home": "A",
         "id": "synthetic-001",
-        "kickoff": "2026-10-03T12:11:20+00:00",
+        "kickoff": "2026-10-04T08:01:25+00:00",
         "league": "SYNTHETIC",
         "sport": "football"
       },
@@ -188,7 +188,7 @@
         }
       ],
       "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-      "deadline": "2026-10-03T12:11:20+00:00",
+      "deadline": "2026-10-04T08:01:25+00:00",
       "alternatives": [
         {
           "market": "1X2:HOME",
@@ -866,5 +866,5 @@
   "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-03T10:11:20.378182+00:00"
+  "generated_at": "2026-10-04T06:01:26.158876+00:00"
 }
