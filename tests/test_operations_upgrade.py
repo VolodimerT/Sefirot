@@ -1,6 +1,6 @@
 """Synthetic boundary cases for observed archives, session views and ticket audits."""
 import copy
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import closing, redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta, timezone
 import io
 import json
@@ -257,8 +257,7 @@ class TicketAuditTests(unittest.TestCase):
     def test_missing_ledger_or_decision_cannot_verify_a_reported_bet(self):
         data = ticket_input();data['tickets'][0]['decision_id'] = 'does-not-exist'
         self.assertIn('LEDGER_UNAVAILABLE', audit_tickets(data)['process_issues'])
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             self.assertIn('RECORDED_DECISION_NOT_FOUND', audit_tickets(data, service=Service(repo))['process_issues'])
 
     def test_recorded_bet_price_stake_market_book_and_entry_time_are_checked(self):
@@ -267,8 +266,7 @@ class TicketAuditTests(unittest.TestCase):
         decision = decide(p, quotes, case['recheck'], case['decision_at'], context,
                           {'bankroll': 1000, 'peak': 1000}, Policy())
         self.assertEqual(decision['decision'], 'BET');decision['id'] = digest(decision)
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             match = p['sports']['match']
             for name in (match['home'], match['away']):repo.insert('teams', name, {'name': name})
             repo.insert('matches', match['id'], match, home=match['home'], away=match['away'],
@@ -310,8 +308,7 @@ def time_day(value):
 
 class SessionAndCliTests(unittest.TestCase):
     def test_session_is_read_only_deduplicates_revisions_and_reports_match_blockers_once(self):
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             now = [NOW]
             service = Service(repo, clock=lambda: now[0]);case = example(NOW)
             first = service.capture(case['sports'], case['markets'])
@@ -328,8 +325,7 @@ class SessionAndCliTests(unittest.TestCase):
             self.assertFalse(report['monetary_permission'])
 
     def test_explicit_session_ids_limits_empty_and_duplicate_selection(self):
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             service = Service(repo, clock=lambda: NOW)
             self.assertEqual(inspect_session(service, stamp())['status'], 'EMPTY')
             ids = [service.capture(example(NOW, 'm' + str(i))['sports'], example(NOW)['markets'])['id'] for i in range(2)]
@@ -337,16 +333,14 @@ class SessionAndCliTests(unittest.TestCase):
             with self.assertRaises(ValueError):inspect_session(service, stamp(), [ids[0], ids[0]])
 
     def test_session_requires_intact_journal_even_for_closed_or_mismatched_build(self):
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             service = Service(repo, clock=lambda: NOW)
             service.capture(example(NOW)['sports'], example(NOW)['markets'])
             with patch.object(repo, 'verify', return_value=False), self.assertRaisesRegex(ValueError, 'integrity'):
                 inspect_session(service, stamp())
 
     def test_closed_seals_do_not_hide_upcoming_seals_behind_the_default_limit(self):
-        with tempfile.TemporaryDirectory() as temp:
-            repo = Repository(Path(temp) / 'ledger.sqlite');self.addCleanup(repo.close)
+        with tempfile.TemporaryDirectory() as temp, closing(Repository(Path(temp) / 'ledger.sqlite')) as repo:
             now = [NOW]
             service = Service(repo, clock=lambda: now[0])
             old = service.capture(example(NOW, 'old')['sports'], example(NOW)['markets'])
