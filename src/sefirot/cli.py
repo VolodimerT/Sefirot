@@ -81,6 +81,17 @@ def main(argv=None):
     compare_robustness=sub.add_parser('compare-robustness',help='compare fresh API quotes with frozen history perturbations; research only')
     compare_robustness.add_argument('report');compare_robustness.add_argument('quotes');compare_robustness.add_argument('--output',required=True)
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
+    forward=sub.add_parser('forward-plan',help='reserve every future API fixture in declared leagues before forecasts')
+    forward.add_argument('packet');forward.add_argument('--league-profile',action='append',required=True,help='API_LEAGUE_ID=MEN/WOMEN/RESERVE/LOWER; repeat')
+    forward.add_argument('--role',choices=['CALIBRATION','HOLDOUT'],default='CALIBRATION')
+    forward.add_argument('--calibrator');forward.add_argument('--source-reliability',type=float,required=True)
+    forward.add_argument('--output',required=True)
+    forward_capture=sub.add_parser('forward-capture',help='attempt every planned fixture from observed API archive; research only')
+    forward_capture.add_argument('plan_id');forward_capture.add_argument('--directory',default='data/sports-archive');forward_capture.add_argument('--output',required=True)
+    forward_settle=sub.add_parser('forward-settle',help='settle frozen cohort from exact API regulation FT results')
+    forward_settle.add_argument('plan_id');forward_settle.add_argument('packet');forward_settle.add_argument('--output',required=True)
+    forward_status=sub.add_parser('forward-status',help='read cohort coverage, invalid seals and missing results without certifying it')
+    forward_status.add_argument('plan_id');forward_status.add_argument('--output')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
@@ -290,6 +301,14 @@ def main(argv=None):
                 repo=Repository(database,read_only=True);service=Service(repo,policy)
             out=audit_tickets(load(args.file),service=service,policy=policy)
             if args.output:write_new_json(args.output,out)
+        elif args.command=='forward-status':
+            from .forward import inspect_plan
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if args.output and Path(args.output).exists():raise ValueError('forward output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            out=inspect_plan(service,args.plan_id)
+            if args.output:write_new_json(args.output,out)
         elif args.command=='readiness':
             from .readiness import inspect_readiness,render_readiness
             database=Path(args.db).resolve()
@@ -304,7 +323,21 @@ def main(argv=None):
         else:
             path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
             cmd=args.command
-            if cmd in ('odds-events','fetch-odds'):
+            if cmd in ('forward-plan','forward-capture','forward-settle'):
+                from .forward import create_plan,capture_plan,settle_plan
+                if Path(args.output).exists():raise ValueError('forward output already exists')
+                if cmd=='forward-plan':
+                    profiles={}
+                    for entry in args.league_profile:
+                        key,value=entry.split('=',1);key=int(key)
+                        if key in profiles:raise ValueError('duplicate API league profile')
+                        profiles[key]=value
+                    out=create_plan(service,load(args.packet),profiles,role=args.role,
+                                    source_reliability=args.source_reliability,calibrator_id=args.calibrator)
+                elif cmd=='forward-capture':out=capture_plan(service,args.plan_id,args.directory)
+                else:out=settle_plan(service,args.plan_id,load(args.packet))
+                write_new_json(args.output,out)
+            elif cmd in ('odds-events','fetch-odds'):
                 from .odds_provider import events,event_candidates,event_odds,quotes_from_event,require_prematch_seal,keys_for_candidates
                 from .identity import code_hash
                 prediction=repo.get('predictions',args.prediction_id)

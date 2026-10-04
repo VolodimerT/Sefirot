@@ -1,5 +1,19 @@
 # SEFIROT: актуальная база разработки
 
+## Сбор будущей API-выборки, 05.10.2026
+
+Добавлены forward-plan/capture/settle/status. Документация:
+`docs/FORWARD_COLLECTION.md`. 382 локальных теста и release gate прошли;
+CI сверять на новом head. code_hash:
+`28d99e80359ff84329e918ba76a96357384c0b8f138b4be7572f6edf9941dd03`.
+model_hash прежний. Коллектор BASELINE_V1, фиксированные семь DEFAULT_POOL
+контрактов, research ledger без production routes. HOLDOUT только после
+frozen nonsynthetic calibrator, без fit_ids overlap; план не сертификат.
+Реальный API на 5 октября: 99 NS, 17 заранее зарезервированных CALIBRATION,
+17 INSUFFICIENT_HISTORY, 0 seals/results. Свежая история 2026 отклонена Free;
+Odds API key отсутствует в проверенных конфигурациях. Никаких новых approvals,
+LIVE или main merge. Частные API packets/SQLite не добавлять в Git.
+
 ## Продолжение по аудитам 02–03 октября, 04.10.2026
 
 Добавлены `goal-robustness` и `compare-robustness`: фиксированные raw-пробы
