@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import re
 
-NAMES = ('SEFIROT_ODDS_API_KEY', 'API_FOOTBALL_KEY')
+NAMES = ('SEFIROT_ODDS_API_KEY', 'API_FOOTBALL_KEY', 'STAKE_API_TOKEN')
 
 
 def credential(name, env_file=None):
