@@ -3,14 +3,14 @@
 ## Единый API-сбор, 05.10.2026
 
 Изолированная feature/api-data-session-20261005 включает Stake snapshot
-b5de32d и data-session. Документация: DATA_SESSION.md. Один запуск
+1cbd163 и data-session. Документация: DATA_SESSION.md. Один запуск
 фиксирует весь CALIBRATION cohort до истории/forecast, ограничивает квоту,
 собирает историю один раз per league/season и создаёт 50 main/14 goal Builder
 research contracts на каждый пригодный prematch seal. Пропуски остаются
 в знаменателе. api-health и football-fetch поддерживают существующий gateway.
-26 новых контрпримеров; 462 локальных теста и release прошли;
+26 новых контрпримеров; 465 локальных тестов и release прошли;
 CI сверять на опубликованном head.
-code_hash: 4e62aa6a4ca3a72ed9176ee8b0de583800e678f9ba78477af2f9875ff3acff7b.
+code_hash: 04e9c032629fa282d4a4faf312e22921ce43fee5db7c0eb62e7ac5d506c938f2.
 model_hash прежний. В этом runtime local/provider key и gateway runner
 token не настроены: нового живого API-capture нет. Vault key и существующий
 gateway подтверждены только метаданными, cloud не менялся. Stake источник

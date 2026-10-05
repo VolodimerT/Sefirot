@@ -6,7 +6,7 @@ capture и сетки 50 основных контрактов/14 голевых
 Пропуски остаются в отчёте; история запрашивается один раз на league/season.
 Поддержан существующий приватный Supabase gateway, включая api-health
 и football-fetch. Новая ветка feature/api-data-session-20261005 сохраняет
-Stake snapshot b5de32d из параллельной разработки. Research only, stake=0.
+Stake snapshot 1cbd163 из параллельной разработки. Research only, stake=0.
 Живой сбор требует уже настроенного local/provider или gateway credential;
 наличие ключа в Vault само по себе не настраивает CLI.
 

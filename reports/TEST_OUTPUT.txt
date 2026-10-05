@@ -437,6 +437,9 @@ test_repeated_snapshots_do_not_multiply_matches_and_corrections_quarantined (tes
 test_shots_sot_corners_fouls_are_distinct_types (test_small_market.SmallMarketTests.test_shots_sot_corners_fouls_are_distinct_types) ... ok
 test_three_good_games_cannot_supply_a_long_baseline (test_small_market.SmallMarketTests.test_three_good_games_cannot_supply_a_long_baseline) ... ok
 test_wrong_team_and_missing_post_ft_statistics_do_not_fill_history (test_small_market.SmallMarketTests.test_wrong_team_and_missing_post_ft_statistics_do_not_fill_history) ... ok
+test_maps_shots_and_corners_research_only (test_stake_mapper.StakeMapperTests.test_maps_shots_and_corners_research_only) ... ok
+test_maps_supported_main_contracts_and_skips_quarter_lines (test_stake_mapper.StakeMapperTests.test_maps_supported_main_contracts_and_skips_quarter_lines) ... ok
+test_rejects_non_stake_or_unsafe_snapshot (test_stake_mapper.StakeMapperTests.test_rejects_non_stake_or_unsafe_snapshot) ... ok
 test_current_fixture_query_uses_auth_and_apollo_headers_without_persisting_token (test_stake_provider.StakeProviderTests.test_current_fixture_query_uses_auth_and_apollo_headers_without_persisting_token) ... ok
 test_exact_fixture_never_swaps_or_fuzzy_matches (test_stake_provider.StakeProviderTests.test_exact_fixture_never_swaps_or_fuzzy_matches) ... ok
 test_fixture_markets_two_stage_parses_raw_group_template_and_line (test_stake_provider.StakeProviderTests.test_fixture_markets_two_stage_parses_raw_group_template_and_line) ... ok
@@ -464,6 +467,6 @@ test_graded_execution_uses_calibration_bounds_and_stake_caps (test_version_audit
 test_real_exposure_change_remains_a_block (test_version_audit_regressions.ExecutionConsistencyTests.test_real_exposure_change_remains_a_block) ... ok
 
 ----------------------------------------------------------------------
-Ran 462 tests in 35.343s
+Ran 465 tests in 34.059s
 
 OK

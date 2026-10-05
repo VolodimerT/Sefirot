@@ -471,8 +471,11 @@ def _boot_probe_if_requested():
                 "league": (event.get("league") or {}).get("name"),
             }
             # One exact target is enough to prove market discovery end-to-end.
-            if len(matches) == 0 and event.get("slug"):
-                market_packet = fixture_markets(event["slug"])
+            if event.get("slug") and not any(item.get("market_count", 0) for item in matches):
+                group_packet = fixture_groups(event["slug"])
+                row["group_count"] = len(group_packet["group_names"])
+                row["group_names"] = group_packet["group_names"][:80]
+                market_packet = fixture_markets(event["slug"], groups=group_packet["group_names"])
                 row["market_count"] = market_packet["market_count"]
                 keywords = ("shot", "corner", "card", "foul", "offside", "save",
                             "tackle", "goal kick", "free kick", "booking")
