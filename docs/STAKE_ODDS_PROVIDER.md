@@ -2,85 +2,132 @@
 
 Status: **experimental / read-only / research-only**.
 
-The bridge exists to inspect Stake sportsbook prices after SEFIROT has already
-sealed a sports-only prediction. It must not be used to place bets, bypass
-SEFIROT admission, or claim verified execution prices.
+The bridge reads the current Stake web sportsbook GraphQL contract only after
+SEFIROT has already sealed a sports-only prediction. It never places wagers and
+cannot grant monetary admission.
 
-## Why it is isolated
+## Live contract verified 2026-10-05
 
-Stake's official public API documentation supports authentication with an
-`x-access-token` header, but its public stable API does not currently document
-the sportsbook event schema used by the web client. The sportsbook reader here
-therefore treats the GraphQL shape as unstable and fails closed on any change.
+The old draft field `sportsEvents` is no longer present. The current working
+two-stage flow is:
 
-No Stake credential is stored in Git, reports, receipts, error messages, or
-line identifiers.
+1. `SportTournamentFixtureList` via `slugSport(...).tournamentList(...).fixtureList(...)`
+2. exact home/away/kickoff matching
+3. `FixtureIndexGroups` for the selected fixture slug
+4. `FixtureGroupMarkets` in bounded group chunks
+
+The request uses the same Apollo headers expected by the web client plus the
+`x-access-token` credential. A live Render smoke test authenticated the token,
+returned 200 soccer events and found the current UEFA Nations League fixtures.
+For Cyprus-Latvia the exact fixture returned 14 market groups and 292 raw
+markets.
+
+Observed groups include:
+
+- main / goals / AsianLines / goalscorers
+- 1st2ndhalfmarkets
+- CardsCorners
+- specials / MinuteMarkets
+- Total / winner / Handicap / Both Teams to Score / threeway / 1UP2UP
+
+Observed small-market examples include match shot thresholds, full-time total
+corners, first-half total corners and team corner ranges.
 
 ## Credential
 
-Set only as an environment variable or in the existing local `.env`:
+Keep the secret only in runtime environment:
 
 ```text
 STAKE_API_TOKEN=...
 ```
 
-The token supplied in chat or another transient channel should be rotated
-before long-term use.
+Do not store it in Git, receipts, logs, line IDs or reports. A token that has
+been pasted into chat should be rotated before long-term production use.
 
-## Run
+## Run from SEFIROT
 
-A real prematch SEFIROT prediction must already exist in the ledger:
-
-```powershell
-py -3 scripts/stake_snapshot.py --db data/sefirot.sqlite PREDICTION_ID --output data/stake-snapshot.json
-```
-
-Optional:
+A real prematch prediction must already exist in the ledger.
 
 ```powershell
-py -3 scripts/stake_snapshot.py --db data/sefirot.sqlite PREDICTION_ID --sport football --first 50 --output data/stake-snapshot.json
+py -3 sefirot.py --db data/sefirot.sqlite stake-snapshot PREDICTION_ID --output data/stake.json
 ```
 
-The command requires an exact home team, away team and kickoff match. It does
-not fuzzy-match aliases or silently swap competitors.
+The standalone runner is also available:
 
-## Output contract
+```powershell
+py -3 scripts/stake_snapshot.py --db data/sefirot.sqlite PREDICTION_ID --output data/stake.json
+```
 
-The result deliberately preserves raw Stake market names and outcomes:
+Both flows create:
+
+- the raw Stake snapshot
+- a normalized research file at `<output>.normalized.json` unless another path is supplied
+
+Fixture matching remains exact. No fuzzy aliases or silent home/away swaps.
+
+## Normalization
+
+`src/sefirot/stake_mapper.py` maps only market shapes that were explicitly
+verified or are mechanically unambiguous.
+
+Current canonical big-market support:
+
+- 1X2
+- Double Chance
+- Draw No Bet
+- Both Teams to Score
+- Asian Total on integer/half-goal lines supported by CORE
+- Asian Handicap on integer/half-goal lines supported by CORE
+
+Quarter lines are preserved in raw data but rejected from the CORE main-market
+mapping because current settlement code supports only integer/half lines.
+
+Current descriptive small-market support:
+
+- match total shots expressed as `N+ shots`
+- full-time total corners
+- first-half total corners
+- full-time total cards when that exact template is exposed
+- first-half total cards when that exact template is exposed
+- team corner ranges as categorical research data
+
+The small-market mapper does **not** convert these prices into model
+probabilities or EV. It only joins price semantics to a clearly labelled raw
+Stake market.
+
+## Safety / provenance
+
+Normalized Stake output keeps:
 
 ```json
 {
   "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
-  "status": "RESEARCH_ONLY",
-  "normalization": "RAW_STAKE_NAMES_ONLY",
-  "provider_market_timestamp": null,
   "freshness": "RECEIPT_TIME_ONLY",
-  "markets": [],
+  "settlement_rules": "UNVERIFIED_PROVIDER_WEB_CONTRACT",
   "monetary_permission": false,
   "execution_enabled": false
 }
 ```
 
-This is intentional. Until Stake exposes stable market identifiers, settlement
-rules and provider-side market timestamps, SEFIROT must not guess that a raw
-label corresponds to a regulated 90-minute contract.
+Stake does not expose a provider-side market timestamp through the current
+query, so the receipt time is not claimed to be the quote creation time.
+Settlement rules also remain an unverified web contract. For that reason Stake
+prices are a research price screen, not yet an execution-certified quote.
 
-## Next integration step
+Builder / Same Game Multi prices remain bookmaker-specific joint prices. Never
+reconstruct them by multiplying singles.
 
-Use real saved snapshots to build an explicit mapping table for the markets we
-actually need:
+## Tests
 
-- 1X2 and double chance
-- DNB / Asian handicap
-- Asian totals
-- BTTS
-- team totals
-- corners
-- shots / shots on target when the Stake feed exposes them
+The dedicated Stake provider and mapper suite covers:
 
-Each mapping needs fixtures, exact outcome semantics, settlement rules and
-regression tests. Only after that should Stake snapshots be converted to the
-same quote contract used by `compare-grid`.
+- token/header isolation
+- current Apollo operation names
+- exact fixture matching
+- two-stage group/market parsing
+- main-market normalization
+- quarter-line rejection
+- shots/corners small-market normalization
+- fail-closed safety flags
 
-Builder prices remain bookmaker-specific and should be stored as their own
-joint quote rather than reconstructed by multiplying single-market prices.
+The suite passed 8/8 on Render on 2026-10-05.

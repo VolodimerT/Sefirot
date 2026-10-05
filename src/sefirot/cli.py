@@ -110,6 +110,10 @@ def main(argv=None):
     upgrade=sub.add_parser('p0-upgrade-benchmark',help='compare frozen baseline and SoS/count model on a declared chronological split')
     upgrade.add_argument('--csv',nargs='+',required=True);upgrade.add_argument('--design',required=True);upgrade.add_argument('--output-dir',required=True)
     diagnostic=sub.add_parser('diagnose-p0');diagnostic.add_argument('--csv',nargs='+',required=True);diagnostic.add_argument('--source-run',required=True);diagnostic.add_argument('--design',required=True);diagnostic.add_argument('--output-dir',required=True)
+    stake_snapshot=sub.add_parser('stake-snapshot',help='read raw Stake big/small markets after a prematch probability seal; research only')
+    stake_snapshot.add_argument('prediction_id');stake_snapshot.add_argument('--sport',default='soccer')
+    stake_snapshot.add_argument('--first',type=int,default=200);stake_snapshot.add_argument('--output',required=True)
+    stake_snapshot.add_argument('--normalized-output')
     odds_events=sub.add_parser('odds-events',help='list an exact prematch event for a sealed prediction')
     odds_events.add_argument('prediction_id');odds_events.add_argument('--sport',required=True)
     fetch_odds=sub.add_parser('fetch-odds',help='import fresh bookmaker main markets after probability seal')
@@ -172,6 +176,32 @@ def main(argv=None):
                 timezone_name=args.timezone,policy=policy)
             if args.text:
                 print(render_session(out));return 2 if out['status']=='COLLECTION_INCOMPLETE' else 0
+        elif args.command=='stake-snapshot':
+            from .stake_provider import sports_events,exact_event,fixture_markets,research_snapshot
+            from .stake_mapper import normalize_snapshot
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            destination=Path(args.output)
+            normalized_destination=Path(args.normalized_output or (args.output+'.normalized.json'))
+            if destination.exists() or normalized_destination.exists():raise ValueError('Stake output already exists')
+            repo=Repository(database,read_only=True)
+            if not repo.verify():raise ValueError('journal integrity failed')
+            service=Service(repo,policy);prediction=repo.get('predictions',args.prediction_id)
+            received=service.now()
+            packet=sports_events(first=args.first,sport_slug=args.sport,match_type='active')
+            event=exact_event(packet['events'],prediction,received)
+            market_packet=fixture_markets(event['slug'])
+            snapshot=research_snapshot(event,prediction,received,market_packet['markets'],
+                                       [packet['receipt']]+market_packet['receipts'])
+            normalized=normalize_snapshot(snapshot)
+            write_new_json(destination,snapshot);write_new_json(normalized_destination,normalized)
+            out={'status':'RESEARCH_ONLY','provider':'STAKE_GRAPHQL_EXPERIMENTAL',
+                 'event_id':snapshot['stake_event_id'],'market_count':snapshot['market_count'],
+                 'main_quote_count':normalized['main_quote_count'],
+                 'small_quote_count':normalized['small_quote_count'],
+                 'snapshot':str(destination.resolve()),
+                 'normalized':str(normalized_destination.resolve()),
+                 'monetary_permission':False,'execution_enabled':False}
         elif args.command=='api-health':
             from .api_health import check
             out=check()

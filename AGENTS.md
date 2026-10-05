@@ -3,15 +3,16 @@
 ## Единый API-сбор data-session, 05.10.2026
 
 Продолжение в отдельной feature/api-data-session-20261005 поверх точного
-Stake snapshot 1cbd163 (tree fb2dcf8fa61e5d6d66b71364859603e4a6c7c038).
-Активную feature/data-session-audit-20261004 не перезаписывать: её меняет
-параллельная разработка. data-session: status/quota → date fixtures →
+Stake snapshot 2f9aa2a (tree c1290e7e1ebb4bec44cdfd9a3c2947477eca07ed),
+включая CLI stake-snapshot. Активную feature/data-session-audit-20261004
+меняет параллельная разработка: интеграция только fast-forward при
+проверенном актуальном head; force/перезапись запрещены. data-session: status/quota → date fixtures →
 reserve whole CALIBRATION cohort → one FT history request per league/season
 → capture → 50 main contracts + 14 goal builders. Sports gateway также
 поддержан api-health/football-fetch; provider key остаётся серверным.
 См. docs/DATA_SESSION.md. 26 новых offline контрпримеров; полный локальный release: 465 тестов,
 demo/replay/integrity прошли; CI сверять на опубликованном head. code_hash:
-04e9c032629fa282d4a4faf312e22921ce43fee5db7c0eb62e7ac5d506c938f2.
+415d924a4ab684df65dbdd829201dd5e5c0e83bdf5b55ad830998acabcfb04b6.
 model_hash прежний. Реальный CLI упёрся в отсутствующий local/gateway
 credential; подтверждённых API packets и новых реальных прогнозов нет.
 Cloud gateway/Vault не изменены. Prices/approval/HOLDOUT/main merge не
@@ -19,16 +20,25 @@ Cloud gateway/Vault не изменены. Prices/approval/HOLDOUT/main merge н
 
 ## Stake research odds bridge, 05.10.2026
 
-Добавлен экспериментальный read-only источник Stake: `src/sefirot/stake_provider.py`,
-`scripts/stake_snapshot.py`, `docs/STAKE_ODDS_PROVIDER.md`. Секрет читается только
-из `STAKE_API_TOKEN`; в Git/receipt/error не сохраняется. Источник требует уже
-существующий prematch seal, exact home/away/kickoff и сохраняет raw market names
-без догадок о settlement. Статус строго RESEARCH_ONLY, monetary_permission=false,
-execution_enabled=false. Причина: официальный Stake API подтверждает x-access-token,
-но sportsbook GraphQL schema не является стабильным публичным контрактом.
-4 boundary-теста нового провайдера прошли на Render. Живую авторизацию не считать
-проверенной, пока токен не установлен в runtime environment; токен из чата в код
-не переносить. Main не сливать.
+Текущий рабочий контракт Stake подтверждён живым запросом. Старый draft
+`sportsEvents` удалён из схемы; используется двухэтапный web GraphQL:
+`SportTournamentFixtureList` -> exact fixture -> `FixtureIndexGroups` ->
+`FixtureGroupMarkets`. Render smoke-test: token authenticated, 200 soccer
+events, Nations League fixtures найдены; Cyprus-Latvia дал 14 groups / 292
+markets. Добавлены `src/sefirot/stake_provider.py`,
+`src/sefirot/stake_mapper.py`, `scripts/stake_snapshot.py` и CLI
+`stake-snapshot`.
+
+Mapper консервативно нормализует 1X2, Double Chance, DNB, BTTS, Asian Total и
+Asian Handicap только на integer/half линиях CORE; quarter lines остаются raw и
+отбрасываются из canonical main mapping. Small research mapping уже умеет
+Match N+ shots, FT/1H total corners, FT/1H total cards (когда exact template
+есть), team corner ranges. 8/8 dedicated provider+mapper tests прошли на
+Render. Источник пока строго RESEARCH_ONLY:
+freshness=RECEIPT_TIME_ONLY, settlement rules unverified,
+monetary_permission=false, execution_enabled=false. Stake token хранить только
+в STAKE_API_TOKEN и перед production использованием перевыпустить токен,
+который когда-либо публиковался в чате. Main не сливать.
 
 ## Сравнительный обзор и forward-scorecard, 05.10.2026
 
