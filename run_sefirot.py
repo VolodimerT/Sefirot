@@ -10,8 +10,6 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
-from sefirot_core import (CaptureJournal, Fact, HistoricalMatch, InsufficientHistory,
-                          SportsOnlySnapshot, ThreeWayQuote, estimate_1x2, seal_estimate)
 
 
 def _time(text: str) -> datetime:
@@ -22,6 +20,7 @@ def _time(text: str) -> datetime:
 
 
 def _history(path: Path) -> tuple[HistoricalMatch, ...]:
+    from sefirot_core import HistoricalMatch
     rows = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(rows, list):
         raise ValueError("history must be a JSON list")
@@ -35,6 +34,8 @@ def analyze(*, match_id: str, kickoff: datetime, home: str, away: str,
             confirmed: bool, reader=input, writer=print,
             clock=lambda: datetime.now(timezone.utc)) -> str:
     """Capture sports data, seal P, *then* ask for the 1X2 line; never authorize bets."""
+    from sefirot_core import (CaptureJournal, Fact, InsufficientHistory,
+                              SportsOnlySnapshot, ThreeWayQuote, estimate_1x2, seal_estimate)
     if not match_id or not home or not away or home == away or not source:
         raise ValueError("match id, distinct teams and source are required")
     history = _history(history_path)
@@ -87,7 +88,7 @@ def analyze(*, match_id: str, kickoff: datetime, home: str, away: str,
     return "PASS"
 
 
-def main(argv: list[str] | None = None) -> int:
+def _legacy_main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SEFIROT CORE: локальный теневой анализ 1X2")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("demo", help="вымышленный пример без настоящих ставок")
@@ -111,6 +112,14 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def main(argv: list[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    print("DEPRECATED wrapper: use sefirot.py; --legacy selects the historical prototype only.", file=sys.stderr)
+    if arguments[:1] == ['--legacy']:
+        return _legacy_main(arguments[1:])
+    from sefirot.cli import main as canonical_main
+    return canonical_main(arguments)
+
+
 if __name__ == "__main__":
-    print("DEPRECATED: use sefirot.py. Planned removal: CORE 3.0, not before 2027-01-01.", file=sys.stderr)
     raise SystemExit(main())

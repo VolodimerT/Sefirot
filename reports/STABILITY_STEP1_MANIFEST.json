@@ -1,0 +1,45 @@
+{
+  "schema": "stability-step1-v1",
+  "base_commit": "8e6a3ab81b93ecc0a0c64b57fc294176f016cff1",
+  "architecture_review_commit": "fd14748",
+  "version": "2.4.2",
+  "code_hash": "db8f7c358ceb6651022485db567025dc8f92650c900c7d51ea770cb89a5c91d0",
+  "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "model_modules_unchanged": [
+    "_payoffs.py",
+    "contracts.py",
+    "evidence.py",
+    "goal_model.py",
+    "identity.py",
+    "markets.py",
+    "probability.py"
+  ],
+  "runtime": "sefirot.cli:main",
+  "branch": "feature/stability-reset-20261005",
+  "research_grids_default": false,
+  "legacy_opt_in": "--legacy",
+  "full_help_opt_in": "--labs --help",
+  "local_validation": {
+    "tests": 476,
+    "test_exit": 0,
+    "python": "3.12.14",
+    "platform": "Linux",
+    "elapsed_seconds": 34.01,
+    "generated_at": "2026-10-05T20:58:49.119676+00:00"
+  },
+  "demo_integrity": true,
+  "demo_replay_matches": true,
+  "independent_holdout_passed": false,
+  "statistical_profitability_proven": false,
+  "monetary_permission": false,
+  "execution_enabled": false,
+  "changed_runtime_files_sha256": {
+    "src/sefirot/cli.py": "4acbe09a2a7821134059692468a35a5dbff7fed1f05d0ee8e6c0a2ae11218ca8",
+    "src/sefirot/data_session.py": "89f33d30d0f1d8bb0a589f5fa64d1e6f36a119a056f144a58371f87460086ac5",
+    "run_sefirot.py": "956b1c9f4fb383bd8378537b5083a159d409350d0251b4914717c76c0004d041",
+    "SEFIROT_CORE.py": "2cc8d88d7ec02cf95ec9ffbb19668737b128ace1684003264d5b6c73237d6f23"
+  },
+  "api_runtime_check": "MISSING local/gateway sports credential and odds/Stake credentials; no live sporting dataset obtained",
+  "windows_validation": "pending exact-head CI"
+}

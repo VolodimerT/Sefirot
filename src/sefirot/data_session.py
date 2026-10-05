@@ -10,8 +10,6 @@ from .football_gateway import get_sports, transport_status
 from .football_provider import HOST, MAX_PROVIDER_ID, FootballRequestError, status_summary
 from .forward import create_plan, capture_plan, inspect_plan
 from .identity import code_hash, model_code_hash
-from .market_grid import create_grid
-from .builder_research import create_builder_grid
 from .repository import Repository
 from .service import Service
 from .sports_archive import archive_packets, read_archive, validate_packet
@@ -40,7 +38,9 @@ def _reason(exc):
 
 def collect_session(directory, day, profiles, *, source_reliability, max_requests=12,
                     quota_reserve=5, source_archive=None, timezone_name='Europe/Kyiv',
-                    policy=None, getter=None, clock=None):
+                    policy=None, getter=None, clock=None, research_grids=False):
+    if not isinstance(research_grids, bool):
+        raise ValueError('research_grids must be an explicit boolean')
     policy = policy or Policy()
     if policy.goal_model != 'BASELINE_V1':
         raise ValueError('data session currently requires BASELINE_V1')
@@ -76,6 +76,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         'planned_fixtures': 0, 'forecasts_created': 0, 'plan_id': None, 'fixtures': [],
         'status': 'COLLECTION_INCOMPLETE', 'blockers': [], 'prices_requested': False,
         'holdout_passed': False, 'monetary_permission': False, 'execution_enabled': False,
+        'research_grids_enabled': research_grids,
         'limitations': ['Research cohort, not validation or profitability proof',
             'Missing lineup/injury/coach/rotation/tactical facts remain missing',
             'Gateway receipts are local provenance, not provider signatures']}
@@ -192,7 +193,13 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
             if attempt['status'] == 'SEALED_RESEARCH':
                 report['forecasts_created'] += 1
                 prediction = repo.get('predictions', attempt['prediction_id'])
+                if not research_grids:
+                    item.update(artifact_status='SEALED_FORECAST_ONLY',
+                                main_research_contracts=0, goal_builders=0)
+                    continue
                 try:
+                    from .market_grid import create_grid
+                    from .builder_research import create_builder_grid
                     grid = create_grid(prediction, policy, service.now())
                     builder = create_builder_grid(grid, prediction, policy, service.now())
                     fid = next(m['fixture_id'] for m in plan['members'] if m['match']['id'] == attempt['match_id'])
@@ -234,6 +241,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
 def render_session(report):
     lines = ['СЕФИРОТ — API-сбор ' + report['day'],
         'Статус: ' + report['status'],
+        'Research-сетки: ' + ('LABS включены' if report.get('research_grids_enabled') else 'выключены'),
         f"Попытки запросов: {report['request_attempts']}/{report['max_requests']}; резерв: {report['quota_reserve']}",
         f"Назначено матчей: {report['planned_fixtures']}; research прогнозов: {report['forecasts_created']}"]
     for row in report['fixtures']:

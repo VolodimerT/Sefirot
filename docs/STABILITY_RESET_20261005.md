@@ -28,6 +28,7 @@ BUILDER UPDATE и DAILY AUDIT за 04.10, AUDIT FOLLOWUP и DEVELOPMENT за 04.
 | Ежедневный сбор | `data_session` напрямую импортирует и создаёт 50-contract grid и 14 Builder после каждого seal | По умолчанию только cohort и baseline seals; сетки требуют `--research-grids` |
 | Несколько sports routes | `football-fetch/normalize/archive/from-archive` — полезные низкоуровневые инструменты, `forward-*` — стадии той же выборки | Единственный daily entrypoint `data-session`; инструменты не удаляются |
 | Дрейф инструкций | README рекомендует старую feature-ветку; номер 2.4.2 не различает поведение | Актуальный branch + `build-info` с code/model/policy identities |
+| Проверка журнала | `verify` шёл через общий write-path и мог создать отсутствующую БД; отрицательная integrity не меняла exit code | Только существующая read-only БД, при integrity=false код 2 |
 | Повторные расчёты | Legacy и canonical markets/model/storage имеют разные контракты и разные журналы | Не объединять dataclasses, SQLite или seals по одинаковому названию |
 | LABS в прогнозе | `engine.prepare` и `Service.capture` не импортируют Builder/small-market/cloud; SoS — отдельный существующий fitted режим | Не менять модель, routing, grants или исторические артефакты |
 
@@ -184,3 +185,23 @@ rate null. Один проигрыш класса A не считается до
 Default модель даже после успешного исследовательского сравнения меняется
 только отдельным review/release, с новым unseen денежным HOLDOUT и прежними
 policy/constitution ограничениями. Этот этап не выпускает «2.5-RC1 готов».
+
+## Результат первого шага
+
+476/476 тестов, полный локальный release gate, synthetic demo/replay/integrity
+прошли на Python 3.12.14/Linux. 11 новых boundary-контрпримеров проверяют
+основной вход, lazy imports, одинаковые seals/cohort в default и explicit
+LABS, отказ не-bool режима до I/O, read-only verify и обнаружение подмены.
+Исходные 465 тестов сохранены, две grid-регрессии теперь явно включают LABS.
+Побайтно подтверждено отсутствие изменений всех MODEL_MODULES.
+
+Manifest: reports/STABILITY_STEP1_MANIFEST.json. Новый code_hash:
+`db8f7c358ceb6651022485db567025dc8f92650c900c7d51ea770cb89a5c91d0`.
+Model hash прежний. API-health этой среды: отсутствуют local/gateway sports,
+Odds API и Stake credentials; реальная новая выборка не получена.
+Никакой секрет не извлекался из облака и не публиковался.
+
+Legacy действительно сохранён, LABS физически не перенесены, hidden CLI
+команды принимаются. Это ограниченная миграция, не полный dependency cleanup.
+Будущий DC протокол только предложен; список лиг/данные и эксперимент
+ещё не зафиксированы. Main merge, новая модель и денежный допуск не выполнены.

@@ -65,7 +65,7 @@ class DataSessionTests(unittest.TestCase):
                                getter=self.get, clock=lambda: self.clock, **kwargs)
 
     def test_one_history_query_per_league_and_complete_research_grids(self):
-        report = self.run_session()
+        report = self.run_session(research_grids=True)
         self.assertEqual(report['request_attempts'], 3)
         self.assertEqual(report['planned_fixtures'], 2)
         self.assertEqual(report['forecasts_created'], 2)
@@ -93,6 +93,40 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(report['forecasts_created'], 0)
         self.assertEqual(report['fixture_counts'], {'INSUFFICIENT_HISTORY': 2})
         self.assertEqual(report['fixtures'][0]['coverage']['teams']['home']['games_needed'], 8)
+
+    def test_default_collection_never_calls_research_grids(self):
+        with patch('sefirot.market_grid.create_grid', side_effect=AssertionError('LABS entered')), \
+             patch('sefirot.builder_research.create_builder_grid', side_effect=AssertionError('LABS entered')):
+            report = self.run_session()
+        self.assertEqual(report['forecasts_created'], 2)
+        self.assertFalse(report['research_grids_enabled'])
+        for fixture in report['fixtures']:
+            self.assertEqual(fixture['artifact_status'], 'SEALED_FORECAST_ONLY')
+            self.assertEqual(fixture['main_research_contracts'], 0)
+            self.assertEqual(fixture['goal_builders'], 0)
+        self.assertFalse(list(self.directory.rglob('*grid.json')))
+        self.assertNotIn('RESEARCH_GRID_UNAVAILABLE', report['blockers'])
+
+    def test_enabling_grids_preserves_original_forecasts_and_cohort(self):
+        lean = self.run_session()
+        with closing(Repository(self.directory/'research.sqlite', read_only=True)) as repo:
+            original = repo.all('predictions')
+            cohort = repo.all('split_assignments')
+        self.directory = Path(self.temp.name) / 'labs'
+        labs = self.run_session(research_grids=True)
+        with closing(Repository(self.directory/'research.sqlite', read_only=True)) as repo:
+            self.assertEqual(repo.all('predictions'), original)
+            self.assertEqual(repo.all('split_assignments'), cohort)
+            self.assertEqual(repo.all('bets'), [])
+        self.assertEqual(lean['plan_id'], labs['plan_id'])
+        self.assertEqual(lean['forecasts_created'], labs['forecasts_created'])
+
+    def test_non_boolean_research_mode_rejected_before_io(self):
+        for mode in ('false', 1, None):
+            with self.assertRaisesRegex(ValueError, 'explicit boolean'):
+                self.run_session(research_grids=mode)
+        self.assertFalse(self.directory.exists())
+        self.assertEqual(self.calls, [])
 
     def test_provider_season_denial_is_not_retried_per_fixture_or_turned_into_forecast(self):
         self.history_failure = FootballRequestError({'plan': 'Free plan season unavailable PRIVATE_SECRET'})
@@ -233,8 +267,8 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(report['fixture_counts'],{'MISSED_PREMATCH_WINDOW':2})
 
     def test_grid_failure_does_not_erase_sealed_forecasts_or_other_fixture(self):
-        with patch('sefirot.data_session.create_grid',side_effect=ValueError('cannot freeze')):
-            report=self.run_session()
+        with patch('sefirot.market_grid.create_grid',side_effect=ValueError('cannot freeze')):
+            report=self.run_session(research_grids=True)
         self.assertEqual(report['forecasts_created'],2)
         self.assertEqual(len(report['fixtures']),2)
         self.assertEqual(report['status'],'RESEARCH_COLLECTION_WITH_ARTIFACT_GAPS')

@@ -1,5 +1,24 @@
 # SEFIROT: актуальная база разработки
 
+## Первый шаг STABILITY RESET, 05.10.2026
+
+Текущая ветка: feature/stability-reset-20261005, поверх точного 8e6a3ab.
+Карта зависимостей до изменений: reports/ARCHITECTURE_BASELINE_20261005.json.
+Матрица всех modules/CLI, migration и предложенный accuracy protocol:
+docs/STABILITY_RESET_20261005.md. Это не готовая 2.5-RC1 и не новая модель.
+Один runtime sefirot.cli:main; launchers run_sefirot.py/SEFIROT_CORE.py
+по умолчанию wrappers текущего CLI, прежние interfaces только --legacy.
+В обычной справке 10 основных команд; --labs --help показывает все.
+Старые явно вызванные команды сохраняются: help не является permission gate.
+data-session по умолчанию cohort+baseline seals, без market/Builder grids;
+они доступны только с --research-grids и lazy imports. build-info не
+открывает БД/сеть и показывает code/model/policy identities. Model hash,
+BASELINE_V1/STRICT, денежные caps и historical seals не менять.
+Нижележащие разделы описывают исторические этапы; их старые hashes и
+названия branch не заменяют текущую ветку. Main не сливать; секреты,
+SQLite и личные receipts не публиковать. Дополнительных агентов не создавать.
+Проверки: python test_sefirot.py и python scripts/verify_release.py.
+
 ## Единый API-сбор data-session, 05.10.2026
 
 Продолжение в отдельной feature/api-data-session-20261005 поверх точного

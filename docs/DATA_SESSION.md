@@ -1,7 +1,9 @@
 # Одна API-сессия сбора и исследовательских прогнозов
 
 05.10.2026. `data-session` объединяет status → fixtures → заранее
-назначенная CALIBRATION-выборка → история → capture → сетки рынков.
+назначенная CALIBRATION-выборка → история → capture.
+По умолчанию сохраняются семь baseline контрактов в original seal.
+Research-сетки создаются только по явному `--research-grids`.
 BASELINE_V1/STRICT и модель вероятностей сохранены. Команда не получает
 цены, не размещает ставки, не выдаёт monetary approval и не проходит HOLDOUT.
 
@@ -26,8 +28,14 @@ Source reliability — утверждение оператора, не серт�
 - REPORT.json — итог, квота, все попытки, весь знаменатель и пропуски;
 - sports-archive — неизменяемые API fixture packets;
 - research.sqlite, plan.json, capture.json, status.json — исследовательский журнал;
-- папка API fixture ID / market-grid.json и builder-grid.json для каждого
+- только с `--research-grids`: папка API fixture ID / market-grid.json и builder-grid.json для каждого
   original prematch seal: 50 main research contracts и 14 goal AND сочетаний.
+
+Без флага сетки и Builder не импортируются и не рассчитываются;
+`research_grids_enabled=false`, `artifact_status=SEALED_FORECAST_ONLY`.
+Флаг не меняет спортивные данные, исходные seals или monetary permission.
+Полная справка инструментов: `py -3 sefirot.py --labs --help`.
+Точный паспорт перед запуском: `py -3 sefirot.py build-info`.
 
 Подключить уже накопленные наблюдения можно через
 --source-archive "data\observed-archive". Их даты получения не обновляются.
