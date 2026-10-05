@@ -1,5 +1,13 @@
 # SEFIROT CORE 2.4.2 — актуальная рабочая сборка
 
+**Сравнительный обзор 05.10.2026:** [недостатки, открытые аналоги и
+порядок доработок](docs/DEVELOPMENT_REVIEW_20261005.md).
+Первый шаг — [`forward-scorecard`](docs/FORWARD_SCORECARD.md):
+полная заранее назначенная выборка, raw/base forecast metrics,
+reliability bins и отдельные лиги/профили. Пропуски видны; линия БК
+не подменяется простым baseline. Research only, без fitting/approval.
+
+
 **Новый аудит Builder 05.10.2026:** [совместные голевые вероятности,
 длинная база малых рынков и категории билетов](docs/BUILDER_AUDIT_20261005.md).
 Добавлены `builder-grid`, `compare-builder`, `small-market-review`.

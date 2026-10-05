@@ -1,5 +1,20 @@
 # SEFIROT — продолжение разработки
 
+## Сравнительный обзор и forward-scorecard, 05.10.2026
+
+Первый шаг после обзора: read-only forward-scorecard всей заранее
+назначенной API-выборки. Original raw/base, reliability bins и слабые
+neutral/frozen-history ориентиры, пропуски в знаменателе; рынок БК
+не подменяется baseline. Старые CLI-only builds можно читать при
+совместимом model_hash, но нельзя пересчитывать/переподписывать seals.
+См. docs/DEVELOPMENT_REVIEW_20261005.md и docs/FORWARD_SCORECARD.md.
+22 новых теста; всего 431, точный release/CI сверять на текущем head.
+code_hash: eb9031299936744cf2b3faa809949bce42c584a466fac4da4c0ea4f71bdf18de.
+model_hash прежний. Реальная сохранённая выборка: 0/17 scored,
+17 последних INSUFFICIENT_HISTORY. Никакой новый holdout/approval,
+main merge или вероятность малых/Builder markets не заявлены.
+
+
 ## Новый аудит Builder, 05.10.2026
 
 Добавлены builder-grid/compare-builder: 14 заранее фиксированных

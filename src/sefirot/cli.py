@@ -98,6 +98,8 @@ def main(argv=None):
     forward_settle.add_argument('plan_id');forward_settle.add_argument('packet');forward_settle.add_argument('--output',required=True)
     forward_status=sub.add_parser('forward-status',help='read cohort coverage, invalid seals and missing results without certifying it')
     forward_status.add_argument('plan_id');forward_status.add_argument('--output')
+    scorecard=sub.add_parser('forward-scorecard',help='read all planned fixtures and frozen forecast quality; no refit or certification')
+    scorecard.add_argument('plan_id');scorecard.add_argument('--as-of');scorecard.add_argument('--output');scorecard.add_argument('--text',action='store_true')
     sub.add_parser('calibrate')
     validate=sub.add_parser('validate');validate.add_argument('model_id')
     backtest=sub.add_parser('backtest');backtest.add_argument('file')
@@ -324,6 +326,16 @@ def main(argv=None):
                 repo=Repository(database,read_only=True);service=Service(repo,policy)
             out=audit_tickets(load(args.file),service=service,policy=policy)
             if args.output:write_new_json(args.output,out)
+        elif args.command=='forward-scorecard':
+            from .forward_scorecard import create_scorecard,render_scorecard
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if args.output and Path(args.output).exists():raise ValueError('forward scorecard output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            out=create_scorecard(service,args.plan_id,args.as_of or service.now())
+            if args.output:write_new_json(args.output,out)
+            if args.text:
+                print(render_scorecard(out));return 0
         elif args.command=='forward-status':
             from .forward import inspect_plan
             database=Path(args.db).resolve()
