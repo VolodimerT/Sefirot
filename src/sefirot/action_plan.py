@@ -24,6 +24,7 @@ PRICE_CODES = {'PRICE_STALE', 'MISSING_CURRENT_PRICE', 'MARKET_REFERENCE_MISSING
                'ROBUST_EV_INSUFFICIENT', 'DEATH_TEST_PRICE_FRAGILITY',
                'DEATH_TEST_SEVERE_FRAGILITY'}
 DATA_CODES = {'INSUFFICIENT_HISTORY', 'COMPETITION_PROFILE_UNKNOWN',
+              'SCENARIO_CONSTRAINT_UNVERIFIED',
               'FIXTURE_IDENTITY_CONFLICT', 'LINEUP_NOT_CONFIRMED',
               'INJURY_REPORT_INCOMPLETE', 'TACTICAL_FIT_UNSUPPORTED',
               'CRITICAL_EVIDENCE_UNRELIABLE', 'MATCHUP_SUPPORT_INSUFFICIENT',
@@ -48,6 +49,7 @@ def action_plan(codes, kickoff, at):
         if code in {'BUILD_MISMATCH', 'JOURNAL_INTEGRITY'}: category = 'INTEGRITY'
         elif code in {'SYNTHETIC_DATA_RESEARCH_ONLY', 'RETROSPECTIVE_CAPTURE', 'GOAL_ARTIFACT_SYNTHETIC_RESEARCH_ONLY'}: category = 'RESEARCH_ONLY'
         elif code == 'UNSUPPORTED_FORMAT': category = 'CONTRACT'
+        elif code == 'SCENARIO_MARKET_CONFLICT': category = 'SCENARIO'
         elif code in DATA_CODES or code.startswith('MISSING_') and code != 'MISSING_CURRENT_PRICE': category = 'SPORTS_DATA'
         elif code in MODEL_CODES: category = 'MODEL_VALIDATION'
         elif code == 'POLICY_NOT_APPROVED': category = 'POLICY'
@@ -59,6 +61,7 @@ def action_plan(codes, kickoff, at):
         'INTEGRITY': (0, 'Проверить целостность и открыть исходную сборку/политику; не переносить разрешения.', 'архивная сборка и исходный журнал'),
         'RESEARCH_ONLY': (1, 'Сохранить исследовательский результат; для допуска нужны новые реальные предматчевые наблюдения.', 'реальные API-наблюдения и новый независимый период'),
         'CONTRACT': (2, 'Выбрать поддержанный контракт до цены либо оставить пропуск.', 'правила расчёта и контракт рынка'),
+        'SCENARIO': (2, 'Исключить результатный рынок по исходному запрету; пересмотр запрета требует новых спортивных оснований и нового seal до цены.', 'запечатанное ограничение и поддерживающие спортивные факты'),
         'REVIEW': (3, 'Разобрать неизвестную блокировку; обновление цены не считается исправлением.', 'код причины и доказательства исходного решения'),
         'SPORTS_DATA': (10, 'Получить недостающие спортивные сведения через API; проверить ID, профиль, источники и время. Изменение фактов требует нового seal.', 'API спортивных данных; подтверждённые предматчевые факты'),
         'MODEL_VALIDATION': (20, 'Накопить отдельные калибровочные данные и пройти заранее назначенный будущий holdout нужного контракта и контекста.', 'CALIBRATION/HOLDOUT и проверенная история подсистем'),

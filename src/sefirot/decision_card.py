@@ -10,6 +10,8 @@ RECALCULATE_CODES={'PROBABILITY_RECALCULATION_REQUIRED','SPORTS_CHANGED_RECALCUL
 VERDICTS={'playable':'играбельно','playable with conditions':'только с оговорками',
           'skip':'пропуск','unplayable':'неиграбельно'}
 REASON_TEXT={
+    'SCENARIO_MARKET_CONFLICT':'рынок нарушает зафиксированный запрет на результатную ставку',
+    'SCENARIO_CONSTRAINT_UNVERIFIED':'ограничение сценария требует свежих подтверждённых фактов',
     'ROBUST_EV_INSUFFICIENT':'цена не проходит Base/Low EV',
     'DEATH_TEST_PRICE_FRAGILITY':'цена не выдерживает стресс-сценарий',
     'CALIBRATION_INSUFFICIENT':'недостаточно калибровочных данных',
@@ -117,7 +119,8 @@ def build_card(decision,prediction,policy):
                      'death_test':{'loss_branches':c['counterexamples'],
                                    'stress_ev_min':c.get('stress_ev_min')},
                      'admission_permission':decision['decision']=='BET' and c['key']==decision['selected_market']})
-    ranked=sorted([c for c in decision['candidates'] if c.get('ev') is not None],key=candidate_rank)
+    ranked=sorted([c for c in decision['candidates'] if c.get('ev') is not None
+                   and not any(i['code']=='SCENARIO_MARKET_CONFLICT' for i in c['issues'])],key=candidate_rank)
     actionable={r['market'] for r in rows if r['price_only_recheck'] or r['status']=='ADMISSIBLE'}
     research=next((c for c in ranked if c['ev']>=policy.min_ev and c['key'] in actionable),None)
     if research is None:research=next((c for c in ranked if c['ev']>=policy.min_ev),None)

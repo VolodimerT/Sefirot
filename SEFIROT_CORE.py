@@ -22,6 +22,8 @@ def _legacy_main(argv=None):
     print(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False))
     return 0
 def main(argv=None):
+    for stream in (sys.stdout,sys.stderr):
+        if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
     arguments=list(sys.argv[1:] if argv is None else argv)
     print("DEPRECATED wrapper: use sefirot.py; --legacy selects the historical prototype only.",file=sys.stderr)
     if arguments[:1]==['--legacy']:

@@ -122,9 +122,10 @@ def compare_robustness(report, prediction, quotes, policy, at, receipt=None):
                            'observed_at': price['observed_at'], 'line_id': price['line_id'],
                            'scenarios': scenarios, 'diagnostic_class_changed': changed,
                            'raw_ev_sign_changed': signs_changed,
-                           'research_review_required': changed or signs_changed or report['status'] != 'RESEARCH_DIAGNOSTIC',
+                           'research_review_required': changed or signs_changed or bool(original['selection_issues']) or report['status'] != 'RESEARCH_DIAGNOSTIC',
                            'calibration_applied': False, 'monetary_permission': False})
         rows.append({'key': original['key'], 'market': original['market'], 'prices': prices,
+                     'selection_issues': original['selection_issues'], 'selection_status': original['selection_status'],
                      'price_status': original['price_status'], 'class': 'D', 'stake': 0.,
                      'monetary_permission': False})
     output = {'schema': 'goal-history-comparison-v1', 'at': at, 'prediction_id': prediction['id'],

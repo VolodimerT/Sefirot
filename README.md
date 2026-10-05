@@ -2,6 +2,10 @@
 
 **Текущий этап — STABILITY RESET:** [карта архитектуры, матрица модулей и
 команд, migration и будущий accuracy protocol](docs/STABILITY_RESET_20261005.md).
+
+По аудиту 05.10 добавлен [явный запрет результатного рынка до цены](docs/SCENARIO_CONSTRAINT_20261005.md):
+сохранённый avoid_result блокирует результатную ногу и в Builder. Текст
+чата сам по себе не создаёт restriction; требуется sports inference с FACT support.
 Рабочая ветка — `feature/stability-reset-20261005`.
 Основной запуск `py -3 sefirot.py`; паспорт `py -3 sefirot.py build-info`.
 В обычной справке 10 основных команд, полный список `--labs --help`.

@@ -61,9 +61,10 @@ class StabilityBoundaryTests(unittest.TestCase):
             database = Path(temporary)/'existing.sqlite'
             with closing(Repository(database)) as repo:
                 repo.log('TEST_CHECK', '2030-01-01T00:00:00+00:00', {'synthetic': True})
-            with sqlite3.connect(database) as connection:
-                connection.execute('DROP TRIGGER audit_logs_no_update')
-                connection.execute("UPDATE audit_logs SET payload='{}'")
+            with closing(sqlite3.connect(database)) as connection:
+                with connection:
+                    connection.execute('DROP TRIGGER audit_logs_no_update')
+                    connection.execute("UPDATE audit_logs SET payload='{}'")
             before = database.read_bytes()
             result = self.invoke('--db', str(database), 'verify')
             self.assertEqual(result.returncode, 2)
@@ -108,6 +109,15 @@ runpy.run_path(sys.argv[0], run_name='__main__')
         result = self.invoke('analyze', launcher='run_sefirot.py')
         self.assertEqual(result.returncode, 2)
         self.assertNotIn('Букмекер:', result.stdout)
+
+    def test_legacy_help_handles_a_non_cyrillic_output_encoding(self):
+        import os
+        for launcher in ('run_sefirot.py', 'SEFIROT_CORE.py'):
+            result = subprocess.run([sys.executable, str(ROOT/launcher), '--legacy', '--help'],
+                                    cwd=ROOT, capture_output=True, encoding='utf-8',
+                                    env={**os.environ, 'PYTHONIOENCODING': 'cp1252'})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('usage:', result.stdout)
 
     def test_cli_research_grids_flag_is_explicit_and_does_not_grant_permissions(self):
         for explicit in (False, True):

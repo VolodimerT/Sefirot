@@ -113,6 +113,8 @@ def _legacy_main(argv: list[str] | None = None) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'): stream.reconfigure(encoding='utf-8')
     arguments = list(sys.argv[1:] if argv is None else argv)
     print("DEPRECATED wrapper: use sefirot.py; --legacy selects the historical prototype only.", file=sys.stderr)
     if arguments[:1] == ['--legacy']:

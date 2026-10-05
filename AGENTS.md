@@ -1,5 +1,21 @@
 # SEFIROT: актуальная база разработки
 
+## Ограничение сценария по DAILY AUDIT, 05.10.2026
+
+Текущий head той же feature/stability-reset-20261005 продолжает STABILITY
+RESET. См. docs/SCENARIO_CONSTRAINT_20261005.md: explicit sports-only
+matchup_signal.value.selection_constraint.avoid_result=true, reliable/fresh
+active FACT support. Запрет блокирует 1X2/DC/DNB/HANDICAP до ranking и
+результатные Builder legs, сохраняется в research outputs. Добавление,
+снятие или изменение содержания premises на recheck требует нового seal.
+Нельзя превращать каждый проигрышный score branch в veto или выводить
+restriction из коэффициента/прошедшего результата. Текст чата не parser.
+Семь MODEL_MODULES и Policy неизменны; code_hash изменён. Старые seals
+воспроизводить на архивной сборке. Draft PR #11 направлен в точную
+feature/api-data-session-20261005, main не сливать. Дополнительных агентов
+не создавать. Финансовые записи/исходные аудиты и личные receipts не
+публиковать; external tip + filter не считать чистой модельной выборкой.
+
 ## Первый шаг STABILITY RESET, 05.10.2026
 
 Текущая ветка: feature/stability-reset-20261005, поверх точного 8e6a3ab.
