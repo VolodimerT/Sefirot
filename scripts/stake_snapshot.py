@@ -19,6 +19,7 @@ from sefirot.contracts import Policy
 from sefirot.repository import Repository
 from sefirot.service import Service
 from sefirot.stake_provider import exact_event, fixture_markets, research_snapshot, sports_events
+from sefirot.stake_mapper import normalize_snapshot
 
 
 def main(argv=None):
@@ -28,11 +29,13 @@ def main(argv=None):
     parser.add_argument("--sport", default="soccer")
     parser.add_argument("--first", type=int, default=50)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--normalized-output")
     args = parser.parse_args(argv)
 
     destination = Path(args.output)
-    if destination.exists():
-        raise SystemExit("output already exists")
+    normalized_destination = Path(args.normalized_output or (args.output + ".normalized.json"))
+    if destination.exists() or normalized_destination.exists():
+        raise SystemExit("Stake output already exists")
 
     database = Path(args.db).resolve()
     if not database.is_file():
@@ -50,19 +53,27 @@ def main(argv=None):
         market_packet = fixture_markets(event["slug"])
         receipts = [packet["receipt"]] + market_packet["receipts"]
         report = research_snapshot(event, prediction, received, market_packet["markets"], receipts)
+        normalized = normalize_snapshot(report)
     finally:
         repo.close()
 
     destination.parent.mkdir(parents=True, exist_ok=True)
+    normalized_destination.parent.mkdir(parents=True, exist_ok=True)
     with destination.open("x", encoding="utf-8") as file:
         json.dump(report, file, ensure_ascii=False, indent=2, allow_nan=False)
+        file.write("\n")
+    with normalized_destination.open("x", encoding="utf-8") as file:
+        json.dump(normalized, file, ensure_ascii=False, indent=2, allow_nan=False)
         file.write("\n")
     print(json.dumps({
         "status": report["status"],
         "provider": report["provider"],
         "event_id": report["stake_event_id"],
         "market_count": report["market_count"],
+        "main_quote_count": normalized["main_quote_count"],
+        "small_quote_count": normalized["small_quote_count"],
         "output": str(destination.resolve()),
+        "normalized_output": str(normalized_destination.resolve()),
         "monetary_permission": False,
     }, ensure_ascii=False))
     return 0
