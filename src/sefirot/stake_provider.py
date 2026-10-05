@@ -489,6 +489,8 @@ def _boot_probe_if_requested():
                         keep = True
                     elif "corner range" in (template + " " + name).lower():
                         keep = True
+                    elif "card" in (template + " " + name).lower() or "booking" in (template + " " + name).lower():
+                        keep = True
                     if keep:
                         selected.append({
                             "group": market.get("group"),
