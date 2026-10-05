@@ -18,7 +18,7 @@ def run(get, normalize_sports):
     try:
         target=get("fixtures",{"date":DATE,"timezone":"UTC"})
         rows=[r for r in target["data"]["response"]
-              if "nations league" in str((r.get("league") or {}).get("name","")).lower()
+              if str((r.get("league") or {}).get("name","")) == "UEFA Nations League"
               and (r.get("fixture") or {}).get("status",{}).get("short")=="NS"]
         leagues=sorted({(r["league"]["id"],r["league"].get("season")) for r in rows})
         history_by_league={}
@@ -37,14 +37,10 @@ def run(get, normalize_sports):
                     ("1X2","HOME",None),("1X2","DRAW",None),("1X2","AWAY",None),
                     ("DOUBLE_CHANCE","1X",None),("DOUBLE_CHANCE","X2",None),("DOUBLE_CHANCE","12",None),
                     ("DNB","HOME",None),("DNB","AWAY",None),
-                    ("TOTAL","OVER",1.5),("TOTAL","UNDER",1.5),
                     ("TOTAL","OVER",2.5),("TOTAL","UNDER",2.5),
-                    ("TOTAL","OVER",3.5),("TOTAL","UNDER",3.5),
+                    ("TOTAL","UNDER",3.5),
                     ("BTTS","YES",None),("BTTS","NO",None),
-                    ("TEAM_TOTAL","HOME_OVER",0.5),("TEAM_TOTAL","HOME_OVER",1.5),
-                    ("TEAM_TOTAL","AWAY_OVER",0.5),("TEAM_TOTAL","AWAY_OVER",1.5),
-                    ("HANDICAP","HOME",-0.5),("HANDICAP","HOME",-1.0),
-                    ("HANDICAP","AWAY",-0.5),("HANDICAP","AWAY",-1.0)]
+                    ("TEAM_TOTAL","HOME_OVER",1.5),("TEAM_TOTAL","AWAY_OVER",1.5)]
                 for kind,side,line in specs:
                     grid.append(_line(mass,variants,Market(kind,side,line)))
                 out["matches"].append({
