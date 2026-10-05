@@ -1,5 +1,18 @@
 # SEFIROT: актуальная база разработки
 
+## Stake research odds bridge, 05.10.2026
+
+Добавлен экспериментальный read-only источник Stake: `src/sefirot/stake_provider.py`,
+`scripts/stake_snapshot.py`, `docs/STAKE_ODDS_PROVIDER.md`. Секрет читается только
+из `STAKE_API_TOKEN`; в Git/receipt/error не сохраняется. Источник требует уже
+существующий prematch seal, exact home/away/kickoff и сохраняет raw market names
+без догадок о settlement. Статус строго RESEARCH_ONLY, monetary_permission=false,
+execution_enabled=false. Причина: официальный Stake API подтверждает x-access-token,
+но sportsbook GraphQL schema не является стабильным публичным контрактом.
+4 boundary-теста нового провайдера прошли на Render. Живую авторизацию не считать
+проверенной, пока токен не установлен в runtime environment; токен из чата в код
+не переносить. Main не сливать.
+
 ## Сравнительный обзор и forward-scorecard, 05.10.2026
 
 Первый шаг после обзора: read-only forward-scorecard всей заранее
