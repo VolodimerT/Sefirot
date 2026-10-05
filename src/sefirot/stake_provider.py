@@ -85,9 +85,27 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name="
             if close:
                 close()
     except HTTPError as exc:
-        # Never include response bodies/request headers in errors: they can
-        # contain account-specific data and the request carries a credential.
-        raise ValueError(f"stake provider HTTP {int(exc.code)}; PASS") from None
+        # Normally fail closed without echoing provider bodies. The dedicated
+        # disposable bridge can opt into GraphQL error-message diagnostics;
+        # the token is scrubbed and only short message strings are retained.
+        detail = ""
+        if os.environ.get("SEFIROT_STAKE_DEBUG_ERRORS") == "1":
+            try:
+                raw_error = exc.read(8192).decode("utf-8", "replace")
+                raw_error = raw_error.replace(secret, "[REDACTED]")
+                parsed = json.loads(raw_error)
+                messages = []
+                if isinstance(parsed, dict):
+                    for row in parsed.get("errors", [])[:8]:
+                        if isinstance(row, dict) and isinstance(row.get("message"), str):
+                            messages.append(row["message"][:500])
+                if messages:
+                    detail = " | " + " ; ".join(messages)
+                elif raw_error:
+                    detail = " | body=" + raw_error[:500].replace("\n", " ")
+            except Exception:
+                detail = ""
+        raise ValueError(f"stake provider HTTP {int(exc.code)}; PASS{detail}") from None
     except (URLError, OSError, ValueError) as exc:
         if isinstance(exc, ValueError) and str(exc).startswith("stake provider HTTP"):
             raise
