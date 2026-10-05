@@ -49,14 +49,14 @@ def _token():
     return credential("STAKE_API_TOKEN")
 
 
-def _post_graphql(query, variables, *, token=None, opener=None):
+def _post_graphql(query, variables, *, token=None, opener=None, operation_name="SportsEvents"):
     if not isinstance(query, str) or not query.strip():
         raise ValueError("stake GraphQL query required")
     if not isinstance(variables, dict):
         raise ValueError("stake GraphQL variables must be an object")
     secret = token or _token()
     body = json.dumps(
-        {"query": query, "variables": variables, "operationName": "SportsEvents"},
+        {"query": query, "variables": variables, "operationName": operation_name},
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
@@ -126,6 +126,7 @@ def sports_events(*, first=50, sport_slug="football", token=None, opener=None):
         {"first": first, "sportSlug": sport_slug},
         token=token,
         opener=opener,
+        operation_name="SportsEvents",
     )
     try:
         edges = packet["data"]["data"]["sportsEvents"]["edges"]
@@ -237,6 +238,31 @@ def _boot_probe_if_requested():
     if os.environ.get("SEFIROT_STAKE_BOOT_PROBE") != "1":
         return
     try:
+        auth = _post_graphql(
+            "query UserIdentity { user { id } }", {},
+            operation_name="UserIdentity",
+        )
+        user_present = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
+        schema_fields = []
+        schema_error = None
+        try:
+            schema = _post_graphql(
+                """query StakeSchemaProbe {
+                  __type(name: "Query") {
+                    fields { name }
+                  }
+                }""",
+                {},
+                operation_name="StakeSchemaProbe",
+            )
+            fields = (((schema.get("data") or {}).get("data") or {}).get("__type") or {}).get("fields") or []
+            schema_fields = sorted(
+                row.get("name") for row in fields
+                if isinstance(row, dict) and isinstance(row.get("name"), str)
+                and any(word in row.get("name").lower() for word in ("sport", "event", "odds", "fixture"))
+            )
+        except Exception as exc:
+            schema_error = str(exc)
         packet = sports_events(first=100, sport_slug="football")
         summaries = []
         targets = ("italy", "turkey", "türkiye", "france", "belgium",
@@ -274,6 +300,9 @@ def _boot_probe_if_requested():
                 })
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
             "status": "OK",
+            "auth_user_present": user_present,
+            "schema_candidate_fields": schema_fields,
+            "schema_probe_error": schema_error,
             "event_count": len(packet["events"]),
             "matches": summaries[:12],
             "receipt": packet["receipt"],
