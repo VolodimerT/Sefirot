@@ -453,16 +453,16 @@ def _boot_probe_if_requested():
         )
         auth_ok = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
         packet = sports_events(first=200, sport_slug="soccer", match_type="active")
-        targets = ("ukraine - hungary",)
         matches = []
         for event in packet["events"]:
-            event_name = str(event.get("name", "")).lower()
-            if not any(target in event_name for target in targets):
+            league_name = str((event.get("league") or {}).get("name", ""))
+            start_time = str(event.get("startTime", ""))
+            if league_name != "UEFA Nations League" or "06 Oct 2026" not in start_time:
                 continue
             row = {
                 "id": event.get("id"), "slug": event.get("slug"),
                 "name": event.get("name"), "startTime": event.get("startTime"),
-                "league": (event.get("league") or {}).get("name"),
+                "league": league_name,
             }
             if event.get("slug"):
                 groups = fixture_groups(event["slug"])
@@ -472,24 +472,23 @@ def _boot_probe_if_requested():
                     template = str(market.get("template", ""))
                     name = str(market.get("name", ""))
                     spec = str(market.get("specifiers", ""))
+                    low = (template + " " + name).lower()
                     keep = False
                     if template in ("1x2", "Draw No Bet", "Both Teams to Score", "Double Chance"):
                         keep = True
-                    elif template == "Asian Total" and spec in ("total=2.5","total=3","total=3.5"):
+                    elif template == "Asian Total" and spec in ("total=2.5","total=3.5"):
                         keep = True
                     elif template == "Asian Handicap" and spec in (
-                        "hcp=-1.5","hcp=-1.25","hcp=-1","hcp=-0.75","hcp=-0.5",
-                        "hcp=0","hcp=0.5","hcp=0.75","hcp=1","hcp=1.25","hcp=1.5"
+                        "hcp=-1","hcp=-0.5","hcp=0","hcp=0.5","hcp=1"
                     ):
                         keep = True
-                    elif template in ("Total Corners", "1st Half - Total Corners",
-                                      "Total Cards", "1st Half - Total Cards"):
+                    elif template == "Total Corners" and spec in ("total=8.5","total=9.5"):
                         keep = True
-                    elif "shots" in (template + " " + name).lower():
+                    elif template == "1st Half - Total Corners" and spec in ("total=3.5","total=4.5"):
                         keep = True
-                    elif "corner range" in (template + " " + name).lower():
+                    elif template in ("Total Cards","Total Bookings") and spec in ("total=3.5","total=4.5"):
                         keep = True
-                    elif "card" in (template + " " + name).lower() or "booking" in (template + " " + name).lower():
+                    elif "match 24+ shots" in low or "match 26+ shots" in low or "match 28+ shots" in low:
                         keep = True
                     if keep:
                         selected.append({
@@ -504,12 +503,13 @@ def _boot_probe_if_requested():
                         })
                 row["group_count"] = len(groups["group_names"])
                 row["market_count"] = mp["market_count"]
-                row["markets"] = selected[:180]
+                row["markets"] = selected
             matches.append(row)
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
             "status": "OK",
             "auth_user_present": auth_ok,
             "event_count": len(packet["events"]),
+            "match_count": len(matches),
             "matches": matches,
             "receipt": packet["receipt"],
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
