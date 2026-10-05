@@ -456,7 +456,7 @@ def _boot_probe_if_requested():
         targets = (
             "italy - turkiye", "france - belgium", "romania - sweden",
             "montenegro - armenia", "cyprus - latvia",
-            "northern ireland - georgia",
+            "northern ireland - georgia", "ukraine - hungary", "bosnia and herzegovina - poland",
         )
         matches = []
         for event in packet["events"]:
