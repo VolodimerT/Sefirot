@@ -474,16 +474,22 @@ def _boot_probe_if_requested():
             if len(matches) == 0 and event.get("slug"):
                 market_packet = fixture_markets(event["slug"])
                 row["market_count"] = market_packet["market_count"]
-                row["markets"] = [
-                    {
-                        "group": market.get("group"),
-                        "template": market.get("template"),
-                        "name": market.get("name"),
-                        "specifiers": market.get("specifiers"),
-                        "outcomes": market.get("outcomes"),
-                    }
-                    for market in market_packet["markets"][:60]
-                ]
+                keywords = ("shot", "corner", "card", "foul", "offside", "save",
+                            "tackle", "goal kick", "free kick", "booking")
+                selected = []
+                for market in market_packet["markets"]:
+                    hay = (str(market.get("group", "")) + " " +
+                           str(market.get("template", "")) + " " +
+                           str(market.get("name", ""))).lower()
+                    if any(word in hay for word in keywords):
+                        selected.append({
+                            "group": market.get("group"),
+                            "template": market.get("template"),
+                            "name": market.get("name"),
+                            "specifiers": market.get("specifiers"),
+                            "outcomes": market.get("outcomes"),
+                        })
+                row["markets"] = selected[:160]
             matches.append(row)
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
             "status": "OK",
