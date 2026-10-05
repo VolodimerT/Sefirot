@@ -122,6 +122,13 @@ def main(argv=None):
     market_scope.add_argument('--grid',help='frozen market-grid JSON; enables alternate main lines for research only')
     health=sub.add_parser('api-health',help='check both API credentials and quotas without fetching prices')
     health.add_argument('--output',help='save a credential-free connection report')
+    collection=sub.add_parser('data-session',help='bounded API sports collection, full calibration cohort and research grids in one run')
+    collection.add_argument('--date',required=True);collection.add_argument('--directory',required=True)
+    collection.add_argument('--league-profile',action='append',required=True)
+    collection.add_argument('--source-reliability',type=float,required=True)
+    collection.add_argument('--max-requests',type=int,default=12);collection.add_argument('--quota-reserve',type=int,default=5)
+    collection.add_argument('--source-archive');collection.add_argument('--timezone',default='Europe/Kyiv')
+    collection.add_argument('--text',action='store_true')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
     football.add_argument('--endpoint',required=True,choices=['leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries'])
     football.add_argument('--param',action='append',default=[],help='provider filter NAME=VALUE; repeat as needed')
@@ -153,7 +160,19 @@ def main(argv=None):
     repo=None
     try:
         policy=Policy(**load(args.policy)) if args.policy else Policy()
-        if args.command=='api-health':
+        if args.command=='data-session':
+            from .data_session import collect_session,render_session
+            profiles={}
+            for entry in args.league_profile:
+                key,value=entry.split('=',1);key=int(key)
+                if key in profiles:raise ValueError('duplicate API league profile')
+                profiles[key]=value
+            out=collect_session(args.directory,args.date,profiles,source_reliability=args.source_reliability,
+                max_requests=args.max_requests,quota_reserve=args.quota_reserve,source_archive=args.source_archive,
+                timezone_name=args.timezone,policy=policy)
+            if args.text:
+                print(render_session(out));return 2 if out['status']=='COLLECTION_INCOMPLETE' else 0
+        elif args.command=='api-health':
             from .api_health import check
             out=check()
             if args.output:
@@ -179,7 +198,7 @@ def main(argv=None):
                  'history_rows':imported['coverage']['eligible_history_rows'],'teams':imported['coverage']['teams'],
                  'blockers':imported['coverage']['blockers'],'monetary_permission':False}
         elif args.command=='football-fetch':
-            from .football_provider import get
+            from .football_gateway import get_sports as get
             params={}
             for entry in args.param:
                 if '=' not in entry:raise ValueError('sports filter must be NAME=VALUE')
@@ -437,7 +456,8 @@ def main(argv=None):
             from .decision_card import render_card
             print(render_card(out['decision_card']))
         else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
-        return 2 if args.command=='api-health' and out['status']!='API_READY' else 0
+        return 2 if ((args.command=='api-health' and out['status']!='API_READY')
+            or (args.command=='data-session' and out['status']=='COLLECTION_INCOMPLETE')) else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:

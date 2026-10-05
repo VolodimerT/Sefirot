@@ -1,5 +1,22 @@
 # SEFIROT: актуальная база разработки
 
+## Единый API-сбор data-session, 05.10.2026
+
+Продолжение в отдельной feature/api-data-session-20261005 поверх точного
+Stake snapshot b5de32d (tree 0855c237bc5d06de0c90988cda5199b47922b8ed).
+Активную feature/data-session-audit-20261004 не перезаписывать: её меняет
+параллельная разработка. data-session: status/quota → date fixtures →
+reserve whole CALIBRATION cohort → one FT history request per league/season
+→ capture → 50 main contracts + 14 goal builders. Sports gateway также
+поддержан api-health/football-fetch; provider key остаётся серверным.
+См. docs/DATA_SESSION.md. 26 новых offline контрпримеров; полный локальный release: 462 теста,
+demo/replay/integrity прошли; CI сверять на опубликованном head. code_hash:
+4e62aa6a4ca3a72ed9176ee8b0de583800e678f9ba78477af2f9875ff3acff7b.
+model_hash прежний. Реальный CLI упёрся в отсутствующий local/gateway
+credential; подтверждённых API packets и новых реальных прогнозов нет.
+Cloud gateway/Vault не изменены. Prices/approval/HOLDOUT/main merge не
+выполнялись. Secrets/SQLite/личные packets в Git не помещать.
+
 ## Stake research odds bridge, 05.10.2026
 
 Добавлен экспериментальный read-only источник Stake: `src/sefirot/stake_provider.py`,

@@ -18,7 +18,8 @@ def validate_packet(packet, at=None):
     strict(packet, ('data', 'receipt'))
     receipt = packet['receipt']
     strict(receipt, ('provider_host', 'endpoint', 'parameters', 'request_started_at',
-                     'received_at', 'payload_hash', 'http_status', 'provider', 'sports_only'), ('quota',))
+                     'received_at', 'payload_hash', 'http_status', 'provider', 'sports_only'),
+           ('quota', 'transport', 'upstream_received_at'))
     if (receipt['provider_host'] != HOST or receipt['endpoint'] != '/fixtures'
             or receipt['provider'] != 'API_FOOTBALL_V3' or receipt['sports_only'] is not True
             or receipt['http_status'] != 200):
@@ -26,6 +27,10 @@ def validate_packet(packet, at=None):
     started, received = time(receipt['request_started_at']), time(receipt['received_at'])
     if started > received or (at is not None and received > time(at)):
         raise ValueError('future or impossible API receipt chronology')
+    if 'transport' in receipt or 'upstream_received_at' in receipt:
+        if (receipt.get('transport') != 'SUPABASE_GATEWAY' or 'upstream_received_at' not in receipt
+                or not started <= time(receipt['upstream_received_at']) <= received):
+            raise ValueError('gateway receipt chronology required')
     if (not isinstance(receipt['parameters'], dict) or set(receipt['parameters']) - PARAMETERS['fixtures']
             or any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in receipt['parameters'].values())):
         raise ValueError('API parameters required')

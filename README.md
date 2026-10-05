@@ -1,5 +1,15 @@
 # SEFIROT CORE 2.4.2 — актуальная рабочая сборка
 
+**Единый API-сбор 05.10.2026:** [`data-session`](docs/DATA_SESSION.md)
+объединяет квоту, будущие матчи, фиксацию CALIBRATION-выборки, историю,
+capture и сетки 50 основных контрактов/14 голевых сочетаний в один запуск.
+Пропуски остаются в отчёте; история запрашивается один раз на league/season.
+Поддержан существующий приватный Supabase gateway, включая api-health
+и football-fetch. Новая ветка feature/api-data-session-20261005 сохраняет
+Stake snapshot b5de32d из параллельной разработки. Research only, stake=0.
+Живой сбор требует уже настроенного local/provider или gateway credential;
+наличие ключа в Vault само по себе не настраивает CLI.
+
 **Сравнительный обзор 05.10.2026:** [недостатки, открытые аналоги и
 порядок доработок](docs/DEVELOPMENT_REVIEW_20261005.md).
 Первый шаг — [`forward-scorecard`](docs/FORWARD_SCORECARD.md):

@@ -1,5 +1,22 @@
 # SEFIROT — продолжение разработки
 
+## Единый API-сбор, 05.10.2026
+
+Изолированная feature/api-data-session-20261005 включает Stake snapshot
+b5de32d и data-session. Документация: DATA_SESSION.md. Один запуск
+фиксирует весь CALIBRATION cohort до истории/forecast, ограничивает квоту,
+собирает историю один раз per league/season и создаёт 50 main/14 goal Builder
+research contracts на каждый пригодный prematch seal. Пропуски остаются
+в знаменателе. api-health и football-fetch поддерживают существующий gateway.
+26 новых контрпримеров; 462 локальных теста и release прошли;
+CI сверять на опубликованном head.
+code_hash: 4e62aa6a4ca3a72ed9176ee8b0de583800e678f9ba78477af2f9875ff3acff7b.
+model_hash прежний. В этом runtime local/provider key и gateway runner
+token не настроены: нового живого API-capture нет. Vault key и существующий
+gateway подтверждены только метаданными, cloud не менялся. Stake источник
+сохранён; текущую параллельную feature/data-session-audit-20261004 не
+перезаписывать. Main, monetary approval и HOLDOUT не выполнены.
+
 ## Сравнительный обзор и forward-scorecard, 05.10.2026
 
 Первый шаг после обзора: read-only forward-scorecard всей заранее
