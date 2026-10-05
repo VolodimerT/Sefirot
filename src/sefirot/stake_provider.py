@@ -453,11 +453,7 @@ def _boot_probe_if_requested():
         )
         auth_ok = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
         packet = sports_events(first=200, sport_slug="soccer", match_type="active")
-        targets = (
-            "italy - turkiye", "france - belgium", "romania - sweden",
-            "montenegro - armenia", "cyprus - latvia",
-            "northern ireland - georgia", "ukraine - hungary", "bosnia and herzegovina - poland",
-        )
+        targets = ("ukraine - hungary",)
         matches = []
         for event in packet["events"]:
             event_name = str(event.get("name", "")).lower()
