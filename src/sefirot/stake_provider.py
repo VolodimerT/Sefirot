@@ -1,10 +1,8 @@
 """Experimental, read-only Stake sportsbook snapshot bridge.
 
-Stake's official public API documents x-access-token authentication, but the
-sportsbook GraphQL schema used by the website is not part of that stable public
-contract. This module therefore stays research-only: it fetches raw market
-names/outcomes after a probability seal and never creates executable quotes or
-places wagers.
+This provider uses the current Stake web GraphQL contract discovered from the
+sportsbook frontend. The contract is not part of Stake's stable public API, so
+all output remains research-only and fail-closed.
 """
 from __future__ import annotations
 
@@ -22,22 +20,53 @@ from .provider_transport import NoRedirect
 
 HOST = "stake.com"
 ENDPOINT = "/_api/graphql"
-MAX_RESPONSE = 4_000_000
-MAX_EVENTS = 100
+MAX_RESPONSE = 8_000_000
+MAX_EVENTS = 200
 
-SPORTS_EVENTS_QUERY = """query SportsEvents($first: Int, $sportSlug: String) {
-  sportsEvents(first: $first, sportSlug: $sportSlug) {
-    edges {
-      node {
-        id
-        name
-        startTime
-        sport { name slug }
-        league { name slug }
-        competitors { name }
-        markets {
-          name
-          outcomes { name odds }
+SPORT_TOURNAMENT_FIXTURE_LIST_QUERY = """query SportTournamentFixtureList(
+  $sport: String!, $tournamentLimit: Int = 50,
+  $fixtureCountLimit: Int = 50, $type: SportSearchEnum!
+) {
+  slugSport(sport: $sport) {
+    id name slug
+    tournamentList(type: $type, limit: $tournamentLimit) {
+      id name slug
+      category { id name slug sport { id name slug } }
+      fixtureList(type: $type, limit: $fixtureCountLimit) {
+        id status slug name provider extId
+        data {
+          __typename
+          ... on SportFixtureDataMatch {
+            startTime
+            competitors { name defaultName extId countryCode abbreviation }
+            teams { name qualifier }
+          }
+          ... on SportFixtureDataOutright { name startTime endTime }
+        }
+      }
+    }
+  }
+}"""
+
+FIXTURE_GROUPS_QUERY = """query FixtureIndexGroups($fixture: String!) {
+  slugFixture(fixture: $fixture) {
+    id
+    groups { id name translation rank }
+  }
+}"""
+
+FIXTURE_MARKETS_QUERY = """query FixtureGroupMarkets(
+  $fixture: String!, $groups: [String!]!
+) {
+  slugFixture(fixture: $fixture) {
+    id
+    groups(groups: $groups) {
+      id name translation rank
+      templates(includeEmpty: false, limit: 50) {
+        id extId rank name
+        markets(limit: 50) {
+          id name status extId specifiers customBetAvailable provider
+          outcomes { id active odds name customBetAvailable }
         }
       }
     }
@@ -49,11 +78,13 @@ def _token():
     return credential("STAKE_API_TOKEN")
 
 
-def _post_graphql(query, variables, *, token=None, opener=None, operation_name="SportsEvents"):
+def _post_graphql(query, variables, *, token=None, opener=None, operation_name):
     if not isinstance(query, str) or not query.strip():
         raise ValueError("stake GraphQL query required")
     if not isinstance(variables, dict):
         raise ValueError("stake GraphQL variables must be an object")
+    if not isinstance(operation_name, str) or not operation_name:
+        raise ValueError("stake GraphQL operation name required")
     secret = token or _token()
     body = json.dumps(
         {"query": query, "variables": variables, "operationName": operation_name},
@@ -68,13 +99,17 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name="
             "Accept": "application/json",
             "Content-Type": "application/json",
             "x-access-token": secret,
-            "User-Agent": "SEFIROT/2.4.2 research-read-only",
+            "x-apollo-operation-name": operation_name,
+            "apollo-require-preflight": "true",
+            "Origin": "https://stake.com",
+            "Referer": "https://stake.com/sports",
+            "User-Agent": "Mozilla/5.0 SEFIROT/2.4.2 research-read-only",
         },
     )
     client = opener or build_opener(NoRedirect())
     started = datetime.now(timezone.utc).isoformat()
     try:
-        response = client.open(request, timeout=15)
+        response = client.open(request, timeout=20)
         try:
             status = int(getattr(response, "status", 200))
             if status != 200:
@@ -85,14 +120,10 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name="
             if close:
                 close()
     except HTTPError as exc:
-        # Normally fail closed without echoing provider bodies. The dedicated
-        # disposable bridge can opt into GraphQL error-message diagnostics;
-        # the token is scrubbed and only short message strings are retained.
         detail = ""
         if os.environ.get("SEFIROT_STAKE_DEBUG_ERRORS") == "1":
             try:
-                raw_error = exc.read(8192).decode("utf-8", "replace")
-                raw_error = raw_error.replace(secret, "[REDACTED]")
+                raw_error = exc.read(8192).decode("utf-8", "replace").replace(secret, "[REDACTED]")
                 parsed = json.loads(raw_error)
                 messages = []
                 if isinstance(parsed, dict):
@@ -116,14 +147,23 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name="
         payload = json.loads(raw.decode("utf-8"))
     except (UnicodeError, json.JSONDecodeError):
         raise ValueError("stake provider returned invalid JSON; PASS") from None
-    if not isinstance(payload, dict) or payload.get("errors"):
-        raise ValueError("stake sportsbook GraphQL unavailable or changed; PASS")
+    if not isinstance(payload, dict):
+        raise ValueError("stake provider returned invalid object; PASS")
+    if payload.get("errors"):
+        detail = ""
+        if os.environ.get("SEFIROT_STAKE_DEBUG_ERRORS") == "1":
+            detail = " | " + " ; ".join(
+                str(row.get("message", ""))[:500]
+                for row in payload.get("errors", [])[:8] if isinstance(row, dict)
+            )
+        raise ValueError("stake sportsbook GraphQL unavailable or changed; PASS" + detail)
     return {
         "data": payload,
         "receipt": {
             "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
             "provider_host": HOST,
             "endpoint": ENDPOINT,
+            "operation_name": operation_name,
             "request_started_at": started,
             "received_at": datetime.now(timezone.utc).isoformat(),
             "payload_hash": digest(payload),
@@ -134,30 +174,204 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name="
     }
 
 
-def sports_events(*, first=50, sport_slug="football", token=None, opener=None):
-    if not isinstance(first, int) or not 1 <= first <= MAX_EVENTS:
-        raise ValueError("stake event limit must be between 1 and 100")
-    if not isinstance(sport_slug, str) or not sport_slug or len(sport_slug) > 64:
+def _sport_slug(value):
+    if not isinstance(value, str) or not value or len(value) > 64:
         raise ValueError("invalid stake sport slug")
+    value = value.strip().lower()
+    return "soccer" if value in {"football", "soccer"} else value
+
+
+def sports_events(*, first=50, sport_slug="soccer", match_type="active", token=None, opener=None):
+    if not isinstance(first, int) or not 1 <= first <= MAX_EVENTS:
+        raise ValueError("stake event limit must be between 1 and 200")
+    sport = _sport_slug(sport_slug)
+    if match_type not in {"active", "live", "upcoming"}:
+        raise ValueError("invalid Stake match type")
+    # Split the global event cap across tournaments. This endpoint itself is
+    # tournament-oriented; exact fixture matching happens after flattening.
+    fixture_limit = min(50, max(10, first))
+    tournament_limit = min(100, max(10, (first + fixture_limit - 1) // fixture_limit * 10))
     packet = _post_graphql(
-        SPORTS_EVENTS_QUERY,
-        {"first": first, "sportSlug": sport_slug},
+        SPORT_TOURNAMENT_FIXTURE_LIST_QUERY,
+        {
+            "sport": sport,
+            "type": match_type,
+            "tournamentLimit": tournament_limit,
+            "fixtureCountLimit": fixture_limit,
+        },
         token=token,
         opener=opener,
-        operation_name="SportsEvents",
+        operation_name="SportTournamentFixtureList",
     )
     try:
-        edges = packet["data"]["data"]["sportsEvents"]["edges"]
+        root = packet["data"]["data"]["slugSport"]
+        tournaments = root["tournamentList"]
     except (KeyError, TypeError):
-        raise ValueError("stake sports event payload shape changed; PASS") from None
-    if not isinstance(edges, list) or len(edges) > first:
-        raise ValueError("stake sports event list malformed; PASS")
+        raise ValueError("stake sport fixture payload shape changed; PASS") from None
+    if not isinstance(root, dict) or not isinstance(tournaments, list):
+        raise ValueError("stake sport fixture payload malformed; PASS")
     events = []
-    for edge in edges:
-        if not isinstance(edge, dict) or not isinstance(edge.get("node"), dict):
-            raise ValueError("stake sports event edge malformed; PASS")
-        events.append(edge["node"])
+    for tournament in tournaments:
+        if not isinstance(tournament, dict):
+            continue
+        category = tournament.get("category") or {}
+        fixtures = tournament.get("fixtureList") or []
+        if not isinstance(fixtures, list):
+            raise ValueError("stake fixture list malformed; PASS")
+        for fixture in fixtures:
+            if not isinstance(fixture, dict):
+                continue
+            data = fixture.get("data") or {}
+            competitors = data.get("competitors") or []
+            if len(competitors) != 2:
+                continue
+            event = {
+                "id": fixture.get("id"),
+                "slug": fixture.get("slug"),
+                "name": fixture.get("name"),
+                "status": fixture.get("status"),
+                "provider": fixture.get("provider"),
+                "extId": fixture.get("extId"),
+                "startTime": data.get("startTime"),
+                "competitors": competitors,
+                "teams": data.get("teams") or [],
+                "sport": {"id": root.get("id"), "name": root.get("name"), "slug": root.get("slug")},
+                "league": {
+                    "id": tournament.get("id"),
+                    "name": tournament.get("name"),
+                    "slug": tournament.get("slug"),
+                    "category": category,
+                },
+            }
+            events.append(event)
+            if len(events) >= first:
+                return {"events": events, "receipt": packet["receipt"]}
     return {"events": events, "receipt": packet["receipt"]}
+
+
+def fixture_groups(fixture_slug, *, token=None, opener=None):
+    if not isinstance(fixture_slug, str) or not fixture_slug or len(fixture_slug) > 300:
+        raise ValueError("invalid Stake fixture slug")
+    packet = _post_graphql(
+        FIXTURE_GROUPS_QUERY,
+        {"fixture": fixture_slug},
+        token=token,
+        opener=opener,
+        operation_name="FixtureIndexGroups",
+    )
+    try:
+        fixture = packet["data"]["data"]["slugFixture"]
+    except (KeyError, TypeError):
+        raise ValueError("stake fixture group payload shape changed; PASS") from None
+    if not isinstance(fixture, dict):
+        raise ValueError("stake fixture missing; PASS")
+    groups = fixture.get("groups") or []
+    if not isinstance(groups, list) or len(groups) > 500:
+        raise ValueError("stake fixture groups malformed; PASS")
+    names = []
+    meta = []
+    seen = set()
+    for row in groups:
+        if not isinstance(row, dict) or not isinstance(row.get("name"), str):
+            continue
+        name = row["name"]
+        if name in seen:
+            continue
+        seen.add(name)
+        names.append(name)
+        meta.append({
+            "id": row.get("id"), "name": name,
+            "translation": row.get("translation"), "rank": row.get("rank"),
+        })
+    return {
+        "fixture_id": fixture.get("id"),
+        "groups": meta,
+        "group_names": names,
+        "receipt": packet["receipt"],
+    }
+
+
+def fixture_markets(fixture_slug, *, groups=None, token=None, opener=None):
+    if groups is None:
+        group_packet = fixture_groups(fixture_slug, token=token, opener=opener)
+        groups = group_packet["group_names"]
+    if not isinstance(groups, list) or not all(isinstance(x, str) and x for x in groups):
+        raise ValueError("invalid Stake market group list")
+    if len(groups) > 500:
+        raise ValueError("too many Stake market groups")
+    markets = []
+    receipts = []
+    # Chunk to keep single-fixture GraphQL responses bounded.
+    for offset in range(0, len(groups), 8):
+        chunk = groups[offset:offset + 8]
+        packet = _post_graphql(
+            FIXTURE_MARKETS_QUERY,
+            {"fixture": fixture_slug, "groups": chunk},
+            token=token,
+            opener=opener,
+            operation_name="FixtureGroupMarkets",
+        )
+        receipts.append(packet["receipt"])
+        try:
+            fixture = packet["data"]["data"]["slugFixture"]
+        except (KeyError, TypeError):
+            raise ValueError("stake fixture market payload shape changed; PASS") from None
+        if not isinstance(fixture, dict):
+            raise ValueError("stake fixture market payload missing; PASS")
+        returned_groups = fixture.get("groups") or []
+        if not isinstance(returned_groups, list):
+            raise ValueError("stake fixture market groups malformed; PASS")
+        for group in returned_groups:
+            if not isinstance(group, dict):
+                continue
+            templates = group.get("templates") or []
+            if not isinstance(templates, list):
+                raise ValueError("stake fixture templates malformed; PASS")
+            for template in templates:
+                if not isinstance(template, dict):
+                    continue
+                rows = template.get("markets") or []
+                if not isinstance(rows, list):
+                    raise ValueError("stake market list malformed; PASS")
+                for market in rows:
+                    if not isinstance(market, dict) or not isinstance(market.get("name"), str):
+                        continue
+                    outcomes = market.get("outcomes") or []
+                    if not isinstance(outcomes, list) or not outcomes:
+                        continue
+                    parsed_outcomes = []
+                    for outcome in outcomes:
+                        if not isinstance(outcome, dict) or not isinstance(outcome.get("name"), str):
+                            continue
+                        parsed_outcomes.append({
+                            "id": outcome.get("id"),
+                            "name": outcome.get("name"),
+                            "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
+                            "active": outcome.get("active"),
+                            "customBetAvailable": outcome.get("customBetAvailable"),
+                        })
+                    if not parsed_outcomes:
+                        continue
+                    markets.append({
+                        "id": market.get("id"),
+                        "name": market["name"],
+                        "status": market.get("status"),
+                        "extId": market.get("extId"),
+                        "specifiers": market.get("specifiers"),
+                        "customBetAvailable": market.get("customBetAvailable"),
+                        "provider": market.get("provider"),
+                        "group": group.get("name"),
+                        "group_translation": group.get("translation"),
+                        "template": template.get("name"),
+                        "template_ext_id": template.get("extId"),
+                        "outcomes": parsed_outcomes,
+                    })
+    return {
+        "fixture_slug": fixture_slug,
+        "markets": markets,
+        "market_count": len(markets),
+        "receipts": receipts,
+    }
 
 
 def exact_event(events, prediction, received_at):
@@ -178,8 +392,7 @@ def exact_event(events, prediction, received_at):
                 continue
             if time(event.get("startTime")) != time(match["kickoff"]):
                 continue
-            event_id = event.get("id")
-            if not isinstance(event_id, str) or not 1 <= len(event_id) <= 200:
+            if not isinstance(event.get("id"), str) or not isinstance(event.get("slug"), str):
                 continue
             found.append(event)
         except (ValueError, TypeError, KeyError):
@@ -189,8 +402,8 @@ def exact_event(events, prediction, received_at):
     return found[0]
 
 
-def research_snapshot(event, prediction, received_at, retrieval_receipt=None):
-    """Return raw names/odds only; do not guess Stake market semantics."""
+def research_snapshot(event, prediction, received_at, markets, retrieval_receipts=None):
+    """Return raw Stake market names/odds only; never infer settlement semantics."""
     match = require_prematch_seal(prediction, received_at)
     if not isinstance(event, dict):
         raise ValueError("stake event required")
@@ -198,33 +411,15 @@ def research_snapshot(event, prediction, received_at, retrieval_receipt=None):
     names = [row.get("name") if isinstance(row, dict) else None for row in competitors or []]
     if names != [match["home"], match["away"]] or time(event.get("startTime")) != time(match["kickoff"]):
         raise ValueError("stake fixture mismatch; PASS")
-    markets = event.get("markets")
-    if not isinstance(markets, list) or len(markets) > 1000:
+    if not isinstance(markets, list) or len(markets) > 5000:
         raise ValueError("stake markets malformed; PASS")
-    normalized = []
-    for market in markets:
-        if not isinstance(market, dict) or not isinstance(market.get("name"), str):
-            raise ValueError("stake market malformed; PASS")
-        outcomes = market.get("outcomes")
-        if not isinstance(outcomes, list) or not outcomes or len(outcomes) > 512:
-            raise ValueError("stake market outcomes malformed; PASS")
-        rows = []
-        seen = set()
-        for outcome in outcomes:
-            if not isinstance(outcome, dict) or not isinstance(outcome.get("name"), str):
-                raise ValueError("stake outcome malformed; PASS")
-            name = outcome["name"]
-            if name in seen:
-                raise ValueError("duplicate Stake outcome name; PASS")
-            seen.add(name)
-            rows.append({"name": name, "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000)})
-        normalized.append({"name": market["name"], "outcomes": rows})
     received = time(received_at).isoformat()
     report = {
         "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
         "status": "RESEARCH_ONLY",
         "fixture_id": match["id"],
         "stake_event_id": event.get("id"),
+        "stake_fixture_slug": event.get("slug"),
         "home": match["home"],
         "away": match["away"],
         "kickoff": match["kickoff"],
@@ -232,61 +427,36 @@ def research_snapshot(event, prediction, received_at, retrieval_receipt=None):
         "provider_market_timestamp": None,
         "freshness": "RECEIPT_TIME_ONLY",
         "normalization": "RAW_STAKE_NAMES_ONLY",
-        "markets": normalized,
-        "market_count": len(normalized),
-        "payload_hash": digest(event),
+        "markets": markets,
+        "market_count": len(markets),
+        "payload_hash": digest({"event": event, "markets": markets}),
         "monetary_permission": False,
         "execution_enabled": False,
     }
-    if retrieval_receipt:
-        safe = dict(retrieval_receipt)
-        safe.pop("credential", None)
-        report["retrieval_receipt"] = safe
+    if retrieval_receipts:
+        report["retrieval_receipts"] = [
+            {k: v for k, v in row.items() if k != "credential"}
+            for row in retrieval_receipts
+        ]
     report["hash"] = digest(report)
     return report
 
 
 def _boot_probe_if_requested():
-    """Opt-in runtime smoke test for the dedicated Render bridge.
-
-    It emits only sportsbook event/market data and sanitized provider errors.
-    The token itself is never printed. Set SEFIROT_STAKE_BOOT_PROBE=1 only on
-    the disposable bridge service, then turn it off after the probe.
-    """
     if os.environ.get("SEFIROT_STAKE_BOOT_PROBE") != "1":
         return
-    user_present = None
-    schema_fields = []
-    schema_error = None
+    auth_ok = None
     try:
         auth = _post_graphql(
             "query UserIdentity { user { id } }", {},
             operation_name="UserIdentity",
         )
-        user_present = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
-        try:
-            schema = _post_graphql(
-                """query StakeSchemaProbe {
-                  __type(name: "Query") {
-                    fields { name }
-                  }
-                }""",
-                {},
-                operation_name="StakeSchemaProbe",
-            )
-            fields = (((schema.get("data") or {}).get("data") or {}).get("__type") or {}).get("fields") or []
-            schema_fields = sorted(
-                row.get("name") for row in fields
-                if isinstance(row, dict) and isinstance(row.get("name"), str)
-                and any(word in row.get("name").lower() for word in ("sport", "event", "odds", "fixture"))
-            )
-        except Exception as exc:
-            schema_error = str(exc)
-        packet = sports_events(first=100, sport_slug="football")
-        summaries = []
+        auth_ok = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
+        packet = sports_events(first=200, sport_slug="soccer", match_type="active")
         targets = ("italy", "turkey", "türkiye", "france", "belgium",
                    "romania", "sweden", "montenegro", "armenia",
                    "cyprus", "latvia")
+        matches = []
         for event in packet["events"]:
             haystack = " ".join([
                 str(event.get("name", "")),
@@ -295,44 +465,36 @@ def _boot_probe_if_requested():
             ]).lower()
             if not any(target in haystack for target in targets):
                 continue
-            markets = event.get("markets", [])
-            summaries.append({
-                "id": event.get("id"),
-                "name": event.get("name"),
-                "startTime": event.get("startTime"),
-                "market_count": len(markets) if isinstance(markets, list) else None,
-                "markets": [
-                    {"name": market.get("name"),
-                     "outcomes": market.get("outcomes", [])[:8]}
-                    for market in (markets[:20] if isinstance(markets, list) else [])
-                    if isinstance(market, dict)
-                ],
-            })
-        if not summaries:
-            for event in packet["events"][:5]:
-                summaries.append({
-                    "id": event.get("id"),
-                    "name": event.get("name"),
-                    "startTime": event.get("startTime"),
-                    "market_count": len(event.get("markets", []))
-                    if isinstance(event.get("markets"), list) else None,
-                })
+            row = {
+                "id": event.get("id"), "slug": event.get("slug"),
+                "name": event.get("name"), "startTime": event.get("startTime"),
+                "league": (event.get("league") or {}).get("name"),
+            }
+            # One exact target is enough to prove market discovery end-to-end.
+            if len(matches) == 0 and event.get("slug"):
+                market_packet = fixture_markets(event["slug"])
+                row["market_count"] = market_packet["market_count"]
+                row["markets"] = [
+                    {
+                        "group": market.get("group"),
+                        "template": market.get("template"),
+                        "name": market.get("name"),
+                        "specifiers": market.get("specifiers"),
+                        "outcomes": market.get("outcomes"),
+                    }
+                    for market in market_packet["markets"][:60]
+                ]
+            matches.append(row)
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
             "status": "OK",
-            "auth_user_present": user_present,
-            "schema_candidate_fields": schema_fields,
-            "schema_probe_error": schema_error,
+            "auth_user_present": auth_ok,
             "event_count": len(packet["events"]),
-            "matches": summaries[:12],
+            "matches": matches[:20],
             "receipt": packet["receipt"],
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
     except Exception as exc:
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
-            "status": "FAILED",
-            "auth_user_present": user_present,
-            "schema_candidate_fields": schema_fields,
-            "schema_probe_error": schema_error,
-            "error": str(exc),
+            "status": "FAILED", "auth_user_present": auth_ok, "error": str(exc)
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
 
 
