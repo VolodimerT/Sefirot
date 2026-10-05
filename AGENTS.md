@@ -2,16 +2,25 @@
 
 ## Stake research odds bridge, 05.10.2026
 
-Добавлен экспериментальный read-only источник Stake: `src/sefirot/stake_provider.py`,
-`scripts/stake_snapshot.py`, `docs/STAKE_ODDS_PROVIDER.md`. Секрет читается только
-из `STAKE_API_TOKEN`; в Git/receipt/error не сохраняется. Источник требует уже
-существующий prematch seal, exact home/away/kickoff и сохраняет raw market names
-без догадок о settlement. Статус строго RESEARCH_ONLY, monetary_permission=false,
-execution_enabled=false. Причина: официальный Stake API подтверждает x-access-token,
-но sportsbook GraphQL schema не является стабильным публичным контрактом.
-4 boundary-теста нового провайдера прошли на Render. Живую авторизацию не считать
-проверенной, пока токен не установлен в runtime environment; токен из чата в код
-не переносить. Main не сливать.
+Текущий рабочий контракт Stake подтверждён живым запросом. Старый draft
+`sportsEvents` удалён из схемы; используется двухэтапный web GraphQL:
+`SportTournamentFixtureList` -> exact fixture -> `FixtureIndexGroups` ->
+`FixtureGroupMarkets`. Render smoke-test: token authenticated, 200 soccer
+events, Nations League fixtures найдены; Cyprus-Latvia дал 14 groups / 292
+markets. Добавлены `src/sefirot/stake_provider.py`,
+`src/sefirot/stake_mapper.py`, `scripts/stake_snapshot.py` и CLI
+`stake-snapshot`.
+
+Mapper консервативно нормализует 1X2, Double Chance, DNB, BTTS, Asian Total и
+Asian Handicap только на integer/half линиях CORE; quarter lines остаются raw и
+отбрасываются из canonical main mapping. Small research mapping уже умеет
+Match N+ shots, FT/1H total corners, FT/1H total cards (когда exact template
+есть), team corner ranges. 8/8 dedicated provider+mapper tests прошли на
+Render. Источник пока строго RESEARCH_ONLY:
+freshness=RECEIPT_TIME_ONLY, settlement rules unverified,
+monetary_permission=false, execution_enabled=false. Stake token хранить только
+в STAKE_API_TOKEN и перед production использованием перевыпустить токен,
+который когда-либо публиковался в чате. Main не сливать.
 
 ## Сравнительный обзор и forward-scorecard, 05.10.2026
 
