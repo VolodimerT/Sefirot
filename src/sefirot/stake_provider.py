@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
 
@@ -224,3 +225,63 @@ def research_snapshot(event, prediction, received_at, retrieval_receipt=None):
         report["retrieval_receipt"] = safe
     report["hash"] = digest(report)
     return report
+
+
+def _boot_probe_if_requested():
+    """Opt-in runtime smoke test for the dedicated Render bridge.
+
+    It emits only sportsbook event/market data and sanitized provider errors.
+    The token itself is never printed. Set SEFIROT_STAKE_BOOT_PROBE=1 only on
+    the disposable bridge service, then turn it off after the probe.
+    """
+    if os.environ.get("SEFIROT_STAKE_BOOT_PROBE") != "1":
+        return
+    try:
+        packet = sports_events(first=100, sport_slug="football")
+        summaries = []
+        targets = ("italy", "turkey", "türkiye", "france", "belgium",
+                   "romania", "sweden", "montenegro", "armenia",
+                   "cyprus", "latvia")
+        for event in packet["events"]:
+            haystack = " ".join([
+                str(event.get("name", "")),
+                " ".join(str(row.get("name", "")) for row in event.get("competitors", [])
+                         if isinstance(row, dict)),
+            ]).lower()
+            if not any(target in haystack for target in targets):
+                continue
+            markets = event.get("markets", [])
+            summaries.append({
+                "id": event.get("id"),
+                "name": event.get("name"),
+                "startTime": event.get("startTime"),
+                "market_count": len(markets) if isinstance(markets, list) else None,
+                "markets": [
+                    {"name": market.get("name"),
+                     "outcomes": market.get("outcomes", [])[:8]}
+                    for market in (markets[:20] if isinstance(markets, list) else [])
+                    if isinstance(market, dict)
+                ],
+            })
+        if not summaries:
+            for event in packet["events"][:5]:
+                summaries.append({
+                    "id": event.get("id"),
+                    "name": event.get("name"),
+                    "startTime": event.get("startTime"),
+                    "market_count": len(event.get("markets", []))
+                    if isinstance(event.get("markets"), list) else None,
+                })
+        print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
+            "status": "OK",
+            "event_count": len(packet["events"]),
+            "matches": summaries[:12],
+            "receipt": packet["receipt"],
+        }, ensure_ascii=True, separators=(",", ":")), flush=True)
+    except Exception as exc:
+        print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
+            "status": "FAILED", "error": str(exc)
+        }, ensure_ascii=True, separators=(",", ":")), flush=True)
+
+
+_boot_probe_if_requested()
