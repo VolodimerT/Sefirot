@@ -80,6 +80,12 @@ def main(argv=None):
     robustness.add_argument('grid');robustness.add_argument('--output',required=True);robustness.add_argument('--text',action='store_true')
     compare_robustness=sub.add_parser('compare-robustness',help='compare fresh API quotes with frozen history perturbations; research only')
     compare_robustness.add_argument('report');compare_robustness.add_argument('quotes');compare_robustness.add_argument('--output',required=True)
+    builder=sub.add_parser('builder-grid',help='freeze fourteen joint goal builders before prices; research only')
+    builder.add_argument('grid');builder.add_argument('--output',required=True)
+    builder_compare=sub.add_parser('compare-builder',help='compare API-priced singles with frozen builders; combined price remains missing')
+    builder_compare.add_argument('report');builder_compare.add_argument('quotes');builder_compare.add_argument('--output',required=True)
+    small=sub.add_parser('small-market-review',help='check full-time API statistics and disjoint long/recent baselines; no probability model')
+    small.add_argument('file');small.add_argument('--output',required=True)
     reserve=sub.add_parser('reserve');reserve.add_argument('role',choices=['CALIBRATION','HOLDOUT','MONITOR']);reserve.add_argument('match_ids',nargs='+')
     forward=sub.add_parser('forward-plan',help='reserve every future API fixture in declared leagues before forecasts')
     forward.add_argument('packet');forward.add_argument('--league-profile',action='append',required=True,help='API_LEAGUE_ID=MEN/WOMEN/RESERVE/LOWER; repeat')
@@ -252,6 +258,22 @@ def main(argv=None):
             out=recorded['decision_card']
             if args.text:
                 print(render_card(out));return 0
+        elif args.command=='small-market-review':
+            from .small_market import review_small_market
+            out=write_new_json(args.output,review_small_market(load(args.file),datetime.now(timezone.utc).isoformat()))
+        elif args.command in ('builder-grid','compare-builder'):
+            from .builder_research import create_builder_grid,compare_builder_singles
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            if Path(args.output).exists():raise ValueError('research output already exists')
+            repo=Repository(database,read_only=True);service=Service(repo,policy)
+            if not repo.verify():raise ValueError('journal integrity failed')
+            if args.command=='builder-grid':
+                grid=load(args.grid);prediction=repo.get('predictions',grid['prediction_id'])
+                out=write_new_json(args.output,create_builder_grid(grid,prediction,policy,service.now()))
+            else:
+                report=load(args.report);prediction=repo.get('predictions',report['prediction_id'])
+                out=write_new_json(args.output,compare_builder_singles(report,prediction,load(args.quotes),policy,service.now(),load(args.quotes+'.receipt.json')))
         elif args.command in ('goal-robustness','compare-robustness'):
             from .goal_robustness import create_robustness,compare_robustness as compare_history,render_robustness
             database=Path(args.db).resolve()
@@ -261,9 +283,10 @@ def main(argv=None):
             if not repo.verify():raise ValueError('journal integrity failed')
             if args.command=='goal-robustness':
                 grid=load(args.grid);prediction=repo.get('predictions',grid['prediction_id'])
-                out=write_new_json(args.output,create_robustness(grid,prediction,policy,service.now()))
+                report=create_robustness(grid,prediction,policy,service.now())
+                out=write_new_json(args.output,report)
                 if args.text:
-                    print(render_robustness(out));return 0
+                    print(render_robustness(report));return 0
             else:
                 report=load(args.report);prediction=repo.get('predictions',report['prediction_id'])
                 out=write_new_json(args.output,compare_history(report,prediction,load(args.quotes),policy,service.now(),load(args.quotes+'.receipt.json')))

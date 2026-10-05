@@ -1,17 +1,17 @@
 {
   "version": "2.4.2",
-  "code_hash": "28d99e80359ff84329e918ba76a96357384c0b8f138b4be7572f6edf9941dd03",
+  "code_hash": "e8af27bcbe6d5d1e4508f0529a41623282bcd1da88780f6eb906749731d46499",
   "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 20.604,
+  "elapsed_seconds": 29.51,
   "test_exit": 0,
-  "tests": 382,
+  "tests": 409,
   "demo": {
     "version": "2.4.2",
     "synthetic": true,
-    "prediction_id": "b061aced725156a7201a22a3c47976b37e098c39123e1e33f4d369c6d737ae2a",
-    "decision_id": "db370b3d4a58058feceec3f4fb0b394d06c0aa595eddda438fac74c38063df61",
+    "prediction_id": "b9142bf00b3074143b3624b4b5400fea463bf44621c0c61b451b94442e4a9602",
+    "decision_id": "f3364d34445720f44f67f4c39b35c246ef1732b0c54226397ea4fad245a53c64",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
@@ -41,13 +41,13 @@
       "decision": "PASS",
       "passport": {
         "version": "2.4.2",
-        "prediction_id": "b061aced725156a7201a22a3c47976b37e098c39123e1e33f4d369c6d737ae2a",
-        "code_hash": "28d99e80359ff84329e918ba76a96357384c0b8f138b4be7572f6edf9941dd03",
+        "prediction_id": "b9142bf00b3074143b3624b4b5400fea463bf44621c0c61b451b94442e4a9602",
+        "code_hash": "e8af27bcbe6d5d1e4508f0529a41623282bcd1da88780f6eb906749731d46499",
         "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
         "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
         "policy_version": "research-policy-v3",
-        "data_hash": "036a2d6053f67631169307dbf7c1edb1ecb75f4cd01c02e44b8e531ed5feca91",
-        "sports_as_of": "2026-10-04T21:09:09+00:00",
+        "data_hash": "db54cc54c2e4c9f199827a20eb2e4d7b24b95859fe08462008efaafb045904df",
+        "sports_as_of": "2026-10-05T05:54:13+00:00",
         "source_ids": [
           "official",
           "statistics"
@@ -81,7 +81,7 @@
           "priority": 10,
           "action": "Получить недостающие спортивные сведения через API; проверить ID, профиль, источники и время. Изменение фактов требует нового seal.",
           "source": "API спортивных данных; подтверждённые предматчевые факты",
-          "deadline": "2026-10-04T23:10:09+00:00",
+          "deadline": "2026-10-05T07:55:13+00:00",
           "price_can_resolve": false,
           "deferred": false,
           "requires_new_sports_seal": true
@@ -124,7 +124,7 @@
           "priority": 50,
           "action": "Отложить запрос цены: сначала закрыть остальные блокировки; коэффициент их не устраняет.",
           "source": "API котировок, точная БК и правила расчёта",
-          "deadline": "2026-10-04T23:10:09+00:00",
+          "deadline": "2026-10-05T07:55:13+00:00",
           "price_can_resolve": false,
           "deferred": true,
           "requires_new_sports_seal": false
@@ -135,14 +135,14 @@
       "verdict_ru": "пропуск",
       "class": "D",
       "status": "RECALCULATE",
-      "at": "2026-10-04T21:12:09+00:00",
+      "at": "2026-10-05T05:57:13+00:00",
       "match": {
         "away": "B",
         "competition_profile": "MEN",
         "format": "REGULATION_90",
         "home": "A",
         "id": "synthetic-001",
-        "kickoff": "2026-10-04T23:10:09+00:00",
+        "kickoff": "2026-10-05T07:55:13+00:00",
         "league": "SYNTHETIC",
         "sport": "football"
       },
@@ -280,7 +280,7 @@
         }
       ],
       "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-      "deadline": "2026-10-04T23:10:09+00:00",
+      "deadline": "2026-10-05T07:55:13+00:00",
       "alternatives": [
         {
           "market": "1X2:HOME",
@@ -958,5 +958,5 @@
   "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-04T21:10:09.901286+00:00"
+  "generated_at": "2026-10-05T05:55:13.415865+00:00"
 }

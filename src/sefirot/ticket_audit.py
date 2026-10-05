@@ -88,7 +88,7 @@ def audit_tickets(dataset, *, service=None, policy=None):
     for ticket in tickets:
         strict(ticket, ('id', 'match_id', 'day', 'odds', 'stake', 'outcome'),
                ('market', 'reported_market', 'decision_id', 'reported_decision', 'reported_flags',
-                'placed_at', 'kickoff', 'settled_at', 'bookmaker'))
+                'placed_at', 'kickoff', 'settled_at', 'bookmaker', 'category'))
         for key in ('id', 'match_id'):
             text(ticket[key], key)
         day = date.fromisoformat(ticket['day']).isoformat()
@@ -103,6 +103,11 @@ def audit_tickets(dataset, *, service=None, policy=None):
             raise ValueError('one canonical market or unmapped reported market description required')
         market = market_of(ticket['market']) if 'market' in ticket else None
         if market is None:text(ticket['reported_market'], 'unmapped reported market')
+        category = ticket.get('category', 'MAIN' if market is not None else 'UNMAPPED')
+        if category not in ('MAIN', 'SMALL', 'BUILDER', 'UNMAPPED'):
+            raise ValueError('reported category must be MAIN/SMALL/BUILDER/UNMAPPED')
+        if (market is not None) != (category == 'MAIN'):
+            raise ValueError('MAIN category requires a supported single market contract')
         if ticket['outcome'] == 'PUSH' and market is not None and not market.push_possible:
             raise ValueError('PUSH impossible for reported market contract')
         odds = Decimal(str(number(ticket['odds'], 'reported odds', 1.00000001, 10000)))
@@ -140,6 +145,7 @@ def audit_tickets(dataset, *, service=None, policy=None):
             settled_turnover += stake
             returns += returned
         row = {'id': ticket['id'], 'match_id': ticket['match_id'], 'day': day,
+               'category': category, 'category_provenance': 'CONTRACT' if market is not None else 'REPORTED_UNVERIFIED',
                'market': market.key if market is not None else ticket['reported_market'],
                'market_contract_supported': market is not None,
                'odds': float(odds), 'stake': float(stake), 'outcome': outcome,
@@ -192,6 +198,18 @@ def audit_tickets(dataset, *, service=None, policy=None):
                      'flags': ['REPORTED_DAY_TURNOVER_ABOVE_POLICY'] if bankroll is not None and
                               total > bankroll * Decimal(str(policy.max_day_fraction)) else []})
     pnl = returns - settled_turnover
+    categories = []
+    for category in sorted({r['category'] for r in rows}):
+        group = [r for r in rows if r['category'] == category]
+        stake_sum = sum((Decimal(str(r['stake'])) for r in group), Decimal(0))
+        settled = sum((Decimal(str(r['stake'])) for r in group if r['return'] is not None), Decimal(0))
+        returned = sum((Decimal(str(r['return'])) for r in group if r['return'] is not None), Decimal(0))
+        categories.append({'category': category, 'tickets': len(group),
+                           'outcomes': dict(Counter(r['outcome'] for r in group)),
+                           'turnover': float(stake_sum), 'settled_turnover': float(settled),
+                           'pending_stake': float(stake_sum-settled), 'returns': float(returned),
+                           'pnl': float(returned-settled),
+                           'roi_on_settled_turnover': float((returned-settled)/settled) if settled else None})
     issues = sorted({f for row in rows for f in row['process_flags']} |
                     {f for cluster in clusters for f in cluster['flags']} | {f for day in days for f in day['flags']})
     output = {'schema': 'ticket-audit-v1', 'status': 'REPORTED_UNVERIFIED',
@@ -201,7 +219,7 @@ def audit_tickets(dataset, *, service=None, policy=None):
               'turnover': float(turnover), 'settled_turnover': float(settled_turnover),
               'pending_stake': float(turnover - settled_turnover), 'returns': float(returns), 'pnl': float(pnl),
               'roi_on_settled_turnover': float(pnl / settled_turnover) if settled_turnover else None,
-              'process_issues': issues, 'clusters': clusters, 'days': days, 'rows': rows,
+              'process_issues': issues, 'clusters': clusters, 'days': days, 'rows': rows, 'categories': categories,
               'linked_to_ledger': service is not None, 'monetary_permission': False,
               'execution_enabled': False, 'holdout_eligible': False,
               'cross_match_dependence': 'NOT_ASSESSED', 'decision_quality': 'UNDETERMINED',

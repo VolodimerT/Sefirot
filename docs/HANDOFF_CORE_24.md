@@ -1,5 +1,21 @@
 # SEFIROT — продолжение разработки
 
+## Новый аудит Builder, 05.10.2026
+
+Добавлены builder-grid/compare-builder: 14 заранее фиксированных
+push-free голевых сочетаний, совместная raw вероятность по клеткам
+BASELINE_V1, history/rate sensitivity; совместная API-цена не
+подменяется произведением цен одиночек. small-market-review проверяет
+full-time API статистику, непересекающиеся long/recent, shrink,
+venue/outlier и allowed baseline следующего соперника.
+Все новые режимы D/stake=0, вероятность малых линий пока не моделируется.
+ticket-audit добавляет категории MAIN/SMALL/BUILDER/UNMAPPED.
+См. docs/BUILDER_AUDIT_20261005.md. Локально 409 тестов и release gate.
+code_hash: e8af27bcbe6d5d1e4508f0529a41623282bcd1da88780f6eb906749731d46499;
+model_hash прежний. Старые seals/планы не переподписывать. Main не сливать.
+Личные билеты/API-пакеты в Git не помещать. CI сверять на новом head.
+
+
 ## Сбор будущей API-выборки, 05.10.2026
 
 Добавлены forward-plan/capture/settle/status. Документация:
