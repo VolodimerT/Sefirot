@@ -453,52 +453,66 @@ def _boot_probe_if_requested():
         )
         auth_ok = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
         packet = sports_events(first=200, sport_slug="soccer", match_type="active")
-        targets = ("italy", "turkey", "türkiye", "france", "belgium",
-                   "romania", "sweden", "montenegro", "armenia",
-                   "cyprus", "latvia")
+        targets = (
+            "italy - turkiye", "france - belgium", "romania - sweden",
+            "montenegro - armenia", "cyprus - latvia",
+            "northern ireland - georgia",
+        )
         matches = []
         for event in packet["events"]:
-            haystack = " ".join([
-                str(event.get("name", "")),
-                " ".join(str(row.get("name", "")) for row in event.get("competitors", [])
-                         if isinstance(row, dict)),
-            ]).lower()
-            if not any(target in haystack for target in targets):
+            event_name = str(event.get("name", "")).lower()
+            if not any(target in event_name for target in targets):
                 continue
             row = {
                 "id": event.get("id"), "slug": event.get("slug"),
                 "name": event.get("name"), "startTime": event.get("startTime"),
                 "league": (event.get("league") or {}).get("name"),
             }
-            # One exact target is enough to prove market discovery end-to-end.
-            if event.get("slug") and not any(item.get("market_count", 0) for item in matches):
-                group_packet = fixture_groups(event["slug"])
-                row["group_count"] = len(group_packet["group_names"])
-                row["group_names"] = group_packet["group_names"][:80]
-                market_packet = fixture_markets(event["slug"], groups=group_packet["group_names"])
-                row["market_count"] = market_packet["market_count"]
-                keywords = ("shot", "corner", "card", "foul", "offside", "save",
-                            "tackle", "goal kick", "free kick", "booking")
+            if event.get("slug"):
+                groups = fixture_groups(event["slug"])
+                mp = fixture_markets(event["slug"], groups=groups["group_names"])
                 selected = []
-                for market in market_packet["markets"]:
-                    hay = (str(market.get("group", "")) + " " +
-                           str(market.get("template", "")) + " " +
-                           str(market.get("name", ""))).lower()
-                    if any(word in hay for word in keywords):
+                for market in mp["markets"]:
+                    template = str(market.get("template", ""))
+                    name = str(market.get("name", ""))
+                    spec = str(market.get("specifiers", ""))
+                    keep = False
+                    if template in ("1x2", "Draw No Bet", "Both Teams to Score", "Double Chance"):
+                        keep = True
+                    elif template == "Asian Total" and spec in ("total=2.5","total=3","total=3.5"):
+                        keep = True
+                    elif template == "Asian Handicap" and spec in (
+                        "hcp=-1.5","hcp=-1.25","hcp=-1","hcp=-0.75","hcp=-0.5",
+                        "hcp=0","hcp=0.5","hcp=0.75","hcp=1","hcp=1.25","hcp=1.5"
+                    ):
+                        keep = True
+                    elif template in ("Total Corners", "1st Half - Total Corners",
+                                      "Total Cards", "1st Half - Total Cards"):
+                        keep = True
+                    elif "shots" in (template + " " + name).lower():
+                        keep = True
+                    elif "corner range" in (template + " " + name).lower():
+                        keep = True
+                    if keep:
                         selected.append({
                             "group": market.get("group"),
-                            "template": market.get("template"),
-                            "name": market.get("name"),
+                            "template": template,
+                            "name": name,
                             "specifiers": market.get("specifiers"),
-                            "outcomes": market.get("outcomes"),
+                            "outcomes": [
+                                {"name": o.get("name"), "odds": o.get("odds")}
+                                for o in (market.get("outcomes") or [])
+                            ],
                         })
-                row["markets"] = selected[:160]
+                row["group_count"] = len(groups["group_names"])
+                row["market_count"] = mp["market_count"]
+                row["markets"] = selected[:180]
             matches.append(row)
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
             "status": "OK",
             "auth_user_present": auth_ok,
             "event_count": len(packet["events"]),
-            "matches": matches[:20],
+            "matches": matches,
             "receipt": packet["receipt"],
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
     except Exception as exc:
