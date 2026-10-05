@@ -18,14 +18,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sefirot.contracts import Policy
 from sefirot.repository import Repository
 from sefirot.service import Service
-from sefirot.stake_provider import exact_event, research_snapshot, sports_events
+from sefirot.stake_provider import exact_event, fixture_markets, research_snapshot, sports_events
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("prediction_id")
     parser.add_argument("--db", default="data/sefirot.sqlite")
-    parser.add_argument("--sport", default="football")
+    parser.add_argument("--sport", default="soccer")
     parser.add_argument("--first", type=int, default=50)
     parser.add_argument("--output", required=True)
     args = parser.parse_args(argv)
@@ -45,9 +45,11 @@ def main(argv=None):
         service = Service(repo, Policy())
         prediction = repo.get("predictions", args.prediction_id)
         received = service.now()
-        packet = sports_events(first=args.first, sport_slug=args.sport)
+        packet = sports_events(first=args.first, sport_slug=args.sport, match_type="active")
         event = exact_event(packet["events"], prediction, received)
-        report = research_snapshot(event, prediction, received, packet["receipt"])
+        market_packet = fixture_markets(event["slug"])
+        receipts = [packet["receipt"]] + market_packet["receipts"]
+        report = research_snapshot(event, prediction, received, market_packet["markets"], receipts)
     finally:
         repo.close()
 
