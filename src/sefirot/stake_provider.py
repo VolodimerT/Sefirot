@@ -255,14 +255,15 @@ def _boot_probe_if_requested():
     """
     if os.environ.get("SEFIROT_STAKE_BOOT_PROBE") != "1":
         return
+    user_present = None
+    schema_fields = []
+    schema_error = None
     try:
         auth = _post_graphql(
             "query UserIdentity { user { id } }", {},
             operation_name="UserIdentity",
         )
         user_present = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
-        schema_fields = []
-        schema_error = None
         try:
             schema = _post_graphql(
                 """query StakeSchemaProbe {
@@ -327,7 +328,11 @@ def _boot_probe_if_requested():
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
     except Exception as exc:
         print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
-            "status": "FAILED", "error": str(exc)
+            "status": "FAILED",
+            "auth_user_present": user_present,
+            "schema_candidate_fields": schema_fields,
+            "schema_probe_error": schema_error,
+            "error": str(exc),
         }, ensure_ascii=True, separators=(",", ":")), flush=True)
 
 
