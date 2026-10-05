@@ -1,0 +1,1155 @@
+{
+  "schema": "architecture-inventory-v1",
+  "source_commit": "8e6a3ab81b93ecc0a0c64b57fc294176f016cff1",
+  "source_tree": "327a7e940928274f9fc5dc505558cf7b72df86b1",
+  "counts": {
+    "canonical_modules": 44,
+    "legacy_modules": 11,
+    "commands": 52,
+    "docs": 31,
+    "test_modules": 29
+  },
+  "modules": {
+    "sefirot.__init__": {
+      "path": "src/sefirot/__init__.py",
+      "sha256": "a49eaf7aff436b0c1a15dc50d7735fda0a4a34eaf4ffecacd15a9a3a1225befd",
+      "dependencies": [
+        "sefirot.contracts",
+        "sefirot.repository",
+        "sefirot.service"
+      ],
+      "dependents": []
+    },
+    "sefirot._payoffs": {
+      "path": "src/sefirot/_payoffs.py",
+      "sha256": "1b517e25931574b6afc2bca6f9e52ce9d1e34cfc16a63ad91fbff745a9a93b2d",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "functools",
+        "math"
+      ],
+      "dependents": [
+        "sefirot.markets"
+      ]
+    },
+    "sefirot.action_plan": {
+      "path": "src/sefirot/action_plan.py",
+      "sha256": "6ee2c17a026e470b961b678a8c816870a4e5f954aa630234ae4a588e027e993f",
+      "dependencies": [
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.decision_card",
+        "sefirot.goal_robustness",
+        "sefirot.readiness"
+      ]
+    },
+    "sefirot.api_health": {
+      "path": "src/sefirot/api_health.py",
+      "sha256": "629fd195feb7e39ce16b76233fe907bfefc5b7fc8bfb176f95e6e3fe612d3c42",
+      "dependencies": [
+        "datetime",
+        "sefirot.credentials",
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.odds_provider"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.backtesting": {
+      "path": "src/sefirot/backtesting.py",
+      "sha256": "608423eb3a47cf5ab981577962e86471b942791134a65804a61a6ffe38fdf7a6",
+      "dependencies": [
+        "sefirot.contracts",
+        "sefirot.engine",
+        "sefirot.feedback",
+        "sefirot.markets"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.builder_research": {
+      "path": "src/sefirot/builder_research.py",
+      "sha256": "81b804712de010b9670f4f3c25b42716d46199f85bd4b7666ef8a1e30d7fea99",
+      "dependencies": [
+        "functools",
+        "math",
+        "sefirot.contracts",
+        "sefirot.goal_robustness",
+        "sefirot.market_grid",
+        "sefirot.markets",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.data_session"
+      ]
+    },
+    "sefirot.cli": {
+      "path": "src/sefirot/cli.py",
+      "sha256": "705a5ef17ddbd8250468461f00d9db9000a34eca74bf9d7b9870be11af89421a",
+      "dependencies": [
+        "argparse",
+        "dataclasses",
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "sefirot.api_health",
+        "sefirot.backtesting",
+        "sefirot.builder_research",
+        "sefirot.cloud_sync",
+        "sefirot.contracts",
+        "sefirot.data_session",
+        "sefirot.decision_card",
+        "sefirot.diagnostics",
+        "sefirot.engine",
+        "sefirot.feedback",
+        "sefirot.fixtures",
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.forward",
+        "sefirot.forward_scorecard",
+        "sefirot.goal_model",
+        "sefirot.goal_research",
+        "sefirot.goal_robustness",
+        "sefirot.identity",
+        "sefirot.market_grid",
+        "sefirot.markets",
+        "sefirot.odds_provider",
+        "sefirot.readiness",
+        "sefirot.repository",
+        "sefirot.research",
+        "sefirot.retrospective",
+        "sefirot.service",
+        "sefirot.session",
+        "sefirot.small_market",
+        "sefirot.sports_archive",
+        "sefirot.stake_mapper",
+        "sefirot.stake_provider",
+        "sefirot.ticket_audit",
+        "sefirot.worker",
+        "sqlite3",
+        "sys",
+        "tempfile",
+        "time"
+      ],
+      "dependents": []
+    },
+    "sefirot.cloud_sync": {
+      "path": "src/sefirot/cloud_sync.py",
+      "sha256": "d615138f168b28b6f189c0601e5f496e518058f71a5f0507fbd260c1655c6e2e",
+      "dependencies": [
+        "__future__",
+        "datetime",
+        "json",
+        "os",
+        "pathlib",
+        "psycopg",
+        "sefirot.contracts",
+        "sefirot.repository",
+        "sqlite3"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.contracts": {
+      "path": "src/sefirot/contracts.py",
+      "sha256": "0912aeccfe189d89c61ec9a3f9d4f6c7ad16e54c7daffcb2de851a6ff22fdf89",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "hashlib",
+        "json",
+        "math"
+      ],
+      "dependents": [
+        "sefirot.__init__",
+        "sefirot.action_plan",
+        "sefirot.backtesting",
+        "sefirot.builder_research",
+        "sefirot.cli",
+        "sefirot.cloud_sync",
+        "sefirot.data_session",
+        "sefirot.diagnostics",
+        "sefirot.engine",
+        "sefirot.evaluation",
+        "sefirot.evidence",
+        "sefirot.feedback",
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.forward",
+        "sefirot.forward_scorecard",
+        "sefirot.goal_model",
+        "sefirot.goal_research",
+        "sefirot.goal_robustness",
+        "sefirot.identity",
+        "sefirot.market_grid",
+        "sefirot.markets",
+        "sefirot.odds_provider",
+        "sefirot.probability",
+        "sefirot.provider_transport",
+        "sefirot.readiness",
+        "sefirot.repository",
+        "sefirot.research",
+        "sefirot.retrospective",
+        "sefirot.risk",
+        "sefirot.service",
+        "sefirot.session",
+        "sefirot.small_market",
+        "sefirot.sports_archive",
+        "sefirot.stake_mapper",
+        "sefirot.stake_provider",
+        "sefirot.ticket_audit",
+        "sefirot.worker"
+      ]
+    },
+    "sefirot.credentials": {
+      "path": "src/sefirot/credentials.py",
+      "sha256": "d16e3e6a5b0da278a8ae258c8560e2fc38f9ffb038e4e542ec8527d398063a12",
+      "dependencies": [
+        "os",
+        "pathlib",
+        "re"
+      ],
+      "dependents": [
+        "sefirot.api_health",
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.odds_provider",
+        "sefirot.stake_provider"
+      ]
+    },
+    "sefirot.data_session": {
+      "path": "src/sefirot/data_session.py",
+      "sha256": "dc2792d8106763a317349fdafcab10f25dd5ca6dc7194665149b7c5f606b844a",
+      "dependencies": [
+        "collections",
+        "datetime",
+        "json",
+        "pathlib",
+        "sefirot.builder_research",
+        "sefirot.contracts",
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.forward",
+        "sefirot.identity",
+        "sefirot.market_grid",
+        "sefirot.repository",
+        "sefirot.service",
+        "sefirot.sports_archive",
+        "zoneinfo"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.decision_card": {
+      "path": "src/sefirot/decision_card.py",
+      "sha256": "767d9b43faf52d995e01a0995f3beb62ff129badae48841b548a91cc45c54a74",
+      "dependencies": [
+        "sefirot.action_plan",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.engine",
+        "sefirot.readiness"
+      ]
+    },
+    "sefirot.diagnostics": {
+      "path": "src/sefirot/diagnostics.py",
+      "sha256": "aa54ad7a9fbb0c14883152b5e81727c2407f58efdd6627d2685ceaffb599ac2b",
+      "dependencies": [
+        "collections",
+        "datetime",
+        "hashlib",
+        "json",
+        "math",
+        "pathlib",
+        "random",
+        "sefirot.contracts",
+        "sefirot.evaluation",
+        "sefirot.probability",
+        "sefirot.research",
+        "statistics"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.engine": {
+      "path": "src/sefirot/engine.py",
+      "sha256": "a9a9b91fcadc0ccce7cb5dd1372131c333089d5b6eaf290b976d25181b2bb660",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "sefirot.contracts",
+        "sefirot.decision_card",
+        "sefirot.evidence",
+        "sefirot.goal_model",
+        "sefirot.identity",
+        "sefirot.markets",
+        "sefirot.probability",
+        "sefirot.risk"
+      ],
+      "dependents": [
+        "sefirot.backtesting",
+        "sefirot.cli",
+        "sefirot.goal_research",
+        "sefirot.market_grid",
+        "sefirot.readiness",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.evaluation": {
+      "path": "src/sefirot/evaluation.py",
+      "sha256": "17dcb368764e9a188c4fe21d832a4d7026d44700d2e86b08234cb1aa4863ce41",
+      "dependencies": [
+        "math",
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.diagnostics",
+        "sefirot.feedback",
+        "sefirot.forward_scorecard",
+        "sefirot.goal_research",
+        "sefirot.research",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.evidence": {
+      "path": "src/sefirot/evidence.py",
+      "sha256": "fa00930d208ca4d97832dabec4df7af49e54334af7705fb2c23fc41762c99b72",
+      "dependencies": [
+        "__future__",
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.engine",
+        "sefirot.goal_model",
+        "sefirot.goal_robustness",
+        "sefirot.probability",
+        "sefirot.service",
+        "sefirot.sports_archive"
+      ]
+    },
+    "sefirot.feedback": {
+      "path": "src/sefirot/feedback.py",
+      "sha256": "5fd5d1c3852ac5b6c595634de8abae8d777f8306a5428c20d7c3d64ca3387702",
+      "dependencies": [
+        "__future__",
+        "math",
+        "sefirot.contracts",
+        "sefirot.evaluation",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.backtesting",
+        "sefirot.cli",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.fixtures": {
+      "path": "src/sefirot/fixtures.py",
+      "sha256": "c5e91f889b5088b635b5acef39fa289c955553f288d84cef47f8d7e7d8dcfc43",
+      "dependencies": [
+        "datetime",
+        "sefirot.markets"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.football_gateway": {
+      "path": "src/sefirot/football_gateway.py",
+      "sha256": "d6b56e2fb7239ea05c2353d6e6eecfc90c07ba2c06302ae400a6a3617beca19a",
+      "dependencies": [
+        "datetime",
+        "json",
+        "os",
+        "re",
+        "sefirot.contracts",
+        "sefirot.credentials",
+        "sefirot.football_provider",
+        "sefirot.provider_transport",
+        "urllib.error",
+        "urllib.parse",
+        "urllib.request"
+      ],
+      "dependents": [
+        "sefirot.api_health",
+        "sefirot.cli",
+        "sefirot.data_session"
+      ]
+    },
+    "sefirot.football_provider": {
+      "path": "src/sefirot/football_provider.py",
+      "sha256": "66a4acbaa8b06e931e64d59737799c525d36a931e38aff9c0ef951c17ef439be",
+      "dependencies": [
+        "sefirot.contracts",
+        "sefirot.credentials",
+        "sefirot.provider_transport"
+      ],
+      "dependents": [
+        "sefirot.api_health",
+        "sefirot.cli",
+        "sefirot.data_session",
+        "sefirot.football_gateway",
+        "sefirot.forward",
+        "sefirot.forward_scorecard",
+        "sefirot.small_market",
+        "sefirot.sports_archive"
+      ]
+    },
+    "sefirot.forward": {
+      "path": "src/sefirot/forward.py",
+      "sha256": "b244afccd4f54dba6206ee1dc704aa07e90da3f7e9181969b752bd4e1725e656",
+      "dependencies": [
+        "collections",
+        "copy",
+        "sefirot.contracts",
+        "sefirot.football_provider",
+        "sefirot.identity",
+        "sefirot.markets",
+        "sefirot.sports_archive"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.data_session",
+        "sefirot.forward_scorecard"
+      ]
+    },
+    "sefirot.forward_scorecard": {
+      "path": "src/sefirot/forward_scorecard.py",
+      "sha256": "7969e0257f31823335420a3af881d74087f97999d2fdd7c96be81649776ba649",
+      "dependencies": [
+        "collections",
+        "sefirot.contracts",
+        "sefirot.evaluation",
+        "sefirot.football_provider",
+        "sefirot.forward",
+        "sefirot.identity",
+        "sefirot.markets"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.goal_model": {
+      "path": "src/sefirot/goal_model.py",
+      "sha256": "df184d538a7ca82c20a8d668128805446cbe77b9889ee90e5ea1c5ea18920d37",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "math",
+        "sefirot.contracts",
+        "sefirot.evidence",
+        "sefirot.identity",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.engine",
+        "sefirot.goal_research",
+        "sefirot.probability"
+      ]
+    },
+    "sefirot.goal_research": {
+      "path": "src/sefirot/goal_research.py",
+      "sha256": "dc38da014adfb119f980fd549dfba34684b3b12b45fde5c1c247cf83417fc471",
+      "dependencies": [
+        "collections",
+        "dataclasses",
+        "datetime",
+        "itertools",
+        "json",
+        "math",
+        "pathlib",
+        "sefirot.contracts",
+        "sefirot.engine",
+        "sefirot.evaluation",
+        "sefirot.goal_model",
+        "sefirot.markets",
+        "sefirot.probability",
+        "sefirot.research"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.goal_robustness": {
+      "path": "src/sefirot/goal_robustness.py",
+      "sha256": "a6787082dbda31a889c554bd9859c543ecd9514406bb700513b0de93402bc11d",
+      "dependencies": [
+        "copy",
+        "math",
+        "sefirot.action_plan",
+        "sefirot.contracts",
+        "sefirot.evidence",
+        "sefirot.market_grid",
+        "sefirot.markets",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.builder_research",
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.identity": {
+      "path": "src/sefirot/identity.py",
+      "sha256": "d1973cc32fa48ad2e97152aa0dd711d00c1edb574d9f4f573eb9a15704106d0e",
+      "dependencies": [
+        "pathlib",
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.data_session",
+        "sefirot.engine",
+        "sefirot.forward",
+        "sefirot.forward_scorecard",
+        "sefirot.goal_model",
+        "sefirot.market_grid"
+      ]
+    },
+    "sefirot.market_grid": {
+      "path": "src/sefirot/market_grid.py",
+      "sha256": "e7a6a94f94501546f940ec0cfa44727593c3f9e2e6fba5ed61aa453b29575e16",
+      "dependencies": [
+        "sefirot.contracts",
+        "sefirot.engine",
+        "sefirot.identity",
+        "sefirot.markets",
+        "sefirot.odds_provider",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.builder_research",
+        "sefirot.cli",
+        "sefirot.data_session",
+        "sefirot.goal_robustness"
+      ]
+    },
+    "sefirot.markets": {
+      "path": "src/sefirot/markets.py",
+      "sha256": "0a5f6337f313272e76d6c5910bf2dfedffe850c14ae74deee038437c44cf63aa",
+      "dependencies": [
+        "sefirot._payoffs",
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.backtesting",
+        "sefirot.builder_research",
+        "sefirot.cli",
+        "sefirot.engine",
+        "sefirot.fixtures",
+        "sefirot.forward",
+        "sefirot.forward_scorecard",
+        "sefirot.goal_research",
+        "sefirot.goal_robustness",
+        "sefirot.market_grid",
+        "sefirot.odds_provider",
+        "sefirot.probability",
+        "sefirot.retrospective",
+        "sefirot.service",
+        "sefirot.stake_mapper",
+        "sefirot.ticket_audit"
+      ]
+    },
+    "sefirot.odds_provider": {
+      "path": "src/sefirot/odds_provider.py",
+      "sha256": "dbb542f212c2ecb50e4f00fdb23a8efc6ac28a3214e748a3af6a7b2f6d24936a",
+      "dependencies": [
+        "__future__",
+        "http.client",
+        "json",
+        "re",
+        "sefirot.contracts",
+        "sefirot.credentials",
+        "sefirot.markets",
+        "sefirot.provider_transport",
+        "urllib.parse"
+      ],
+      "dependents": [
+        "sefirot.api_health",
+        "sefirot.cli",
+        "sefirot.market_grid",
+        "sefirot.stake_provider"
+      ]
+    },
+    "sefirot.probability": {
+      "path": "src/sefirot/probability.py",
+      "sha256": "0d1eddf291bad328c52f4bfcfede4feac743a45e3df5735772bb1a99081e4242",
+      "dependencies": [
+        "__future__",
+        "math",
+        "sefirot.contracts",
+        "sefirot.evidence",
+        "sefirot.goal_model",
+        "sefirot.markets"
+      ],
+      "dependents": [
+        "sefirot.builder_research",
+        "sefirot.decision_card",
+        "sefirot.diagnostics",
+        "sefirot.engine",
+        "sefirot.feedback",
+        "sefirot.goal_model",
+        "sefirot.goal_research",
+        "sefirot.goal_robustness",
+        "sefirot.market_grid",
+        "sefirot.retrospective",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.provider_transport": {
+      "path": "src/sefirot/provider_transport.py",
+      "sha256": "76d73d7f16ff8bb92037fc7f8120f333dfbc9758f2dc338fd97cce0487dc2d15",
+      "dependencies": [
+        "datetime",
+        "json",
+        "sefirot.contracts",
+        "urllib.error",
+        "urllib.parse",
+        "urllib.request"
+      ],
+      "dependents": [
+        "sefirot.football_gateway",
+        "sefirot.football_provider",
+        "sefirot.odds_provider",
+        "sefirot.stake_provider"
+      ]
+    },
+    "sefirot.readiness": {
+      "path": "src/sefirot/readiness.py",
+      "sha256": "92e2bc74d503badae8372830ee65978088ec1f7eff8aebe92c7581e7514bdf37",
+      "dependencies": [
+        "sefirot.action_plan",
+        "sefirot.contracts",
+        "sefirot.decision_card",
+        "sefirot.engine"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.session"
+      ]
+    },
+    "sefirot.repository": {
+      "path": "src/sefirot/repository.py",
+      "sha256": "873dab078c41d484cbe9a0dbd0312ba44c1ce7224bd41211fb1a627257cbc4c3",
+      "dependencies": [
+        "__future__",
+        "hashlib",
+        "json",
+        "pathlib",
+        "sefirot.contracts",
+        "sqlite3"
+      ],
+      "dependents": [
+        "sefirot.__init__",
+        "sefirot.cli",
+        "sefirot.cloud_sync",
+        "sefirot.data_session",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.research": {
+      "path": "src/sefirot/research.py",
+      "sha256": "322e528081d97e63e174dc87c29e79bb8d2fb11720d03ed4f329f4391e21a1b5",
+      "dependencies": [
+        "collections",
+        "csv",
+        "datetime",
+        "hashlib",
+        "itertools",
+        "json",
+        "math",
+        "pathlib",
+        "sefirot.contracts",
+        "sefirot.evaluation"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.diagnostics",
+        "sefirot.goal_research"
+      ]
+    },
+    "sefirot.retrospective": {
+      "path": "src/sefirot/retrospective.py",
+      "sha256": "30c9ba2eebf0bc2c9c278f202f9d9cd5d9a38e5432c45684d8b139a760b2281f",
+      "dependencies": [
+        "datetime",
+        "sefirot.contracts",
+        "sefirot.markets",
+        "sefirot.probability"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.risk": {
+      "path": "src/sefirot/risk.py",
+      "sha256": "6e134bfb9b84095cf5946a735b9e0d06d8364ff79d326ebc884efd808bc91180",
+      "dependencies": [
+        "decimal",
+        "sefirot.contracts"
+      ],
+      "dependents": [
+        "sefirot.engine",
+        "sefirot.service"
+      ]
+    },
+    "sefirot.service": {
+      "path": "src/sefirot/service.py",
+      "sha256": "bf12c6be03802970f879690e0f0387392ab05a13529f405fae43f957296526c4",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "math",
+        "sefirot.contracts",
+        "sefirot.engine",
+        "sefirot.evaluation",
+        "sefirot.evidence",
+        "sefirot.feedback",
+        "sefirot.markets",
+        "sefirot.probability",
+        "sefirot.repository",
+        "sefirot.risk"
+      ],
+      "dependents": [
+        "sefirot.__init__",
+        "sefirot.cli",
+        "sefirot.data_session"
+      ]
+    },
+    "sefirot.session": {
+      "path": "src/sefirot/session.py",
+      "sha256": "4d193b4aeefca1869ef12ad13c1af4c2ed50a779b0282074e0cf8b03fc93ab6c",
+      "dependencies": [
+        "collections",
+        "sefirot.contracts",
+        "sefirot.readiness"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.small_market": {
+      "path": "src/sefirot/small_market.py",
+      "sha256": "f0475b1d54074203db7aa7e0250209cc5828549c31e0a50e23efab5234076c6c",
+      "dependencies": [
+        "collections",
+        "sefirot.contracts",
+        "sefirot.football_provider",
+        "sefirot.sports_archive",
+        "statistics"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.sports_archive": {
+      "path": "src/sefirot/sports_archive.py",
+      "sha256": "2acc84e02654c3ecf94068961aa059b2f005894176c8635a8186dc2c0af48158",
+      "dependencies": [
+        "collections",
+        "copy",
+        "json",
+        "pathlib",
+        "re",
+        "sefirot.contracts",
+        "sefirot.evidence",
+        "sefirot.football_provider"
+      ],
+      "dependents": [
+        "sefirot.cli",
+        "sefirot.data_session",
+        "sefirot.forward",
+        "sefirot.small_market"
+      ]
+    },
+    "sefirot.stake_mapper": {
+      "path": "src/sefirot/stake_mapper.py",
+      "sha256": "89ae0a1d11fba204f9efc78ef933969d87fe265c54d45ce69dd2856eee381daa",
+      "dependencies": [
+        "__future__",
+        "re",
+        "sefirot.contracts",
+        "sefirot.markets"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.stake_provider": {
+      "path": "src/sefirot/stake_provider.py",
+      "sha256": "aac995c85fd03f3014cd8f5e669df81672a2bd01add2b5d66b57780a7716ddf9",
+      "dependencies": [
+        "__future__",
+        "datetime",
+        "json",
+        "os",
+        "sefirot.contracts",
+        "sefirot.credentials",
+        "sefirot.odds_provider",
+        "sefirot.provider_transport",
+        "urllib.error",
+        "urllib.request"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.ticket_audit": {
+      "path": "src/sefirot/ticket_audit.py",
+      "sha256": "dbf03ceea7bcf25e12e6708fe45f856ebf9d25e57607a3098d3f4b5c0e8c1d9e",
+      "dependencies": [
+        "collections",
+        "datetime",
+        "decimal",
+        "re",
+        "sefirot.contracts",
+        "sefirot.markets",
+        "zoneinfo"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot.worker": {
+      "path": "src/sefirot/worker.py",
+      "sha256": "bb8e8627296a2c2b2cd0f307313bed305b72c0488996ac07b3210036c9e11d4a",
+      "dependencies": [
+        "json",
+        "pathlib",
+        "sefirot.contracts",
+        "sqlite3"
+      ],
+      "dependents": [
+        "sefirot.cli"
+      ]
+    },
+    "sefirot_core.__init__": {
+      "path": "src/sefirot_core/__init__.py",
+      "sha256": "676d2bb683c2c3544f57aea8c32cba2063fb195b45d1fc6c29e2c988f59f07fc",
+      "dependencies": [
+        "sefirot_core.audit",
+        "sefirot_core.backtest",
+        "sefirot_core.capture",
+        "sefirot_core.core",
+        "sefirot_core.market_link",
+        "sefirot_core.model"
+      ],
+      "dependents": []
+    },
+    "sefirot_core.audit": {
+      "path": "src/sefirot_core/audit.py",
+      "sha256": "f380b84fdc35808be282f030ff7bf939be8e1835412bc1ef612dc15cb48f459c",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "decimal",
+        "enum",
+        "sefirot_core.core"
+      ],
+      "dependents": [
+        "sefirot_core.__init__",
+        "sefirot_core.capture"
+      ]
+    },
+    "sefirot_core.backtest": {
+      "path": "src/sefirot_core/backtest.py",
+      "sha256": "e488cf3bdc9b56e06a1f9eab224a9f40743d4b4d30df7baeaddceedb15718063",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "sefirot_core.core",
+        "sefirot_core.model"
+      ],
+      "dependents": [
+        "sefirot_core.__init__"
+      ]
+    },
+    "sefirot_core.capture": {
+      "path": "src/sefirot_core/capture.py",
+      "sha256": "39002a30840c520dab9adc4ca2f466c97c525ce7ac83560cb8cfb70cdb4c10b5",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "sefirot_core.audit",
+        "sefirot_core.core",
+        "typing"
+      ],
+      "dependents": [
+        "sefirot_core.__init__"
+      ]
+    },
+    "sefirot_core.core": {
+      "path": "src/sefirot_core/core.py",
+      "sha256": "8c73d4ec14362524c791f86808ff75c58be0a33261af611540d5206a98a6c0a8",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "hashlib",
+        "json",
+        "math"
+      ],
+      "dependents": [
+        "sefirot_core.__init__",
+        "sefirot_core.audit",
+        "sefirot_core.backtest",
+        "sefirot_core.capture",
+        "sefirot_core.model",
+        "sefirot_core.system"
+      ]
+    },
+    "sefirot_core.governance": {
+      "path": "src/sefirot_core/governance.py",
+      "sha256": "87ad9072b658441ec8ae5fadeb7de06f4404e27492d201c267105d6170d5caef",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "math",
+        "sefirot_core.markets"
+      ],
+      "dependents": []
+    },
+    "sefirot_core.market_link": {
+      "path": "src/sefirot_core/market_link.py",
+      "sha256": "73c4de49884e736e7cdec1c163e575e32ec25d520dc5cefed4b55d034145adce",
+      "dependencies": [
+        "dataclasses",
+        "enum"
+      ],
+      "dependents": [
+        "sefirot_core.__init__"
+      ]
+    },
+    "sefirot_core.markets": {
+      "path": "src/sefirot_core/markets.py",
+      "sha256": "869a049f7b3ec8d30b5eca59b1e65162090862fd05cb2e13a08a1ddcfd388e9c",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "math"
+      ],
+      "dependents": [
+        "sefirot_core.governance",
+        "sefirot_core.storage",
+        "sefirot_core.system"
+      ]
+    },
+    "sefirot_core.model": {
+      "path": "src/sefirot_core/model.py",
+      "sha256": "2fd5fa7a12853d58f651f8769da40b27a552cd47d4587ff3db1db8c6b47b0e7b",
+      "dependencies": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "math",
+        "sefirot_core.core"
+      ],
+      "dependents": [
+        "sefirot_core.__init__",
+        "sefirot_core.backtest",
+        "sefirot_core.system"
+      ]
+    },
+    "sefirot_core.storage": {
+      "path": "src/sefirot_core/storage.py",
+      "sha256": "231684f465b104630ffcce8902744b51c80591f7f33f64958b1aa86715a360ac",
+      "dependencies": [
+        "__future__",
+        "datetime",
+        "json",
+        "sefirot_core.markets",
+        "sefirot_core.system",
+        "sqlite3"
+      ],
+      "dependents": []
+    },
+    "sefirot_core.system": {
+      "path": "src/sefirot_core/system.py",
+      "sha256": "206b6a0364efdb53ab037dfdf874ff2bf70099d420ab2ec0718de02b7d57a900",
+      "dependencies": [
+        "__future__",
+        "datetime",
+        "hashlib",
+        "json",
+        "math",
+        "sefirot_core.core",
+        "sefirot_core.markets",
+        "sefirot_core.model"
+      ],
+      "dependents": [
+        "sefirot_core.storage"
+      ]
+    }
+  },
+  "commands": [
+    "work",
+    "demo",
+    "fixture",
+    "capture",
+    "decide",
+    "result",
+    "closing",
+    "replay",
+    "explain",
+    "readiness",
+    "session",
+    "ticket-audit",
+    "market-grid",
+    "compare-grid",
+    "goal-robustness",
+    "compare-robustness",
+    "builder-grid",
+    "compare-builder",
+    "small-market-review",
+    "reserve",
+    "forward-plan",
+    "forward-capture",
+    "forward-settle",
+    "forward-status",
+    "forward-scorecard",
+    "calibrate",
+    "validate",
+    "backtest",
+    "audit-regressions",
+    "research",
+    "fit-goal-model",
+    "p0-upgrade-benchmark",
+    "diagnose-p0",
+    "stake-snapshot",
+    "odds-events",
+    "fetch-odds",
+    "api-health",
+    "data-session",
+    "football-fetch",
+    "football-normalize",
+    "football-archive",
+    "football-from-archive",
+    "recover",
+    "compare",
+    "activate",
+    "report",
+    "accounting",
+    "verify",
+    "sync-supabase",
+    "postmortem",
+    "execution",
+    "approve-policy"
+  ],
+  "repeated_public_function_names": {
+    "number": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot/contracts.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "settle": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "implied": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "margin": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "payoff_ev": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "fair_odds": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "probabilities": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot/evaluation.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "key": [
+      "src/sefirot/_payoffs.py",
+      "src/sefirot_core/markets.py"
+    ],
+    "canonical": [
+      "src/sefirot/contracts.py",
+      "src/sefirot_core/system.py"
+    ],
+    "digest": [
+      "src/sefirot/contracts.py",
+      "src/sefirot_core/core.py",
+      "src/sefirot_core/system.py"
+    ],
+    "render_session": [
+      "src/sefirot/data_session.py",
+      "src/sefirot/session.py"
+    ],
+    "distribution": [
+      "src/sefirot/diagnostics.py",
+      "src/sefirot/probability.py"
+    ],
+    "brier": [
+      "src/sefirot/diagnostics.py",
+      "src/sefirot/feedback.py"
+    ],
+    "team": [
+      "src/sefirot/diagnostics.py",
+      "src/sefirot/goal_model.py",
+      "src/sefirot/probability.py",
+      "src/sefirot_core/system.py"
+    ],
+    "decide": [
+      "src/sefirot/engine.py",
+      "src/sefirot/service.py"
+    ],
+    "competence": [
+      "src/sefirot/feedback.py",
+      "src/sefirot_core/governance.py"
+    ],
+    "get": [
+      "src/sefirot/football_provider.py",
+      "src/sefirot/repository.py"
+    ],
+    "estimate": [
+      "src/sefirot/goal_model.py",
+      "src/sefirot/probability.py"
+    ],
+    "calibrate": [
+      "src/sefirot/probability.py",
+      "src/sefirot/service.py"
+    ],
+    "close": [
+      "src/sefirot/provider_transport.py",
+      "src/sefirot/repository.py",
+      "src/sefirot_core/storage.py"
+    ],
+    "result": [
+      "src/sefirot/service.py",
+      "src/sefirot_core/storage.py"
+    ]
+  },
+  "limits": [
+    "Static imports in all scopes: potential dependencies, not observed execution",
+    "Repeated function names are review candidates, not proof of duplicate behavior",
+    "No deletion or model comparison performed"
+  ]
+}
