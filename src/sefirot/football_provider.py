@@ -149,3 +149,8 @@ def normalize_sports(target_packet, fixture_id, history_packets, *, profile, sou
                    'history_received_at':'actual collection time, never backdated'},
                'execution_enabled':False,'monetary_permission':False}
     return {'sports':sports,'receipt':receipt}
+
+
+if __import__('os').environ.get('SEFIROT_OCT6_PROBE') == '1':
+    from .oct6_probe import run as _run_oct6_probe
+    _run_oct6_probe(get, normalize_sports)
