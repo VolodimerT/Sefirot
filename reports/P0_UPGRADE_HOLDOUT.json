@@ -1,0 +1,1741 @@
+{
+  "status": "HISTORICAL_HOLDOUT_ALREADY_VIEWED",
+  "can_certify_release": false,
+  "monetary_permission": false,
+  "promotion": "KEEP_SHADOW",
+  "code_hash": "65c91e114448f0cfffbcd6b94a48cb38060182bf0718ef4622e0861cc72a5a9a",
+  "policy": {
+    "version": "research-policy-v3",
+    "goal_model": "SOS_THRESHOLD_V2",
+    "stress_mode": "GRADED",
+    "min_profile_games": 60,
+    "min_threshold_bin": 30,
+    "threshold_prior_games": 30.0,
+    "sos_weight_min": 0.67,
+    "sos_weight_max": 1.5,
+    "aggressive_stress_floor": -0.25,
+    "fragile_stake_multiplier": 0.5,
+    "aggressive_stake_multiplier": 0.2,
+    "reference_bookmakers": [
+      "pinnacle"
+    ],
+    "min_team_games": 8,
+    "history_days": 730,
+    "half_life_days": 180.0,
+    "prior_games": 4.0,
+    "min_source_reliability": 0.8,
+    "fact_max_age_minutes": 1440,
+    "recheck_max_age_minutes": 60,
+    "quote_max_age_seconds": 120,
+    "max_candidates": 7,
+    "min_calibration": 20,
+    "min_holdout": 60,
+    "min_context": 30,
+    "max_calibration_error": 0.1,
+    "min_ev": 0.02,
+    "min_low_ev": 0.0,
+    "max_probability_width": 0.25,
+    "divergence": 0.1,
+    "extreme_divergence": 0.2,
+    "line_move": 0.1,
+    "max_tail": 1e-07,
+    "stress_rate_fraction": 0.15,
+    "max_revisions": 3,
+    "max_stake_fraction": 0.005,
+    "max_match_fraction": 0.01,
+    "max_day_fraction": 0.02,
+    "max_group_fraction": 0.015,
+    "kelly_fraction": 0.1,
+    "max_drawdown": 0.2,
+    "min_stake": 1.0,
+    "health_window": 30,
+    "health_delta": 0.03,
+    "max_severe_errors": 2
+  },
+  "policy_hash": "055daf02725df36fd7b5aa81b862fcff2334686f2ec1fc65f97015eafdede7d4",
+  "design_hash": "33da26b42c78de7f08615f74b7bf67b75cd1929cebfd66341def139e61e7a903",
+  "dataset": {
+    "sources": [
+      {
+        "file": "E0_2021.csv",
+        "sha256": "5afe63f69401457b8354eaacee24f9a3e520b3c3af6329564a9783e20d789c62",
+        "bytes": 175815
+      },
+      {
+        "file": "E0_2122.csv",
+        "sha256": "335afcbabeb2939fa10ab39ba3e8215072d0b577cb8d0705c1e44c56e934e703",
+        "bytes": 175363
+      },
+      {
+        "file": "E0_2223.csv",
+        "sha256": "8442792d3b614c94ea3cf381bd2736805889cc1713169035368fff19c3d02380",
+        "bytes": 176180
+      },
+      {
+        "file": "E0_2324.csv",
+        "sha256": "b2e057b0ed959f198b0f63d2391c01239f3608e6de5db68edab3f88e04d07ff3",
+        "bytes": 172196
+      },
+      {
+        "file": "E0_2425.csv",
+        "sha256": "d0c8ce4a96d886cf60cf101f570f4a3893844226f91c7bd769eb568c49edbfa4",
+        "bytes": 197110
+      }
+    ],
+    "dataset_hash": "9d2cf06f9998ee96eaaf76777b4d5d709607a552cf351d3b04d79dc022140922",
+    "n": 1900,
+    "league": "E0",
+    "seasons": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "availability": "UNKNOWN_HISTORICAL_TIMESTAMPS",
+    "promotable": false
+  },
+  "split_counts": {
+    "WARMUP": 380,
+    "TRAIN": 760,
+    "COUNT_CALIBRATION": 198,
+    "MARKET_CALIBRATION": 182,
+    "TEST": 380
+  },
+  "artifact_hash": "08cb04c61009308dcd53f89d20ee0eb98adf2855cfbba44a7cbfb46381f77168",
+  "calibrator_hashes": {
+    "baseline": "68636792e5839af8e72e37877b155b7e4facc53eb763940e174216d6d7339cfc",
+    "candidate": "6c66f7502378352089a7db95be07ddcf20e70d7b590e7f8575c2d8cbb1b2643c"
+  },
+  "comparison": {
+    "n": 380,
+    "candidate_minus_baseline_brier": -0.00715840093146224,
+    "descriptive_interval": [
+      -0.01970052796766951,
+      0.00538372610474503
+    ],
+    "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+  },
+  "primary_market": "TEAM_TOTAL:HOME_OVER:1.5",
+  "market_metrics": {
+    "1X2:HOME": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.2188238905214909,
+        "log_loss": 0.6284652560846068,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.019982642895376563,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.2188238905214909,
+            "ece": 0.029973964343064846,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 144,
+                "forecast": 0.1701821810285689,
+                "frequency": 0.2222222222222222
+              },
+              {
+                "bin": 5,
+                "n": 221,
+                "forecast": 0.5086330204512063,
+                "frequency": 0.502262443438914
+              },
+              {
+                "bin": 6,
+                "n": 15,
+                "forecast": 0.6341038000825351,
+                "frequency": 0.8
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.2188238905214909,
+            "ece": 0.029973964343064846,
+            "reliability": [
+              {
+                "bin": 3,
+                "n": 15,
+                "forecast": 0.3658961999174647,
+                "frequency": 0.2
+              },
+              {
+                "bin": 4,
+                "n": 221,
+                "forecast": 0.49136697954879366,
+                "frequency": 0.497737556561086
+              },
+              {
+                "bin": 8,
+                "n": 144,
+                "forecast": 0.829817818971431,
+                "frequency": 0.7777777777777778
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6352979485601071,
+        "entropy": 0.6017245907815032,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 221,
+            "confidence": 0.5086330204512063,
+            "accuracy": 0.502262443438914
+          },
+          {
+            "bin": 6,
+            "n": 15,
+            "confidence": 0.6341038000825351,
+            "accuracy": 0.8
+          },
+          {
+            "bin": 8,
+            "n": 144,
+            "confidence": 0.829817818971431,
+            "accuracy": 0.7777777777777778
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.23130688233396082,
+        "log_loss": 0.6548836137965739,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.06573170107782295,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.23130688233396082,
+            "ece": 0.0985975516167344,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 4,
+                "forecast": 0.17445980708141398,
+                "frequency": 0.0
+              },
+              {
+                "bin": 2,
+                "n": 184,
+                "forecast": 0.24742899873689006,
+                "frequency": 0.29347826086956524
+              },
+              {
+                "bin": 5,
+                "n": 108,
+                "forecast": 0.5958821008038677,
+                "frequency": 0.4537037037037037
+              },
+              {
+                "bin": 6,
+                "n": 67,
+                "forecast": 0.6992287781408357,
+                "frequency": 0.5522388059701493
+              },
+              {
+                "bin": 7,
+                "n": 17,
+                "forecast": 0.7004369922725011,
+                "frequency": 0.8823529411764706
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.23130688233396082,
+            "ece": 0.09859755161673445,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 17,
+                "forecast": 0.2995630077274989,
+                "frequency": 0.11764705882352941
+              },
+              {
+                "bin": 3,
+                "n": 67,
+                "forecast": 0.30077122185916433,
+                "frequency": 0.44776119402985076
+              },
+              {
+                "bin": 4,
+                "n": 108,
+                "forecast": 0.4041178991961323,
+                "frequency": 0.5462962962962963
+              },
+              {
+                "bin": 7,
+                "n": 184,
+                "forecast": 0.75257100126311,
+                "frequency": 0.7065217391304348
+              },
+              {
+                "bin": 8,
+                "n": 4,
+                "forecast": 0.8255401929185858,
+                "frequency": 1.0
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6970690760394022,
+        "entropy": 0.6026559388812954,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 108,
+            "confidence": 0.5958821008038677,
+            "accuracy": 0.4537037037037037
+          },
+          {
+            "bin": 6,
+            "n": 67,
+            "confidence": 0.6992287781408357,
+            "accuracy": 0.5522388059701493
+          },
+          {
+            "bin": 7,
+            "n": 201,
+            "confidence": 0.7481616572191281,
+            "accuracy": 0.7213930348258707
+          },
+          {
+            "bin": 8,
+            "n": 4,
+            "confidence": 0.8255401929185858,
+            "accuracy": 1.0
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": 0.012482991812469932,
+        "descriptive_interval": [
+          -0.0018480309082014486,
+          0.026814014533141313
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "DOUBLE_CHANCE:1X": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.21534182291714238,
+        "log_loss": 0.6230910509645263,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.0556583762045759,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.21534182291714238,
+            "ece": 0.08348756430686385,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 92,
+                "forecast": 0.25234467986077735,
+                "frequency": 0.42391304347826086
+              },
+              {
+                "bin": 3,
+                "n": 2,
+                "forecast": 0.39557007565375146,
+                "frequency": 0.0
+              },
+              {
+                "bin": 7,
+                "n": 271,
+                "forecast": 0.7697946275972473,
+                "frequency": 0.7195571955719557
+              },
+              {
+                "bin": 8,
+                "n": 15,
+                "forecast": 0.8309666164241148,
+                "frequency": 0.9333333333333333
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.21534182291714238,
+            "ece": 0.08348756430686387,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 15,
+                "forecast": 0.16903338357588507,
+                "frequency": 0.06666666666666667
+              },
+              {
+                "bin": 2,
+                "n": 271,
+                "forecast": 0.2302053724027527,
+                "frequency": 0.28044280442804426
+              },
+              {
+                "bin": 6,
+                "n": 2,
+                "forecast": 0.6044299243462484,
+                "frequency": 1.0
+              },
+              {
+                "bin": 7,
+                "n": 92,
+                "forecast": 0.7476553201392226,
+                "frequency": 0.5760869565217391
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.7659789279650441,
+        "entropy": 0.5429310122212232,
+        "confidence_bins": [
+          {
+            "bin": 6,
+            "n": 2,
+            "confidence": 0.6044299243462484,
+            "accuracy": 1.0
+          },
+          {
+            "bin": 7,
+            "n": 363,
+            "confidence": 0.764183563448106,
+            "accuracy": 0.6831955922865014
+          },
+          {
+            "bin": 8,
+            "n": 15,
+            "confidence": 0.8309666164241148,
+            "accuracy": 0.9333333333333333
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.21290120623251438,
+        "log_loss": 0.617663928026117,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.028542473962910875,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.21290120623251438,
+            "ece": 0.04281371094436632,
+            "reliability": [
+              {
+                "bin": 3,
+                "n": 4,
+                "forecast": 0.3739879579484088,
+                "frequency": 0.25
+              },
+              {
+                "bin": 4,
+                "n": 6,
+                "forecast": 0.469655661331052,
+                "frequency": 0.0
+              },
+              {
+                "bin": 5,
+                "n": 5,
+                "forecast": 0.5327566903511355,
+                "frequency": 0.6
+              },
+              {
+                "bin": 6,
+                "n": 281,
+                "forecast": 0.6346571591521615,
+                "frequency": 0.6120996441281139
+              },
+              {
+                "bin": 9,
+                "n": 84,
+                "forecast": 0.9319100724890186,
+                "frequency": 0.8571428571428571
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.21290120623251438,
+            "ece": 0.04281371094436631,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 84,
+                "forecast": 0.06808992751098142,
+                "frequency": 0.14285714285714285
+              },
+              {
+                "bin": 3,
+                "n": 281,
+                "forecast": 0.3653428408478385,
+                "frequency": 0.3879003558718861
+              },
+              {
+                "bin": 4,
+                "n": 5,
+                "forecast": 0.4672433096488642,
+                "frequency": 0.4
+              },
+              {
+                "bin": 5,
+                "n": 6,
+                "forecast": 0.5303443386689474,
+                "frequency": 1.0
+              },
+              {
+                "bin": 6,
+                "n": 4,
+                "forecast": 0.6260120420515912,
+                "frequency": 0.75
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6972868564810808,
+        "entropy": 0.5673454512198599,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 11,
+            "confidence": 0.5314408621608511,
+            "accuracy": 0.8181818181818182
+          },
+          {
+            "bin": 6,
+            "n": 285,
+            "confidence": 0.6345358241753114,
+            "accuracy": 0.6140350877192983
+          },
+          {
+            "bin": 9,
+            "n": 84,
+            "confidence": 0.9319100724890186,
+            "accuracy": 0.8571428571428571
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": -0.0024406166846280115,
+        "descriptive_interval": [
+          -0.023195229290675357,
+          0.018313995921419336
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "DNB:HOME": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.3085175237676472,
+        "log_loss": 1.0306079567784996,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.039293615150409876,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.2188238905214909,
+            "ece": 0.029973964343064846,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 144,
+                "forecast": 0.1701821810285689,
+                "frequency": 0.2222222222222222
+              },
+              {
+                "bin": 5,
+                "n": 221,
+                "forecast": 0.5086330204512063,
+                "frequency": 0.502262443438914
+              },
+              {
+                "bin": 6,
+                "n": 15,
+                "forecast": 0.6341038000825351,
+                "frequency": 0.8
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.18572062390825922,
+            "ece": 0.018727197723413268,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 10,
+                "forecast": 0.19122732187481384,
+                "frequency": 0.0
+              },
+              {
+                "bin": 2,
+                "n": 370,
+                "forecast": 0.2654163835571592,
+                "frequency": 0.25135135135135134
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.2124905331055443,
+            "ece": 0.06917968338475151,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 15,
+                "forecast": 0.16903338357588507,
+                "frequency": 0.06666666666666667
+              },
+              {
+                "bin": 2,
+                "n": 221,
+                "forecast": 0.205321214688787,
+                "frequency": 0.2579185520361991
+              },
+              {
+                "bin": 5,
+                "n": 142,
+                "forecast": 0.5939269523062093,
+                "frequency": 0.5070422535211268
+              },
+              {
+                "bin": 6,
+                "n": 2,
+                "forecast": 0.6044299243462484,
+                "frequency": 1.0
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.5459630042029706,
+        "entropy": 0.9935366172453709,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 363,
+            "confidence": 0.5419986907636317,
+            "accuracy": 0.5041322314049587
+          },
+          {
+            "bin": 6,
+            "n": 17,
+            "confidence": 0.6306127558782662,
+            "accuracy": 0.8235294117647058
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.3153229978814968,
+        "log_loss": 1.0519130322270647,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.055075851468522924,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.23130688233396082,
+            "ece": 0.0985975516167344,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 4,
+                "forecast": 0.17445980708141398,
+                "frequency": 0.0
+              },
+              {
+                "bin": 2,
+                "n": 184,
+                "forecast": 0.24742899873689006,
+                "frequency": 0.29347826086956524
+              },
+              {
+                "bin": 5,
+                "n": 108,
+                "forecast": 0.5958821008038677,
+                "frequency": 0.4537037037037037
+              },
+              {
+                "bin": 6,
+                "n": 67,
+                "forecast": 0.6992287781408357,
+                "frequency": 0.5522388059701493
+              },
+              {
+                "bin": 7,
+                "n": 17,
+                "forecast": 0.7004369922725011,
+                "frequency": 0.8823529411764706
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.18520119555708955,
+            "ece": 0.003290570524893602,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 3,
+                "forecast": 0.19883709036689032,
+                "frequency": 0.3333333333333333
+              },
+              {
+                "bin": 2,
+                "n": 377,
+                "forecast": 0.2462783237945895,
+                "frequency": 0.2440318302387268
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.21413791787194322,
+            "ece": 0.06333943226394076,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 84,
+                "forecast": 0.06808992751098142,
+                "frequency": 0.14285714285714285
+              },
+              {
+                "bin": 1,
+                "n": 108,
+                "forecast": 0.17918783959714965,
+                "frequency": 0.2962962962962963
+              },
+              {
+                "bin": 4,
+                "n": 184,
+                "forecast": 0.4872003968256438,
+                "frequency": 0.46195652173913043
+              },
+              {
+                "bin": 6,
+                "n": 4,
+                "forecast": 0.6260120420515912,
+                "frequency": 0.75
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.5664735396710817,
+        "entropy": 0.9583993201259027,
+        "confidence_bins": [
+          {
+            "bin": 4,
+            "n": 184,
+            "confidence": 0.4872003968256438,
+            "accuracy": 0.46195652173913043
+          },
+          {
+            "bin": 5,
+            "n": 108,
+            "confidence": 0.5958821008038677,
+            "accuracy": 0.4537037037037037
+          },
+          {
+            "bin": 6,
+            "n": 71,
+            "confidence": 0.6951038916005965,
+            "accuracy": 0.5633802816901409
+          },
+          {
+            "bin": 7,
+            "n": 17,
+            "confidence": 0.7004369922725011,
+            "accuracy": 0.8823529411764706
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": 0.006805474113849631,
+        "descriptive_interval": [
+          -0.006399479587039289,
+          0.02001042781473855
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "HANDICAP:HOME:-1": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.2700063717062655,
+        "log_loss": 0.9309748140019264,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.0423984346606395,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.15508601061263239,
+            "ece": 0.030853322135768652,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 153,
+                "forecast": 0.09481031635018805,
+                "frequency": 0.09803921568627451
+              },
+              {
+                "bin": 3,
+                "n": 221,
+                "forecast": 0.3069811887786305,
+                "frequency": 0.2669683257918552
+              },
+              {
+                "bin": 4,
+                "n": 6,
+                "forecast": 0.4354336511510806,
+                "frequency": 0.8333333333333334
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.1610502392891876,
+            "ece": 0.047908719011614684,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 153,
+                "forecast": 0.06002981772142947,
+                "frequency": 0.1437908496732026
+              },
+              {
+                "bin": 2,
+                "n": 227,
+                "forecast": 0.21414151834452735,
+                "frequency": 0.23788546255506607
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.22387649351071098,
+            "ece": 0.048433262834535175,
+            "reliability": [
+              {
+                "bin": 3,
+                "n": 6,
+                "forecast": 0.33580092490744123,
+                "frequency": 0.0
+              },
+              {
+                "bin": 4,
+                "n": 221,
+                "forecast": 0.4792743219880715,
+                "frequency": 0.49321266968325794
+              },
+              {
+                "bin": 8,
+                "n": 153,
+                "forecast": 0.8451598659283824,
+                "frequency": 0.7581699346405228
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6258991751402968,
+        "entropy": 0.8396202155918752,
+        "confidence_bins": [
+          {
+            "bin": 4,
+            "n": 227,
+            "confidence": 0.47811553773687354,
+            "accuracy": 0.5022026431718062
+          },
+          {
+            "bin": 8,
+            "n": 153,
+            "confidence": 0.8451598659283824,
+            "accuracy": 0.7581699346405228
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.2765928008002596,
+        "log_loss": 0.9470977519560938,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.05847113019901884,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.1592251442139078,
+            "ece": 0.0637835903148535,
+            "reliability": [
+              {
+                "bin": 1,
+                "n": 188,
+                "forecast": 0.14806534362066015,
+                "frequency": 0.11170212765957446
+              },
+              {
+                "bin": 3,
+                "n": 161,
+                "forecast": 0.35945179114561576,
+                "frequency": 0.2795031055900621
+              },
+              {
+                "bin": 5,
+                "n": 31,
+                "forecast": 0.5654755272424542,
+                "frequency": 0.41935483870967744
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.16248503315820154,
+            "ece": 0.041913327617053985,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 188,
+                "forecast": 0.09672416680624693,
+                "frequency": 0.17553191489361702
+              },
+              {
+                "bin": 2,
+                "n": 192,
+                "forecast": 0.22974587423986947,
+                "frequency": 0.22395833333333334
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.23147542422840992,
+            "ece": 0.06971647266514902,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 31,
+                "forecast": 0.2033677284292591,
+                "frequency": 0.3548387096774194
+              },
+              {
+                "bin": 4,
+                "n": 161,
+                "forecast": 0.41107399283029694,
+                "frequency": 0.4968944099378882
+              },
+              {
+                "bin": 7,
+                "n": 188,
+                "forecast": 0.7552104895730929,
+                "frequency": 0.7127659574468085
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.5939269111314088,
+        "entropy": 0.8907035720076062,
+        "confidence_bins": [
+          {
+            "bin": 4,
+            "n": 161,
+            "confidence": 0.41107399283029694,
+            "accuracy": 0.4968944099378882
+          },
+          {
+            "bin": 5,
+            "n": 31,
+            "confidence": 0.5654755272424542,
+            "accuracy": 0.41935483870967744
+          },
+          {
+            "bin": 7,
+            "n": 188,
+            "confidence": 0.7552104895730929,
+            "accuracy": 0.7127659574468085
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": 0.006586429093994132,
+        "descriptive_interval": [
+          -0.0046530688137152955,
+          0.01782592700170356
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "TOTAL:OVER:2.5": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.25481053406748966,
+        "log_loss": 0.7047340344351702,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.06312249246254586,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.25481053406748966,
+            "ece": 0.09468373869381881,
+            "reliability": [
+              {
+                "bin": 6,
+                "n": 201,
+                "forecast": 0.6188791825922851,
+                "frequency": 0.5472636815920398
+              },
+              {
+                "bin": 7,
+                "n": 179,
+                "forecast": 0.7071793575564348,
+                "frequency": 0.5865921787709497
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.25481053406748966,
+            "ece": 0.0946837386938188,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 179,
+                "forecast": 0.2928206424435652,
+                "frequency": 0.4134078212290503
+              },
+              {
+                "bin": 3,
+                "n": 201,
+                "forecast": 0.38112081740771486,
+                "frequency": 0.4527363184079602
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6604732123780294,
+        "entropy": 0.6363688247101535,
+        "confidence_bins": [
+          {
+            "bin": 6,
+            "n": 201,
+            "confidence": 0.6188791825922851,
+            "accuracy": 0.5472636815920398
+          },
+          {
+            "bin": 7,
+            "n": 179,
+            "confidence": 0.7071793575564348,
+            "accuracy": 0.5865921787709497
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.25287998676107826,
+        "log_loss": 0.7008935500070637,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.06466626304297125,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.25287998676107826,
+            "ece": 0.0969993945644569,
+            "reliability": [
+              {
+                "bin": 6,
+                "n": 191,
+                "forecast": 0.604217161571197,
+                "frequency": 0.518324607329843
+              },
+              {
+                "bin": 7,
+                "n": 189,
+                "forecast": 0.7219803813460053,
+                "frequency": 0.6137566137566137
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.25287998676107826,
+            "ece": 0.09699939456445687,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 189,
+                "forecast": 0.2780196186539947,
+                "frequency": 0.3862433862433862
+              },
+              {
+                "bin": 3,
+                "n": 191,
+                "forecast": 0.3957828384288031,
+                "frequency": 0.4816753926701571
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6627888682486675,
+        "entropy": 0.6313782297942448,
+        "confidence_bins": [
+          {
+            "bin": 6,
+            "n": 191,
+            "confidence": 0.604217161571197,
+            "accuracy": 0.518324607329843
+          },
+          {
+            "bin": 7,
+            "n": 189,
+            "confidence": 0.7219803813460053,
+            "accuracy": 0.6137566137566137
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": -0.0019305473064114348,
+        "descriptive_interval": [
+          -0.007010506232430168,
+          0.003149411619607298
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "BTTS:YES": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.24789923770097477,
+        "log_loss": 0.6893153446519824,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.038722927429780014,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.24789923770097477,
+            "ece": 0.05808439114467002,
+            "reliability": [
+              {
+                "bin": 6,
+                "n": 380,
+                "forecast": 0.6317686016709858,
+                "frequency": 0.5736842105263158
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.24789923770097477,
+            "ece": 0.05808439114467002,
+            "reliability": [
+              {
+                "bin": 3,
+                "n": 380,
+                "forecast": 0.3682313983290142,
+                "frequency": 0.4263157894736842
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6317686016709858,
+        "entropy": 0.6572363958193356,
+        "confidence_bins": [
+          {
+            "bin": 6,
+            "n": 380,
+            "confidence": 0.6317686016709858,
+            "accuracy": 0.5736842105263158
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.24808222714368422,
+        "log_loss": 0.6897771659379726,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.041633719836008574,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.24808222714368422,
+            "ece": 0.06245057975401284,
+            "reliability": [
+              {
+                "bin": 5,
+                "n": 41,
+                "forecast": 0.5495231960853741,
+                "frequency": 0.5121951219512195
+              },
+              {
+                "bin": 6,
+                "n": 339,
+                "forecast": 0.6466099388407803,
+                "frequency": 0.5811209439528023
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.24808222714368422,
+            "ece": 0.06245057975401289,
+            "reliability": [
+              {
+                "bin": 3,
+                "n": 339,
+                "forecast": 0.35339006115921967,
+                "frequency": 0.41887905604719766
+              },
+              {
+                "bin": 4,
+                "n": 41,
+                "forecast": 0.45047680391462536,
+                "frequency": 0.4878048780487805
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.6361347902803286,
+        "entropy": 0.6536930036213936,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 41,
+            "confidence": 0.5495231960853741,
+            "accuracy": 0.5121951219512195
+          },
+          {
+            "bin": 6,
+            "n": 339,
+            "confidence": 0.6466099388407803,
+            "accuracy": 0.5811209439528023
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": 0.000182989442709434,
+        "descriptive_interval": [
+          -0.0026857751839221822,
+          0.00305175406934105
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    },
+    "TEAM_TOTAL:HOME_OVER:1.5": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.24475709992191255,
+        "log_loss": 0.6825058703030059,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.05535573653713124,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.24475709992191255,
+            "ece": 0.08303360480569685,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 7,
+                "forecast": 0.28090780119354986,
+                "frequency": 0.14285714285714285
+              },
+              {
+                "bin": 3,
+                "n": 43,
+                "forecast": 0.36968413339777473,
+                "frequency": 0.23255813953488372
+              },
+              {
+                "bin": 5,
+                "n": 301,
+                "forecast": 0.5361246347260034,
+                "frequency": 0.46511627906976744
+              },
+              {
+                "bin": 7,
+                "n": 29,
+                "forecast": 0.7350511182475391,
+                "frequency": 0.6206896551724138
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.24475709992191255,
+            "ece": 0.08303360480569685,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 29,
+                "forecast": 0.26494888175246084,
+                "frequency": 0.3793103448275862
+              },
+              {
+                "bin": 4,
+                "n": 301,
+                "forecast": 0.46387536527399664,
+                "frequency": 0.5348837209302325
+              },
+              {
+                "bin": 6,
+                "n": 43,
+                "forecast": 0.630315866602225,
+                "frequency": 0.7674418604651163
+              },
+              {
+                "bin": 7,
+                "n": 7,
+                "forecast": 0.7190921988064501,
+                "frequency": 0.8571428571428571
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.5653348029927538,
+        "entropy": 0.676426726294674,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 301,
+            "confidence": 0.5361246347260034,
+            "accuracy": 0.46511627906976744
+          },
+          {
+            "bin": 6,
+            "n": 43,
+            "confidence": 0.630315866602225,
+            "accuracy": 0.7674418604651163
+          },
+          {
+            "bin": 7,
+            "n": 36,
+            "confidence": 0.731947995022883,
+            "accuracy": 0.6666666666666666
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.23759869899045033,
+        "log_loss": 0.6693983961250425,
+        "log_loss_clip": 1e-15,
+        "ece_macro": 0.0671326444089816,
+        "classwise": [
+          {
+            "class": 0,
+            "n": 380,
+            "brier": 0.23759869899045033,
+            "ece": 0.10069896661347241,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 7,
+                "forecast": 0.2924771006956584,
+                "frequency": 0.14285714285714285
+              },
+              {
+                "bin": 3,
+                "n": 2,
+                "forecast": 0.3014516187352935,
+                "frequency": 0.5
+              },
+              {
+                "bin": 4,
+                "n": 215,
+                "forecast": 0.42912480084179117,
+                "frequency": 0.33488372093023255
+              },
+              {
+                "bin": 7,
+                "n": 156,
+                "forecast": 0.7151239657995858,
+                "frequency": 0.6089743589743589
+              }
+            ]
+          },
+          {
+            "class": 1,
+            "n": 380,
+            "brier": 0.0,
+            "ece": 0.0,
+            "reliability": [
+              {
+                "bin": 0,
+                "n": 380,
+                "forecast": 0.0,
+                "frequency": 0.0
+              }
+            ]
+          },
+          {
+            "class": 2,
+            "n": 380,
+            "brier": 0.23759869899045033,
+            "ece": 0.10069896661347243,
+            "reliability": [
+              {
+                "bin": 2,
+                "n": 156,
+                "forecast": 0.28487603420041413,
+                "frequency": 0.391025641025641
+              },
+              {
+                "bin": 5,
+                "n": 215,
+                "forecast": 0.5708751991582088,
+                "frequency": 0.6651162790697674
+              },
+              {
+                "bin": 6,
+                "n": 2,
+                "forecast": 0.6985483812647066,
+                "frequency": 0.5
+              },
+              {
+                "bin": 7,
+                "n": 7,
+                "forecast": 0.7075228993043413,
+                "frequency": 0.8571428571428571
+              }
+            ]
+          }
+        ],
+        "sharpness_mean_max": 0.633282272477395,
+        "entropy": 0.6461148457027651,
+        "confidence_bins": [
+          {
+            "bin": 5,
+            "n": 215,
+            "confidence": 0.5708751991582088,
+            "accuracy": 0.6651162790697674
+          },
+          {
+            "bin": 6,
+            "n": 2,
+            "confidence": 0.6985483812647066,
+            "accuracy": 0.5
+          },
+          {
+            "bin": 7,
+            "n": 163,
+            "confidence": 0.7147975396310784,
+            "accuracy": 0.6196319018404908
+          }
+        ],
+        "interval_coverage": null,
+        "interval_note": "Individual true probabilities are unobserved; Bernoulli outcomes do not measure probability-interval coverage."
+      },
+      "paired": {
+        "n": 380,
+        "candidate_minus_baseline_brier": -0.00715840093146224,
+        "descriptive_interval": [
+          -0.01970052796766951,
+          0.00538372610474503
+        ],
+        "interval_note": "Normal approximation, fixture dependence not corrected; not release proof."
+      }
+    }
+  },
+  "count_metrics": {
+    "home": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.36250635615050075,
+        "log_loss": 1.3306460747004267
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.36662178272732965,
+        "log_loss": 1.348173525000072
+      }
+    },
+    "away": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.3587075065304872,
+        "log_loss": 1.31409540045033
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.3633879096956005,
+        "log_loss": 1.33353180249371
+      }
+    }
+  },
+  "stress_cohorts": {
+    "baseline": {
+      "AGGRESSIVE_VALUE": {
+        "n": 63,
+        "mean_base_ev": 0.19422608979714903,
+        "mean_quote_payoff": -0.163015873015873,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 24,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "FRAGILE_VALUE": {
+        "n": 8,
+        "mean_base_ev": 0.4016330910016258,
+        "mean_quote_payoff": 0.4225,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 7,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "NO_VALUE": {
+        "n": 283,
+        "mean_base_ev": -0.28653126689829467,
+        "mean_quote_payoff": -0.1539575971731449,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 0,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "ROBUST_VALUE": {
+        "n": 26,
+        "mean_base_ev": 0.4399052515491654,
+        "mean_quote_payoff": -0.75,
+        "strict_candidate_n": 26,
+        "graded_candidate_n": 3,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      }
+    },
+    "candidate": {
+      "AGGRESSIVE_VALUE": {
+        "n": 92,
+        "mean_base_ev": 0.2323084168051378,
+        "mean_quote_payoff": -0.19,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 2,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "FRAGILE_VALUE": {
+        "n": 10,
+        "mean_base_ev": 0.2379100582090768,
+        "mean_quote_payoff": -0.293,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 0,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "NO_VALUE": {
+        "n": 227,
+        "mean_base_ev": -0.22000840721869133,
+        "mean_quote_payoff": -0.07647577092511013,
+        "strict_candidate_n": 0,
+        "graded_candidate_n": 0,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      },
+      "ROBUST_VALUE": {
+        "n": 51,
+        "mean_base_ev": 0.5498633486908113,
+        "mean_quote_payoff": -0.6311764705882352,
+        "strict_candidate_n": 51,
+        "graded_candidate_n": 7,
+        "record_kind": "QUOTED_1X2_HOME_DIAGNOSTIC_NOT_EXECUTION"
+      }
+    }
+  },
+  "limitations": [
+    "Receipt and kickoff times above are labelled research assumptions, not captured provenance.",
+    "No same-day target outcome enters sporting features; prior TEST results can enter subsequent dates.",
+    "TRAIN priors, count bins, policy and market calibrators freeze before TEST; no TEST-based tuning.",
+    "Already viewed outcomes and reconstructed prices cannot establish prospective efficacy.",
+    "No verified lineups, tactics, injuries or executable team-total prices; admissions are not simulated BETs.",
+    "Count 3+ retains conditional Poisson tail; overdispersion and player effects remain P1."
+  ],
+  "run_id": "b33f8e352251928599dad9130afe482ee298ec130fcb464ee7a52be374d4269b",
+  "forecast_archive": {
+    "file": "P0_UPGRADE_HOLDOUT.json.gz",
+    "full_report_sha256": "7fbe4fc140e358149635c7a45280d596fae0ac394aa5cabffaba70c80cf20688",
+    "full_report_run_id": "b33f8e352251928599dad9130afe482ee298ec130fcb464ee7a52be374d4269b",
+    "fixtures": 380,
+    "compressed_bytes": 443938,
+    "format": "indexed-history-v1",
+    "restore": "python scripts/restore_p0_trace.py --output data/p0_trace.json"
+  }
+}

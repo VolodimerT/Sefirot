@@ -1,7 +1,7 @@
 {
   "version": "research-policy-v3",
-  "goal_model": "BASELINE_V1",
-  "stress_mode": "STRICT",
+  "goal_model": "SOS_THRESHOLD_V2",
+  "stress_mode": "GRADED",
   "min_profile_games": 60,
   "min_threshold_bin": 30,
   "threshold_prior_games": 30.0,

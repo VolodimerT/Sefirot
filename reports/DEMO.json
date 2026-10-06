@@ -1,20 +1,847 @@
 {
-  "version": "2.3.0",
+  "version": "2.4.2",
   "synthetic": true,
-  "prediction_id": "29f9f36fed6d583de07e04e5997c84f39a7c1483eee181a4398b9bb0c87c896b",
-  "decision_id": "c6c7e5fa1d57592fea9cd41048a3990b3dac147ec57347463a2f1a6fd637df44",
+  "prediction_id": "0ff8f2cd5d1bb4a67a93ba1b295cdc1f90999317b51ac1d02193e65d2210e7f7",
+  "decision_id": "a57c7a718d9da72f37966190322fc79fe50a209883feac6c30e9cfc8d0980185",
   "decision": "PASS",
   "verdict": "skip",
   "class": "D",
   "reasons": [
-    "PROBABILITY_RECALCULATION_REQUIRED",
+    "CALIBRATION_INSUFFICIENT",
+    "CONTEXT_UNKNOWN",
+    "DEATH_TEST_PRICE_FRAGILITY",
+    "DIVERGENCE_NEEDS_CORROBORATION",
+    "HOLDOUT_UNVALIDATED",
+    "MODEL_MARKET_DIVERGENCE",
+    "NO_ADMISSIBLE_MAIN_MARKET",
     "POLICY_NOT_APPROVED",
+    "PROBABILITY_RECALCULATION_REQUIRED",
+    "ROBUST_EV_INSUFFICIENT",
+    "SEPHIRA_HISTORY_INSUFFICIENT",
     "SYNTHETIC_DATA_RESEARCH_ONLY",
-    "NO_ADMISSIBLE_MAIN_MARKET"
+    "UNCERTAINTY_TOO_WIDE"
   ],
   "markets_evaluated": 7,
   "replay_matches": true,
   "feedback_rows": 7,
   "integrity": true,
-  "monetary_stake": 0.0
+  "monetary_stake": 0.0,
+  "decision_card": {
+    "schema": "decision-card-v1",
+    "version": "2.4.2",
+    "decision": "PASS",
+    "verdict": "skip",
+    "verdict_ru": "пропуск",
+    "class": "D",
+    "status": "RECALCULATE",
+    "at": "2026-10-03T10:13:20+00:00",
+    "match": {
+      "away": "B",
+      "competition_profile": "MEN",
+      "format": "REGULATION_90",
+      "home": "A",
+      "id": "synthetic-001",
+      "kickoff": "2026-10-03T12:11:20+00:00",
+      "league": "SYNTHETIC",
+      "sport": "football"
+    },
+    "selected_market": null,
+    "screened_market": null,
+    "research_candidate": {
+      "market": "DOUBLE_CHANCE:1X",
+      "status": "RECALCULATE",
+      "eligible": false,
+      "odds": 2.1,
+      "implied_probability": 0.47619047619047616,
+      "raw_probability": 0.859248946705461,
+      "model_probability": 0.859248946705461,
+      "push_probability": 0.0,
+      "loss_probability": 0.14075105329453946,
+      "probability_low": 0.0,
+      "probability_high": 1.0,
+      "admission_probability_low": 0.0,
+      "admission_probability_high": 1.0,
+      "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+      "calibration": "UNCALIBRATED",
+      "fair_odds": 1.1638070710871486,
+      "ev": 0.8044227880814683,
+      "ev_low": -1.0,
+      "edge": 0.3830584705149849,
+      "market_reference": {
+        "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+        "probability": 0.47619047619047616,
+        "model_probability": 0.859248946705461,
+        "divergence": 0.3830584705149849,
+        "conditional_on_no_push": false,
+        "overround": null,
+        "sharp_consensus": false
+      },
+      "stress_ev_min": 0.6975567759275112,
+      "stress_class": "ROBUST_VALUE",
+      "price_requirements": {
+        "base_min_odds": 1.1870832125088921,
+        "low_min_odds": null,
+        "stress_min_odds": 1.2370720259725052,
+        "required_odds": null,
+        "scope": "PRICE_GATES_ONLY",
+        "monetary_permission": false,
+        "stress_mode": "STRICT",
+        "stress_ev_floor": 0.0,
+        "requires_stress_class_validation": false,
+        "requires_fresh_quote_and_full_recheck": true
+      },
+      "blockers": [
+        "CALIBRATION_INSUFFICIENT",
+        "CONTEXT_UNKNOWN",
+        "DIVERGENCE_NEEDS_CORROBORATION",
+        "HOLDOUT_UNVALIDATED",
+        "MODEL_MARKET_DIVERGENCE",
+        "ROBUST_EV_INSUFFICIENT",
+        "SEPHIRA_HISTORY_INSUFFICIENT",
+        "UNCERTAINTY_TOO_WIDE"
+      ],
+      "effective_blockers": [
+        "CALIBRATION_INSUFFICIENT",
+        "CONTEXT_UNKNOWN",
+        "DIVERGENCE_NEEDS_CORROBORATION",
+        "HOLDOUT_UNVALIDATED",
+        "MODEL_MARKET_DIVERGENCE",
+        "NO_ADMISSIBLE_MAIN_MARKET",
+        "POLICY_NOT_APPROVED",
+        "PROBABILITY_RECALCULATION_REQUIRED",
+        "ROBUST_EV_INSUFFICIENT",
+        "SEPHIRA_HISTORY_INSUFFICIENT",
+        "SYNTHETIC_DATA_RESEARCH_ONLY",
+        "UNCERTAINTY_TOO_WIDE"
+      ],
+      "price_only_recheck": false,
+      "tactical_fit": {
+        "scenario": "BASELINE",
+        "fact_id": "fact-tactics",
+        "status": "RECHECK_REQUIRED"
+      },
+      "public_trap": {
+        "status": "CHECKED",
+        "rule": "no popularity or market movement may replace sports evidence",
+        "unexplained_movement": false
+      },
+      "death_test": {
+        "loss_branches": [],
+        "stress_ev_min": 0.6975567759275112
+      },
+      "admission_permission": false
+    },
+    "stake": 0.0,
+    "reasons": [
+      {
+        "code": "CALIBRATION_INSUFFICIENT",
+        "text": "недостаточно калибровочных данных"
+      },
+      {
+        "code": "CONTEXT_UNKNOWN",
+        "text": "компетенция в этом контексте неизвестна"
+      },
+      {
+        "code": "DIVERGENCE_NEEDS_CORROBORATION",
+        "text": "нужны независимые подтверждения фактов"
+      },
+      {
+        "code": "HOLDOUT_UNVALIDATED",
+        "text": "модель не прошла независимую проверку"
+      },
+      {
+        "code": "MODEL_MARKET_DIVERGENCE",
+        "text": "экстремальное расхождение модели и рынка"
+      },
+      {
+        "code": "POLICY_NOT_APPROVED",
+        "text": "версия политики не утверждена"
+      },
+      {
+        "code": "PROBABILITY_RECALCULATION_REQUIRED",
+        "text": "нужен новый прогноз по спортивным данным"
+      },
+      {
+        "code": "ROBUST_EV_INSUFFICIENT",
+        "text": "цена не проходит Base/Low EV"
+      },
+      {
+        "code": "SEPHIRA_HISTORY_INSUFFICIENT",
+        "text": "не хватает проверенной истории подсистем"
+      },
+      {
+        "code": "SYNTHETIC_DATA_RESEARCH_ONLY",
+        "text": "синтетические данные: только исследование"
+      },
+      {
+        "code": "UNCERTAINTY_TOO_WIDE",
+        "text": "слишком широкий диапазон вероятности"
+      }
+    ],
+    "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
+    "deadline": "2026-10-03T12:11:20+00:00",
+    "alternatives": [
+      {
+        "market": "1X2:HOME",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.5934239604560062,
+        "model_probability": 0.5934239604560062,
+        "push_probability": 0.0,
+        "loss_probability": 0.4065760395439942,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 1.6851358668287806,
+        "ev": 0.24619031695761306,
+        "ev_low": -1.0,
+        "edge": 0.11723348426553004,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.5934239604560062,
+          "divergence": 0.11723348426553004,
+          "conditional_on_no_push": false,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": 0.06703131617341118,
+        "stress_class": "ROBUST_VALUE",
+        "price_requirements": {
+          "base_min_odds": 1.7188385841653568,
+          "low_min_odds": null,
+          "stress_min_odds": 1.968077195270166,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [
+            {
+              "away": 0,
+              "home": 0,
+              "probability": 0.13370558723986517
+            },
+            {
+              "away": 1,
+              "home": 1,
+              "probability": 0.10817152605672048
+            }
+          ],
+          "stress_ev_min": 0.06703131617341118
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "DOUBLE_CHANCE:1X",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.859248946705461,
+        "model_probability": 0.859248946705461,
+        "push_probability": 0.0,
+        "loss_probability": 0.14075105329453946,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 1.1638070710871486,
+        "ev": 0.8044227880814683,
+        "ev_low": -1.0,
+        "edge": 0.3830584705149849,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.859248946705461,
+          "divergence": 0.3830584705149849,
+          "conditional_on_no_push": false,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": 0.6975567759275112,
+        "stress_class": "ROBUST_VALUE",
+        "price_requirements": {
+          "base_min_odds": 1.1870832125088921,
+          "low_min_odds": null,
+          "stress_min_odds": 1.2370720259725052,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "MODEL_MARKET_DIVERGENCE",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "MODEL_MARKET_DIVERGENCE",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [],
+          "stress_ev_min": 0.6975567759275112
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "DNB:HOME",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.5934239604560062,
+        "model_probability": 0.5934239604560062,
+        "push_probability": 0.26582498624945483,
+        "loss_probability": 0.14075105329453946,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 1.2371846482005568,
+        "ev": 0.5120153032070679,
+        "ev_low": -1.0,
+        "edge": 0.24381681105098474,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.8082867835892291,
+          "divergence": 0.33209630739875295,
+          "conditional_on_no_push": true,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": 0.3672815351039352,
+        "stress_class": "ROBUST_VALUE",
+        "price_requirements": {
+          "base_min_odds": 1.270887365537133,
+          "low_min_odds": null,
+          "stress_min_odds": 1.377161586518127,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "MODEL_MARKET_DIVERGENCE",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "MODEL_MARKET_DIVERGENCE",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [],
+          "stress_ev_min": 0.3672815351039352
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "HANDICAP:HOME:-1",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.3084890334375361,
+        "model_probability": 0.3084890334375361,
+        "push_probability": 0.2849349270184695,
+        "loss_probability": 0.4065760395439942,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 2.3179594587640966,
+        "ev": -0.0672381027627047,
+        "ev_low": -1.0,
+        "edge": -0.03201814417271648,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.43141393013542434,
+          "divergence": -0.044776546055051825,
+          "conditional_on_no_push": true,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": -0.23549602674994408,
+        "stress_class": "NO_VALUE",
+        "price_requirements": {
+          "base_min_odds": 2.3827915851354526,
+          "low_min_odds": null,
+          "stress_min_odds": 3.110342709141019,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "HOLDOUT_UNVALIDATED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "HOLDOUT_UNVALIDATED",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [
+            {
+              "away": 0,
+              "home": 0,
+              "probability": 0.13370558723986517
+            },
+            {
+              "away": 1,
+              "home": 1,
+              "probability": 0.10817152605672048
+            }
+          ],
+          "stress_ev_min": -0.23549602674994408
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "TOTAL:OVER:2.5",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.32660271946721414,
+        "model_probability": 0.32660271946721414,
+        "push_probability": 0.0,
+        "loss_probability": 0.6733972805327857,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 3.0618238624323046,
+        "ev": -0.31413428911885033,
+        "ev_low": -1.0,
+        "edge": -0.14958775672326202,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.32660271946721414,
+          "divergence": -0.14958775672326202,
+          "conditional_on_no_push": false,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": -0.48445502151621783,
+        "stress_class": "NO_VALUE",
+        "price_requirements": {
+          "base_min_odds": 3.12306033968095,
+          "low_min_odds": null,
+          "stress_min_odds": 4.073359430589548,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [
+            {
+              "away": 0,
+              "home": 1,
+              "probability": 0.1947756521205566
+            },
+            {
+              "away": 0,
+              "home": 2,
+              "probability": 0.14186974322519846
+            },
+            {
+              "away": 0,
+              "home": 0,
+              "probability": 0.13370558723986517
+            },
+            {
+              "away": 1,
+              "home": 1,
+              "probability": 0.10817152605672048
+            }
+          ],
+          "stress_ev_min": -0.48445502151621783
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "BTTS:YES",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.326850460742475,
+        "model_probability": 0.326850460742475,
+        "push_probability": 0.0,
+        "loss_probability": 0.6731495392575251,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 3.0595031064921723,
+        "ev": -0.31361403244080255,
+        "ev_low": -1.0,
+        "edge": -0.14934001544800118,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.326850460742475,
+          "divergence": -0.14934001544800118,
+          "conditional_on_no_push": false,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": -0.4388774179839011,
+        "stress_class": "NO_VALUE",
+        "price_requirements": {
+          "base_min_odds": 3.120693168622016,
+          "low_min_odds": null,
+          "stress_min_odds": 3.7424977488069593,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [
+            {
+              "away": 0,
+              "home": 1,
+              "probability": 0.1947756521205566
+            },
+            {
+              "away": 0,
+              "home": 2,
+              "probability": 0.14186974322519846
+            },
+            {
+              "away": 0,
+              "home": 0,
+              "probability": 0.13370558723986517
+            }
+          ],
+          "stress_ev_min": -0.4388774179839011
+        },
+        "admission_permission": false
+      },
+      {
+        "market": "TEAM_TOTAL:HOME_OVER:1.5",
+        "status": "RECALCULATE",
+        "eligible": false,
+        "odds": 2.1,
+        "implied_probability": 0.47619047619047616,
+        "raw_probability": 0.42759633580302064,
+        "model_probability": 0.42759633580302064,
+        "push_probability": 0.0,
+        "loss_probability": 0.5724036641969793,
+        "probability_low": 0.0,
+        "probability_high": 1.0,
+        "admission_probability_low": 0.0,
+        "admission_probability_high": 1.0,
+        "probability_bound_basis": "CALIBRATION_AND_SENSITIVITY",
+        "calibration": "UNCALIBRATED",
+        "fair_odds": 2.3386542780400874,
+        "ev": -0.10204769481365666,
+        "ev_low": -1.0,
+        "edge": -0.04859414038745552,
+        "market_reference": {
+          "method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "probability": 0.47619047619047616,
+          "model_probability": 0.42759633580302064,
+          "divergence": -0.04859414038745552,
+          "conditional_on_no_push": false,
+          "overround": null,
+          "sharp_consensus": false
+        },
+        "stress_ev_min": -0.2625915489688893,
+        "stress_class": "NO_VALUE",
+        "price_requirements": {
+          "base_min_odds": 2.385427363600889,
+          "low_min_odds": null,
+          "stress_min_odds": 2.847811137862051,
+          "required_odds": null,
+          "scope": "PRICE_GATES_ONLY",
+          "monetary_permission": false,
+          "stress_mode": "STRICT",
+          "stress_ev_floor": 0.0,
+          "requires_stress_class_validation": false,
+          "requires_fresh_quote_and_full_recheck": true
+        },
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "HOLDOUT_UNVALIDATED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "effective_blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DEATH_TEST_PRICE_FRAGILITY",
+          "HOLDOUT_UNVALIDATED",
+          "NO_ADMISSIBLE_MAIN_MARKET",
+          "POLICY_NOT_APPROVED",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "ROBUST_EV_INSUFFICIENT",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "price_only_recheck": false,
+        "tactical_fit": {
+          "scenario": "BASELINE",
+          "fact_id": "fact-tactics",
+          "status": "RECHECK_REQUIRED"
+        },
+        "public_trap": {
+          "status": "CHECKED",
+          "rule": "no popularity or market movement may replace sports evidence",
+          "unexplained_movement": false
+        },
+        "death_test": {
+          "loss_branches": [
+            {
+              "away": 0,
+              "home": 1,
+              "probability": 0.1947756521205566
+            },
+            {
+              "away": 0,
+              "home": 0,
+              "probability": 0.13370558723986517
+            },
+            {
+              "away": 1,
+              "home": 1,
+              "probability": 0.10817152605672048
+            }
+          ],
+          "stress_ev_min": -0.2625915489688893
+        },
+        "admission_permission": false
+      }
+    ],
+    "selection_rule": "all sporting gates, then Low EV, stress EV, Base EV, loss probability, additional assumptions; sealed pool only",
+    "execution_enabled": false,
+    "price_threshold_is_permission": false,
+    "result_data_used": false
+  }
 }

@@ -1,0 +1,42 @@
+{
+  "version": "p0-upgrade-design-v1",
+  "profile": "MEN",
+  "warmup_seasons": [
+    2020
+  ],
+  "train_seasons": [
+    2021,
+    2022
+  ],
+  "count_calibration_season": 2023,
+  "count_calibration_fraction": 0.5,
+  "test_seasons": [
+    2024
+  ],
+  "test_already_viewed": true,
+  "primary_market": "TEAM_TOTAL:HOME_OVER:1.5",
+  "policy_hash": "055daf02725df36fd7b5aa81b862fcff2334686f2ec1fc65f97015eafdede7d4",
+  "sources": [
+    {
+      "file": "E0_2021.csv",
+      "sha256": "5afe63f69401457b8354eaacee24f9a3e520b3c3af6329564a9783e20d789c62"
+    },
+    {
+      "file": "E0_2122.csv",
+      "sha256": "335afcbabeb2939fa10ab39ba3e8215072d0b577cb8d0705c1e44c56e934e703"
+    },
+    {
+      "file": "E0_2223.csv",
+      "sha256": "8442792d3b614c94ea3cf381bd2736805889cc1713169035368fff19c3d02380"
+    },
+    {
+      "file": "E0_2324.csv",
+      "sha256": "b2e057b0ed959f198b0f63d2391c01239f3608e6de5db68edab3f88e04d07ff3"
+    },
+    {
+      "file": "E0_2425.csv",
+      "sha256": "d0c8ce4a96d886cf60cf101f570f4a3893844226f91c7bd769eb568c49edbfa4"
+    }
+  ],
+  "monetary_permission": false
+}
