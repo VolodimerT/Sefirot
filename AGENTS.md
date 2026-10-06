@@ -1,5 +1,29 @@
 # SEFIROT: актуальная база разработки
 
+## Продолжение системы без API, 06.10.2026
+
+API по указанию пользователя отложен. Cloud/keys не трогать в этом этапе.
+Та же ветка / PR #11, main не сливать, дополнительных агентов не создавать.
+См. docs/OFFLINE_WORKFLOW.md и docs/SYSTEM_REVIEW_20261006.md.
+`work inbox --text` — существующий canonical file workflow: русский status/
+карточка, named prediction_job_id → CAPTURE, прежний default main pool.
+Файл quotes открывать после seal; timestamps не переписывать. Action +
+jobs receipt + audit коммитятся одной transaction с nested savepoints.
+ERROR job -> exit 2; PASS решения остаётся нормальным результатом обработки.
+Новые jobs receipts имеют RECORD binding; старые не переписывать.
+report/accounting/replay/compare без rollback — только существующая ro БД;
+backtest standalone. Обычных команд всё ещё 10: work вместо api-health,
+последняя сохранена для явного вызова/--labs. Новый runtime не добавлен.
+Модель/Policy прежние; math tests не доказывают forecast superiority.
+Frozen effectiveness audit воспроизвёл 380 просмотренных historical TEST:
+SoS кандидат 3/7 лучше, 4/7 хуже; KEEP_SHADOW. Не refit по этому TEST.
+Локальный полный release 547/547; replay_matches/integrity=true. Проверки
+Node handler не skipped. code_hash:
+a323f2954f51097dd5619fe449b51b03faef6c5e8d74925d3dd02bbc6d7135c2.
+CI сверять на конечном опубликованном head; API-срезы ниже
+исторические. Новый server key проверен 06.10 23:08 Киев, по-прежнему
+ACCOUNT_SUSPENDED; последнее server v11. Повторять API в этом этапе не надо.
+
 ## Уточнение доступа и минутной квоты, 06.10.2026 16:18 UTC
 
 Та же ветка / PR #11, main не сливать; дополнительных агентов не создавать.

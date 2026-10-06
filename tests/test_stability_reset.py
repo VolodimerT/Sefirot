@@ -39,6 +39,9 @@ class StabilityBoundaryTests(unittest.TestCase):
             self.assertNotIn(command, lean.stdout)
             self.assertIn(command, labs.stdout)
         self.assertIn('forward-scorecard', lean.stdout)
+        self.assertIn('work', lean.stdout)
+        self.assertNotIn('api-health', lean.stdout)
+        self.assertIn('api-health', labs.stdout)
 
     def test_verify_refuses_missing_database_and_preserves_existing_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:

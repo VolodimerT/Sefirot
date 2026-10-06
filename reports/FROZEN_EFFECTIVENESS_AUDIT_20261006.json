@@ -1,0 +1,184 @@
+{
+  "schema": "frozen-effectiveness-audit-v1",
+  "generated_at": "2026-10-06T20:29:00.592887+00:00",
+  "scope": "HISTORICAL_ALREADY_VIEWED_NOT_NEW_HOLDOUT",
+  "fixtures": 380,
+  "sources": {
+    "restored_p0_sha256": "7fbe4fc140e358149635c7a45280d596fae0ac394aa5cabffaba70c80cf20688",
+    "archive_code_hash": "65c91e114448f0cfffbcd6b94a48cb38060182bf0718ef4622e0861cc72a5a9a",
+    "legacy_file_sha256": "f7dafbd50f5ed001627091690845f4560f8685999ef70b5c277ed265055e4e32"
+  },
+  "auditing_code_hash": "a323f2954f51097dd5619fe449b51b03faef6c5e8d74925d3dd02bbc6d7135c2",
+  "auditing_model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "markets": {
+    "1X2:HOME": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.2188238905214909,
+        "log_loss": 0.6284652560846068,
+        "ece_macro": 0.019982642895376563,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.23130688233396082,
+        "log_loss": 0.6548836137965739,
+        "ece_macro": 0.06573170107782295,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": 0.012482991812469924,
+      "descriptive_interval": [
+        -0.0018480309082014486,
+        0.026814014533141313
+      ]
+    },
+    "DOUBLE_CHANCE:1X": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.21534182291714238,
+        "log_loss": 0.6230910509645263,
+        "ece_macro": 0.0556583762045759,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.21290120623251438,
+        "log_loss": 0.617663928026117,
+        "ece_macro": 0.028542473962910875,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": -0.0024406166846279997,
+      "descriptive_interval": [
+        -0.023195229290675357,
+        0.018313995921419336
+      ]
+    },
+    "DNB:HOME": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.3085175237676472,
+        "log_loss": 1.0306079567784996,
+        "ece_macro": 0.039293615150409876,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.3153229978814968,
+        "log_loss": 1.0519130322270647,
+        "ece_macro": 0.055075851468522924,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": 0.00680547411384963,
+      "descriptive_interval": [
+        -0.006399479587039289,
+        0.02001042781473855
+      ]
+    },
+    "HANDICAP:HOME:-1": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.2700063717062655,
+        "log_loss": 0.9309748140019264,
+        "ece_macro": 0.0423984346606395,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.2765928008002596,
+        "log_loss": 0.9470977519560938,
+        "ece_macro": 0.05847113019901884,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": 0.006586429093994095,
+      "descriptive_interval": [
+        -0.0046530688137152955,
+        0.01782592700170356
+      ]
+    },
+    "TOTAL:OVER:2.5": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.25481053406748966,
+        "log_loss": 0.7047340344351702,
+        "ece_macro": 0.06312249246254586,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.25287998676107826,
+        "log_loss": 0.7008935500070637,
+        "ece_macro": 0.06466626304297125,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": -0.001930547306411401,
+      "descriptive_interval": [
+        -0.007010506232430168,
+        0.003149411619607298
+      ]
+    },
+    "BTTS:YES": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.24789923770097477,
+        "log_loss": 0.6893153446519824,
+        "ece_macro": 0.038722927429780014,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.24808222714368422,
+        "log_loss": 0.6897771659379726,
+        "ece_macro": 0.041633719836008574,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": 0.00018298944270944695,
+      "descriptive_interval": [
+        -0.0026857751839221822,
+        0.00305175406934105
+      ]
+    },
+    "TEAM_TOTAL:HOME_OVER:1.5": {
+      "baseline": {
+        "n": 380,
+        "brier": 0.24475709992191255,
+        "log_loss": 0.6825058703030059,
+        "ece_macro": 0.05535573653713124,
+        "archived_metrics_reproduced": true
+      },
+      "candidate": {
+        "n": 380,
+        "brier": 0.23759869899045033,
+        "log_loss": 0.6693983961250425,
+        "ece_macro": 0.0671326444089816,
+        "archived_metrics_reproduced": true
+      },
+      "delta_brier": -0.007158400931462222,
+      "descriptive_interval": [
+        -0.01970052796766951,
+        0.00538372610474503
+      ]
+    }
+  },
+  "all_archived_p0_metrics_reproduced": true,
+  "legacy_frozen_forecasts": {
+    "n": 380,
+    "brier": 0.29954492350784806,
+    "log_loss": 1.000909192890916,
+    "ece_macro": 0.06286720439434139
+  },
+  "primary_market": "TEAM_TOTAL:HOME_OVER:1.5",
+  "candidate_brier_improved_markets": 3,
+  "candidate_brier_worsened_markets": 4,
+  "promotion": "KEEP_SHADOW",
+  "new_forecasts_created": 0,
+  "models_fitted": 0,
+  "statistical_profitability_proven": false,
+  "monetary_permission": false,
+  "limitations": [
+    "Archived TEST has already been inspected; it cannot become unseen HOLDOUT.",
+    "Same historical fixture reused across markets is one observation, not seven.",
+    "Descriptive intervals do not adjust fixture dependence or multiple comparisons.",
+    "Legacy forecasts are a different model, not performance of the current default.",
+    "No new prematch prices, price baselines or current executable returns are supplied."
+  ]
+}

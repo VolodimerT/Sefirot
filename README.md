@@ -1,5 +1,12 @@
 # SEFIROT CORE 2.4.2 — актуальная рабочая сборка
 
+**Простой локальный режим без API:**
+`py -3 sefirot.py --db data/offline.sqlite work inbox --text`.
+Последовательные задания sports → seal → price/recheck → карточка → result,
+без копирования prediction hash. Повтор безопасен, ошибка задания даёт exit 2.
+[Порядок и формат файлов](docs/OFFLINE_WORKFLOW.md),
+[новая проверка ошибок, расчётов и эффективности](docs/SYSTEM_REVIEW_20261006.md).
+
 **Текущий этап — STABILITY RESET:** [карта архитектуры, матрица модулей и
 команд, migration и будущий accuracy protocol](docs/STABILITY_RESET_20261005.md).
 

@@ -13,7 +13,7 @@ from .repository import Repository
 from .service import Service
 from .markets import DEFAULT_POOL
 
-CORE_COMMANDS = ('build-info', 'api-health', 'data-session', 'capture', 'readiness',
+CORE_COMMANDS = ('build-info', 'work', 'data-session', 'capture', 'readiness',
                  'fetch-odds', 'decide', 'forward-settle', 'forward-scorecard', 'verify')
 
 
@@ -53,14 +53,16 @@ def main(argv=None):
         if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
     arguments=list(sys.argv[1:] if argv is None else argv)
     parser=argparse.ArgumentParser(description='SEFIROT CORE '+VERSION+' — prematch analysis and audit',
-        epilog='Основной путь: data-session → readiness → fetch-odds → decide → forward-settle → forward-scorecard. '
+        epilog='Без API: work ПАПКА --text (готовые локальные задания). '
+               'Сбор: data-session → readiness → fetch-odds → decide → forward-settle → forward-scorecard. '
                'Все research/compatibility команды: --labs --help. Это не денежный допуск.')
     parser.add_argument('--db',default='data/sefirot.sqlite')
     parser.add_argument('--policy',help='versioned experimental JSON policy')
     parser.add_argument('--labs',action='store_true',help='show all research and compatibility commands; does not grant permissions')
     sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('build-info',help='read exact canonical build/model/policy identity without a database or network')
-    worker=sub.add_parser('work');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
+    worker=sub.add_parser('work',help='process local jobs atomically without API calls');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
+    worker.add_argument('--text',action='store_true',help='concise Russian status and recorded decision cards')
     demo=sub.add_parser('demo',help='complete synthetic workflow in a temporary database')
     demo.add_argument('--text',action='store_true',help='concise Russian decision card')
     fixture=sub.add_parser('fixture',help='write synthetic JSON input files');fixture.add_argument('directory')
@@ -431,8 +433,16 @@ def main(argv=None):
             if not database.is_file():raise ValueError('ledger does not exist')
             repo=Repository(database,read_only=True)
             out={'integrity':repo.verify()}
+        elif args.command=='backtest':
+            from .backtesting import walk_forward
+            out=walk_forward(load(args.file),policy)
         else:
-            path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
+            read_only=(args.command in ('report','accounting','replay') or
+                       args.command=='compare' and not args.apply_rollback)
+            path=Path(args.db)
+            if read_only and not path.is_file():raise ValueError('ledger does not exist')
+            if not read_only:path.parent.mkdir(parents=True,exist_ok=True)
+            repo=Repository(path,read_only=read_only);service=Service(repo,policy);now=service.now()
             cmd=args.command
             if cmd in ('forward-plan','forward-capture','forward-settle'):
                 from .forward import create_plan,capture_plan,settle_plan
@@ -480,13 +490,15 @@ def main(argv=None):
                     if grid:payload['receipt'].update(grid_hash=grid['hash'],monetary_permission=False)
                     out=write_quotes(args.output,payload)
             elif cmd=='work':
-                from .worker import process_inbox
+                from .worker import process_inbox,render_inbox
                 import time as timer
                 while True:
                     out=process_inbox(service,args.directory)
                     if not args.watch:break
-                    print(json.dumps(out,ensure_ascii=False),flush=True)
+                    print(render_inbox(out) if args.text else json.dumps(out,ensure_ascii=False),flush=True)
                     timer.sleep(5)
+                if args.text:
+                    print(render_inbox(out));return 2 if any(r['status']=='ERROR' for r in out) else 0
             elif cmd=='capture':out=service.capture(load(args.sports),load(args.markets) if args.markets else DEFAULT_POOL,args.calibrator,parent=args.parent,reason=args.reason,goal_model=load(args.goal_model) if args.goal_model else None)
             elif cmd=='decide':out=service.decide(args.prediction_id,load(args.quotes),load(args.recheck),{'bankroll':args.bankroll,'peak':args.peak},now)
             elif cmd=='result':out=service.result(load(args.file))
@@ -495,9 +507,6 @@ def main(argv=None):
             elif cmd=='reserve':service.reserve(args.match_ids,args.role,now);out={'reserved':args.match_ids,'role':args.role}
             elif cmd=='calibrate':out=service.calibrate(now)
             elif cmd=='validate':out=service.validate(args.model_id,now)
-            elif cmd=='backtest':
-                from .backtesting import walk_forward
-                out=walk_forward(load(args.file),policy)
             elif cmd=='recover':out=service.recover(args.context_key,args.fix,args.validation_id,now)
             elif cmd=='compare':
                 from .feedback import compare_versions
@@ -514,7 +523,8 @@ def main(argv=None):
         else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
         return 2 if ((args.command=='api-health' and out['status'] not in ('API_READY','RESEARCH_API_READY'))
             or (args.command=='data-session' and out['status']=='COLLECTION_INCOMPLETE')
-            or (args.command=='verify' and not out['integrity'])) else 0
+            or (args.command=='verify' and not out['integrity'])
+            or (args.command=='work' and any(r['status']=='ERROR' for r in out))) else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:

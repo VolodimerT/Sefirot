@@ -52,6 +52,7 @@ class Repository:
         self.db=sqlite3.connect(target,timeout=10,isolation_level=None,uri=read_only)
         self.db.row_factory=sqlite3.Row
         self._record_digests={}
+        self._transaction_sequence=0
         if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
             self.db.close()
             raise ValueError('unsupported database version')
@@ -151,6 +152,16 @@ class Repository:
 
 
 class Transaction:
-    def __init__(self,repo): self.repo=repo
-    def __enter__(self): self.repo.db.execute('BEGIN IMMEDIATE');return self.repo
-    def __exit__(self,typ,value,tb): self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
+    def __init__(self,repo): self.repo=repo;self.savepoint=None
+    def __enter__(self):
+        if self.repo.db.in_transaction:
+            self.repo._transaction_sequence+=1
+            self.savepoint='sefirot_'+str(self.repo._transaction_sequence)
+            self.repo.db.execute('SAVEPOINT '+self.savepoint)
+        else:self.repo.db.execute('BEGIN IMMEDIATE')
+        return self.repo
+    def __exit__(self,typ,value,tb):
+        if self.savepoint:
+            if typ:self.repo.db.execute('ROLLBACK TO SAVEPOINT '+self.savepoint)
+            self.repo.db.execute('RELEASE SAVEPOINT '+self.savepoint)
+        else:self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
