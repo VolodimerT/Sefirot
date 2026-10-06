@@ -1,5 +1,6 @@
 """HTTPS through the ordinary runtime proxy; no redirects or credential logs."""
 import json
+import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -8,6 +9,9 @@ from .contracts import digest
 
 HOSTS = ('api.the-odds-api.com', 'v3.football.api-sports.io')
 MAX_RESPONSE = 4_000_000
+QUOTA_HEADERS = ('x-requests-remaining', 'x-requests-used', 'x-requests-last',
+                 'x-ratelimit-requests-remaining', 'x-ratelimit-requests-limit',
+                 'x-ratelimit-remaining', 'x-ratelimit-limit')
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -73,10 +77,11 @@ def request_json(host, path, params, headers, *, query_credential=None,
         if getheader is None and hasattr(response, 'headers'):
             getheader = response.headers.get
         if getheader:
-            receipt['quota'] = {key: getheader(key) for key in (
-                'x-requests-remaining', 'x-requests-used', 'x-requests-last',
-                'x-ratelimit-requests-remaining', 'x-ratelimit-requests-limit')
-                if getheader(key) is not None}
+            quota = {key: getheader(key) for key in QUOTA_HEADERS if getheader(key) is not None}
+            if any(not isinstance(value, str) or not re.fullmatch(r'[0-9]{1,12}', value)
+                   for value in quota.values()):
+                raise ValueError('provider quota header malformed')
+            receipt['quota'] = quota
         return {'data': value, 'receipt': receipt}
     except OSError:
         raise ValueError('provider network unavailable') from None

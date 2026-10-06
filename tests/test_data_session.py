@@ -181,6 +181,64 @@ class DataSessionTests(unittest.TestCase):
         self.get = get
         self.assertEqual(self.run_session()['request_attempts'], 1)
 
+    def test_empty_minute_window_stops_before_date_despite_available_daily_quota(self):
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '0', 'x-ratelimit-limit': '10'}
+            return out
+        self.get = get
+        report = self.run_session()
+        self.assertEqual(report['request_attempts'], 1)
+        self.assertEqual(report['received_packets'], 1)
+        self.assertGreater(report['quota_remaining_conservative'], 5)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertIn('PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED', report['blockers'])
+        self.assertFalse((self.directory/'research.sqlite').exists())
+
+    def test_minute_budget_stops_another_league_and_preserves_cohort(self):
+        self.targets[1]['league']['id'] = 10
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '2' if endpoint == 'status' else '1'}
+            return out
+        report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['planned_fixtures'], 2)
+        self.assertEqual(report['forecasts_created'], 1)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertEqual(report['history_queries'][1]['status'], 'PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED')
+
+    def test_larger_minute_header_does_not_refill_a_conservative_session_allowance(self):
+        self.targets[1]['league']['id'] = 10
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '2' if endpoint == 'status' else '99'}
+            return out
+        report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertEqual(report['history_queries'][1]['status'], 'PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED')
+
+    def test_invalid_minute_header_is_rejected_without_private_text(self):
+        original = self.get
+        for value in ('PRIVATE_SECRET', True, '-1 PRIVATE_SECRET', '١'):
+            with self.subTest(value=value):
+                self.directory = Path(self.temp.name)/('invalid-minute-'+str(len(self.calls)))
+                def get(endpoint, params):
+                    out = original(endpoint, params)
+                    out['receipt']['quota'] = {'x-ratelimit-remaining': value}
+                    return out
+                report = collect_session(self.directory,'2030-01-01',{9:'LOWER'},
+                    source_reliability=.95,getter=get,clock=lambda:self.clock)
+                self.assertEqual(report['request_attempts'], 1)
+                self.assertEqual(report['received_packets'], 0)
+                self.assertNotIn('PRIVATE_SECRET', json.dumps(report))
+
     def test_inactive_subscription_stops_without_fixture_calls(self):
         self.active = False
         report = self.run_session()
@@ -311,6 +369,22 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(report['planned_fixtures'],2)
         self.assertNotIn('PRIVATE_SECRET',json.dumps(report))
 
+    def test_camel_case_rate_limit_and_account_suspension_stop_other_leagues(self):
+        self.targets[1]['league']['id'] = 10
+        for index, (errors, reason) in enumerate([
+                ({'rateLimit':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'RATELIMIT':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'access':'Your account has been suspended PRIVATE_SECRET'},'PROVIDER_ACCOUNT_SUSPENDED')]):
+            with self.subTest(reason=reason):
+                self.directory = Path(self.temp.name)/('provider-stop-'+str(index))
+                self.history_failure = FootballRequestError(errors)
+                report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+                    source_reliability=.95,getter=self.get,clock=lambda:self.clock)
+                self.assertEqual(report['request_attempts'], 3)
+                self.assertEqual(report['planned_fixtures'], 2)
+                self.assertTrue(all(q['status']==reason for q in report['history_queries']))
+                self.assertNotIn('PRIVATE_SECRET', json.dumps(report))
+
 
 class GatewayTests(unittest.TestCase):
     def setUp(self):
@@ -371,6 +445,20 @@ class GatewayTests(unittest.TestCase):
         out=self.call(lambda w:w.update(quota={'x-ratelimit-requests-remaining':'5'}))
         self.assertEqual(out['receipt']['quota']['x-ratelimit-requests-remaining'],'5')
         validate_packet(out,stamp())
+
+    def test_gateway_preserves_minute_allowance_and_limit(self):
+        out=self.call(lambda w:w.update(quota={'x-ratelimit-remaining':'0','x-ratelimit-limit':'10'}))
+        self.assertEqual(out['receipt']['quota'], {'x-ratelimit-remaining':'0','x-ratelimit-limit':'10'})
+        validate_packet(out,stamp())
+
+    def test_gateway_rate_limit_and_suspension_have_typed_private_safe_reasons(self):
+        for errors, reason in (({'rateLimit':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'access':'provider account suspended PRIVATE_SECRET'},'PROVIDER_ACCOUNT_SUSPENDED'),
+                ({'access':'account is not suspended PRIVATE_SECRET'},'PROVIDER_ACCESS_DENIED')):
+            with self.subTest(reason=reason), self.assertRaises(FootballRequestError) as caught:
+                self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',provider_errors=errors),422)
+            self.assertEqual(caught.exception.code,reason)
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
 
     def test_gateway_rejects_malformed_or_unexpected_quota_without_echo(self):
         for quota in (None,[],{'token':'PRIVATE_SECRET'},

@@ -81,19 +81,24 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
             'Missing lineup/injury/coach/rotation/tactical facts remain missing',
             'Gateway receipts are local provenance, not provider signatures']}
     quota_remaining = None
+    minute_remaining = None
     stopped = None
     repo = None
 
     def fetch(endpoint, params):
-        nonlocal quota_remaining, stopped
+        nonlocal quota_remaining, minute_remaining, stopped
         if stopped or len(report['requests']) >= max_requests:
             return None, stopped or 'SESSION_REQUEST_BUDGET_EXHAUSTED'
         if quota_remaining is not None and quota_remaining <= quota_reserve:
             return None, 'DAILY_QUOTA_RESERVE_REACHED'
+        if minute_remaining is not None and minute_remaining <= 0:
+            return None, 'PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED'
         attempt = {'endpoint': endpoint, 'parameters': params, 'started_at': clock().isoformat()}
         report['requests'].append(attempt)
         if quota_remaining is not None:
             quota_remaining -= 1
+        if minute_remaining is not None:
+            minute_remaining -= 1
         try:
             packet = getter(endpoint, params)
             receipt = packet['receipt']
@@ -118,11 +123,18 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
                 remaining = int(header_remaining)
                 integer(remaining, 'provider remaining quota')
                 quota_remaining = remaining if quota_remaining is None else min(remaining, quota_remaining)
+            minute_header = receipt.get('quota', {}).get('x-ratelimit-remaining')
+            if minute_header is not None:
+                if not isinstance(minute_header, str) or not minute_header.isascii() or not minute_header.isdecimal():
+                    raise ValueError('provider minute quota malformed')
+                remaining = int(minute_header)
+                integer(remaining, 'provider minute quota')
+                minute_remaining = remaining if minute_remaining is None else min(remaining, minute_remaining)
         except (ValueError, OSError, KeyError, TypeError) as exc:
             reason = _reason(exc)
             attempt.update(status=reason, finished_at=clock().isoformat())
             if reason in ('PROVIDER_AUTH_FAILED', 'PROVIDER_QUOTA_EXHAUSTED',
-                          'PROVIDER_ACCESS_DENIED',
+                          'PROVIDER_ACCESS_DENIED', 'PROVIDER_ACCOUNT_SUSPENDED',
                           'PROVIDER_NETWORK_UNAVAILABLE', 'CREDENTIAL_MISSING_OR_INVALID'):
                 stopped = reason
             return None, reason
@@ -233,6 +245,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         report['received_packets'] = sum(r['status'] == 'RECEIVED' for r in report['requests'])
         report['network_requests_upper_bound'] = sum(r['status'] != 'CREDENTIAL_MISSING_OR_INVALID' for r in report['requests'])
         report['quota_remaining_conservative'] = quota_remaining
+        report['minute_remaining_conservative'] = minute_remaining
         report['blockers'] = sorted(set(report['blockers']))
         report['hash'] = digest(report)
         _write(root / 'REPORT.json', report)

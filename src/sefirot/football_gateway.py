@@ -10,7 +10,7 @@ from urllib.request import Request, build_opener
 from .contracts import digest, time
 from .credentials import credential
 from .football_provider import HOST, PARAMETERS, FootballRequestError, get
-from .provider_transport import MAX_RESPONSE, NoRedirect
+from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
 
 
 def transport_status():
@@ -91,9 +91,7 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
             'transport': 'SUPABASE_GATEWAY', 'upstream_received_at': wrapper['received_at']}
         if 'quota' in wrapper:
             quota = wrapper['quota']
-            allowed = {'x-requests-remaining', 'x-requests-used', 'x-requests-last',
-                       'x-ratelimit-requests-remaining', 'x-ratelimit-requests-limit'}
-            if (not isinstance(quota, dict) or set(quota) - allowed
+            if (not isinstance(quota, dict) or set(quota) - set(QUOTA_HEADERS)
                     or any(not isinstance(v, str) or not re.fullmatch(r'[0-9]{1,12}', v)
                            for v in quota.values())):
                 raise ValueError('sports gateway quota response malformed')

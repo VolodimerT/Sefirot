@@ -1,4 +1,5 @@
 """Sports-only API-Football source; missing sporting facts remain missing."""
+import re
 from .contracts import PROFILES, digest, integer, number, text, time
 from .credentials import credential
 from .provider_transport import ProviderConnection, request_json
@@ -21,9 +22,14 @@ class FootballRequestError(ValueError):
     def __init__(self, errors, receipt=None):
         keys = {str(k).lower() for k in errors} if isinstance(errors, dict) else set()
         words = str(errors).lower()
+        access = next((value for key, value in errors.items() if str(key).lower() == 'access'), None) if isinstance(errors, dict) else None
+        suspended = isinstance(access, str) and re.search(
+            r'\baccount\s+(?:(?:is|has been)\s+)?(?:(?:temporarily|permanently)\s+)?suspended\b',
+            access, re.IGNORECASE)
         self.code = ('SEASON_ACCESS_DENIED' if 'plan' in keys and 'season' in words else
-                     'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'rate_limit', 'rate limit'} else
+                     'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'ratelimit', 'rate_limit', 'rate limit'} else
                      'PROVIDER_AUTH_FAILED' if keys & {'token', 'key', 'api_key'} else
+                     'PROVIDER_ACCOUNT_SUSPENDED' if suspended else
                      'PROVIDER_ACCESS_DENIED' if 'access' in keys else
                      'PROVIDER_REJECTED_REQUEST')
         self.receipt = receipt

@@ -98,8 +98,15 @@ await test("status redacts account while preserving subscription and quota", asy
 await test("observed quota is preserved and malformed values fail closed", async () => {
   let s = setup({upstream: Response.json(fixtures, {headers: {"x-ratelimit-requests-remaining": "5"}})});
   assert.equal((await s.call()).body.quota["x-ratelimit-requests-remaining"], "5");
+  s = setup({upstream: Response.json(fixtures, {headers: {
+    "X-RateLimit-Remaining": "0", "X-RateLimit-Limit": "10"}})});
+  const minute = await s.call();
+  assert.equal(minute.body.quota["x-ratelimit-remaining"], "0");
+  assert.equal(minute.body.quota["x-ratelimit-limit"], "10");
   s = setup({upstream: Response.json(fixtures, {headers: {"x-ratelimit-requests-remaining": "-1 PRIVATE"}})});
   const out = await s.call(); assert.equal(out.status, 502); assert.equal(out.body.error, "INVALID_QUOTA_HEADER");
+  s = setup({upstream: Response.json(fixtures, {headers: {"x-ratelimit-remaining": "PRIVATE"}})});
+  assert.equal((await s.call()).body.error, "INVALID_QUOTA_HEADER");
 });
 await test("HTTP failure preserves code without upstream body", async () => {
   for (const code of [201, 302, 401, 403, 429]) {
@@ -110,11 +117,24 @@ await test("HTTP failure preserves code without upstream body", async () => {
 });
 await test("provider errors are classified without raw text", async () => {
   for (const [errors, expected] of [[{plan: "PRIVATE_TOKEN season blocked"}, "plan"],
-      [{requests: "PRIVATE_TOKEN"}, "requests"], [{token: "PRIVATE_TOKEN"}, "token"],
+      [{requests: "PRIVATE_TOKEN"}, "requests"], [{rateLimit: "PRIVATE_TOKEN"}, "requests"],
+      [{token: "PRIVATE_TOKEN"}, "token"],
       [{access: "PRIVATE_TOKEN"}, "access"],
       [{unknown: "PRIVATE_TOKEN"}, "request"]]) {
     const s = setup({upstream: Response.json({...fixtures, errors})}); const out = await s.call();
     assert.equal(out.status, 422); assert.deepEqual(Object.keys(out.body.provider_errors), [expected]);
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
+  }
+});
+await test("account suspension is explicit without copying private messages or negations", async () => {
+  for (const [text, suspended] of [["Your account has been suspended. PRIVATE_TOKEN", true],
+      ["Account temporarily suspended PRIVATE_TOKEN", true],
+      ["Your account is not suspended PRIVATE_TOKEN", false],
+      ["Account status unknown PRIVATE_TOKEN", false]]) {
+    const s = setup({upstream: Response.json({...fixtures, errors: {access: text}})});
+    const out = await s.call(); assert.equal(out.status, 422);
+    assert.equal(out.body.diagnostics.provider_account_state, suspended ? "ACCOUNT_SUSPENDED" : "NOT_ESTABLISHED");
+    assert.equal(out.body.provider_errors.access, suspended ? "provider account suspended" : "provider access denied");
     assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
   }
 });

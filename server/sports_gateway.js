@@ -14,7 +14,8 @@ const ALLOWED = {
   injuries: ["league", "season", "fixture", "team", "player", "date", "ids", "timezone"],
 };
 const QUOTA_HEADERS = ["x-requests-remaining", "x-requests-used", "x-requests-last",
-  "x-ratelimit-requests-remaining", "x-ratelimit-requests-limit"];
+  "x-ratelimit-requests-remaining", "x-ratelimit-requests-limit",
+  "x-ratelimit-remaining", "x-ratelimit-limit"];
 
 class GatewayError extends Error {
   constructor(code) { super(code); this.code = code; }
@@ -89,23 +90,30 @@ async function apiKey() {
   return value.trim();
 }
 
+function accountSuspended(errors) {
+  const access = Object.entries(errors).find(([key]) => key.toLowerCase() === "access")?.[1];
+  return typeof access === "string" &&
+    /\baccount\s+(?:(?:is|has been)\s+)?(?:(?:temporarily|permanently)\s+)?suspended\b/i.test(access);
+}
+
 function safeProviderErrors(errors) {
   const keys = Object.keys(errors).map(key => key.toLowerCase());
   if (keys.includes("plan") && String(errors.plan ?? "").toLowerCase().includes("season")) {
     return {plan: "season access denied"};
   }
-  if (keys.some(key => ["requests", "rate_limit", "rate limit"].includes(key))) {
+  if (keys.some(key => ["requests", "ratelimit", "rate_limit", "rate limit"].includes(key))) {
     return {requests: "provider quota exhausted"};
   }
   if (keys.some(key => ["token", "key", "api_key"].includes(key))) {
     return {token: "provider authentication rejected"};
   }
-  if (keys.includes("access")) return {access: "provider access denied"};
+  if (keys.includes("access")) return {access: accountSuspended(errors)
+    ? "provider account suspended" : "provider access denied"};
   return {request: "provider rejected request"};
 }
 
 function errorDiagnostics(errors) {
-  const known = ["plan", "requests", "rate_limit", "rate limit", "token", "key", "api_key",
+  const known = ["plan", "requests", "ratelimit", "rate_limit", "rate limit", "token", "key", "api_key",
     "message", "access", "ip", "account", "subscription", "endpoint"];
   const words = JSON.stringify(errors).toLowerCase();
   return {fields: [...new Set(Object.keys(errors).map(key =>
@@ -114,7 +122,8 @@ function errorDiagnostics(errors) {
     mentions_credential: /api.key|authentication|unauthorized|invalid.token/.test(words),
     mentions_quota: /quota|rate.limit|request.limit|too many requests/.test(words),
     mentions_subscription: /plan|subscription/.test(words),
-    mentions_inactivity: /expired|inactive|activation|activate/.test(words)};
+    mentions_inactivity: /expired|inactive|activation|activate/.test(words),
+    provider_account_state: accountSuspended(errors) ? "ACCOUNT_SUSPENDED" : "NOT_ESTABLISHED"};
 }
 
 Deno.serve(async req => {

@@ -1,5 +1,25 @@
 # SEFIROT: актуальная база разработки
 
+## Уточнение доступа и минутной квоты, 06.10.2026 16:18 UTC
+
+Та же ветка / PR #11, main не сливать; дополнительных агентов не создавать.
+См. docs/API_ACCESS_RECOVERY_20261006.md. Свежий единственный provider status
+подтвердил PROVIDER_ACCOUNT_SUSPENDED; исторические runner logs согласуются.
+Это сообщение поставщика, а не установленная причина приостановки.
+Обход/смену ключа/подписки не выполнять. Следующий sporting collection —
+после восстановления доступа владельцем, новая bounded заранее назначенная
+сессия. Старые REPORT/manifests/seals не переписывать под новый code hash.
+camel-case errors.rateLimit теперь quota failure; отдельный числовой
+x-ratelimit-remaining ограничивает минутные вызовы без auto retry/ожидания.
+Дневной reserve сохранён; quota не резервируется глобально между процессами.
+Server v9 побайтно сверён, временный auth удалён, исходный auth сохранён.
+Полный локальный release 527/527; Python aggregate исполняет 19 Node groups.
+Семь MODEL_MODULES и Policy неизменны. code_hash:
+01d895ab7e2a09143c0dc11262fa52313c98e88462301436e6014067221597c9.
+Server template SHA-256:
+5f019b238bf8423879002f2040c617aef5fe4de3e86f9e5447e1795f7397b8f1.
+Нижележащие 517/18, v6 и неустановленный account state — прошлые срезы.
+
 ## Проверенный шлюз и фактический отказ API, 06.10.2026
 
 Та же feature/stability-reset-20261005/PR #11, main не сливать.
