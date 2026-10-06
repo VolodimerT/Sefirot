@@ -24,6 +24,7 @@ class FootballRequestError(ValueError):
         self.code = ('SEASON_ACCESS_DENIED' if 'plan' in keys and 'season' in words else
                      'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'rate_limit', 'rate limit'} else
                      'PROVIDER_AUTH_FAILED' if keys & {'token', 'key', 'api_key'} else
+                     'PROVIDER_ACCESS_DENIED' if 'access' in keys else
                      'PROVIDER_REJECTED_REQUEST')
         self.receipt = receipt
         super().__init__('API-Football provider rejected request; HTTP 200 is not success: ' + self.code)

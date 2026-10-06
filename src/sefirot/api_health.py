@@ -20,7 +20,7 @@ def _failure(exc):
         result['reason'] = exc.code
     else:
         # Only match the providers' fixed public HTTP errors, never echo text.
-        match = re.fullmatch(r'(?:provider|odds provider|sports gateway) HTTP ([1-5][0-9]{2})(?:; PASS)?', str(exc))
+        match = re.fullmatch(r'(?:provider|odds provider|sports gateway(?: upstream)?) HTTP ([1-5][0-9]{2})(?:; PASS)?', str(exc))
         if match:
             result.update(reason='HTTP_ERROR', http_status=int(match.group(1)))
     return result

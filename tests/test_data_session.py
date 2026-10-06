@@ -299,6 +299,19 @@ class DataSessionTests(unittest.TestCase):
         with closing(Repository(self.directory/'research.sqlite',read_only=True)) as repo:self.assertTrue(repo.verify())
 
 
+    def test_provider_access_denial_stops_remaining_league_requests(self):
+        self.targets[1]['league']['id']=10
+        self.history_failure=FootballRequestError({'access':'PRIVATE_SECRET'})
+        report=collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=self.get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'],3)
+        self.assertEqual(len(report['history_queries']),2)
+        self.assertTrue(all(q['status']=='PROVIDER_ACCESS_DENIED' for q in report['history_queries']))
+        self.assertEqual(report['forecasts_created'],0)
+        self.assertEqual(report['planned_fixtures'],2)
+        self.assertNotIn('PRIVATE_SECRET',json.dumps(report))
+
+
 class GatewayTests(unittest.TestCase):
     def setUp(self):
         self.env=patch.dict(os.environ,{'SEFIROT_SPORTS_GATEWAY_URL':
@@ -346,6 +359,46 @@ class GatewayTests(unittest.TestCase):
             self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',provider_errors={'plan':'season PRIVATE_SECRET'}),422)
         self.assertEqual(error.exception.code,'SEASON_ACCESS_DENIED')
         self.assertNotIn('PRIVATE_SECRET',str(error.exception))
+
+    def test_http_200_provider_access_denial_is_not_reported_as_invalid_token(self):
+        with self.assertRaises(FootballRequestError) as error:
+            self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',
+                provider_errors={'access':'PRIVATE_SECRET'}),422)
+        self.assertEqual(error.exception.code,'PROVIDER_ACCESS_DENIED')
+        self.assertNotIn('PRIVATE_SECRET',str(error.exception))
+
+    def test_gateway_preserves_observed_quota_in_fixture_receipt(self):
+        out=self.call(lambda w:w.update(quota={'x-ratelimit-requests-remaining':'5'}))
+        self.assertEqual(out['receipt']['quota']['x-ratelimit-requests-remaining'],'5')
+        validate_packet(out,stamp())
+
+    def test_gateway_rejects_malformed_or_unexpected_quota_without_echo(self):
+        for quota in (None,[],{'token':'PRIVATE_SECRET'},
+                      {'x-ratelimit-requests-remaining':'-1 PRIVATE_SECRET'},
+                      {'x-ratelimit-requests-remaining':True}):
+            with self.subTest(quota=quota),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(quota=quota))
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
+
+    def test_gateway_upstream_http_codes_survive_outer_502(self):
+        from sefirot.data_session import _reason
+        from sefirot.api_health import _failure
+        for status,reason in ((401,'PROVIDER_AUTH_FAILED'),(403,'PROVIDER_AUTH_FAILED'),
+                             (429,'PROVIDER_QUOTA_EXHAUSTED')):
+            with self.subTest(status=status),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(ok=False,error='UPSTREAM_HTTP_ERROR',
+                    upstream_http_status=status,detail='PRIVATE_SECRET'),502)
+            self.assertEqual(_reason(caught.exception),reason)
+            self.assertEqual(_failure(caught.exception)['http_status'],status)
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
+
+    def test_gateway_timeout_and_network_failure_stop_collection(self):
+        from sefirot.data_session import _reason
+        for error in ('UPSTREAM_TIMEOUT','UPSTREAM_UNAVAILABLE'):
+            with self.subTest(error=error),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(ok=False,error=error,detail='PRIVATE_SECRET'),502)
+            self.assertEqual(_reason(caught.exception),'PROVIDER_NETWORK_UNAVAILABLE')
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
 
     def test_redirect_credentials_in_url_and_live_odds_endpoints_are_refused(self):
         urls=['http://kxqpwgwihtjmqlcxgfxp.supabase.co/functions/v1/sefirot-sports-gateway',

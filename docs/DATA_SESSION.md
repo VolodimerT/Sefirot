@@ -98,18 +98,29 @@ endpoint/params, sports_only и отсутствие execution permission. Recei
 
 ## Что проверено и что ещё блокирует практическую работу
 
-26 новых offline контрпримеров проверяют полный сквозной workflow,
+Исходные 26 offline контрпримеров проверяют полный сквозной workflow,
 пропуски, квоту, отсечение будущих/чужих данных, пересечение kickoff,
 сохранение seals при ошибке сетки, credentials и gateway provenance.
 Fictional test packets не объявляются реальными матчами или HOLDOUT.
 
-В этой рабочей среде реальный CLI запущен 05.10.2026 и завершился
+Историческая проверка 05.10.2026 завершилась
 CREDENTIAL_MISSING_OR_INVALID: provider key локально не установлен,
 runner token существующего gateway также не настроен. Верхняя граница
 сетевых запросов — 0; реальный новый прогноз не создан. Наличие provider
 key в Supabase Vault и существующего gateway подтверждено отдельно, но
 проверка их метаданных не является живым sporting API capture. Шлюз,
-секреты и облачная схема этим изменением не менялись.
+секреты и облачная схема тем изменением не менялись.
+
+Актуальная проверка 06.10.2026 15:31 UTC: после обновления серверного
+шлюза runner успешно авторизован, но API-Football вернул HTTP 200 с
+`errors.access`. Итог `PROVIDER_ACCESS_DENIED`, 1 status attempt,
+0 received packets/fixtures/forecasts. Коллектор прекращает новые запросы;
+ошибка доступа отличается от season/credential/quota. Шлюз теперь
+сохраняет только whitelisted numeric quota headers в receipt, outer HTTP
+502 не скрывает upstream 401/403/429. Сервер проверяет полную pagination
+и exact results count, ограничивает размеры и время, не возвращает account.
+Старый debug endpoint закрыт. Детали и пределы:
+[GATEWAY_COMPLETION_20261006.md](GATEWAY_COMPLETION_20261006.md).
 
 Составы, травмы, тренер, ротация и тактика остаются missing facts.
 Положительное покрытие истории не означает прохождение всех sports gates.

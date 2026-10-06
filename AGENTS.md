@@ -1,5 +1,30 @@
 # SEFIROT: актуальная база разработки
 
+## Проверенный шлюз и фактический отказ API, 06.10.2026
+
+Та же feature/stability-reset-20261005/PR #11, main не сливать.
+См. docs/GATEWAY_COMPLETION_20261006.md. server/sports_gateway.js —
+канонический source template с пустой DEPLOYED_AUTH: fail closed.
+При deployment приватно вставляются hashes прежнего runner credential;
+compiled auth config и provider key в Git не помещать. API key остаётся
+в существующем Vault/RPC, schema/подписка не менялись. Шлюз обновлён,
+старый sefirot-debug-football заменён на HTTP 410 без I/O. Временный
+credential проверки отозван, его файл удалён; исходный credential сохранён.
+16 KB input/RPC, 2 MB upstream, 3/9 s timeouts, без redirects; exact
+endpoint/params/count/paging, account redaction, numeric quota whitelist.
+HTTP 200 + errors.access -> PROVIDER_ACCESS_DENIED; collector прекращает
+последующие запросы. Не путать с неверным token/Free/expired: эти причины
+не подтверждены. 06.10 15:31 UTC: final data-session одной заранее
+объявленной cohort, 1 status attempt, 0 packets/fixtures/seals/forecasts.
+api-health отдельно подтвердил отказ. Stake/Odds в этой среде не настроены;
+исторический Stake 403 за 05.10 не считать свежей проверкой 06.10.
+Локальный release: 517/517, demo/replay/integrity; один Python aggregate
+исполняет 18 Node handler contract groups. CI явно ставит Node 22 во всех
+4 Windows/Ubuntu × Python 3.11/3.13 jobs; CI сверять на exact final head.
+Семь MODEL_MODULES/Policy прежние. Клиентский code_hash не включает JS
+server: его SHA-256 отдельно указан в completion doc. HOLDOUT не пройден.
+Нижележащие заявления «cloud не менялся» относятся к предыдущим срезам.
+
 ## Явная диагностика API, 06.10.2026
 
 Та же feature/stability-reset-20261005: см. docs/API_HEALTH_20261006.md.

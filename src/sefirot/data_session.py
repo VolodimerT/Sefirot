@@ -122,6 +122,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
             reason = _reason(exc)
             attempt.update(status=reason, finished_at=clock().isoformat())
             if reason in ('PROVIDER_AUTH_FAILED', 'PROVIDER_QUOTA_EXHAUSTED',
+                          'PROVIDER_ACCESS_DENIED',
                           'PROVIDER_NETWORK_UNAVAILABLE', 'CREDENTIAL_MISSING_OR_INVALID'):
                 stopped = reason
             return None, reason
