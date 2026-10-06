@@ -10,21 +10,32 @@ from sefirot.market_grid import create_grid
 from sefirot.markets import fair_odds
 
 BASE="https://www.fotmob.com/api/data/"; DATE="20261006"; SOURCE="fotmob-unofficial-research"
-TARGETS=[("Leek Town","Warrington Rylands")]
+TARGETS=[("Dartford","Ramsgate"),("Sportivo Ameliano","Rubio"),("Colombia","Peru")]
 TESTS=[
- {"label":"BTTS_YES","home":"Leek Town","market":{"kind":"BTTS","side":"YES"},"odds":1.59},
- {"label":"HOME_TT_OVER_1","home":"Leek Town","market":{"kind":"TEAM_TOTAL","side":"HOME_OVER","line":1.0},"odds":1.59},
- {"label":"HOME_TT_OVER_1_5","home":"Leek Town","market":{"kind":"TEAM_TOTAL","side":"HOME_OVER","line":1.5},"odds":2.37},
- {"label":"AWAY_TT_OVER_1","home":"Leek Town","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.0},"odds":1.36},
- {"label":"AWAY_TT_OVER_1_5","home":"Leek Town","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.5},"odds":1.96},
- {"label":"AWAY_WIN","home":"Leek Town","market":{"kind":"1X2","side":"AWAY"},"odds":2.09},
- {"label":"X2","home":"Leek Town","market":{"kind":"DOUBLE_CHANCE","side":"X2"},"odds":1.38},
- {"label":"TOTAL_OVER_2_5","home":"Leek Town","market":{"kind":"TOTAL","side":"OVER","line":2.5},"odds":1.70},
- {"label":"TOTAL_UNDER_2_5","home":"Leek Town","market":{"kind":"TOTAL","side":"UNDER","line":2.5},"odds":2.08},
- {"label":"TOTAL_OVER_3","home":"Leek Town","market":{"kind":"TOTAL","side":"OVER","line":3.0},"odds":2.14},
- {"label":"TOTAL_UNDER_3","home":"Leek Town","market":{"kind":"TOTAL","side":"UNDER","line":3.0},"odds":1.63},
- {"label":"TOTAL_OVER_3_5","home":"Leek Town","market":{"kind":"TOTAL","side":"OVER","line":3.5},"odds":2.68},
- {"label":"TOTAL_UNDER_3_5","home":"Leek Town","market":{"kind":"TOTAL","side":"UNDER","line":3.5},"odds":1.41}
+ {"label":"DART_RAMSGATE_UNDER_1_5","home":"Dartford","market":{"kind":"TEAM_TOTAL","side":"AWAY_UNDER","line":1.5},"odds":1.43},
+ {"label":"DART_RAMSGATE_OVER_1","home":"Dartford","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.0},"odds":1.74},
+ {"label":"DART_HOME_UNDER_1_5","home":"Dartford","market":{"kind":"TEAM_TOTAL","side":"HOME_UNDER","line":1.5},"odds":2.06},
+ {"label":"DART_BTTS_YES","home":"Dartford","market":{"kind":"BTTS","side":"YES"},"odds":1.56},
+ {"label":"DART_TOTAL_UNDER_2_5","home":"Dartford","market":{"kind":"TOTAL","side":"UNDER","line":2.5},"odds":2.23},
+ {"label":"DART_X2","home":"Dartford","market":{"kind":"DOUBLE_CHANCE","side":"X2"},"odds":1.96},
+ {"label":"DART_AWAY_WIN","home":"Dartford","market":{"kind":"1X2","side":"AWAY"},"odds":3.62},
+
+ {"label":"AMEL_RUBIO_OVER_1","home":"Sportivo Ameliano","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.0},"odds":1.97},
+ {"label":"AMEL_RUBIO_OVER_1_5","home":"Sportivo Ameliano","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.5},"odds":2.97},
+ {"label":"AMEL_HOME_UNDER_1_5","home":"Sportivo Ameliano","market":{"kind":"TEAM_TOTAL","side":"HOME_UNDER","line":1.5},"odds":1.56},
+ {"label":"AMEL_BTTS_YES","home":"Sportivo Ameliano","market":{"kind":"BTTS","side":"YES"},"odds":1.84},
+ {"label":"AMEL_TOTAL_OVER_2_5","home":"Sportivo Ameliano","market":{"kind":"TOTAL","side":"OVER","line":2.5},"odds":2.09},
+ {"label":"AMEL_TOTAL_UNDER_2_5","home":"Sportivo Ameliano","market":{"kind":"TOTAL","side":"UNDER","line":2.5},"odds":1.69},
+ {"label":"AMEL_X2","home":"Sportivo Ameliano","market":{"kind":"DOUBLE_CHANCE","side":"X2"},"odds":1.61},
+ {"label":"AMEL_AWAY_WIN","home":"Sportivo Ameliano","market":{"kind":"1X2","side":"AWAY"},"odds":3.20},
+
+ {"label":"COL_PERU_OVER_1","home":"Colombia","market":{"kind":"TEAM_TOTAL","side":"AWAY_OVER","line":1.0},"odds":4.70},
+ {"label":"COL_HOME_OVER_1_5","home":"Colombia","market":{"kind":"TEAM_TOTAL","side":"HOME_OVER","line":1.5},"odds":1.66},
+ {"label":"COL_BTTS_YES","home":"Colombia","market":{"kind":"BTTS","side":"YES"},"odds":2.41},
+ {"label":"COL_TOTAL_OVER_2_5","home":"Colombia","market":{"kind":"TOTAL","side":"OVER","line":2.5},"odds":2.07},
+ {"label":"COL_TOTAL_UNDER_2_5","home":"Colombia","market":{"kind":"TOTAL","side":"UNDER","line":2.5},"odds":1.75},
+ {"label":"COL_X2","home":"Colombia","market":{"kind":"DOUBLE_CHANCE","side":"X2"},"odds":2.95},
+ {"label":"COL_AWAY_WIN","home":"Colombia","market":{"kind":"1X2","side":"AWAY"},"odds":8.55}
 ]
 
 def utcnow(): return datetime.now(timezone.utc)
@@ -136,7 +147,7 @@ def worker():
     global RESULT
     try: RESULT=scan()
     except Exception as e: RESULT={"status":"ERROR","error":type(e).__name__+":"+str(e)}
-    print("SEFIROT_LEEK_WARRINGTON_SCAN="+json.dumps(RESULT,separators=(",",":"),ensure_ascii=True),flush=True)
+    print("SEFIROT_TRIPLE_SCAN="+json.dumps(RESULT,separators=(",",":"),ensure_ascii=True),flush=True)
 threading.Thread(target=worker,daemon=True).start()
 @app.get("/last")
 def last(): return jsonify(RESULT)
