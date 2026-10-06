@@ -1,5 +1,21 @@
 # SEFIROT: актуальная база разработки
 
+## Явная диагностика API, 06.10.2026
+
+Та же feature/stability-reset-20261005: см. docs/API_HEALTH_20261006.md.
+api-health --odds-provider stake выполняет один upcoming soccer catalogue
+request, до пяти events в output helper, без UserIdentity/рынков/цен.
+Наличие токена отдельно от HTTP 401/403/429 и fixed provider reasons.
+Missing credentials: 0 requests. RESEARCH_API_READY не admission;
+admission_ready/monetary_permission/execution_enabled=false. Default
+The Odds API сохранён. Import-time Stake probe и raw debug errors удалены;
+старые env flags не выполняют I/O и не открывают private messages.
+19 новых offline контрпримеров; полный локальный release 510 тестов,
+demo/replay/integrity успешны. MODEL_MODULES/Policy прежние, code_hash новый.
+Настроенный облачный CLI этим изменением ещё не запускался; исторический
+05.10 22:24 UTC Stake HTTP 403 не считать свежим статусом. Deployments
+и секреты не менять молча. Current CI проверять на новом exact head.
+
 ## Ограничение сценария по DAILY AUDIT, 05.10.2026
 
 Текущий head той же feature/stability-reset-20261005 продолжает STABILITY

@@ -8,6 +8,8 @@
 чата сам по себе не создаёт restriction; требуется sports inference с FACT support.
 Рабочая ветка — `feature/stability-reset-20261005`.
 Основной запуск `py -3 sefirot.py`; паспорт `py -3 sefirot.py build-info`.
+[`api-health --odds-provider stake`](docs/API_HEALTH_20261006.md) проверяет
+каталог явно и отличает наличие токена от HTTP 403; импорт не запускает сеть.
 В обычной справке 10 основных команд, полный список `--labs --help`.
 `data-session` по умолчанию собирает cohort и baseline seals; сетки 50/14
 включаются только `--research-grids`. Старые launcher-файлы по умолчанию

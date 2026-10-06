@@ -131,7 +131,8 @@ def main(argv=None):
     market_scope=fetch_odds.add_mutually_exclusive_group()
     market_scope.add_argument('--main-markets',action='store_true',help='request supported families in the sealed pool; quota depends on returned markets')
     market_scope.add_argument('--grid',help='frozen market-grid JSON; enables alternate main lines for research only')
-    health=sub.add_parser('api-health',help='check both API credentials and quotas without fetching prices')
+    health=sub.add_parser('api-health',help='check sports API and selected odds catalogue without prices')
+    health.add_argument('--odds-provider',choices=('the-odds-api','stake'),default='the-odds-api')
     health.add_argument('--output',help='save a credential-free connection report')
     collection=sub.add_parser('data-session',help='bounded sports API collection and full baseline cohort; optional research grids')
     collection.add_argument('--date',required=True);collection.add_argument('--directory',required=True)
@@ -223,7 +224,7 @@ def main(argv=None):
                  'monetary_permission':False,'execution_enabled':False}
         elif args.command=='api-health':
             from .api_health import check
-            out=check()
+            out=check(odds_provider=args.odds_provider)
             if args.output:
                 path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
                 with path.open('x',encoding='utf-8') as file:json.dump(out,file,ensure_ascii=False,indent=2,allow_nan=False)
@@ -511,7 +512,7 @@ def main(argv=None):
             from .decision_card import render_card
             print(render_card(out['decision_card']))
         else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
-        return 2 if ((args.command=='api-health' and out['status']!='API_READY')
+        return 2 if ((args.command=='api-health' and out['status'] not in ('API_READY','RESEARCH_API_READY'))
             or (args.command=='data-session' and out['status']=='COLLECTION_INCOMPLETE')
             or (args.command=='verify' and not out['integrity'])) else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:

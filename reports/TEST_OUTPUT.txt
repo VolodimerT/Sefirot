@@ -1,3 +1,22 @@
+test_auth_quota_and_network_reasons_are_distinct (test_api_health.ApiHealthTests.test_auth_quota_and_network_reasons_are_distinct) ... ok
+test_cli_access_failure_exits_two (test_api_health.ApiHealthTests.test_cli_access_failure_exits_two) ... ok
+test_cli_research_ready_exit_zero_saves_report_without_database (test_api_health.ApiHealthTests.test_cli_research_ready_exit_zero_saves_report_without_database) ... ok
+test_configured_token_with_403_is_failed_access_not_missing_credential (test_api_health.ApiHealthTests.test_configured_token_with_403_is_failed_access_not_missing_credential) ... ok
+test_default_odds_catalogue_compatibility_without_stake_request (test_api_health.ApiHealthTests.test_default_odds_catalogue_compatibility_without_stake_request) ... ok
+test_fixed_http_codes_survive_without_echoing_arbitrary_errors (test_api_health.ApiHealthTests.test_fixed_http_codes_survive_without_echoing_arbitrary_errors) ... ok
+test_football_provider_rejection_is_sanitized_and_classified (test_api_health.ApiHealthTests.test_football_provider_rejection_is_sanitized_and_classified) ... ok
+test_gateway_credential_can_work_without_local_football_key (test_api_health.ApiHealthTests.test_gateway_credential_can_work_without_local_football_key) ... ok
+test_invalid_provider_does_not_start_network_checks (test_api_health.ApiHealthTests.test_invalid_provider_does_not_start_network_checks) ... ok
+test_missing_credentials_do_not_issue_requests (test_api_health.ApiHealthTests.test_missing_credentials_do_not_issue_requests) ... ok
+test_selected_stake_checks_catalogue_only_and_never_grants_admission (test_api_health.ApiHealthTests.test_selected_stake_checks_catalogue_only_and_never_grants_admission) ... ok
+test_subscription_inactive_is_not_ready_even_when_catalogue_works (test_api_health.ApiHealthTests.test_subscription_inactive_is_not_ready_even_when_catalogue_works) ... ok
+test_catalogue_health_uses_one_bounded_query_no_identity_or_prices (test_api_health.StakeTransportDiagnosisTests.test_catalogue_health_uses_one_bounded_query_no_identity_or_prices) ... ok
+test_cold_import_ignores_old_boot_probe_flag_and_performs_no_io (test_api_health.StakeTransportDiagnosisTests.test_cold_import_ignores_old_boot_probe_flag_and_performs_no_io) ... ok
+test_graphql_error_messages_are_never_exposed (test_api_health.StakeTransportDiagnosisTests.test_graphql_error_messages_are_never_exposed) ... ok
+test_http_error_body_is_never_read_or_exposed_even_under_old_debug_flag (test_api_health.StakeTransportDiagnosisTests.test_http_error_body_is_never_read_or_exposed_even_under_old_debug_flag) ... ok
+test_network_invalid_json_and_invalid_response_are_sanitized (test_api_health.StakeTransportDiagnosisTests.test_network_invalid_json_and_invalid_response_are_sanitized) ... ok
+test_non_200_response_is_closed_and_classified (test_api_health.StakeTransportDiagnosisTests.test_non_200_response_is_closed_and_classified) ... ok
+test_oversized_response_fails_closed (test_api_health.StakeTransportDiagnosisTests.test_oversized_response_fails_closed) ... ok
 test_complete_analysis_seals_before_reading_market_and_passes (test_app.ApplicationTests.test_complete_analysis_seals_before_reading_market_and_passes) ... ok
 test_incomplete_history_never_requests_market (test_app.ApplicationTests.test_incomplete_history_never_requests_market) ... ok
 test_invalid_odds_leave_sealed_forecast_without_decision (test_app.ApplicationTests.test_invalid_odds_leave_sealed_forecast_without_decision) ... ok
@@ -493,6 +512,6 @@ test_graded_execution_uses_calibration_bounds_and_stake_caps (test_version_audit
 test_real_exposure_change_remains_a_block (test_version_audit_regressions.ExecutionConsistencyTests.test_real_exposure_change_remains_a_block) ... ok
 
 ----------------------------------------------------------------------
-Ran 491 tests in 41.799s
+Ran 510 tests in 40.939s
 
 OK

@@ -91,6 +91,10 @@ endpoint/params, sports_only и отсутствие execution permission. Recei
 сохраняет SUPABASE_GATEWAY transport и исходное время наблюдения upstream;
 это не цифровая подпись поставщика или независимый timestamp witness.
 `api-health` и `football-fetch` также поддерживают этот gateway.
+Для отдельной диагностики Stake используйте
+[`api-health --odds-provider stake`](API_HEALTH_20261006.md): один каталог,
+без аккаунта/цен, отдельные credential/HTTP reasons. RESEARCH_API_READY
+не подтверждает историю/квоту для collection и не даёт денежного допуска.
 
 ## Что проверено и что ещё блокирует практическую работу
 
