@@ -16,6 +16,19 @@ PARAMETERS = {
 }
 
 
+class FootballRequestError(ValueError):
+    """Fixed public reasons; upstream error text may contain private values."""
+    def __init__(self, errors, receipt=None):
+        keys = {str(k).lower() for k in errors} if isinstance(errors, dict) else set()
+        words = str(errors).lower()
+        self.code = ('SEASON_ACCESS_DENIED' if 'plan' in keys and 'season' in words else
+                     'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'rate_limit', 'rate limit'} else
+                     'PROVIDER_AUTH_FAILED' if keys & {'token', 'key', 'api_key'} else
+                     'PROVIDER_REJECTED_REQUEST')
+        self.receipt = receipt
+        super().__init__('API-Football provider rejected request; HTTP 200 is not success: ' + self.code)
+
+
 def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConnection):
     params = dict(params or {})
     if endpoint not in PARAMETERS or set(params) - PARAMETERS[endpoint]:
@@ -29,7 +42,7 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
     if not isinstance(data, dict) or 'errors' not in data or 'response' not in data:
         raise ValueError('API-Football response malformed')
     if data['errors']:
-        raise ValueError('API-Football provider rejected request; HTTP 200 is not success')
+        raise FootballRequestError(data['errors'], packet['receipt'])
     if endpoint != 'status':
         if not isinstance(data['response'], list) or data.get('results') != len(data['response']):
             raise ValueError('API-Football response count malformed')

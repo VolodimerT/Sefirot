@@ -3,11 +3,11 @@ import os
 from pathlib import Path
 import re
 
-NAMES = ('SEFIROT_ODDS_API_KEY', 'API_FOOTBALL_KEY')
+NAMES = ('SEFIROT_ODDS_API_KEY', 'API_FOOTBALL_KEY', 'STAKE_API_TOKEN')
 
 
 def credential(name, env_file=None):
-    if name not in NAMES:
+    if name not in (*NAMES, 'SEFIROT_SPORTS_GATEWAY_TOKEN'):
         raise ValueError('unsupported provider credential')
     value = os.environ.get(name)
     if value is None:
@@ -24,7 +24,7 @@ def credential(name, env_file=None):
                     continue
                 key, raw = line.split('=', 1)
                 key, raw = key.strip(), raw.strip()
-                if key not in NAMES:
+                if key not in (*NAMES, 'SEFIROT_SPORTS_GATEWAY_TOKEN'):
                     continue
                 if key in found:
                     raise ValueError('duplicate provider credential in env file')

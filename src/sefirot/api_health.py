@@ -1,13 +1,14 @@
 """Explicit API checks without odds, credential values or account identity."""
 from datetime import datetime, timezone
 from .credentials import credential_status
-from .football_provider import get, status_summary
+from .football_provider import status_summary
+from .football_gateway import get_sports as get, transport_status
 from .odds_provider import sports_catalogue
 
 
 def check():
     result = {'checked_at':datetime.now(timezone.utc).isoformat(),'credentials':credential_status(),
-              'providers':{},'execution_enabled':False}
+              'providers':{},'football_transport':transport_status(),'execution_enabled':False}
     try:
         football = status_summary(get('status'))
         result['providers']['api_football'] = {

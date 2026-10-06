@@ -1,5 +1,113 @@
 # SEFIROT — продолжение разработки
 
+## Единый API-сбор, 05.10.2026
+
+Изолированная feature/api-data-session-20261005 включает Stake snapshot
+2f9aa2a, CLI stake-snapshot и data-session. Документация: DATA_SESSION.md. Один запуск
+фиксирует весь CALIBRATION cohort до истории/forecast, ограничивает квоту,
+собирает историю один раз per league/season и создаёт 50 main/14 goal Builder
+research contracts на каждый пригодный prematch seal. Пропуски остаются
+в знаменателе. api-health и football-fetch поддерживают существующий gateway.
+26 новых контрпримеров; 465 локальных тестов и release прошли;
+CI сверять на опубликованном head.
+code_hash: 415d924a4ab684df65dbdd829201dd5e5c0e83bdf5b55ad830998acabcfb04b6.
+model_hash прежний. В этом runtime local/provider key и gateway runner
+token не настроены: нового живого API-capture нет. Vault key и существующий
+gateway подтверждены только метаданными, cloud не менялся. Stake источник
+сохранён; интеграция в параллельную feature/data-session-audit-20261004
+только fast-forward при сверенном актуальном head, без force. Main, monetary approval и HOLDOUT не выполнены.
+
+## Сравнительный обзор и forward-scorecard, 05.10.2026
+
+Первый шаг после обзора: read-only forward-scorecard всей заранее
+назначенной API-выборки. Original raw/base, reliability bins и слабые
+neutral/frozen-history ориентиры, пропуски в знаменателе; рынок БК
+не подменяется baseline. Старые CLI-only builds можно читать при
+совместимом model_hash, но нельзя пересчитывать/переподписывать seals.
+См. docs/DEVELOPMENT_REVIEW_20261005.md и docs/FORWARD_SCORECARD.md.
+22 новых теста; всего 431, точный release/CI сверять на текущем head.
+code_hash: eb9031299936744cf2b3faa809949bce42c584a466fac4da4c0ea4f71bdf18de.
+model_hash прежний. Реальная сохранённая выборка: 0/17 scored,
+17 последних INSUFFICIENT_HISTORY. Никакой новый holdout/approval,
+main merge или вероятность малых/Builder markets не заявлены.
+
+
+## Новый аудит Builder, 05.10.2026
+
+Добавлены builder-grid/compare-builder: 14 заранее фиксированных
+push-free голевых сочетаний, совместная raw вероятность по клеткам
+BASELINE_V1, history/rate sensitivity; совместная API-цена не
+подменяется произведением цен одиночек. small-market-review проверяет
+full-time API статистику, непересекающиеся long/recent, shrink,
+venue/outlier и allowed baseline следующего соперника.
+Все новые режимы D/stake=0, вероятность малых линий пока не моделируется.
+ticket-audit добавляет категории MAIN/SMALL/BUILDER/UNMAPPED.
+См. docs/BUILDER_AUDIT_20261005.md. Локально 409 тестов и release gate.
+code_hash: e8af27bcbe6d5d1e4508f0529a41623282bcd1da88780f6eb906749731d46499;
+model_hash прежний. Старые seals/планы не переподписывать. Main не сливать.
+Личные билеты/API-пакеты в Git не помещать. CI сверять на новом head.
+
+
+## Сбор будущей API-выборки, 05.10.2026
+
+Добавлены forward-plan/capture/settle/status. Документация:
+`FORWARD_COLLECTION.md`. 382 локальных теста и release gate прошли;
+CI сверять на новом head. code_hash:
+`28d99e80359ff84329e918ba76a96357384c0b8f138b4be7572f6edf9941dd03`.
+model_hash прежний. Коллектор BASELINE_V1, фиксированные семь DEFAULT_POOL
+контрактов, research ledger без production routes. HOLDOUT только после
+frozen nonsynthetic calibrator, без fit_ids overlap; план не сертификат.
+Реальный API на 5 октября: 99 NS, 17 заранее зарезервированных CALIBRATION,
+17 INSUFFICIENT_HISTORY, 0 seals/results. Свежая история 2026 отклонена Free;
+Odds API key отсутствует в проверенных конфигурациях. Никаких новых approvals,
+LIVE или main merge. Частные API packets/SQLite не добавлять в Git.
+
+## Продолжение по аудитам 02–03 октября, 04.10.2026
+
+Добавлены `goal-robustness` и `compare-robustness`: фиксированные raw-пробы
+удаления крупнейшего target-выброса и ограничения недавних всплесков,
+сравнение всех 50 контрактов с API-квитанцией, D/stake=0. Карточка,
+readiness и session показывают паспорт сборки, стадии и очередь действий.
+Документация: `docs/AUDIT_FOLLOWUP_20261004.md`. 361 локальный тест и
+release gate прошли; удалённый CI сверять на новом head.
+code_hash: `95188a425b59470f8aef3030e977aa994361a8722705c4dfb1fd436d002e40ac`;
+model_hash прежний. BASELINE_V1/STRICT и денежные caps не изменены.
+Контрфактические пробы не переписывают спортивные факты или исходный seal,
+не являются обученной моделью, доверительным интервалом или денежным допуском.
+
+## Последнее продолжение 04.10.2026: практические функции
+
+`feature/data-session-audit-20261004` продолжает `d665237`. Добавлены
+`football-archive`, `football-from-archive`, `session`, `ticket-audit`;
+контракты и команды — `OPERATIONS_UPGRADE.md`. 343 локальных теста и
+release gate прошли. Три реальных API research seals, групповая готовность
+и сетка 50 контрактов проверены на уже полученном спортивном ответе;
+все три матча остаются BLOCKED_BEFORE_PRICE. Денежного допуска нет.
+code_hash `718c88f2e6073aca9a532f90a436af5bf884a6e002e25c59438c4fa00fd4a007`,
+model_hash прежний. Архив не выдумывает составы/контекст или свежую историю.
+Личные билеты сохраняются отдельно от Git. Обновление опубликовано в
+`feature/data-session-audit-20261004`; черновик PR #9 — к `core242-version-audit`.
+На `c4d5fcf` все 343 теста и полный demo прошли на Windows/Ubuntu с Python
+3.11/3.13. Ошибка GitHub connector 403 устранена 04.10.2026: приложение
+установлено на аккаунт владельца только для `Sefirot`; реальная запись
+проверена обновлением этой документации. CI сверять на последнем коммите.
+Реальный API-Football подключён 04.10; история требуемого сезона ограничена
+Free, The Odds API не подключён. Старое описание отсутствия обоих ключей
+ниже фиксирует состояние предыдущего среза, а не последней проверки.
+
+## Локальный кандидат 04.10.2026
+
+Расширение основных API-рынков и фиксированная исследовательская сетка
+описаны в `MAIN_MARKET_EXPANSION.md`. База — оптимизированный `cb07ebb`;
+feature-ветка `feature/main-market-expansion-20261004`. 314 локальных тестов
+и release gate прошли; code_hash
+`0aa60458958310628f3fbbd6e0523c03e90e16bb97f984a3d134a4320a93f290`.
+model_hash прежний `46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617`.
+Денежные правила не расширены. Промежуточный пакет включён в рабочую ветку
+`feature/data-session-audit-20261004`; отдельная исходная ветка локальная.
+На момент этого раннего среза запись GitHub connection возвращала 403 и ключи отсутствовали;
+актуальный sports API статус указан выше. Получение коэффициентов не проверено.
+
 ## Актуальный срез 03.10.2026: CORE 2.4.2
 
 Текущая рабочая сборка включает оптимизацию 03.10.2026 без нового номера
