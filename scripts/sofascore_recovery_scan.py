@@ -260,7 +260,13 @@ def worker():
     global RESULT
     try:RESULT=scan()
     except Exception as e:RESULT={"status":"ERROR","error":type(e).__name__+":"+str(e)}
-    print("SEFIROT_FOTMOB_FULL="+json.dumps(RESULT,separators=(",",":"),ensure_ascii=True),flush=True)
+    print("SEFIROT_FOTMOB_FULL="+json.dumps({"status":RESULT.get("status"),"coverage":RESULT.get("coverage")},separators=(",",":"),ensure_ascii=True),flush=True)
+    for row in RESULT.get("matches",[]):
+        compact={k:row.get(k) for k in ("label","status","fixture","history_n","rates","team_games","effective_games","score_scenarios","issues","user_forecast","user_evaluation","small")}
+        compact["best_big"]=(row.get("best_big") or [])[:6]
+        compact["worst_big"]=(row.get("worst_big") or [])[:4]
+        compact["top_builders"]=(row.get("top_builders") or [])[:4]
+        print("SEFIROT_MATCH_SUMMARY="+json.dumps(compact,separators=(",",":"),ensure_ascii=True),flush=True)
 threading.Thread(target=worker,daemon=True).start()
 @app.get("/health")
 def health():return jsonify({"ok":True,"status":RESULT.get("status"),"matches":len(RESULT.get("matches",[]))})
