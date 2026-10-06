@@ -118,7 +118,7 @@ def rs(row):
             "entry3":round(max(entry_threshold(x,.03) for x in stress if x[0]>0),3),
             "entry5":round(max(entry_threshold(x,.05) for x in stress if x[0]>0),3),
             "selection_status":row["selection_status"],
-            "loss_scores":[{"score":f"{x['home']}:{x['away']}","p":round(x["p"],4)}
+            "loss_scores":[{"score":f"{x['home']}:{x['away']}","p":round(float(x.get("probability",x.get("p",0.0))),4)}
                            for x in row["death_test"]["top_score_losses"][:4]]}
 
 def grid_summary(grid):
