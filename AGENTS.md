@@ -9,6 +9,7 @@ API по указанию пользователя отложен. Cloud/keys н
 карточка, named prediction_job_id → CAPTURE, прежний default main pool.
 Файл quotes открывать после seal; timestamps не переписывать. Action +
 jobs receipt + audit коммитятся одной transaction с nested savepoints.
+Busy COMMIT -> rollback всей pending transaction, затем безопасный retry.
 ERROR job -> exit 2; PASS решения остаётся нормальным результатом обработки.
 Новые jobs receipts имеют RECORD binding; старые не переписывать.
 report/accounting/replay/compare без rollback — только существующая ro БД;
@@ -17,9 +18,9 @@ backtest standalone. Обычных команд всё ещё 10: work вмес
 Модель/Policy прежние; math tests не доказывают forecast superiority.
 Frozen effectiveness audit воспроизвёл 380 просмотренных historical TEST:
 SoS кандидат 3/7 лучше, 4/7 хуже; KEEP_SHADOW. Не refit по этому TEST.
-Локальный полный release 547/547; replay_matches/integrity=true. Проверки
+Локальный полный release 548/548; replay_matches/integrity=true. Проверки
 Node handler не skipped. code_hash:
-a323f2954f51097dd5619fe449b51b03faef6c5e8d74925d3dd02bbc6d7135c2.
+70aea1f55fbed4be9ef7bf10cbe3dbc627fa82debedea0787db3e2542d384b69.
 CI сверять на конечном опубликованном head; API-срезы ниже
 исторические. Новый server key проверен 06.10 23:08 Киев, по-прежнему
 ACCOUNT_SUSPENDED; последнее server v11. Повторять API в этом этапе не надо.

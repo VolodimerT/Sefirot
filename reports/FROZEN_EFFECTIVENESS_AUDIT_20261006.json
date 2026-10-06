@@ -1,6 +1,6 @@
 {
   "schema": "frozen-effectiveness-audit-v1",
-  "generated_at": "2026-10-06T20:29:00.592887+00:00",
+  "generated_at": "2026-10-06T20:39:00.096686+00:00",
   "scope": "HISTORICAL_ALREADY_VIEWED_NOT_NEW_HOLDOUT",
   "fixtures": 380,
   "sources": {
@@ -8,7 +8,7 @@
     "archive_code_hash": "65c91e114448f0cfffbcd6b94a48cb38060182bf0718ef4622e0861cc72a5a9a",
     "legacy_file_sha256": "f7dafbd50f5ed001627091690845f4560f8685999ef70b5c277ed265055e4e32"
   },
-  "auditing_code_hash": "a323f2954f51097dd5619fe449b51b03faef6c5e8d74925d3dd02bbc6d7135c2",
+  "auditing_code_hash": "70aea1f55fbed4be9ef7bf10cbe3dbc627fa82debedea0787db3e2542d384b69",
   "auditing_model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "markets": {
     "1X2:HOME": {

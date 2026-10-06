@@ -51,6 +51,21 @@ class AtomicInboxTests(unittest.TestCase):
         self.assertEqual(process_inbox(self.service,self.inbox)[0]['status'],'DONE')
         self.assertEqual(process_inbox(self.service,self.inbox)[0]['status'],'ALREADY_PROCESSED')
         self.assertEqual(len(self.repo.all('predictions')),1);self.assertTrue(self.repo.verify())
+    def test_busy_commit_rolls_back_and_retry_does_not_reuse_pending_receipt(self):
+        self.job('01-capture','CAPTURE',{'sports':self.case['sports']})
+        self.repo.db.execute('PRAGMA busy_timeout=1')
+        with closing(sqlite3.connect(self.root/'ledger.sqlite',isolation_level=None)) as reader:
+            reader.execute('BEGIN');reader.execute('SELECT count(*) FROM audit_logs').fetchone()
+            failed=process_inbox(self.service,self.inbox)
+            self.assertEqual(failed[0]['status'],'ERROR')
+            self.assertFalse(self.repo.db.in_transaction)
+            for table in ('predictions','matches','teams','model_versions','jobs'):
+                self.assertEqual(self.repo.all(table),[])
+            self.assertEqual(self.repo.db.execute('SELECT count(*) FROM audit_logs').fetchone()[0],0)
+            reader.execute('ROLLBACK')
+        self.assertEqual(process_inbox(self.service,self.inbox)[0]['status'],'DONE')
+        self.assertEqual(process_inbox(self.service,self.inbox)[0]['status'],'ALREADY_PROCESSED')
+        self.assertFalse(self.repo.db.in_transaction);self.assertTrue(self.repo.verify())
     def test_decision_quotes_and_receipt_rollback_together(self):
         self.capture();self.decision();before=self.repo.db.execute('SELECT count(*) FROM audit_logs').fetchone()[0]
         with self.fail_receipt():self.assertEqual(process_inbox(self.service,self.inbox)[1]['status'],'ERROR')

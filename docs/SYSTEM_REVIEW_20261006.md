@@ -26,6 +26,8 @@
    мог оставить действие без receipt. Теперь одна внешняя транзакция
    включает действие, receipt и audit; внутренние транзакции — savepoints.
    Проверены rollback CAPTURE/DECIDE/RESULT/CLOSING, вложенный rollback и retry.
+   Busy COMMIT при втором SQLite reader также откатывается: pending записи
+   не выдаются за уже сохранённое задание.
 3. Новые receipts jobs получили content-bound audit. Подмена receipt
    блокирует очередь. Старые receipts сохраняют прежнюю область доказательства.
 4. Просмотр `accounting/report/replay/compare` мог создать пустой журнал
@@ -64,17 +66,17 @@ closed-form BTTS/тоталы, complementary contracts с PUSH, 200 fair-price/E
 
 Синтетический benchmark: Linux/Python 3.12, три повтора, 0/200/1000
 несвязанных исторических матчей; seed вне timed regions. Расчёт семи рынков
-около 22 ms до / 26 ms после. Context при 1000 fixtures около 331 / 305 ms.
+около 22 ms до / 24.8 ms после. Context при 1000 fixtures около 331 / 301.9 ms.
 Это небольшое измерение с шумом; ускорение не заявляется. Probabilities
 hash и все semantic results до/после совпали. Модель и Policy не менялись.
-Полный локальный release: **547/547 тестов**, из них 20 новых проверок
+Полный локальный release: **548/548 тестов**, из них 21 новых проверок
 офлайн-сбоев и независимой математики. Существующий Python aggregate
 выполнил 19 Node handler contract groups без skip. Demo/replay/integrity
 успешны; синтетический backtest — 12 fixtures / 84 market scores, отдельный
 settlement audit — 49 контрактных случаев. Они не являются empirical holdout.
 CI сверять по конечному опубликованному head.
 
-- code_hash: `a323f2954f51097dd5619fe449b51b03faef6c5e8d74925d3dd02bbc6d7135c2`;
+- code_hash: `70aea1f55fbed4be9ef7bf10cbe3dbc627fa82debedea0787db3e2542d384b69`;
 - model_hash: `46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617`;
 - policy_hash: `5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9`.
 

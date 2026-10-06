@@ -357,6 +357,7 @@ test_network_errors_and_redirect_never_expose_secret (test_odds_provider.OddsPro
 test_real_response_shape_and_credential_from_environment (test_odds_provider.OddsProviderTests.test_real_response_shape_and_credential_from_environment) ... ok
 test_same_event_two_books_never_mix (test_odds_provider.OddsProviderTests.test_same_event_two_books_never_mix) ... ok
 test_wrong_fixture_and_no_guessing_aliases (test_odds_provider.OddsProviderTests.test_wrong_fixture_and_no_guessing_aliases) ... ok
+test_busy_commit_rolls_back_and_retry_does_not_reuse_pending_receipt (test_offline_workflow.AtomicInboxTests.test_busy_commit_rolls_back_and_retry_does_not_reuse_pending_receipt) ... ok
 test_capture_and_receipt_rollback_together_then_retry_once (test_offline_workflow.AtomicInboxTests.test_capture_and_receipt_rollback_together_then_retry_once) ... ok
 test_changed_job_id_is_rejected_before_action (test_offline_workflow.AtomicInboxTests.test_changed_job_id_is_rejected_before_action) ... ok
 test_closing_and_receipt_rollback_together (test_offline_workflow.AtomicInboxTests.test_closing_and_receipt_rollback_together) ... ok
@@ -549,6 +550,6 @@ test_graded_execution_uses_calibration_bounds_and_stake_caps (test_version_audit
 test_real_exposure_change_remains_a_block (test_version_audit_regressions.ExecutionConsistencyTests.test_real_exposure_change_remains_a_block) ... ok
 
 ----------------------------------------------------------------------
-Ran 547 tests in 45.103s
+Ran 548 tests in 42.779s
 
 OK

@@ -164,4 +164,10 @@ class Transaction:
         if self.savepoint:
             if typ:self.repo.db.execute('ROLLBACK TO SAVEPOINT '+self.savepoint)
             self.repo.db.execute('RELEASE SAVEPOINT '+self.savepoint)
-        else:self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
+        elif typ:self.repo.db.execute('ROLLBACK')
+        else:
+            try:self.repo.db.execute('COMMIT')
+            except sqlite3.Error:
+                # A busy COMMIT keeps SQLite's transaction open. Roll it back
+                # so the next job cannot mistake pending rows for durable ones.
+                self.repo.db.rollback();raise
