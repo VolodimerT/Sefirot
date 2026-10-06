@@ -16,9 +16,13 @@ BASE="https://www.fotmob.com/api/data/"
 DATE="20261006"
 SOURCE="fotmob-unofficial-research"
 POOL=[
- {"kind":"1X2","side":"HOME"},{"kind":"1X2","side":"DRAW"},{"kind":"1X2","side":"AWAY"},
- {"kind":"TOTAL","side":"OVER","line":2.5},{"kind":"TOTAL","side":"UNDER","line":2.5},
- {"kind":"BTTS","side":"YES"},{"kind":"BTTS","side":"NO"},
+ {"kind":"1X2","side":"HOME"},
+ {"kind":"DOUBLE_CHANCE","side":"1X"},
+ {"kind":"DNB","side":"HOME"},
+ {"kind":"HANDICAP","side":"HOME","line":-0.5},
+ {"kind":"TOTAL","side":"OVER","line":2.5},
+ {"kind":"BTTS","side":"YES"},
+ {"kind":"TEAM_TOTAL","side":"HOME_OVER","line":1.5},
 ]
 TARGETS=[
  ("2 Skjetten - Kongsvinger 2",5144585,{"kind":"HANDICAP","side":"HOME","line":-1.0}),
