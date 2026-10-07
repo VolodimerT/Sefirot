@@ -1,5 +1,30 @@
 # SEFIROT: актуальная база разработки
 
+## Новый аудит: вероятность и registry, 07.10.2026
+
+Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
+дополнительных агентов не создавать. API всё ещё на паузе, keys/cloud
+не менять. См. docs/AUDIT_FOLLOWUP_20261007.md и десять задач в матрице.
+Исправлен corroboration на ровно .10 и extreme на .20 с машинным roundoff;
+существующие Policy thresholds сохранены. Trust disclosure — existing
+gate proof, score=null, не эмпирическая accuracy/новый денежный допуск.
+Search review — один original sealed pool; внешние просмотры неизвестны.
+Raw P(home/away>=3/4)/under loss — projection того же score mass, не новый
+ceiling model или veto. Narrative/causality не выводить из score branches.
+Forward scorecard хранит все original prematch decisions, missing ≠ PASS,
+flat reliability exact profile/contract/line/bin. CLV selection единый
+observed/received/digest; missing close в coverage, same-book raw ratio
+не считать sharp no-vig edge. Archived records/seals не переписывать.
+Семь MODEL_MODULES/BASELINE_V1/STRICT и Policy побайтно прежние; обычных
+команд 10, `work inbox --text` остаётся простым file workflow, web UI нет.
+Полный локальный release 578/578, 30 новых контрпримеров, replay/integrity
+true; Node aggregate исполняет все 19 групп. CI сверять на exact final
+head. code_hash: c6301d4f8dbaedb62baf1827283d9e72850fed27e72514edffe614a010e29513.
+Numeric trust weights, .15 veto, search penalty, causal engine, Dixon–Coles
+и независимый prospective model holdout ещё не проверены/не внедрены.
+Новые программные тесты не повышают оценку качества футбольной модели.
+Нижние разделы — исторические срезы.
+
 ## Продолжение системы без API, 06.10.2026
 
 API по указанию пользователя отложен. Cloud/keys не трогать в этом этапе.

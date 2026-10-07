@@ -163,6 +163,10 @@ class LearnedThresholdTests(unittest.TestCase):
 def graded_case(stress_win=.46,*,class_passed=True):
     policy=replace(Policy(),stress_mode='GRADED')
     case=example(NOW);case['sports']['synthetic']=False
+    # The controlled .6 versus .5 boundary needs two independent FACT groups,
+    # just as a wider discrepancy does; these are fictional test inputs.
+    case['recheck']['evidence'] += [{**e,'id':e['id']+'-independent','source_id':'statistics'}
+        for e in case['recheck']['evidence'] if e['key'] in ('lineup','injuries','tactics')]
     p=prepare(case['sports'],[DEFAULT_POOL[0]],policy);p['sealed_at']=NOW.isoformat();p['model_id']='controlled'
     c=p['candidates'][0]
     c.update(base=[.6,0.,.4],low=[.4,0.,.4],high=[.6,0.,.6],calibration='CALIBRATED_BIN',calibration_n=500,

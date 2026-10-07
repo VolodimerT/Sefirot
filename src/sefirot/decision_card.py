@@ -1,6 +1,7 @@
 """Arbiter presentation of sealed decisions; no model, veto or betting authority."""
 from .probability import price_requirements
 from .action_plan import passport, action_plan, PRICE_CODES
+from .probability_review import probability_trust,divergence_review,search_review
 
 
 RECALCULATE_CODES={'PROBABILITY_RECALCULATION_REQUIRED','SPORTS_CHANGED_RECALCULATE',
@@ -107,6 +108,8 @@ def build_card(decision,prediction,policy):
                      'calibration':c['calibration'],'fair_odds':c.get('fair_odds'),
                      'ev':c.get('ev'),'ev_low':c.get('ev_low'),
                      'edge':c.get('edge'),'market_reference':c.get('market_reference'),
+                     'probability_trust':probability_trust(prediction,c,decision),
+                     'divergence_review':divergence_review(c,policy),
                      'stress_ev_min':c.get('stress_ev_min'),
                      'stress_class':c.get('stress_grade',{}).get('class'),
                      'price_requirements':thresholds,
@@ -115,9 +118,13 @@ def build_card(decision,prediction,policy):
                      'tactical_fit':{'scenario':prediction['scenario']['type'],
                                      'fact_id':prediction['witness']['resolved'].get('tactics',{}).get('id'),
                                      'status':'RECHECK_REQUIRED' if status in ('RECALCULATE','NOT_EVALUABLE') else 'SPORTS_GATES_CHECKED'},
-                     'public_trap':c.get('public_trap'),
+                     'public_trap':{**(c.get('public_trap') or {}),
+                                    'narrative_dependence':'NOT_QUANTIFIED',
+                                    'popularity_data':'NOT_SUPPLIED'},
                      'death_test':{'loss_branches':c['counterexamples'],
-                                   'stress_ev_min':c.get('stress_ev_min')},
+                                   'stress_ev_min':c.get('stress_ev_min'),
+                                   'under_ceiling':c.get('under_ceiling'),
+                                   'causal_status':'NOT_INFERRED_FROM_SCORE_BRANCHES'},
                      'admission_permission':decision['decision']=='BET' and c['key']==decision['selected_market']})
     ranked=sorted([c for c in decision['candidates'] if c.get('ev') is not None
                    and not any(i['code']=='SCENARIO_MARKET_CONFLICT' for i in c['issues'])],key=candidate_rank)
@@ -157,6 +164,9 @@ def build_card(decision,prediction,policy):
             'selected_market':decision['selected_market'] if decision['decision']=='BET' else None,
             'screened_market':screened,
             'research_candidate':research_row,'stake':decision['risk']['stake'],
+            'probability_trust':focus['probability_trust'] if focus else None,
+            'search_review':search_review(decision,prediction,research['key'] if research else None),
+            'scoring_ceiling':prediction.get('scoring_ceiling'),
             'reasons':[{'code':code,'text':REASON_TEXT.get(code,code)} for code in relevant if code!='NO_ADMISSIBLE_MAIN_MARKET'],
             'next_action':actions[status],'deadline':prediction['sports']['match']['kickoff'],
             'alternatives':rows,'selection_rule':decision['selection_reason'],
@@ -182,6 +192,21 @@ def render_card(card):
         if focus['fair_odds'] is not None:lines.append(f"Fair {focus['fair_odds']:.3f}; edge {focus['edge']:+.2%}.")
         floor=focus['price_requirements']['required_odds']
         lines.append(f"Порог только по цене: {floor:.4f}; все проверки допуска сохраняются." if floor is not None else 'Конечного порога цены нет при текущем диапазоне вероятности.')
+    if focus and focus.get('probability_trust'):
+        trust=focus['probability_trust'];c=trust['components']
+        lines.append(f"Доверие к вероятности: {trust['status']}; калибровка {c['calibration']['status']}, holdout {c['holdout']['status']}, контекст {c['context']['state']}. Числовой балл не валидирован.")
+        review=focus['divergence_review']
+        if review['difference'] is not None:
+            push='; при отсутствии PUSH' if review['conditional_on_no_push'] else ''
+            lines.append(f"Расхождение: {review['difference']:+.2%} | {review['status']} | {review['reference_method']}{push}.")
+        ceiling=focus['death_test'].get('under_ceiling')
+        if ceiling:
+            risks='; '.join(f"{side} ≥{ceiling['loss_goal_threshold']}: {p:.2%}" for side,p in ceiling['one_team_alone_loss_probability'].items())
+            lines.append('Одна команда сама проигрывает андер: '+risks+'. Это raw-проекция, без нового veto.')
+    elif card.get('alternatives') and all(r.get('probability_trust',{}).get('status')=='BLOCKED' for r in card['alternatives']):
+        lines.append('Доверие к вероятности: проверки всего пула заблокированы; высокий EV их не заменяет.')
+    search=card.get('search_review')
+    if search:lines.append(f"Запечатанный пул: {search['sealed_market_count']}; с ценой: {search['priced_market_count']}. Просмотр других матчей вне этого решения не учтён.")
     if card['reasons']:lines.append('Причины: '+'; '.join(r['text'] for r in card['reasons']))
     for task in card.get('action_plan',[]):
         lines.append(task['category']+': '+task['action'])

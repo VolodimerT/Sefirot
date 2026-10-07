@@ -1,5 +1,11 @@
 # SEFIROT CORE 2.4.2 — актуальная рабочая сборка
 
+**По новому аудиту 06.10:** [исправления и статус десяти задач](docs/AUDIT_FOLLOWUP_20261007.md).
+Карточка показывает основания доверия к вероятности, расхождение с рынком,
+размер sealed pool и raw-риск андеров; scorecard — все записанные PASS/BET
+и reliability по контрактам. CLV report учитывает отсутствие closing цены.
+Нового числового trust score или подтверждения прибыльности нет.
+
 **Простой локальный режим без API:**
 `py -3 sefirot.py --db data/offline.sqlite work inbox --text`.
 Последовательные задания sports → seal → price/recheck → карточка → result,
