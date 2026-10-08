@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
-from datetime import timezone
+from datetime import timedelta, timezone
 import json
 from pathlib import Path
 from random import Random
@@ -82,6 +82,8 @@ def _entry(plan_item, record, min_ev):
     if arena['match']!=match:raise ValueError('arena match differs from original')
     cutoff = arena['as_of']
     policy, book = _preflight(pred, quotes, cutoff)
+    if time(plan_item.get('_plan_created_at', plan_item['kickoff'])) < time(pred['sealed_at']):
+        raise ValueError('manifest predates its frozen prediction')
     expected = _candidate_rows(pred,book,cutoff,policy)
     if digest(expected)!=digest(arena.get('candidate_rows')):
         raise ValueError('arena candidate math/quotes do not reproduce')
@@ -114,10 +116,13 @@ def _entry(plan_item, record, min_ev):
                 'arena_market':screened['market'] if screened else None,
                 'naive_profit':None,'arena_profit':None,'naive_outcome':None,'arena_outcome':None}
     if not isinstance(result,dict):raise ValueError('result object or null required')
-    strict(result, ('match_id','home_goals','away_goals','received_at','status','source'))
+    strict(result, ('match_id','home_goals','away_goals','finished_at','received_at','status','source'))
     if result['match_id'] != record['match_id'] or result['status']!='FINISHED' or not result['source']:
         raise ValueError('unverified result identity/status')
-    if time(result['received_at']) <= time(plan_item['kickoff']):raise ValueError('future/early result leakage')
+    if time(result['finished_at']) < time(plan_item['kickoff'])+timedelta(minutes=90):
+        raise ValueError('result claims premature full-time finish')
+    if time(result['received_at']) < time(result['finished_at']):
+        raise ValueError('result received before full-time finish')
     hg=result['home_goals'];ag=result['away_goals']
     if any(isinstance(g,bool) or not isinstance(g,int) or not 0<=g<=60 for g in (hg,ag)):
         raise ValueError('invalid final score')
@@ -176,7 +181,7 @@ def evaluate(plan, records, *, min_ev=0.02):
         byid[mid]=rec
     rows=[]
     for f in plan['fixtures']:
-        rows.append(_entry(f,byid[f['match_id']],min_ev) if f['match_id'] in byid else
+        rows.append(_entry({**f, '_plan_created_at': plan['created_at']},byid[f['match_id']],min_ev) if f['match_id'] in byid else
                     {'match_id':f['match_id'],'kickoff':f['kickoff'],'status':'CAPTURE_MISSING',
                      'synthetic':None,'naive_market':None,'arena_market':None,
                      'naive_profit':None,'arena_profit':None,'naive_outcome':None,'arena_outcome':None})
