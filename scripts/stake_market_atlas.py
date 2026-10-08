@@ -193,7 +193,10 @@ def make_atlas(snapshots):
         "schema": SCHEMA, "status": "OBSERVED_MARKET_INVENTORY_NOT_EXHAUSTIVE",
         "source": "STAKE_GRAPHQL_EXPERIMENTAL", "snapshots": len(snapshots),
         "fixture_count": len(fixtures), "raw_market_count": len(items),
-        "raw_outcome_count": sum(len(row["raw"].get("outcomes", [])) for row in items),
+        "raw_outcome_count": sum(
+            len(row["raw"].get("outcomes")) if isinstance(row["raw"].get("outcomes"), list) else 0
+            for row in items
+        ),
         "metric_inventory": dict(sorted(metrics.items())),
         "outcome_mapping_inventory": dict(sorted(map_counts.items())),
         "fixtures": fixtures, "markets": items,
@@ -231,6 +234,9 @@ def harvest(prediction, *, max_events=200, max_groups=500):
     names = groups["group_names"]
     if len(names) > max_groups:
         raise ValueError("group cap would truncate fixture; raise --max-groups explicitly")
+    # A call can span kickoff. Recheck BEFORE requesting markets, not only
+    # after the response. Never deliberately fetch in-play quotes.
+    require_prematch_seal(prediction, datetime.now(timezone.utc).isoformat())
     packet_markets = fixture_markets(event["slug"], groups=names)
     received = datetime.now(timezone.utc).isoformat()
     require_prematch_seal(prediction, received)
