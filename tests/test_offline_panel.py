@@ -4,19 +4,20 @@ from datetime import datetime,timedelta,timezone
 import copy
 import http.client
 import io
+from email.message import Message
 import json
 from pathlib import Path
 import sys
 import tempfile
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch,Mock
 from urllib.parse import urlencode
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from sefirot.cli import main
 from sefirot.fixtures import example
-from sefirot.offline_panel import Panel,make_server,render_panel
+from sefirot.offline_panel import Panel,make_server,render_panel,handler_for
 from sefirot.repository import Repository
 
 NOW=datetime(2030,1,1,12,tzinfo=timezone.utc)
@@ -211,3 +212,23 @@ class PanelCliTests(unittest.TestCase):
     def test_invalid_ports_never_bind_a_socket(self):
         for port in (-1,65536,True,'8765'):
             with self.assertRaises(ValueError):make_server(Panel(':memory:','inbox'),port)
+
+
+class RejectedPostTransportTests(unittest.TestCase):
+    def handler(self,size,body=b'token=wrong'):
+        kind=handler_for(Mock());h=object.__new__(kind)
+        h.headers=Message();h.headers['Content-Length']=str(size)
+        h.connection=Mock();h.rfile=io.BytesIO(body);h.send=Mock()
+        return h
+
+    def test_rejection_discards_small_body_before_sending_response_without_action(self):
+        h=self.handler(11);h.reject_post(403)
+        self.assertEqual(h.rfile.tell(),11);h.connection.settimeout.assert_called_once_with(.25)
+        h.send.assert_called_once_with(403)
+
+    def test_rejection_drain_is_bounded_and_ambiguous_framing_is_not_read(self):
+        for size,extra in ((4097,None),(11,'chunked'),(11,'duplicate')):
+            h=self.handler(size)
+            if extra=='chunked':h.headers['Transfer-Encoding']='chunked'
+            elif extra=='duplicate':h.headers['Content-Length']='11'
+            h.reject_post(413);self.assertEqual(h.rfile.tell(),0);h.send.assert_called_once_with(413)
