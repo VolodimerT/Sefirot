@@ -18,7 +18,8 @@ from sefirot.contracts import digest, time
 from sefirot.odds_provider import require_prematch_seal
 from sefirot.stake_mapper import normalize_snapshot
 from sefirot.stake_provider import (
-    sports_events, exact_event, fixture_groups, fixture_markets, research_snapshot,
+    sports_events, exact_event, fixture_groups, research_snapshot,
+    FIXTURE_MARKETS_QUERY, _post_graphql,
 )
 
 SCHEMA = "stake-market-atlas-v1"
@@ -138,7 +139,9 @@ def make_atlas(snapshots):
             metric, period = _classify(market)
             # Preserve full provider content including active/outcome flags and lines.
             outcomes = market.get("outcomes")
-            if not isinstance(outcomes, list):
+            if outcomes is None:
+                outcomes = []  # empty/suspended is still a first-class raw market
+            elif not isinstance(outcomes, list):
                 outcomes = []
                 errors.append({"index": idx, "error": "OUTCOMES_MALFORMED"})
             mapped = []
@@ -182,10 +185,11 @@ def make_atlas(snapshots):
             "group_count_observed": len(group_set),
             "requested_groups": requested if isinstance(requested, list) else None,
             "missing_groups": missing_groups, "market_limit_indicators": near_limit,
+            "template_limit_indicators": snap.get("template_cap_groups", []),
             "normalizer_errors": errors,
             "completeness": "NOT_PROVEN_PROVIDER_HAS_FIXED_LIMITS",
         })
-        if near_limit or missing_groups:
+        if near_limit or missing_groups or snap.get("template_cap_groups"):
             warnings.append({"fixture_id": snap["fixture_id"], "possible_truncation": True})
     metrics = Counter(row["metric_hint"] for row in items)
     map_counts = Counter(m["classification"] for row in items for m in row["outcome_mapping"])
@@ -213,6 +217,68 @@ def make_atlas(snapshots):
     return out
 
 
+def raw_fixture_markets(fixture_slug, groups):
+    """Do NOT drop suspended/empty markets or null odds as the legacy mapper does."""
+    if not isinstance(fixture_slug, str) or not fixture_slug or len(fixture_slug) > 300:
+        raise ValueError("bounded exact fixture slug required")
+    if not isinstance(groups, list) or len(groups) > 500 or len(set(groups)) != len(groups) or not all(
+        isinstance(name, str) and bool(name) for name in groups
+    ):
+        raise ValueError("valid unique market groups required")
+    markets, receipts, seen_groups, template_caps = [], [], set(), []
+    for i in range(0, len(groups), 8):
+        chunk = groups[i:i + 8]
+        packet = _post_graphql(
+            FIXTURE_MARKETS_QUERY,
+            {"fixture": fixture_slug, "groups": chunk},
+            operation_name="FixtureGroupMarkets",
+        )
+        receipts.append(packet["receipt"])
+        try:
+            fixture = packet["data"]["data"]["slugFixture"]
+        except (TypeError, KeyError):
+            raise ValueError("Stake GraphQL fixture payload changed") from None
+        if not isinstance(fixture, dict) or not isinstance(fixture.get("groups"), list):
+            raise ValueError("Stake fixture groups malformed")
+        for group in fixture["groups"]:
+            if not isinstance(group, dict) or group.get("name") not in chunk:
+                raise ValueError("unexpected Stake group")
+            name = group["name"]
+            if name in seen_groups:
+                raise ValueError("duplicate returned Stake group")
+            seen_groups.add(name)
+            templates = group.get("templates")
+            if not isinstance(templates, list):
+                raise ValueError("market templates malformed")
+            if len(templates) >= PROVIDER_TEMPLATE_LIMIT:
+                template_caps.append(name)
+            for template in templates:
+                if not isinstance(template, dict):
+                    raise ValueError("invalid Stake market template")
+                entries = template.get("markets")
+                if not isinstance(entries, list):
+                    raise ValueError("market list malformed")
+                for row in entries:
+                    if not isinstance(row, dict):
+                        raise ValueError("market row malformed")
+                    markets.append({
+                        **row,
+                        "group": name,
+                        "group_translation": group.get("translation"),
+                        "group_id": group.get("id"),
+                        "template": template.get("name"),
+                        "template_ext_id": template.get("extId"),
+                        "template_id": template.get("id"),
+                    })
+                    if len(markets) > 5000:
+                        raise ValueError("Stake fixture exceeds safe raw market limit")
+    return {
+        "markets": markets, "market_count": len(markets),
+        "receipts": receipts, "returned_groups": sorted(seen_groups),
+        "template_cap_groups": sorted(set(template_caps)),
+    }
+
+
 def harvest(prediction, *, max_events=200, max_groups=500):
     """One exact sealed, UPCOMING soccer fixture; no scanning live sports."""
     if not isinstance(prediction, dict):
@@ -237,7 +303,7 @@ def harvest(prediction, *, max_events=200, max_groups=500):
     # A call can span kickoff. Recheck BEFORE requesting markets, not only
     # after the response. Never deliberately fetch in-play quotes.
     require_prematch_seal(prediction, datetime.now(timezone.utc).isoformat())
-    packet_markets = fixture_markets(event["slug"], groups=names)
+    packet_markets = raw_fixture_markets(event["slug"], names)
     received = datetime.now(timezone.utc).isoformat()
     require_prematch_seal(prediction, received)
     snapshot = research_snapshot(
@@ -246,6 +312,9 @@ def harvest(prediction, *, max_events=200, max_groups=500):
     )
     snapshot["requested_groups"] = names
     snapshot["reported_group_count"] = len(names)
+    snapshot["raw_transport"] = "UNFILTERED_GRAPHQL_MARKET_ROWS"
+    snapshot["returned_groups"] = packet_markets["returned_groups"]
+    snapshot["template_cap_groups"] = packet_markets["template_cap_groups"]
     snapshot["hash"] = digest({k: v for k, v in snapshot.items() if k != "hash"})
     return snapshot
 
