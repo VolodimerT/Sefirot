@@ -156,7 +156,7 @@ def assess(repository, policy, at):
                                      results.get(mid), captures.get(r["prediction_id"], []),
                                      source_results.get(mid, []))
             bucket_matches[bucket].add(mid)
-            contract_matches[r["market"]].add(mid)
+            contract_matches[(r["competition_profile"], r["market"])].add(mid)
             model_ids.add(r["model_id"])
             verified.add(mid)
         except (ValueError, KeyError, TypeError) as exc:
@@ -179,11 +179,14 @@ def assess(repository, policy, at):
     else:
         model_id = None
     available = {key: len(v) for key, v in sorted(bucket_matches.items())}
-    by_contract = {key: {
-        "distinct_matches": len(v),
-        "populated_bins": sum(name.split(":")[1] == key and n >= policy.min_calibration
-                               for name, n in available.items()),
-    } for key, v in sorted(contract_matches.items())}
+    by_contract = {profile + ":" + contract: {
+        "distinct_matches": len(matches),
+        "populated_bins": sum(
+            name.rsplit(":", 1)[0] == profile + ":" + contract
+            and n >= policy.min_calibration
+            for name, n in available.items()
+        ),
+    } for (profile, contract), matches in sorted(contract_matches.items())}
     planned_ids = set(plans)
     verified_planned = verified & planned_ids
     coverage = len(verified_planned) / len(planned_ids) if planned_ids else 0.
