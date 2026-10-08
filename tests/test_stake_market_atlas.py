@@ -136,7 +136,7 @@ class StakeMarketAtlasTests(unittest.TestCase):
         ) as market_fetch:
             raw = atlas.harvest(pred)
         self.assertEqual(discovery.call_args.kwargs["match_type"], "upcoming")
-        self.assertEqual(market_fetch.call_args.kwargs["groups"], ["main"])
+        self.assertEqual(market_fetch.call_args.args[1], ["main"])
         self.assertEqual(raw["requested_groups"], ["main"])
         self.assertEqual(raw["market_count"], 4)
         self.assertEqual(atlas.make_atlas([raw])["raw_market_count"], 4)
