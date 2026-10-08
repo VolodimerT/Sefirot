@@ -38,6 +38,7 @@ def _reason(exc):
 
 def collect_session(directory, day, profiles, *, source_reliability, max_requests=12,
                     quota_reserve=5, source_archive=None, timezone_name='Europe/Kyiv',
+                    history_seasons_back=0,
                     policy=None, getter=None, clock=None, research_grids=False):
     if not isinstance(research_grids, bool):
         raise ValueError('research_grids must be an explicit boolean')
@@ -46,6 +47,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         raise ValueError('data session currently requires BASELINE_V1')
     integer(max_requests, 'session request limit', 2, 50)
     integer(quota_reserve, 'daily quota reserve', 0, 10000)
+    integer(history_seasons_back, 'extra preceding seasons', 0, 2)
     number(source_reliability, 'operator source reliability', 0, 1)
     zone = ZoneInfo(timezone_name)
     selected_day = date.fromisoformat(day)
@@ -73,6 +75,8 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         'profiles': {str(k): profiles[k] for k in sorted(profiles)},
         'source_reliability': 'operator assertion: ' + str(source_reliability),
         'max_requests': max_requests, 'quota_reserve': quota_reserve, 'requests': [],
+        'history_seasons_back': history_seasons_back,
+        'history_season_selection': 'CURRENT_AND_PRECEDING_WITH_EXPLICIT_OPT_IN',
         'planned_fixtures': 0, 'forecasts_created': 0, 'plan_id': None, 'fixtures': [],
         'status': 'COLLECTION_INCOMPLETE', 'blockers': [], 'prices_requested': False,
         'holdout_passed': False, 'monetary_permission': False, 'execution_enabled': False,
@@ -184,7 +188,16 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         _write(root / 'plan.json', plan)
         report.update(plan_id=plan['id'], planned_fixtures=len(plan['members']))
         # Scope is committed before history, forecasts or any outcome inspection.
-        queries = sorted({(r['league']['id'], r['league']['season']) for r in eligible})
+        # All history query seasons are committed *before* requesting history
+        # or observing a forecast. This does not react to match outcomes,
+        # prices or which side lacks enough observations.
+        current = sorted({(r['league']['id'], r['league']['season']) for r in eligible})
+        queries = sorted({(league, season - offset)
+            for league, season in current
+            for offset in range(history_seasons_back + 1)
+            if season - offset >= 1900}, key=lambda item: (item[0], -item[1]))
+        report['predeclared_history_queries'] = [
+            {'league': league, 'season': season} for league, season in queries]
         report['history_queries'] = []
         for league, season in queries:
             params = {'league': league, 'season': season, 'status': 'FT',
@@ -257,6 +270,7 @@ def render_session(report):
         'Статус: ' + report['status'],
         'Research-сетки: ' + ('LABS включены' if report.get('research_grids_enabled') else 'выключены'),
         f"Попытки запросов: {report['request_attempts']}/{report['max_requests']}; резерв: {report['quota_reserve']}",
+        f"Предыдущих сезонов истории: {report['history_seasons_back']}",
         f"Назначено матчей: {report['planned_fixtures']}; research прогнозов: {report['forecasts_created']}"]
     for row in report['fixtures']:
         coverage = row.get('coverage', {})
