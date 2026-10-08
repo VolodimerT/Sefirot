@@ -86,6 +86,85 @@ class DataSessionTests(unittest.TestCase):
         digest_value = saved.pop('hash'); self.assertEqual(digest(saved), digest_value)
         self.assertIn('Назначено матчей: 2', render_session(report))
 
+    def test_opt_in_previous_season_restores_real_ft_history_for_future_cohort(self):
+        # Existing season has zero completed matches. The preceding season
+        # contains eight source-backed completed fixtures with same team IDs.
+        # Original receipt timestamps remain now: no retrospective backdating.
+        old = [row(50+n, hours=-48-n) for n in range(8)]
+        for item in old:
+            item['league']['season'] = 2029
+        self.history = []
+        original = self.get
+        def get(endpoint, params):
+            packet_out = original(endpoint, params)
+            if endpoint == 'fixtures' and params.get('season') == 2029:
+                packet_out = response(endpoint, params, packet(old)['data'])
+            return packet_out
+        self.get = get
+        report = self.run_session(history_seasons_back=1)
+        self.assertEqual(report['planned_fixtures'], 2)
+        self.assertEqual(report['forecasts_created'], 2)
+        self.assertEqual(report['request_attempts'], 4)
+        self.assertEqual(report['predeclared_history_queries'],
+                         [{'league': 9, 'season': 2030}, {'league': 9, 'season': 2029}])
+        self.assertEqual(len(report['history_queries']), 2)
+        self.assertEqual(report['history_seasons_back'], 1)
+        with closing(Repository(self.directory/'research.sqlite', read_only=True)) as repo:
+            self.assertTrue(repo.verify())
+            forecasts = repo.all('predictions')
+            self.assertEqual(len(forecasts), 2)
+            self.assertEqual(len(forecasts[0]['sports']['history']), 8)
+            self.assertTrue(all(h['received_at'] == stamp() for h in forecasts[0]['sports']['history']))
+            self.assertTrue(all(time(h['kickoff']) < time(h['received_at']) for h in forecasts[0]['sports']['history']))
+            self.assertEqual(repo.all('bets'), [])
+        self.assertFalse(report['monetary_permission'])
+
+    def test_previous_season_opt_in_off_remains_backward_compatible(self):
+        self.history = []
+        report = self.run_session()
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['predeclared_history_queries'], [{'league': 9, 'season': 2030}])
+        self.assertEqual(report['forecasts_created'], 0)
+        self.assertEqual(report['history_seasons_back'], 0)
+
+    def test_previous_season_request_budget_keeps_missing_rows(self):
+        self.history = []
+        report = self.run_session(history_seasons_back=2, max_requests=3)
+        self.assertEqual(report['planned_fixtures'], 2)
+        self.assertEqual(report['forecasts_created'], 0)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(len(report['predeclared_history_queries']), 3)
+        self.assertEqual(len(report['history_queries']), 3)
+        self.assertTrue(all(q['status'] == 'SESSION_REQUEST_BUDGET_EXHAUSTED'
+                            for q in report['history_queries'][1:]))
+        self.assertEqual(report['fixture_counts'], {'INSUFFICIENT_HISTORY': 2})
+
+    def test_previous_season_invalid_scope_cannot_be_archived(self):
+        self.history = []
+        original = self.get
+        def get(endpoint, params):
+            packet_out = original(endpoint, params)
+            if endpoint == 'fixtures' and params.get('season') == 2029:
+                wrong = row(50, hours=-30)
+                # A malicious or buggy feed returning CURRENT season on a
+                # historical query is rejected before archive write.
+                return response(endpoint, params, packet([wrong])['data'])
+            return packet_out
+        self.get = get
+        report = self.run_session(history_seasons_back=1)
+        self.assertEqual(report['forecasts_created'], 0)
+        self.assertEqual(report['history_queries'][-1]['status'],
+                         'INVALID_OR_UNAVAILABLE_PROVIDER_RESPONSE')
+        self.assertEqual(len(list((self.directory/'sports-archive').glob('*.json'))), 2)
+        self.assertTrue(report['journal_integrity'])
+
+    def test_previous_season_mode_rejects_invalid_values_before_any_io(self):
+        for bad in (True, -1, 3, 1.5, '2'):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                self.run_session(history_seasons_back=bad)
+        self.assertEqual(self.calls, [])
+        self.assertFalse(self.directory.exists())
+
     def test_missing_history_keeps_entire_predeclared_denominator(self):
         self.history = []
         report = self.run_session()
