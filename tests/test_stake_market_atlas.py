@@ -130,8 +130,9 @@ class StakeMarketAtlasTests(unittest.TestCase):
                 "received_at": t(0), "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
             },
         }) as discovery, patch.object(atlas, "fixture_groups", return_value=group), patch.object(
-            atlas, "fixture_markets", return_value={"markets": snapshot()["markets"],
-                     "receipts": [], "market_count": 4}
+            atlas, "raw_fixture_markets", return_value={"markets": snapshot()["markets"],
+                     "receipts": [], "market_count": 4,
+                     "returned_groups": ["main"], "template_cap_groups": []}
         ) as market_fetch:
             raw = atlas.harvest(pred)
         self.assertEqual(discovery.call_args.kwargs["match_type"], "upcoming")
@@ -139,6 +140,41 @@ class StakeMarketAtlasTests(unittest.TestCase):
         self.assertEqual(raw["requested_groups"], ["main"])
         self.assertEqual(raw["market_count"], 4)
         self.assertEqual(atlas.make_atlas([raw])["raw_market_count"], 4)
+
+    def test_retains_empty_or_suspended_markets_and_null_odds(self):
+        markets = [
+            {"id": "suspended", "name": "Unknown", "group": "Odds",
+             "template": "Unknown", "status": "suspended",
+             "outcomes": [{"id": "null-price", "name": "None", "odds": None, "active": False}]},
+            {"id": "empty", "name": "Unknown2", "group": "Odds",
+             "template": "Unknown2", "status": "closed", "outcomes": []},
+        ]
+        report = atlas.make_atlas([snapshot(markets)])
+        self.assertEqual(report["raw_market_count"], 2)
+        self.assertEqual(report["raw_outcome_count"], 1)
+        self.assertIsNone(report["markets"][0]["raw"]["outcomes"][0]["odds"])
+        self.assertEqual(report["markets"][1]["raw"]["outcomes"], [])
+        self.assertEqual(report["markets"][0]["outcome_mapping"][0]["classification"], "UNMAPPED_RAW")
+
+    def test_raw_graphql_preserves_null_odds_and_empty_outcomes(self):
+        payload = {"data": {"slugFixture": {"id": "e", "groups": [{
+            "name": "main", "translation": "Markets", "id": "g1",
+            "templates": [{"id": "t", "name": "Some Template", "extId": "ext",
+                           "markets": [
+                               {"id": "m1", "name": "Suspended", "outcomes": [
+                                   {"id": "a", "odds": None, "name": "Yes", "active": False}
+                               ]},
+                               {"id": "m2", "name": "Empty", "outcomes": []},
+                           ]}]
+        }]}}}
+        with patch.object(atlas, "_post_graphql", return_value={
+            "data": payload, "receipt": {"http_status": 200}
+        }) as api:
+            result = atlas.raw_fixture_markets("exact", ["main"])
+        self.assertEqual(result["market_count"], 2)
+        self.assertIsNone(result["markets"][0]["outcomes"][0]["odds"])
+        self.assertEqual(result["markets"][1]["outcomes"], [])
+        self.assertEqual(api.call_args.kwargs["operation_name"], "FixtureGroupMarkets")
 
     def test_harvest_rejects_unsealed_before_request(self):
         prediction = {"captured_prematch": False, "reconstructed": False,
