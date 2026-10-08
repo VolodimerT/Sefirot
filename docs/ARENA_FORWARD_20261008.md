@@ -33,7 +33,7 @@ Do not count seven markets of one fixture as seven bets. Each arm has at most on
      "prediction":{ "...":"complete original SEALED prediction, with id" },
      "quotes":[ { "...":"original prematch quotes" } ],
      "arena":{ "...":"complete original ARENA report, with hash" },
-     "result":{"match_id":"fixture-101","home_goals":2,"away_goals":1,"status":"FINISHED","source":"source receipt name","received_at":"2026-10-10T20:20:00+03:00"}
+     "result":{"match_id":"fixture-101","home_goals":2,"away_goals":1,"status":"FINISHED","source":"source receipt name","finished_at":"2026-10-10T20:00:00+03:00","received_at":"2026-10-10T20:20:00+03:00"}
    }]
    ```
 
@@ -49,9 +49,9 @@ Do not count seven markets of one fixture as seven bets. Each arm has at most on
 
 - The plan's match IDs, prediction IDs and kickoff are frozen; unexpected or duplicate game records are rejected.
 - `created_at` must precede each declared kickoff. Its timestamp and SHA hashes are **self-attested**, not independently certified: authentic time proof requires the existing signed/sealed durable ledger or a public immutable commit *made at the time*.
-- Original prediction ID and hash, prematch status, chronology, Policy fingerprint, 1–7 market pool, exact 90-minute quote rules and quote-after-seal gate are rechecked.
+- Original prediction ID and hash, prematch status, plan-after-seal chronology, Policy fingerprint, 1–7 market pool, exact 90-minute quote rules and quote-after-seal gate are rechecked.
 - All market probabilities and EV are recomputed from the original prediction/quotes, not blindly trusted from the arena report. Missing prices or stale quotes cannot become selections. The frozen max-EV ranking and admissible focus are reproduced against all 8 critic statuses.
-- Result is not accepted if it comes from a different match, lacks source and `FINISHED` status, arrives before/at kickoff, or has non-integer goals.
+- Result is not accepted if it comes from a different match, lacks source and `FINISHED` status, claims to finish before kickoff+90 minutes or arrives before finish, or has non-integer goals.
 - Both arms must stay hypothetical: stake=0, monetary_permission=false, execution_enabled=false, verdict=ПРОПУСК.
 
 ## Metrics and interpretation
