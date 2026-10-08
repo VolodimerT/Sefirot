@@ -76,7 +76,14 @@ def _write_new(filename, payload):
 
 
 def _prematch_prediction(prediction, at):
-    _verify(prediction)
+    # Canonical Service.capture binds the original prediction with 'id',
+    # while standalone reports and provider snapshots bind with 'hash'.
+    if not isinstance(prediction, dict):
+        raise ValueError("original sealed prediction required")
+    original = dict(prediction)
+    identity = original.pop("id", None)
+    if not isinstance(identity, str) or digest(original) != identity:
+        raise ValueError("original prediction id/hash mismatch")
     require_prematch_seal(prediction, at)
     policy = Policy(**prediction["policy"])
     grid = create_grid(prediction, policy, at)  # recomputes source sports and checks build
