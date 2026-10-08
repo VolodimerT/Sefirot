@@ -160,6 +160,21 @@ class PanelHttpTests(PanelFixture,unittest.TestCase):
             response=c.getresponse();self.assertEqual(response.status,403);response.read()
         self.assertFalse(self.database.exists())
 
+    def test_rejected_small_posts_respond_without_aborting_the_socket(self):
+        # Windows may reset a closing HTTP/1.0 socket if a 403/413 response
+        # is written while unread form bytes are still queued.
+        body = urlencode({'token': self.panel.token})
+        for _ in range(4):
+            self.assertEqual(self.request('POST','/run',body,{
+                'Host':'evil.invalid', 'Origin':self.origin,
+                'Content-Type':'application/x-www-form-urlencoded'})[0],403)
+            self.assertEqual(self.request('POST','/run',body,{
+                'Origin':'https://evil.invalid',
+                'Content-Type':'application/x-www-form-urlencoded'})[0],403)
+        self.assertEqual(self.post('token='+'x'*600)[0],413)
+        self.assertEqual(self.request()[0],200)
+        self.assertFalse(self.database.exists())
+
     def test_body_contract_limits_duplicates_and_nonascii_tokens_do_not_run_actions(self):
         for body,expected in [('token=wrong&token=again',400),('token=%E6%B5%8B%E8%AF%95',403),('token',400),('x=wrong',403),('token='+'x'*600,413)]:
             self.assertEqual(self.post(body)[0],expected)
