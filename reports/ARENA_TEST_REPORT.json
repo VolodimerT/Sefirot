@@ -2,16 +2,16 @@
   "schema": "arena-test-report-v0.2",
   "baseline_sha": "19a81f961ded4477a08da89d20ee584f35738f8f",
   "local": {
-    "tests": 636,
+    "tests": 637,
     "test_exit": 0,
     "code_hash": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c",
     "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
-    "elapsed_seconds": 50.468
+    "elapsed_seconds": 47.003
   },
   "replay_matches": true,
   "integrity": true,
   "new_tests": {
-    "arena_control": 22,
+    "arena_control": 23,
     "post_transport": 2
   },
   "core_math_policy_changed": false,
@@ -23,8 +23,69 @@
     "error": "WinError 10053 at early Host/Origin POST rejection"
   },
   "remote_ci": {
-    "status": "PENDING_EXACT_PUBLISHED_HEAD",
-    "required": "push and PR, Windows/Ubuntu Python3.11/3.13"
+    "status": "VERIFIED_PRECEDING_SOURCE_HEAD",
+    "head": "b9d72b2c9a0bcf27a855f667dd7bf9fb236e7757",
+    "tests_per_job": 636,
+    "code_hash": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c",
+    "runs": [
+      {
+        "id": 37777081414,
+        "event": "pull_request",
+        "jobs": [
+          {
+            "id": 113310544123,
+            "os": "ubuntu",
+            "python": "3.13"
+          },
+          {
+            "id": 113310544675,
+            "os": "ubuntu",
+            "python": "3.11"
+          },
+          {
+            "id": 113310544715,
+            "os": "windows",
+            "python": "3.13"
+          },
+          {
+            "id": 113310544831,
+            "os": "windows",
+            "python": "3.11"
+          }
+        ]
+      },
+      {
+        "id": 37777029857,
+        "event": "push",
+        "jobs": [
+          {
+            "id": 113310370197,
+            "os": "windows",
+            "python": "3.11"
+          },
+          {
+            "id": 113310370477,
+            "os": "ubuntu",
+            "python": "3.13"
+          },
+          {
+            "id": 113310370559,
+            "os": "windows",
+            "python": "3.13"
+          },
+          {
+            "id": 113310370686,
+            "os": "ubuntu",
+            "python": "3.11"
+          }
+        ]
+      }
+    ],
+    "all_eight_logs_checked": true,
+    "node22_gateway_transport_stress_replay_integrity_verified": true,
+    "skipped": false,
+    "scope": "These eight logs validate the preceding 636-test source. Final script-hash manifest hardening adds one test; exact final-head 637-test CI receipts are recorded in PR14 and SEFIROT_ARENA_WORK_RESULT_2026-10-08.md after publication.",
+    "final_head_ci_location": "https://github.com/VolodimerT/Sefirot/pull/14"
   },
   "external_calls": 0,
   "limitations": [
@@ -34,5 +95,22 @@
     "Browser layout not tested"
   ],
   "money_permission": false,
-  "stake": 0
+  "stake": 0,
+  "rule_only_benchmark": {
+    "profile": "RULE_ONLY",
+    "synthetic": true,
+    "fixtures": 1,
+    "history_rows": 40,
+    "markets": 7,
+    "repeats": 10,
+    "median_ms": 22.506,
+    "min_ms": 21.373,
+    "max_ms": 23.602,
+    "stable_report_hash": "d6e21db2951feb2d480b838a2cc731cab99647c98799296e3e91b4c7d013e0e6",
+    "ledger_bytes_unchanged": true,
+    "gpt_calls": 0,
+    "cost_usd": 0,
+    "large_ledger_latency": null,
+    "code_hash": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c"
+  }
 }

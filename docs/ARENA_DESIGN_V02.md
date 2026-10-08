@@ -69,6 +69,8 @@ Plan v0.2 регистрирует match_id/kickoff до seals, без predictio
 binding: plan ≤ seal ≤ review < kickoff. min_ev принадлежит frozen plan
 identity; rehash изменённого manifest означает другой unverified experiment,
 а не доказательство прежней регистрации. Protected external timestamps нет.
+Plan фиксирует exact hashes обоих standalone scripts: смена reviewer/forward
+программы не скрывается тем, что model/Core hash остались прежними.
 
 Score records: match_id, prediction, quotes, original arena report, result/
 null. Reproduce normative fields, findings и receipts; later missing-original

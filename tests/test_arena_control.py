@@ -199,6 +199,13 @@ class ForwardControlTests(CoreFixture,unittest.TestCase):
         plan=deepcopy(self.plan);plan['min_ev']=.3
         with self.assertRaisesRegex(ValueError,'hash mismatch'):self.score([],plan)
 
+    def test_rehashed_plan_cannot_hide_changed_control_or_forward_program(self):
+        for field in ('control_hash','forward_hash'):
+            plan=deepcopy(self.plan);plan[field]='different-program'
+            plan=stamp_hash({k:v for k,v in plan.items() if k!='hash'})
+            with self.subTest(field=field),self.assertRaisesRegex(ValueError,'build incompatible'):
+                self.score([],plan)
+
     def test_capture_before_plan_and_unplanned_duplicate_games_rejected(self):
         rec=self.record()
         with self.assertRaisesRegex(ValueError,'duplicate'):self.score([rec,rec])

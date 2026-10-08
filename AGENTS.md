@@ -18,8 +18,8 @@ manifest self-attested, prospective_validated=false. Не backdate cohort.
 отказе Host/Origin. Processing body limit остаётся 512 B. 7 MODEL_MODULES,
 Policy, Service/SQLite/CLI и деньги побайтно прежние; code_hash новый:
 e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c.
-Полный локальный release 636/636, replay/integrity=true, без skipped;
-22 новых Core/SQLite контрпримера и два transport regression. CI сверять
+Полный локальный release 637/637, replay/integrity=true, без skipped;
+23 новых Core/SQLite контрпримера и два transport regression. CI сверять
 на exact published head, push и PR matrices; результаты в PR/test report.
 RULE_ONLY/REPLAY не GPT, внешнего LLM adapter v0.2 нет; live calls 0.
 Causal engine, paid LLM budget/latency, CLV/execution economics и внешняя

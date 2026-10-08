@@ -12,6 +12,7 @@ from sefirot.identity import code_hash,model_code_hash
 from sefirot.markets import market_from_key,settle
 from sefirot.repository import Repository
 from scripts.arena_control import check_hash,stamp_hash,run_control,write_new,safe_id
+from scripts import arena_control
 from scripts.arena_forward import _interval,evaluate as evaluate_legacy,PLAN_SCHEMA as LEGACY_PLAN
 
 PLAN_SCHEMA='sefirot-arena-control-plan-v0.2'
@@ -32,6 +33,8 @@ def freeze(fixtures,created_at,*,min_ev=.02):
     return stamp_hash({'schema':PLAN_SCHEMA,'created_at':created_at,
           'fixtures':sorted(rows,key=lambda f:(time(f['kickoff']),f['match_id'])),
           'min_ev':min_ev,'core_hash':code_hash(),'model_hash':model_code_hash(),
+          'control_hash':digest(Path(arena_control.__file__).read_text(encoding='utf-8')),
+          'forward_hash':digest(Path(__file__).read_text(encoding='utf-8')),
           'provenance':'SELF_ATTESTED_MANIFEST','external_time_verified':False,
           'stake':0.,'monetary_permission':False,'execution_enabled':False})
 

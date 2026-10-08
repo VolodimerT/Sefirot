@@ -4,14 +4,14 @@
   "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 50.468,
+  "elapsed_seconds": 47.003,
   "test_exit": 0,
-  "tests": 636,
+  "tests": 637,
   "demo": {
     "version": "2.4.2",
     "synthetic": true,
-    "prediction_id": "8dc5c4061516482882440ea1fa88fba9b76fa873cecdda377f6a9e39f26c8af9",
-    "decision_id": "7531dc7839ba40764e6ad5719de7509128e6844535ed418a3a38ba231dbb5d3d",
+    "prediction_id": "0f3997e2addfe9923261986e338616e0ff6b3f56428e286b490ead11f926e116",
+    "decision_id": "db8b95e25216d33a3cd367a58f7ce82f9c9accefcd80529bc3aad8825afdb814",
     "decision": "PASS",
     "verdict": "skip",
     "class": "D",
@@ -41,13 +41,13 @@
       "decision": "PASS",
       "passport": {
         "version": "2.4.2",
-        "prediction_id": "8dc5c4061516482882440ea1fa88fba9b76fa873cecdda377f6a9e39f26c8af9",
+        "prediction_id": "0f3997e2addfe9923261986e338616e0ff6b3f56428e286b490ead11f926e116",
         "code_hash": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c",
         "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
         "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
         "policy_version": "research-policy-v3",
-        "data_hash": "4675826f71f92e50275db012f48ea1f0e8c7c4e4a5bc82f3c9ec4b85c834a322",
-        "sports_as_of": "2026-10-08T12:21:59+00:00",
+        "data_hash": "079e6cda93dd8e00e3a7302fbc83fac3599c2278e9b9c31b86a28cdb665c23bd",
+        "sports_as_of": "2026-10-08T12:29:15+00:00",
         "source_ids": [
           "official",
           "statistics"
@@ -81,7 +81,7 @@
           "priority": 10,
           "action": "Получить недостающие спортивные сведения через API; проверить ID, профиль, источники и время. Изменение фактов требует нового seal.",
           "source": "API спортивных данных; подтверждённые предматчевые факты",
-          "deadline": "2026-10-08T14:22:59+00:00",
+          "deadline": "2026-10-08T14:30:15+00:00",
           "price_can_resolve": false,
           "deferred": false,
           "requires_new_sports_seal": true
@@ -124,7 +124,7 @@
           "priority": 50,
           "action": "Отложить запрос цены: сначала закрыть остальные блокировки; коэффициент их не устраняет.",
           "source": "API котировок, точная БК и правила расчёта",
-          "deadline": "2026-10-08T14:22:59+00:00",
+          "deadline": "2026-10-08T14:30:15+00:00",
           "price_can_resolve": false,
           "deferred": true,
           "requires_new_sports_seal": false
@@ -135,14 +135,14 @@
       "verdict_ru": "пропуск",
       "class": "D",
       "status": "RECALCULATE",
-      "at": "2026-10-08T12:24:59+00:00",
+      "at": "2026-10-08T12:32:15+00:00",
       "match": {
         "away": "B",
         "competition_profile": "MEN",
         "format": "REGULATION_90",
         "home": "A",
         "id": "synthetic-001",
-        "kickoff": "2026-10-08T14:22:59+00:00",
+        "kickoff": "2026-10-08T14:30:15+00:00",
         "league": "SYNTHETIC",
         "sport": "football"
       },
@@ -512,7 +512,7 @@
         }
       ],
       "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-      "deadline": "2026-10-08T14:22:59+00:00",
+      "deadline": "2026-10-08T14:30:15+00:00",
       "alternatives": [
         {
           "market": "1X2:HOME",
@@ -1919,5 +1919,5 @@
   "audit_dataset_hash": "e1ab0c7c0b05d209c080e3d102d707978bc233a799548a4bcc1e785af2443928",
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-08T12:22:59.907508+00:00"
+  "generated_at": "2026-10-08T12:30:15.985310+00:00"
 }
