@@ -143,23 +143,36 @@ def handler_for(panel):
             expected=f'127.0.0.1:{self.server.server_port}'
             return self.client_address[0]=='127.0.0.1' and self.headers.get_all('Host')==[expected]
 
+        def reject_post(self,status):
+            # Closing with an unread small POST body can reset TCP and erase
+            # the rejection response on Windows (RFC 9112 section 9.6).
+            # Discard bounded, unambiguous framing only; never parse/run it.
+            lengths=self.headers.get_all('Content-Length') or []
+            if len(lengths)==1 and not self.headers.get('Transfer-Encoding'):
+                try:
+                    size=int(lengths[0])
+                    if 0<=size<=4096:
+                        self.connection.settimeout(.25);self.rfile.read(size)
+                except (ValueError,OSError):pass
+            self.send(status)
+
         def do_GET(self):
             if not self.local():self.send(403);return
             if self.path!='/':self.send(404);return
             self.send(200,render_panel(panel.snapshot(),panel.token))
 
         def do_POST(self):
-            if not self.local():self.send(403);return
+            if not self.local():self.reject_post(403);return
             origin=f'http://127.0.0.1:{self.server.server_port}'
-            if self.headers.get_all('Origin')!=[origin]:self.send(403);return
-            if self.path!='/run':self.send(404);return
-            if self.headers.get_all('Content-Type')!=['application/x-www-form-urlencoded']:self.send(415);return
+            if self.headers.get_all('Origin')!=[origin]:self.reject_post(403);return
+            if self.path!='/run':self.reject_post(404);return
+            if self.headers.get_all('Content-Type')!=['application/x-www-form-urlencoded']:self.reject_post(415);return
             lengths=self.headers.get_all('Content-Length') or []
             if len(lengths)!=1 or self.headers.get('Transfer-Encoding'):
                 self.send(400);return
             try:
                 size=int(lengths[0])
-                if not 0<size<=512:self.send(413);return
+                if not 0<size<=512:self.reject_post(413);return
                 self.connection.settimeout(3)
                 data=self.rfile.read(size)
                 if len(data)!=size:raise ValueError('incomplete body')

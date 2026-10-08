@@ -1,0 +1,13 @@
+{
+  "schema": "arena-baseline-comparison-v0.2",
+  "status": "INSUFFICIENT_DATA",
+  "real_planned": 0,
+  "real_paired_eligible": 0,
+  "original_receipts_evaluated": 0,
+  "real_roi": null,
+  "paired_utility": null,
+  "synthetic_unit_tests_only": true,
+  "prospective_validated": false,
+  "monetary_permission": false,
+  "stake": 0
+}

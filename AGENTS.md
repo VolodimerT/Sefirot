@@ -1,5 +1,31 @@
 # SEFIROT: актуальная база разработки
 
+## ARENA control v0.2, 08.10.2026
+
+Текущая самостоятельная feature/arena-control-v02-20261008 основана на
+PR #13 / 19a81f961ded4477a08da89d20ee584f35738f8f. См. docs/
+ARENA_ARCHITECTURE_AUDIT.md, ARENA_DESIGN_V02.md, ARENA_NEXT_EXPERIMENT.md.
+Новый draft поверх feature/arena-forward-audit-20261008, не main; ветки
+PR #11/#12/#13 не переписывать. Агентов не создавать. API/cloud/keys пауза.
+arena_shadow/arena_forward и их старые outputs сохранять как v0/v1.
+Новые standalone arena_control/arena_control_forward: market-local findings,
+PIT allowlist, RO original receipts, три arms, missing ≠ PASS. Никакого
+голосования/числового GPT trust или денежных разрешений; stake=0 всегда.
+Самостоятельный digest и локальный journal не external time/source proof;
+manifest self-attested, prospective_validated=false. Не backdate cohort.
+Новое src изменение только offline_panel rejected POST discard bounded
+4096 B / .25s: Windows CI 113234885631 имел два WinError 10053 при раннем
+отказе Host/Origin. Processing body limit остаётся 512 B. 7 MODEL_MODULES,
+Policy, Service/SQLite/CLI и деньги побайтно прежние; code_hash новый:
+e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c.
+Полный локальный release 637/637, replay/integrity=true, без skipped;
+23 новых Core/SQLite контрпримера и два transport regression. CI сверять
+на exact published head, push и PR matrices; результаты в PR/test report.
+RULE_ONLY/REPLAY не GPT, внешнего LLM adapter v0.2 нет; live calls 0.
+Causal engine, paid LLM budget/latency, CLV/execution economics и внешняя
+фиксация времени остаются будущими задачами. Не объявлять прибыль/holdout.
+Нижние разделы — прежние срезы, их ветки/числа не актуальный ARENA этап.
+
 ## Локальная ручная очередь, 08.10.2026
 
 Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
