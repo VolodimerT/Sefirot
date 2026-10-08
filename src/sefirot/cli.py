@@ -63,6 +63,8 @@ def main(argv=None):
     sub.add_parser('build-info',help='read exact canonical build/model/policy identity without a database or network')
     worker=sub.add_parser('work',help='process local jobs atomically without API calls');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
     worker.add_argument('--text',action='store_true',help='concise Russian status and recorded decision cards')
+    worker.add_argument('--web',action='store_true',help='open a local manual queue UI; no automatic processing')
+    worker.add_argument('--port',type=int,help='local UI port (default 8765; 0 selects a free port)')
     demo=sub.add_parser('demo',help='complete synthetic workflow in a temporary database')
     demo.add_argument('--text',action='store_true',help='concise Russian decision card')
     fixture=sub.add_parser('fixture',help='write synthetic JSON input files');fixture.add_argument('directory')
@@ -186,6 +188,10 @@ def main(argv=None):
                  'code_hash':code_hash(),'model_hash':model_code_hash(),'policy_hash':policy.fingerprint,
                  'goal_model':policy.goal_model,'core_commands':list(CORE_COMMANDS),
                  'daily_workflow':'data-session','monetary_permission':False,'execution_enabled':False}
+        elif args.command=='work' and (args.web or args.port is not None):
+            if not args.web or args.watch or args.text:raise ValueError('--web requires manual mode without --watch or --text; --port requires --web')
+            from .offline_panel import serve
+            return serve(args.db,args.directory,policy,args.port if args.port is not None else 8765)
         elif args.command=='data-session':
             from .data_session import collect_session,render_session
             profiles={}
