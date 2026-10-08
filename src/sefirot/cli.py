@@ -144,6 +144,8 @@ def main(argv=None):
     collection.add_argument('--source-reliability',type=float,required=True)
     collection.add_argument('--max-requests',type=int,default=12);collection.add_argument('--quota-reserve',type=int,default=5)
     collection.add_argument('--source-archive');collection.add_argument('--timezone',default='Europe/Kyiv')
+    collection.add_argument('--history-seasons-back',type=int,choices=(0,1,2),default=0,
+        help='explicitly include up to two earlier league seasons of completed FT history; bounded by original request/quota budget')
     collection.add_argument('--research-grids',action='store_true',help='explicit LABS: create 50-contract and Builder research grids after seals')
     collection.add_argument('--text',action='store_true')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
@@ -201,7 +203,8 @@ def main(argv=None):
                 profiles[key]=value
             out=collect_session(args.directory,args.date,profiles,source_reliability=args.source_reliability,
                 max_requests=args.max_requests,quota_reserve=args.quota_reserve,source_archive=args.source_archive,
-                timezone_name=args.timezone,policy=policy,research_grids=args.research_grids)
+                timezone_name=args.timezone,policy=policy,research_grids=args.research_grids,
+                history_seasons_back=args.history_seasons_back)
             if args.text:
                 print(render_session(out));return 2 if out['status']=='COLLECTION_INCOMPLETE' else 0
         elif args.command=='stake-snapshot':
