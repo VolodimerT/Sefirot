@@ -25,7 +25,9 @@ NOW=datetime(2030,1,1,12,tzinfo=timezone.utc)
 class PanelFixture:
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
-        self.root=Path(self.temp.name);self.database=self.root/'data'/'ledger.sqlite'
+        # Panel resolves its paths. Match that canonical path on Windows too,
+        # where the temporary root may use a short-name or junction alias.
+        self.root=Path(self.temp.name).resolve();self.database=self.root/'data'/'ledger.sqlite'
         self.inbox=self.root/'inbox';self.clock=[NOW];self.case=example(NOW)
         self.panel=Panel(self.database,self.inbox,clock=lambda:self.clock[0])
 
@@ -75,16 +77,18 @@ class PanelViewTests(PanelFixture,unittest.TestCase):
         self.job('01-capture','CAPTURE',{'sports':self.case['sports']})
         self.job('02-decide','DECIDE',{'prediction_job_id':'01-capture','quotes':self.case['quotes'],
             'recheck':self.case['recheck'],'portfolio':{'bankroll':1000.,'peak':1000.}})
-        original=Path.read_text
+        original=Path.read_text;quote_reads=[]
         def read(path,*args,**kwargs):
             if path==self.inbox/'02-decide.json':
+                quote_reads.append(path)
                 with closing(Repository(self.database,read_only=True)) as repo:
                     self.assertEqual(len(repo.all('predictions')),1)
                     self.assertEqual(len(repo.all('jobs')),1)
                 self.clock[0]=NOW+timedelta(minutes=2)
             return original(path,*args,**kwargs)
         with patch.object(Path,'read_text',read):self.panel.run()
-        self.assertEqual([r['status'] for r in self.panel.last_run],['DONE','DONE'])
+        self.assertEqual(quote_reads,[self.inbox/'02-decide.json'],self.panel.last_run)
+        self.assertEqual([r['status'] for r in self.panel.last_run],['DONE','DONE'],self.panel.last_run)
 
     def test_tampered_receipt_disables_view_and_processing_without_rewriting_ledger(self):
         self.capture()

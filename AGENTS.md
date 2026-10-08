@@ -18,6 +18,9 @@
 аудитов после поставки 07.10 не обнаружено; UI закрывает оставшуюся задачу.
 Локальный полный release: 596/596, 18 новых проверок, ни одного skipped;
 replay/integrity=true. CI проверять на exact final head, во всех 4 jobs.
+Test fixture использует canonical temp root, как Panel: short-name/junction
+aliases не должны отключать перехват quote read на Windows. Сам факт
+перехвата проверяется явно, а не только через итоговый статус задания.
 code_hash: 321d7b37ab04380e374170b170e015ce5bd5623e93ecba80d12fe1c8dfe0e331.
 Реальные HTTP-запросы проверены; browser click/layout не проверены:
 в среде нет Chromium. examples/offline_queue_preview.html — отключённый
