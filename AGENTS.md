@@ -1,3 +1,24 @@
+## Scenario / Vector post-audit, 09.10.2026
+
+Текущая исследовательская ветка: feature/vector-first-audit-20261009 поверх
+feature/calibration-fit-gate-20261008. См.
+docs/SCENARIO_VECTOR_AUDIT_20261009.md. Добавлен отдельный
+scripts/scenario_vector_audit.py и синтетические regression tests.
+src/sefirot, BASELINE_V1/STRICT, Policy, model probabilities, ledger,
+API/provider и money gates не менялись. Пять правил: VECTOR FIRST,
+simple-market benchmark, model/market divergence diagnostic по уже
+существующим Policy.divergence=.10 / extreme_divergence=.20,
+архивный post-hoc quality check и RESULT != EDGE. Divergence не меняет
+canonical decision и не является денежным veto. LIVE runtime по-прежнему
+запрещён: archived_live_snapshot принимается только в
+ARCHIVED_LIVE_REVIEW, output всегда live_runtime_enabled=false и
+usable_for_live_selection=false. Уже просмотренные матчи 08.10 не являются
+новым HOLDOUT и не используются для refit/подбора порогов. Manual case input
+помечается MANUAL_RESEARCH_CASE_NOT_PROVIDER_ATTESTED. Личные билеты,
+receipts и ключи не публиковать. Новый модуль локально проверен отдельным
+synthetic test module; полный repository release/CI нужно сверять на exact
+head перед интеграцией. Main не сливать.
+
 # SEFIROT: актуальная база разработки
 
 ## Локальная ручная очередь, 08.10.2026
