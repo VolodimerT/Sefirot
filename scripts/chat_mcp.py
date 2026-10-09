@@ -127,6 +127,11 @@ class MCPHandler(Handler):
 
 def main():
     configured_token()
+    smoke = run_demo()
+    if not (smoke.get("synthetic") is True and smoke.get("replay_matches") is True
+            and smoke.get("ledger_integrity") is True and smoke.get("money_authorized") is False):
+        raise RuntimeError("SEFIROT_CANONICAL_STARTUP_SMOKE_FAILED")
+    print("SEFIROT_CORE_STARTUP_SMOKE_OK synthetic replay integrity research_only", flush=True)
     port = int(os.environ.get("PORT", "10000"))
     if not 0 < port < 65536: raise ValueError("invalid PORT")
     ThreadingHTTPServer(("0.0.0.0", port), MCPHandler).serve_forever()
