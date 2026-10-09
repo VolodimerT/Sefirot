@@ -1,0 +1,20 @@
+{
+  "version": "2.4.2",
+  "code_hash": "5bde1cbf96efab4bfd3890c4802f86a14f193564bdd047e4db78e1fc4f6fe95f",
+  "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "python": "3.12.14",
+  "platform": "Linux",
+  "tests": 716,
+  "test_exit": 0,
+  "generated_at": "2026-10-09T20:30:59.793406+00:00",
+  "elapsed_seconds": 50.519,
+  "backtest_fixtures": 12,
+  "backtest_scored_markets": 84,
+  "statistical_profitability_proven": false,
+  "base_sha": "8a8e64ced20800f64454089c65b48ff501523cc6",
+  "new_tests": 62,
+  "baseline_tests": 654,
+  "replay_matches": true,
+  "integrity": true,
+  "new_real_holdout_matches": 0
+}
