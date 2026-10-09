@@ -152,6 +152,9 @@ def main():
         if status.get("persistent_storage") is not True or status.get("store_revision", 0) < 1:
             raise RuntimeError("SEFIROT_DURABLE_STORE_NOT_READY")
         print("SEFIROT_DURABLE_STORE_VERIFIED revision="+str(status["store_revision"]), flush=True)
+        from chat_queue import start as start_chat_worker
+        start_chat_worker()
+        print("SEFIROT_CHAT_JOB_WORKER_STARTED", flush=True)
     port = int(os.environ.get("PORT", "10000"))
     if not 0 < port < 65536: raise ValueError("invalid PORT")
     ThreadingHTTPServer(("0.0.0.0", port), MCPHandler).serve_forever()
