@@ -1,0 +1,5910 @@
+{
+  "schema": "edge-v3-benchmark-v1",
+  "status": "KEEP_SHADOW",
+  "manifest_hash": "9411b8e8c18387d7022add9e4b08b487780420b2f027f17278d6d92cb06f78d7",
+  "assigned": 0,
+  "forecasts": 0,
+  "results": 0,
+  "void": 0,
+  "synthetic": false,
+  "source_authentication": "NOT_VERIFIED_BY_THIS_MODULE",
+  "proven_superiority": false,
+  "monetary_permission": false,
+  "scorecards": [
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "1X2",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "1X2",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "1X2",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DNB:HOME",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DNB:HOME",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "DNB:HOME",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "BTTS:YES",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "BTTS:YES",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "BTTS:YES",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "raw",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "1X2",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "1X2",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "1X2",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DOUBLE_CHANCE:1X",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DNB:HOME",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DNB:HOME",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "DNB:HOME",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "HANDICAP:HOME:-1",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TOTAL:OVER:2.5",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "BTTS:YES",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "BTTS:YES",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "BTTS:YES",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "BASELINE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "DC_DYNAMIC_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "context": null,
+      "variant": "calibrated",
+      "contract": "TEAM_TOTAL:HOME_OVER:1.5",
+      "model": "SOS_LITE_V1",
+      "assigned": 0,
+      "scored": 0,
+      "paired_n": 0,
+      "coverage": null,
+      "metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_metrics": {
+        "brier": null,
+        "log_loss": null
+      },
+      "paired_date_clusters": 0,
+      "unscored": 0,
+      "paired_delta": {
+        "brier": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        },
+        "log_loss": {
+          "mean": null,
+          "date_cluster_95_interval": null
+        }
+      },
+      "reliability": [
+        {
+          "class": 0,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 1,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        },
+        {
+          "class": 2,
+          "ece": null,
+          "bins": [
+            {
+              "bin": 0,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 1,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 2,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 3,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            },
+            {
+              "bin": 4,
+              "n": 0,
+              "mean_p": null,
+              "frequency": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "manifest_status": "TEMPLATE_ONLY_NO_HOLDOUT_REGISTERED",
+  "generated_at": "2026-10-09T20:30:47.844807+00:00",
+  "core_code_hash": "5bde1cbf96efab4bfd3890c4802f86a14f193564bdd047e4db78e1fc4f6fe95f",
+  "core_model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "research_hash": "f435680df74557f305ebc94a1677c5409538b8c92f76cc62362e55a21ffbb263",
+  "market_comparator": {
+    "status": "NO_DATA",
+    "verified_quotes": 0,
+    "clv": null
+  },
+  "arena": {
+    "status": "NO_DATA",
+    "paired_records": 0,
+    "benefit": null
+  }
+}
