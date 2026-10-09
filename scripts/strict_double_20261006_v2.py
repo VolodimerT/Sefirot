@@ -1,4 +1,11 @@
 from __future__ import annotations
+
+# Optional Render ChatGPT MCP entrypoint; original experiment unchanged by default.
+import os as _sefirot_bridge_os
+if _sefirot_bridge_os.environ.get("SEFIROT_BRIDGE_MODE") == "mcp":
+    from chat_mcp import main as _sefirot_bridge_main
+    _sefirot_bridge_main()
+    raise SystemExit(0)
 import json, os, time as _time, urllib.parse, urllib.request, threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
