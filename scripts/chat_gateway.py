@@ -21,6 +21,7 @@ from sefirot.fixtures import example
 from sefirot.markets import DEFAULT_POOL
 from sefirot.repository import Repository
 from sefirot.service import Service
+import chat_store
 
 MAX_REQUEST_BYTES = 512 * 1024
 GATE = Lock()
@@ -68,49 +69,62 @@ def run_demo() -> dict:
 
 
 def execute(kind: str, data: dict) -> dict:
-    """Invoke canonical Service exclusively: no invented probability formulas."""
+    """Invoke the canonical Service against a fresh, integrity-checked durable snapshot."""
     with GATE:
-        location = ledger_path()
-        location.parent.mkdir(parents=True, exist_ok=True)
-        repo = Repository(str(location))
-        try:
-            if not repo.verify():
-                raise ValueError("JOURNAL_INTEGRITY: closed")
-            service = Service(repo, Policy())
-            if kind == "capture":
-                if set(data) - {"sports", "markets"} or "sports" not in data:
-                    raise ValueError("capture requires sports and optionally markets")
-                result = service.capture(data["sports"], data.get("markets", DEFAULT_POOL))
-                return {**build_info(), "stage": "FORECAST_SEALED", "prediction_id": result["id"],
-                        "sealed_at": result["sealed_at"], "fixture": result["sports"]["match"],
-                        "synthetic": result["synthetic"], "candidates": result["candidates"],
-                        "model_id": result["model_id"], "captured_prematch": result["captured_prematch"]}
-            if kind == "decide":
-                if set(data) != {"prediction_id", "quotes", "recheck", "portfolio"}:
-                    raise ValueError("decide requires prediction_id, quotes, recheck and portfolio")
-                result = service.decide(data["prediction_id"], data["quotes"],
-                                        data["recheck"], data["portfolio"], service.now())
-                return {**build_info(), "stage": "DECISION_RECORDED", "decision_id": result["id"],
-                        "prediction_id": data["prediction_id"], "decision": result["decision"],
-                        "verdict": result["verdict"], "class": result["class"],
-                        "limiting_factors": result["limiting_factors"],
-                        "candidates": result["candidates"],
-                        "decision_card": result.get("decision_card"), "risk": result.get("risk")}
-            if kind == "result":
-                result = service.result(data)
-                return {**build_info(), "stage": "RESULT_RECORDED", "result": result}
-            if kind == "decision":
-                result = repo.get("decisions", data["id"])
-                return {**build_info(), "stage": "DECISION_READ", "decision": result}
-            if kind == "report":
-                return {**build_info(), "stage": "AUDIT_REPORT", "report": service.report()}
-            if kind == "status":
-                return {**build_info(), "stage": "READY", "ledger_integrity": True,
-                        "stored_predictions": len(repo.all("predictions")),
-                        "stored_decisions": len(repo.all("decisions"))}
-            raise ValueError("unsupported operation")
-        finally:
-            repo.close()
+        if chat_store.configured():
+            with tempfile.TemporaryDirectory(prefix="sefirot-durable-") as directory:
+                path = Path(directory) / "canonical.sqlite"
+                revision = chat_store.restore(path)
+                result = _execute_at(kind, data, path)
+                if kind in ("capture", "decide", "result"):
+                    revision = chat_store.checkpoint(path, revision)
+                result["persistent_storage"] = True
+                result["store_revision"] = revision
+                return result
+        return _execute_at(kind, data, ledger_path())
+
+
+def _execute_at(kind: str, data: dict, location: Path) -> dict:
+    location.parent.mkdir(parents=True, exist_ok=True)
+    repo = Repository(str(location))
+    try:
+        if not repo.verify():
+            raise ValueError("JOURNAL_INTEGRITY: closed")
+        service = Service(repo, Policy())
+        if kind == "capture":
+            if set(data) - {"sports", "markets"} or "sports" not in data:
+                raise ValueError("capture requires sports and optionally markets")
+            result = service.capture(data["sports"], data.get("markets", DEFAULT_POOL))
+            return {**build_info(), "stage": "FORECAST_SEALED", "prediction_id": result["id"],
+                    "sealed_at": result["sealed_at"], "fixture": result["sports"]["match"],
+                    "synthetic": result["synthetic"], "candidates": result["candidates"],
+                    "model_id": result["model_id"], "captured_prematch": result["captured_prematch"]}
+        if kind == "decide":
+            if set(data) != {"prediction_id", "quotes", "recheck", "portfolio"}:
+                raise ValueError("decide requires prediction_id, quotes, recheck and portfolio")
+            result = service.decide(data["prediction_id"], data["quotes"],
+                                    data["recheck"], data["portfolio"], service.now())
+            return {**build_info(), "stage": "DECISION_RECORDED", "decision_id": result["id"],
+                    "prediction_id": data["prediction_id"], "decision": result["decision"],
+                    "verdict": result["verdict"], "class": result["class"],
+                    "limiting_factors": result["limiting_factors"],
+                    "candidates": result["candidates"],
+                    "decision_card": result.get("decision_card"), "risk": result.get("risk")}
+        if kind == "result":
+            result = service.result(data)
+            return {**build_info(), "stage": "RESULT_RECORDED", "result": result}
+        if kind == "decision":
+            result = repo.get("decisions", data["id"])
+            return {**build_info(), "stage": "DECISION_READ", "decision": result}
+        if kind == "report":
+            return {**build_info(), "stage": "AUDIT_REPORT", "report": service.report()}
+        if kind == "status":
+            return {**build_info(), "stage": "READY", "ledger_integrity": True,
+                    "stored_predictions": len(repo.all("predictions")),
+                    "stored_decisions": len(repo.all("decisions"))}
+        raise ValueError("unsupported operation")
+    finally:
+        repo.close()
 
 
 class Handler(BaseHTTPRequestHandler):
