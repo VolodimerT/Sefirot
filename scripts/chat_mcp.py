@@ -132,6 +132,26 @@ def main():
             and smoke.get("ledger_integrity") is True and smoke.get("money_authorized") is False):
         raise RuntimeError("SEFIROT_CANONICAL_STARTUP_SMOKE_FAILED")
     print("SEFIROT_CORE_STARTUP_SMOKE_OK synthetic replay integrity research_only", flush=True)
+    if os.environ.get("SEFIROT_STORE_URL"):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from chat_store import checkpoint
+        from sefirot.repository import Repository
+        status = execute("status", {})
+        if status.get("store_revision") == 0:
+            with TemporaryDirectory(prefix="sefirot-first-ledger-") as directory:
+                initial = Path(directory) / "canonical.sqlite"
+                repository = Repository(str(initial))
+                try:
+                    if not repository.verify():
+                        raise RuntimeError("FIRST_LEDGER_INVALID")
+                finally:
+                    repository.close()
+                checkpoint(initial, 0)
+        status = execute("status", {})
+        if status.get("persistent_storage") is not True or status.get("store_revision", 0) < 1:
+            raise RuntimeError("SEFIROT_DURABLE_STORE_NOT_READY")
+        print("SEFIROT_DURABLE_STORE_VERIFIED revision="+str(status["store_revision"]), flush=True)
     port = int(os.environ.get("PORT", "10000"))
     if not 0 < port < 65536: raise ValueError("invalid PORT")
     ThreadingHTTPServer(("0.0.0.0", port), MCPHandler).serve_forever()
