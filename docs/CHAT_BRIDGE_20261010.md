@@ -5,11 +5,19 @@ This optional separate Render Free web service calls **the canonical Python SEFI
 ## Deploy
 - Python runtime; branch feature/chat-sefirot-bridge-20261010
 - Build: python -m pip install .
-- Start: python scripts/chat_gateway.py
+- Start: **python scripts/chat_mcp.py** (recommended: MCP + REST). For REST only, use python scripts/chat_gateway.py.
 - Free plan, Frankfurt, manual deployment
 - Required environment: SEFIROT_BRIDGE_TOKEN, 32-256 characters random and secret.
 - Bind Render-provided PORT automatically.
 - Authenticated requests use Authorization: Bearer <secret> and JSON Content-Type.
+
+## MCP (requires explicit custom-tool connection)
+
+- MCP endpoint: POST /mcp, Streamable HTTP JSON-RPC version 2025-03-26, application/json replies.
+- MCP tools: sefirot_status, sefirot_demo, sefirot_capture, sefirot_decide, sefirot_result, sefirot_report.
+- Both REST and MCP require `Authorization: Bearer <secret>`. Auth credential is stored only in the Render environment. Do not disclose it in the public repository.
+- Installing an external MCP tool in ChatGPT remains a separate user action after hosting is online; publishing the service alone does not authorize ChatGPT access.
+- Browser-based OAuth connector registration is **not** included; some ChatGPT clients may not accept bearer-header MCP servers directly. Use supported custom connectors only.
 
 ## API
 
