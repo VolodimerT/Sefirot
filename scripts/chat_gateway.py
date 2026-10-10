@@ -92,9 +92,12 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
             raise ValueError("JOURNAL_INTEGRITY: closed")
         service = Service(repo, Policy())
         if kind == "capture":
-            if set(data) - {"sports", "markets"} or "sports" not in data:
-                raise ValueError("capture requires sports and optionally markets")
-            result = service.capture(data["sports"], data.get("markets", DEFAULT_POOL))
+            if set(data) - {"sports", "markets", "parent", "reason"} or "sports" not in data:
+                raise ValueError("capture requires sports, optionally markets and paired parent/reason")
+            if ("parent" in data) != ("reason" in data):
+                raise ValueError("parent and reason must be supplied together for a real evidence revision")
+            result = service.capture(data["sports"], data.get("markets", DEFAULT_POOL),
+                                     parent=data.get("parent"), reason=data.get("reason"))
             return {**build_info(), "stage": "FORECAST_SEALED", "prediction_id": result["id"],
                     "sealed_at": result["sealed_at"], "fixture": result["sports"]["match"],
                     "synthetic": result["synthetic"], "candidates": result["candidates"],
