@@ -1,0 +1,33 @@
+{
+  "scope": "P0_P1_ONLY",
+  "base_commit": "ee433953e643cf60a793e6392131b77dc5ea5617",
+  "local": {
+    "tests": 687,
+    "new_diagnostic_tests": 50,
+    "skipped": 0,
+    "test_exit": 0,
+    "elapsed_seconds": 53.695,
+    "replay_matches": true,
+    "integrity": true,
+    "synthetic_backtest_fixtures": 12,
+    "old_retrospective_cases": 49,
+    "new_real_model_trial": false
+  },
+  "core_code_hash_before": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c",
+  "core_code_hash_after": "e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c",
+  "core_model_hash_before": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "core_model_hash_after": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "policy_hash_before": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "policy_hash_after": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "core_and_legacy_arena_files_byte_unchanged": true,
+  "ledger_regression_byte_unchanged": true,
+  "real_train_externally_verified": 0,
+  "new_independent_holdout_externally_verified": 0,
+  "arena_incremental_benefit": "NOT_MEASURED",
+  "llm_calls": 0,
+  "llm_cost_usd": null,
+  "model_action": "KEEP_SHADOW",
+  "empirical_status": "INSUFFICIENT_REAL_DATA",
+  "remote_ci": "CHECK_FINAL_PR_HEAD_SEPARATELY",
+  "generated_at_utc": "2026-10-10T23:05:47.665313+00:00"
+}
