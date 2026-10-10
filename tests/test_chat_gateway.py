@@ -57,7 +57,7 @@ class BridgeTests(unittest.TestCase):
                 first = gateway.execute("capture", {"sports": case["sports"], "markets": case["markets"]})
                 self.assertEqual(first["stage"], "FORECAST_SEALED")
                 newer = deepcopy(case["sports"])
-                newer["as_of"] = (base + timedelta(seconds=10)).isoformat()
+                newer["as_of"] = base.isoformat()
                 newer["history"] = newer["history"][1:]
                 with self.assertRaisesRegex(ValueError, "parent and reason"):
                     gateway.execute("capture", {"sports": newer, "markets": case["markets"],
