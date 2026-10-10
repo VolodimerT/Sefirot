@@ -1,5 +1,34 @@
 # SEFIROT: актуальная база разработки
 
+## ARENA 1.0 Diagnostic + Error Registry, 11.10.2026
+
+Изолированная feature/arena1-diagnostic-registry-20261011 поверх точного
+PR #14 / ee433953e643cf60a793e6392131b77dc5ea5617. См. docs/
+ARENA1_INTEGRATION_PLAN.md и reports/ARENA1_INVENTORY_20261011.json.
+Только P0–P1 нового задания; после этого остановиться, P2–P4 отдельно.
+API/cloud/keys/LLM не запускать, агентов не создавать, main не сливать.
+research/arena1 + standalone scripts/arena_diagnostic.py переиспользуют
+v0.2, не заменяют его scripts. Все src/sefirot и четыре legacy ARENA
+scripts побайтно прежние; CORE code_hash e4070dde5e8629891477544387e24e2f997374086a36487da387afd5cc9b260c.
+model_hash 46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617;
+Policy и money gates неизменны. Exact build для original seal обязателен;
+model hash сам по себе не делает #24 совместимым с #14 по code_hash.
+Typed findings принимают только воспроизводимые evidence/time/market
+механизмы. UNKNOWN не PASS; authored legacy veto не факт. Новый HARD_BLOCK
+только сохраняет local-ledger-bound sealed avoid_result для exact result
+контракта; unbound directive UNKNOWN. Никакого голосования/поправки к P.
+Стресс ±10% λ / history groups = SENSITIVITY_ONLY; Builder shared-score
+probe не экспресс/допуск, combined odds/EV=null. Registry отдельный
+create-once JSON, read_bound воспроизводит входы; это offline reconstruction,
+не prospective регистрация или внешняя фиксация времени. SQL FK/columns
+проверять дополнительно к payload hashes. Local receipts не source/time proof.
+Финальный локальный release 687/687, 50 новых тестов, skipped=0,
+replay/integrity=true. CI сверять на exact final head во всех четырёх jobs.
+REAL_TRAIN/HOLDOUT=0, ARENA benefit NOT_MEASURED, LLM calls=0/cost=null,
+KEEP_SHADOW/INSUFFICIENT_REAL_DATA. DC/SOS остаются на #21 неизменными;
+их seal adapter и интеграция #24/#22/#25 — отдельный будущий этап.
+Нижние разделы — исторические срезы.
+
 ## ARENA control v0.2, 08.10.2026
 
 Текущая самостоятельная feature/arena-control-v02-20261008 основана на

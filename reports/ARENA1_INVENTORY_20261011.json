@@ -1,0 +1,695 @@
+{
+  "checked_at_utc": "2026-10-10T23:02:34.403Z",
+  "repository": "VolodimerT/Sefirot",
+  "prs": [
+    {
+      "pr": 12,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/12",
+      "draft": true,
+      "state": "open",
+      "head": "59c02bc5ccef16db22cd092ecb4328adeb0708f0",
+      "head_branch": "feature/arena-shadow-v0-20261008",
+      "base": "053ad5a07c4732c5062ac6a445fc1d61b1c2a119",
+      "base_branch": "feature/stability-reset-20261005",
+      "head_tree": "137be603f3f8e9b207a75fbe4558c92b07cd912c",
+      "base_tree": "b7ed1299f962b1911ea1e402b3c3bd40303211aa",
+      "changed_files": [
+        {
+          "path": "docs/ARENA_PROTOTYPE.md",
+          "status": "added"
+        },
+        {
+          "path": "scripts/arena_shadow.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_arena.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 37742521206,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 113196300537,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 113196300860,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 113196300882,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 113196300974,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 13,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/13",
+      "draft": true,
+      "state": "open",
+      "head": "19a81f961ded4477a08da89d20ee584f35738f8f",
+      "head_branch": "feature/arena-forward-audit-20261008",
+      "base": "59c02bc5ccef16db22cd092ecb4328adeb0708f0",
+      "base_branch": "feature/arena-shadow-v0-20261008",
+      "head_tree": "610595b1b066f565198bd0e3ad77670f891e5bbe",
+      "base_tree": "137be603f3f8e9b207a75fbe4558c92b07cd912c",
+      "changed_files": [
+        {
+          "path": "docs/ARENA_FORWARD_20261008.md",
+          "status": "added"
+        },
+        {
+          "path": "scripts/arena_forward.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_arena_forward.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 37754287501,
+        "conclusion": "failure",
+        "jobs": [
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 113234885395,
+            "conclusion": "cancelled"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 113234885527,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 113234885631,
+            "conclusion": "failure"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 113234886346,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 14,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/14",
+      "draft": true,
+      "state": "open",
+      "head": "ee433953e643cf60a793e6392131b77dc5ea5617",
+      "head_branch": "feature/arena-control-v02-20261008",
+      "base": "19a81f961ded4477a08da89d20ee584f35738f8f",
+      "base_branch": "feature/arena-forward-audit-20261008",
+      "head_tree": "3523619d9a74b745ed2e0e0810525c9ffbd5a13b",
+      "base_tree": "610595b1b066f565198bd0e3ad77670f891e5bbe",
+      "changed_files": [
+        {
+          "path": "AGENTS.md",
+          "status": "modified"
+        },
+        {
+          "path": "docs/ARENA_ARCHITECTURE_AUDIT.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/ARENA_DESIGN_V02.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/ARENA_NEXT_EXPERIMENT.md",
+          "status": "added"
+        },
+        {
+          "path": "reports/ARENA_BASELINE_COMPARISON.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/ARENA_TEST_REPORT.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/BACKTEST.json",
+          "status": "modified"
+        },
+        {
+          "path": "reports/DEMO.json",
+          "status": "modified"
+        },
+        {
+          "path": "reports/RELEASE_CHECK.json",
+          "status": "modified"
+        },
+        {
+          "path": "reports/TEST_OUTPUT.txt",
+          "status": "modified"
+        },
+        {
+          "path": "reports/TEST_REPORT.md",
+          "status": "modified"
+        },
+        {
+          "path": "scripts/arena_control.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/arena_control_forward.py",
+          "status": "added"
+        },
+        {
+          "path": "src/sefirot/offline_panel.py",
+          "status": "modified"
+        },
+        {
+          "path": "tests/test_arena_control.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_offline_panel.py",
+          "status": "modified"
+        }
+      ],
+      "ci": {
+        "run_id": 37777950752,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 113313466943,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 113313467185,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 113313467261,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 113313467297,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 21,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/21",
+      "draft": true,
+      "state": "open",
+      "head": "121a580143e8b4c0d98669bb5c0a0b7dbcfe317b",
+      "head_branch": "feature/prediction-edge-v3-20261009",
+      "base": "8a8e64ced20800f64454089c65b48ff501523cc6",
+      "base_branch": "feature/calibration-multiseason-collector-20261008",
+      "head_tree": "8cb4ef4f301254d0e8263aa7846f4eaed0cfb55e",
+      "base_tree": "df207db40751240330dd36c216d2e4e2682081a5",
+      "changed_files": [
+        {
+          "path": "docs/PREDICTION_EDGE_V3_AUDIT.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/PREDICTION_EDGE_V3_EXPERIMENT.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/PREDICTION_EDGE_V3_MODEL_CARD.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/PREDICTION_EDGE_V3_VALIDATION.md",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_BENCHMARK.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_BENCHMARK.md",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_DATA_READINESS.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_MANIFEST.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_RELEASE_CHECK.json",
+          "status": "added"
+        },
+        {
+          "path": "research/__init__.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/__init__.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/arena.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/benchmark.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/calibration.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/market.py",
+          "status": "added"
+        },
+        {
+          "path": "research/prediction_edge_v3/models.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/prediction_edge_v3.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_prediction_edge_v3.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 37987626213,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 114013446119,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 114013446571,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 114013446589,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 114013446605,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 23,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/23",
+      "draft": true,
+      "state": "open",
+      "head": "67e10930257b4df0af42f3dcfd086a8f5d9c0f05",
+      "head_branch": "feature/prediction-edge-v31-source-adapter-20261010",
+      "base": "121a580143e8b4c0d98669bb5c0a0b7dbcfe317b",
+      "base_branch": "feature/prediction-edge-v3-20261009",
+      "head_tree": "4417624efef48d73d19116b380a4fd3c8daffa31",
+      "base_tree": "8cb4ef4f301254d0e8263aa7846f4eaed0cfb55e",
+      "changed_files": [
+        {
+          "path": "docs/PREDICTION_EDGE_V3_1_SOURCE_ADAPTER.md",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_1_ADAPTER_RELEASE.json",
+          "status": "added"
+        },
+        {
+          "path": "reports/PREDICTION_EDGE_V3_1_DATA_READINESS.json",
+          "status": "added"
+        },
+        {
+          "path": "research/source_adapter_v3.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/prediction_edge_source_adapter.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_prediction_edge_source_adapter.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 37992694855,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 114030680699,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 114030680949,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 114030680950,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 114030681098,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 24,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/24",
+      "draft": true,
+      "state": "open",
+      "head": "3707cbf2f2fcafaa773cd82015e2f8537becf74b",
+      "head_branch": "feature/fixture-query-contract-20261010",
+      "base": "67e10930257b4df0af42f3dcfd086a8f5d9c0f05",
+      "base_branch": "feature/prediction-edge-v31-source-adapter-20261010",
+      "head_tree": "75851b3e8894308822c4e03837ecc4ac0a46305d",
+      "base_tree": "4417624efef48d73d19116b380a4fd3c8daffa31",
+      "changed_files": [
+        {
+          "path": "docs/FIXTURE_QUERY_CONTRACT_20261010.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/PREDICTION_EDGE_V3_1_SOURCE_ADAPTER.md",
+          "status": "modified"
+        },
+        {
+          "path": "reports/FIXTURE_QUERY_CONTRACT_RELEASE_20261010.json",
+          "status": "added"
+        },
+        {
+          "path": "research/source_adapter_v3.py",
+          "status": "modified"
+        },
+        {
+          "path": "scripts/test_sports_gateway.mjs",
+          "status": "modified"
+        },
+        {
+          "path": "server/sports_gateway.js",
+          "status": "modified"
+        },
+        {
+          "path": "src/sefirot/data_session.py",
+          "status": "modified"
+        },
+        {
+          "path": "src/sefirot/football_gateway.py",
+          "status": "modified"
+        },
+        {
+          "path": "src/sefirot/football_provider.py",
+          "status": "modified"
+        },
+        {
+          "path": "src/sefirot/football_query.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_data_session.py",
+          "status": "modified"
+        },
+        {
+          "path": "tests/test_fixture_query_contract.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_prediction_edge_source_adapter.py",
+          "status": "modified"
+        },
+        {
+          "path": "tests/test_server_gateway.py",
+          "status": "modified"
+        }
+      ],
+      "ci": {
+        "run_id": 38025991498,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 114136839741,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 114136839818,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 114136839869,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 114136840044,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 22,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/22",
+      "draft": true,
+      "state": "open",
+      "head": "9b88d130e69e3be5ee69723469913b36c28bb3e8",
+      "head_branch": "feature/chat-sefirot-bridge-20261010",
+      "base": "121a580143e8b4c0d98669bb5c0a0b7dbcfe317b",
+      "base_branch": "feature/prediction-edge-v3-20261009",
+      "head_tree": "332ea4c443000ca8f1379a502bfc46b440152cf2",
+      "base_tree": "8cb4ef4f301254d0e8263aa7846f4eaed0cfb55e",
+      "changed_files": [
+        {
+          "path": "docs/CHAT_BRIDGE_20261010.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/CHAT_RUNNER_SUPABASE_20261010.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/SEFIROT_TICKET_AUDIT_20261009.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/YARYI_STAKE_PARIK_PROVENANCE_20261010.md",
+          "status": "added"
+        },
+        {
+          "path": "scripts/chat_gateway.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/chat_mcp.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/chat_queue.py",
+          "status": "added"
+        },
+        {
+          "path": "scripts/chat_store.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_chat_gateway.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_chat_mcp.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_chat_queue.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_chat_store.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 38026244131,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 114137583858,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 114137583962,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 114137583982,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 114137584015,
+            "conclusion": "success"
+          }
+        ]
+      }
+    },
+    {
+      "pr": 25,
+      "url": "https://github.com/VolodimerT/Sefirot/pull/25",
+      "draft": true,
+      "state": "open",
+      "head": "eb4f8f1c1ee24cd55499b794c60d429e12a4e089",
+      "head_branch": "feature/corners-shadow-v0-20261011",
+      "base": "7d2356ca8d31440b370838e25d0ddd2ac473d331",
+      "base_branch": "feature/stability-reset-20261005",
+      "head_tree": "a40f4d61387e5def63ecc7507e5630cf92b6c040",
+      "base_tree": "fbe8967ae9c95438491cbe36465be2d1831eb15b",
+      "changed_files": [
+        {
+          "path": "docs/CORNERS_DATASET_AND_HOLDOUT_20261011.md",
+          "status": "added"
+        },
+        {
+          "path": "docs/CORNERS_SHADOW_20261011.md",
+          "status": "added"
+        },
+        {
+          "path": "src/sefirot/corners_dataset.py",
+          "status": "added"
+        },
+        {
+          "path": "src/sefirot/corners_holdout.py",
+          "status": "added"
+        },
+        {
+          "path": "src/sefirot/corners_shadow.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_corners_dataset.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_corners_holdout.py",
+          "status": "added"
+        },
+        {
+          "path": "tests/test_corners_shadow.py",
+          "status": "added"
+        }
+      ],
+      "ci": {
+        "run_id": 38091529180,
+        "conclusion": "success",
+        "jobs": [
+          {
+            "name": "unittest (ubuntu-latest, 3.13)",
+            "id": 114328782598,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.13)",
+            "id": 114328782737,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (ubuntu-latest, 3.11)",
+            "id": 114328782777,
+            "conclusion": "success"
+          },
+          {
+            "name": "unittest (windows-latest, 3.11)",
+            "id": 114328782786,
+            "conclusion": "success"
+          }
+        ]
+      }
+    }
+  ],
+  "main": {
+    "head": "96dd95861be6c11bbc450432ca280f9a4d2efd3f",
+    "tree": "3819eba45e3c99c8b36d9b8908ce4dc81a7d0e55",
+    "changed_files": [],
+    "ci": 36925293056,
+    "jobs": [
+      {
+        "name": "unittest (ubuntu-latest, 3.13)",
+        "id": 110581009157,
+        "conclusion": "success"
+      },
+      {
+        "name": "unittest (windows-latest, 3.11)",
+        "id": 110581009385,
+        "conclusion": "success"
+      },
+      {
+        "name": "unittest (windows-latest, 3.13)",
+        "id": 110581009416,
+        "conclusion": "success"
+      },
+      {
+        "name": "unittest (ubuntu-latest, 3.11)",
+        "id": 110581009559,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "selected_base": {
+    "pr": 14,
+    "sha": "ee433953e643cf60a793e6392131b77dc5ea5617",
+    "tree": "3523619d9a74b745ed2e0e0810525c9ffbd5a13b",
+    "common_ancestor_with_pr24": "053ad5a07c4732c5062ac6a445fc1d61b1c2a119",
+    "reason": "Reuse canonical ARENA v0.2 without copying branch-specific CORE/transport code"
+  },
+  "core_model_modules_identical_across_pr_heads": true,
+  "pr13_failure": {
+    "job": 113234885631,
+    "tests": 612,
+    "errors": 2,
+    "reason": "Windows ConnectionAbortedError [WinError 10053] in offline_panel rejected POST tests; addressed on PR14"
+  },
+  "empirical_status": "INSUFFICIENT_REAL_DATA",
+  "scope": "P0_P1_ONLY",
+  "current_refs_independently_checked": {
+    "main": "96dd95861be6c11bbc450432ca280f9a4d2efd3f",
+    "feature/stability-reset-20261005": "7d2356ca8d31440b370838e25d0ddd2ac473d331",
+    "feature/arena-control-v02-20261008": "ee433953e643cf60a793e6392131b77dc5ea5617"
+  }
+}
