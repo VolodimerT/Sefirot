@@ -10,6 +10,8 @@ from urllib.request import Request, build_opener
 from .contracts import digest, time
 from .credentials import credential
 from .football_provider import HOST, PARAMETERS, FootballRequestError, get
+from .football_query import (QUERY_ERROR_CODES, FootballQueryError, validate_fixture_query,
+                             validate_fixture_query_parameters)
 from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
 
 
@@ -38,6 +40,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
     if (endpoint not in PARAMETERS or set(params) - PARAMETERS[endpoint]
             or any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in params.values())):
         raise ValueError('unsupported sports endpoint/parameters')
+    if endpoint == 'fixtures':
+        validate_fixture_query_parameters(params)
     token = credential('SEFIROT_SPORTS_GATEWAY_TOKEN')
     clock = clock or (lambda: datetime.now(timezone.utc))
     started = clock().isoformat()
@@ -61,6 +65,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if not isinstance(wrapper, dict):
             raise ValueError('sports gateway response malformed')
         if response.status != 200 or wrapper.get('ok') is not True:
+            if isinstance(wrapper.get('error'), str) and wrapper['error'] in QUERY_ERROR_CODES:
+                raise FootballQueryError(wrapper['error'])
             if response.status == 422 and wrapper.get('error') == 'PROVIDER_REJECTED_REQUEST':
                 raise FootballRequestError(wrapper.get('provider_errors', {}))
             if wrapper.get('error') == 'UPSTREAM_HTTP_ERROR':
@@ -85,6 +91,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if endpoint != 'status' and (not isinstance(data.get('response'), list)
                 or data.get('results') != len(data['response']) or data.get('paging', {}).get('total', 1) > 1):
             raise ValueError('sports gateway incomplete provider response')
+        if endpoint == 'fixtures':
+            validate_fixture_query(data, params)
         receipt = {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
             'endpoint': '/' + endpoint, 'parameters': params, 'request_started_at': started,
             'received_at': received, 'payload_hash': digest(data), 'http_status': 200, 'sports_only': True,

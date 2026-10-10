@@ -21,6 +21,17 @@ class GatewayError extends Error {
   constructor(code) { super(code); this.code = code; }
 }
 
+function checkFixtureEcho(data, params) {
+  if (data.get !== "fixtures") throw new GatewayError("ENDPOINT_ECHO_MISMATCH");
+  const echoed = data.parameters;
+  if (!echoed || typeof echoed !== "object" || Array.isArray(echoed) ||
+      Object.keys(echoed).length !== Object.keys(params).length ||
+      Object.entries(echoed).some(([key, value]) => !Object.hasOwn(params, key) ||
+        !(typeof value === "string" || Number.isSafeInteger(value)) || String(value) !== String(params[key]))) {
+    throw new GatewayError("QUERY_ECHO_MISMATCH");
+  }
+}
+
 function json(data, status = 200) {
   return Response.json(data, {status, headers: {"cache-control": "no-store"}});
 }
@@ -172,6 +183,7 @@ Deno.serve(async req => {
         ![0, 1].includes(data.paging?.total))) {
       return json({ok: false, error: "INCOMPLETE_PROVIDER_RESPONSE"}, 422);
     }
+    if (endpoint === "fixtures") checkFixtureEcho(data, params);
     if (endpoint === "status") {
       if (!data.response || typeof data.response !== "object" || Array.isArray(data.response)) {
         return json({ok: false, error: "MALFORMED_PROVIDER_RESPONSE"}, 502);

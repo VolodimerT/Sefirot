@@ -9,7 +9,8 @@ const marker = "const DEPLOYED_AUTH = []; // SEFIROT_DEPLOY_AUTH";
 const token = "TEST_SESSION_TOKEN";
 const hash = value => createHash("sha256").update(value).digest("hex");
 const auth = [{hash: hash(token), expires_at: null}];
-const fixtures = {errors: [], results: 0, paging: {current: 1, total: 1}, response: []};
+const fixtures = {get: "fixtures", parameters: {}, errors: [], results: 0,
+  paging: {current: 1, total: 1}, response: []};
 const status = {errors: [], response: {account: {email: "PRIVATE_ACCOUNT_VALUE"},
   subscription: {active: true}, requests: {current: 1, limit_day: 100}}};
 
@@ -83,12 +84,44 @@ await test("oversized and malformed input make no provider request", async () =>
   }
 });
 await test("fixed host and encoded parameters never send auth in the URL", async () => {
-  const s = setup(); const out = await s.call({body: {endpoint: "fixtures", params: {league: 5, timezone: "Europe/Kyiv"}}});
+  const params = {league: 5, timezone: "Europe/Kyiv"};
+  const s = setup({upstream: Response.json({...fixtures, parameters: params})});
+  const out = await s.call({body: {endpoint: "fixtures", params}});
   assert.equal(out.status, 200); assert.equal(s.calls.length, 2);
   assert.equal(s.calls[1].url, "https://v3.football.api-sports.io/fixtures?league=5&timezone=Europe%2FKyiv");
   assert.equal(s.calls[1].options.headers["x-apisports-key"], "PRIVATE_API_KEY");
   assert.ok(!s.calls[1].url.includes("PRIVATE"));
   assert.ok(!JSON.stringify(out).includes("PRIVATE")); assert.equal(out.body.execution_enabled, false);
+});
+await test("fixture endpoint echo must match before successful response", async () => {
+  for (const get of [undefined, "odds", "PRIVATE_TOKEN"]) {
+    const s = setup({upstream: Response.json({...fixtures, get})}); const out = await s.call();
+    assert.equal(out.status, 502); assert.equal(out.body.error, "ENDPOINT_ECHO_MISMATCH");
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
+  }
+});
+await test("timezone fallback is rejected even for an empty provider packet", async () => {
+  const params = {date: "2026-10-05", timezone: "Europe/Kyiv"};
+  const s = setup({upstream: Response.json({...fixtures, parameters: {...params, timezone: "UTC"}})});
+  const out = await s.call({body: {endpoint: "fixtures", params}});
+  assert.equal(out.status, 502); assert.equal(out.body.error, "QUERY_ECHO_MISMATCH");
+  assert.equal(s.calls.length, 2); assert.equal(out.body.data, undefined);
+});
+await test("fixture parameter keys and scalar values must match without private error text", async () => {
+  for (const parameters of [null, [], {id: true}, {id: []}, {id: "PRIVATE_TOKEN"},
+      {}, {id: "10", extra: "PRIVATE_TOKEN"}]) {
+    const s = setup({upstream: Response.json({...fixtures, parameters})});
+    const out = await s.call({body: {endpoint: "fixtures", params: {id: 10}}});
+    assert.equal(out.body.error, "QUERY_ECHO_MISMATCH");
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
+  }
+});
+await test("stringified fixture parameter echo is preserved without relabeling", async () => {
+  const data = {...fixtures, parameters: {id: "10", timezone: "UTC"}};
+  const s = setup({upstream: Response.json(data)});
+  const out = await s.call({body: {endpoint: "fixtures", params: {id: 10, timezone: "UTC"}}});
+  assert.equal(out.status, 200); assert.deepEqual(out.body.data, data);
+  assert.deepEqual(out.body.params, {id: 10, timezone: "UTC"});
 });
 await test("status redacts account while preserving subscription and quota", async () => {
   const s = setup({upstream: Response.json(status)}); const out = await s.call({body: {endpoint: "status"}});
