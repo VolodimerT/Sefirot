@@ -1,7 +1,9 @@
 # Одна API-сессия сбора и исследовательских прогнозов
 
 05.10.2026. `data-session` объединяет status → fixtures → заранее
-назначенная CALIBRATION-выборка → история → capture → сетки рынков.
+назначенная CALIBRATION-выборка → история → capture.
+По умолчанию сохраняются семь baseline контрактов в original seal.
+Research-сетки создаются только по явному `--research-grids`.
 BASELINE_V1/STRICT и модель вероятностей сохранены. Команда не получает
 цены, не размещает ставки, не выдаёт monetary approval и не проходит HOLDOUT.
 
@@ -26,8 +28,14 @@ Source reliability — утверждение оператора, не серт�
 - REPORT.json — итог, квота, все попытки, весь знаменатель и пропуски;
 - sports-archive — неизменяемые API fixture packets;
 - research.sqlite, plan.json, capture.json, status.json — исследовательский журнал;
-- папка API fixture ID / market-grid.json и builder-grid.json для каждого
+- только с `--research-grids`: папка API fixture ID / market-grid.json и builder-grid.json для каждого
   original prematch seal: 50 main research contracts и 14 goal AND сочетаний.
+
+Без флага сетки и Builder не импортируются и не рассчитываются;
+`research_grids_enabled=false`, `artifact_status=SEALED_FORECAST_ONLY`.
+Флаг не меняет спортивные данные, исходные seals или monetary permission.
+Полная справка инструментов: `py -3 sefirot.py --labs --help`.
+Точный паспорт перед запуском: `py -3 sefirot.py build-info`.
 
 Подключить уже накопленные наблюдения можно через
 --source-archive "data\observed-archive". Их даты получения не обновляются.
@@ -44,8 +52,14 @@ fixtures-запрос на дату. Все будущие NS в объявле�
 Другой сезон автоматически не подставляется вместо недоступного текущего.
 
 --max-requests ограничивает попытки вызова транспорта; --quota-reserve
-оставляет запас дневной квоты. Headers могут только уменьшить доступный
-лимит. При auth/quota/network failure новые вызовы останавливаются.
+оставляет запас дневной квоты. Дневной `x-ratelimit-requests-remaining` и
+минутный `x-ratelimit-remaining` учитываются отдельно; headers могут только
+уменьшить соответствующий доступный лимит. Известный ноль минутной квоты
+останавливает новые вызовы с `PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED`.
+Отсутствующий header остаётся неизвестным. Сбор не ждёт сброса окна,
+не увеличивает бюджет по более высокому header и не делает auto retry.
+При auth/access/account-suspended/quota/network failure новые вызовы
+останавливаются; camel-case `errors.rateLimit` также означает quota failure.
 Отказ сезона не повторяется отдельно для каждого матча. Бюджет не является
 резервированием квоты на сервере: параллельные процессы могут её расходовать.
 
@@ -83,21 +97,36 @@ endpoint/params, sports_only и отсутствие execution permission. Recei
 сохраняет SUPABASE_GATEWAY transport и исходное время наблюдения upstream;
 это не цифровая подпись поставщика или независимый timestamp witness.
 `api-health` и `football-fetch` также поддерживают этот gateway.
+Для отдельной диагностики Stake используйте
+[`api-health --odds-provider stake`](API_HEALTH_20261006.md): один каталог,
+без аккаунта/цен, отдельные credential/HTTP reasons. RESEARCH_API_READY
+не подтверждает историю/квоту для collection и не даёт денежного допуска.
 
 ## Что проверено и что ещё блокирует практическую работу
 
-26 новых offline контрпримеров проверяют полный сквозной workflow,
+Исходные 26 offline контрпримеров проверяют полный сквозной workflow,
 пропуски, квоту, отсечение будущих/чужих данных, пересечение kickoff,
 сохранение seals при ошибке сетки, credentials и gateway provenance.
 Fictional test packets не объявляются реальными матчами или HOLDOUT.
 
-В этой рабочей среде реальный CLI запущен 05.10.2026 и завершился
+Историческая проверка 05.10.2026 завершилась
 CREDENTIAL_MISSING_OR_INVALID: provider key локально не установлен,
 runner token существующего gateway также не настроен. Верхняя граница
 сетевых запросов — 0; реальный новый прогноз не создан. Наличие provider
 key в Supabase Vault и существующего gateway подтверждено отдельно, но
 проверка их метаданных не является живым sporting API capture. Шлюз,
-секреты и облачная схема этим изменением не менялись.
+секреты и облачная схема тем изменением не менялись.
+
+Актуальная проверка 06.10.2026 15:31 UTC: после обновления серверного
+шлюза runner успешно авторизован, но API-Football вернул HTTP 200 с
+`errors.access`. Итог `PROVIDER_ACCESS_DENIED`, 1 status attempt,
+0 received packets/fixtures/forecasts. Коллектор прекращает новые запросы;
+ошибка доступа отличается от season/credential/quota. Шлюз теперь
+сохраняет только whitelisted numeric quota headers в receipt, outer HTTP
+502 не скрывает upstream 401/403/429. Сервер проверяет полную pagination
+и exact results count, ограничивает размеры и время, не возвращает account.
+Старый debug endpoint закрыт. Детали и пределы:
+[GATEWAY_COMPLETION_20261006.md](GATEWAY_COMPLETION_20261006.md).
 
 Составы, травмы, тренер, ротация и тактика остаются missing facts.
 Положительное покрытие истории не означает прохождение всех sports gates.

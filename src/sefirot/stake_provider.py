@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
-import os
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
 
@@ -22,6 +21,29 @@ HOST = "stake.com"
 ENDPOINT = "/_api/graphql"
 MAX_RESPONSE = 8_000_000
 MAX_EVENTS = 200
+
+
+class StakeRequestError(ValueError):
+    """Fixed public reasons; never include upstream messages or account data."""
+
+    def __init__(self, code, *, http_status=None):
+        messages = {
+            "HTTP_ERROR": f"stake provider HTTP {http_status}; PASS",
+            "NETWORK_ERROR": "stake provider network error; PASS",
+            "RESPONSE_TOO_LARGE": "stake provider response exceeds limit; PASS",
+            "INVALID_JSON": "stake provider returned invalid JSON; PASS",
+            "INVALID_RESPONSE": "stake provider returned invalid object; PASS",
+            "GRAPHQL_ERROR": "stake sportsbook GraphQL unavailable or changed; PASS",
+        }
+        if code not in messages:
+            raise ValueError("unsupported Stake request error")
+        if http_status is not None and (type(http_status) is not int or not 100 <= http_status <= 599):
+            raise ValueError("invalid Stake HTTP status")
+        if code == "HTTP_ERROR" and http_status is None:
+            raise ValueError("Stake HTTP status required")
+        self.code = code
+        self.http_status = http_status
+        super().__init__(messages[code])
 
 SPORT_TOURNAMENT_FIXTURE_LIST_QUERY = """query SportTournamentFixtureList(
   $sport: String!, $tournamentLimit: Int = 50,
@@ -113,50 +135,30 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name):
         try:
             status = int(getattr(response, "status", 200))
             if status != 200:
-                raise ValueError(f"stake provider HTTP {status}; PASS")
+                raise StakeRequestError("HTTP_ERROR", http_status=status)
             raw = response.read(MAX_RESPONSE + 1)
         finally:
             close = getattr(response, "close", None)
             if close:
                 close()
     except HTTPError as exc:
-        detail = ""
-        if os.environ.get("SEFIROT_STAKE_DEBUG_ERRORS") == "1":
-            try:
-                raw_error = exc.read(8192).decode("utf-8", "replace").replace(secret, "[REDACTED]")
-                parsed = json.loads(raw_error)
-                messages = []
-                if isinstance(parsed, dict):
-                    for row in parsed.get("errors", [])[:8]:
-                        if isinstance(row, dict) and isinstance(row.get("message"), str):
-                            messages.append(row["message"][:500])
-                if messages:
-                    detail = " | " + " ; ".join(messages)
-                elif raw_error:
-                    detail = " | body=" + raw_error[:500].replace("\n", " ")
-            except Exception:
-                detail = ""
-        raise ValueError(f"stake provider HTTP {int(exc.code)}; PASS{detail}") from None
-    except (URLError, OSError, ValueError) as exc:
-        if isinstance(exc, ValueError) and str(exc).startswith("stake provider HTTP"):
-            raise
-        raise ValueError("stake provider network error; PASS") from None
+        status = int(exc.code)
+        exc.close()
+        raise StakeRequestError("HTTP_ERROR", http_status=status) from None
+    except StakeRequestError:
+        raise
+    except (URLError, OSError, ValueError):
+        raise StakeRequestError("NETWORK_ERROR") from None
     if len(raw) > MAX_RESPONSE:
-        raise ValueError("stake provider response exceeds limit; PASS")
+        raise StakeRequestError("RESPONSE_TOO_LARGE")
     try:
         payload = json.loads(raw.decode("utf-8"))
     except (UnicodeError, json.JSONDecodeError):
-        raise ValueError("stake provider returned invalid JSON; PASS") from None
+        raise StakeRequestError("INVALID_JSON") from None
     if not isinstance(payload, dict):
-        raise ValueError("stake provider returned invalid object; PASS")
+        raise StakeRequestError("INVALID_RESPONSE")
     if payload.get("errors"):
-        detail = ""
-        if os.environ.get("SEFIROT_STAKE_DEBUG_ERRORS") == "1":
-            detail = " | " + " ; ".join(
-                str(row.get("message", ""))[:500]
-                for row in payload.get("errors", [])[:8] if isinstance(row, dict)
-            )
-        raise ValueError("stake sportsbook GraphQL unavailable or changed; PASS" + detail)
+        raise StakeRequestError("GRAPHQL_ERROR")
     return {
         "data": payload,
         "receipt": {
@@ -440,71 +442,3 @@ def research_snapshot(event, prediction, received_at, markets, retrieval_receipt
         ]
     report["hash"] = digest(report)
     return report
-
-
-def _boot_probe_if_requested():
-    if os.environ.get("SEFIROT_STAKE_BOOT_PROBE") != "1":
-        return
-    auth_ok = None
-    try:
-        auth = _post_graphql(
-            "query UserIdentity { user { id } }", {},
-            operation_name="UserIdentity",
-        )
-        auth_ok = bool(((auth.get("data") or {}).get("data") or {}).get("user"))
-        packet = sports_events(first=200, sport_slug="soccer", match_type="active")
-        targets = ("italy", "turkey", "türkiye", "france", "belgium",
-                   "romania", "sweden", "montenegro", "armenia",
-                   "cyprus", "latvia")
-        matches = []
-        for event in packet["events"]:
-            haystack = " ".join([
-                str(event.get("name", "")),
-                " ".join(str(row.get("name", "")) for row in event.get("competitors", [])
-                         if isinstance(row, dict)),
-            ]).lower()
-            if not any(target in haystack for target in targets):
-                continue
-            row = {
-                "id": event.get("id"), "slug": event.get("slug"),
-                "name": event.get("name"), "startTime": event.get("startTime"),
-                "league": (event.get("league") or {}).get("name"),
-            }
-            # One exact target is enough to prove market discovery end-to-end.
-            if event.get("slug") and not any(item.get("market_count", 0) for item in matches):
-                group_packet = fixture_groups(event["slug"])
-                row["group_count"] = len(group_packet["group_names"])
-                row["group_names"] = group_packet["group_names"][:80]
-                market_packet = fixture_markets(event["slug"], groups=group_packet["group_names"])
-                row["market_count"] = market_packet["market_count"]
-                keywords = ("shot", "corner", "card", "foul", "offside", "save",
-                            "tackle", "goal kick", "free kick", "booking")
-                selected = []
-                for market in market_packet["markets"]:
-                    hay = (str(market.get("group", "")) + " " +
-                           str(market.get("template", "")) + " " +
-                           str(market.get("name", ""))).lower()
-                    if any(word in hay for word in keywords):
-                        selected.append({
-                            "group": market.get("group"),
-                            "template": market.get("template"),
-                            "name": market.get("name"),
-                            "specifiers": market.get("specifiers"),
-                            "outcomes": market.get("outcomes"),
-                        })
-                row["markets"] = selected[:160]
-            matches.append(row)
-        print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
-            "status": "OK",
-            "auth_user_present": auth_ok,
-            "event_count": len(packet["events"]),
-            "matches": matches[:20],
-            "receipt": packet["receipt"],
-        }, ensure_ascii=True, separators=(",", ":")), flush=True)
-    except Exception as exc:
-        print("SEFIROT_STAKE_BOOT_PROBE=" + json.dumps({
-            "status": "FAILED", "auth_user_present": auth_ok, "error": str(exc)
-        }, ensure_ascii=True, separators=(",", ":")), flush=True)
-
-
-_boot_probe_if_requested()

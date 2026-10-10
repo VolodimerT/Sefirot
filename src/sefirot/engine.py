@@ -8,11 +8,40 @@ from .decision_card import build_card,candidate_rank
 from .markets import pool,probabilities,settle,market_of,validate_quote,payoff_ev,implied,fair_odds,complete_overround,market_reference
 from .risk import size_risk
 from .identity import code_hash,model_code_hash
+from .probability_review import scoring_ceiling,under_ceiling,divergence_level
+
+
+def selection_constraints(sports,witness,policy):
+    """Explicit sports-only denials; no threshold inferred from prices or scores."""
+    ids=[];issues=[];premises=set();eligible=set(witness['eligible_fact_ids'])
+    facts={e['id']:e for e in sports['evidence']}
+    for e in sports['evidence']:
+        if e['key']!='matchup_signal' or 'selection_constraint' not in e['value']:continue
+        constraint=e['value']['selection_constraint']
+        strict(constraint,('avoid_result',))
+        if constraint['avoid_result'] is not True:raise ValueError('avoid_result must be true; removal requires a new sports seal')
+        ids.append(e['id'])
+        premises.update(digest({'key':facts[ref]['key'],'value':facts[ref]['value']}) for ref in e['supports'])
+        source=witness['sources'][e['source_id']]
+        if (not source['enabled'] or source['reliability']<policy.min_source_reliability
+            or (time(sports['as_of'])-time(e['observed_at'])).total_seconds()>policy.fact_max_age_minutes*60
+            or not e['supports'] or not set(e['supports'])<=eligible):
+            issues.append(finding('scenario','SCENARIO_CONSTRAINT_UNVERIFIED','BLOCK',[e['id']],
+                                  'Explicit denial remains active; refresh reliable, resolved FACT support'))
+    return {'avoid_result':bool(ids),'evidence_ids':sorted(ids),'premise_hash':digest(sorted(premises))},issues
+
+
+def market_constraint_issues(market,constraints):
+    if constraints['avoid_result'] and market.kind in ('1X2','DOUBLE_CHANCE','DNB','HANDICAP'):
+        return [finding('scenario','SCENARIO_MARKET_CONFLICT','BLOCK',constraints['evidence_ids'],
+                        'Result-dependent contract conflicts with the sealed avoid_result directive')]
+    return []
 
 
 def prepare(sports,markets,policy,calibrator=None,goal_model=None):
     if any(e.get('key')=='market_news' for e in sports.get('evidence',[])):raise ValueError('market evidence enters only after sports probability seal')
     witness=inspect(sports,policy); issues=list(witness['issues']); declared=pool(markets,policy)
+    constraints,constraint_issues=selection_constraints(sports,witness,policy);issues.extend(constraint_issues)
     links=sports.get('thesis_links',[])
     if not isinstance(links,list) or len(links)>policy.max_candidates:raise ValueError('bounded thesis links required')
     known={m.key for m in declared};facts={e['id'] for e in witness['resolved'].values()};seen=set()
@@ -62,11 +91,14 @@ def prepare(sports,markets,policy,calibrator=None,goal_model=None):
                            'calibration':cal['status'],'calibration_n':cal['n'],
                            'stress_calibration_statuses':[cal['status'] for cal in stress_calibration],
                            'stress_probabilities':[list(p) for p in stressed],'counterexamples':losses,
-                           'additional_assumptions':int(m.kind in ('HANDICAP','TEAM_TOTAL'))})
+                           'under_ceiling':under_ceiling(m,mass),
+                           'additional_assumptions':int(m.kind in ('HANDICAP','TEAM_TOTAL')),
+                           'selection_issues':market_constraint_issues(m,constraints)})
     result={'version':VERSION,'model_version':model['model_version'],'code_hash':code_hash(),'model_hash':model_code_hash(),'policy':asdict(policy),'policy_hash':policy.fingerprint,
-            'sports':sports,'market_pool':markets,'witness':witness,'scenario':{**witness['scenario'],'score_scenarios':model['score_scenarios']},
-            'model':model,'calibrator':calibrator,'goal_model':goal_model,'candidates':candidates,'issues':issues,'as_of':sports['as_of'],
-            'synthetic':bool(sports.get('synthetic',False)) or bool(goal_model and goal_model['synthetic']),'mode':'UNKNOWN' if witness['novelty'] or min(model['team_games'])<policy.min_team_games or any(i['code'] in ('COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','PROFILE_MODEL_UNFITTED','THRESHOLD_MODEL_UNFITTED','THRESHOLD_STRESS_BIN_UNFITTED') for i in issues) else 'NORMAL'}
+            'sports':sports,'market_pool':markets,'witness':witness,'scenario':{**witness['scenario'],'score_scenarios':model['score_scenarios'],'selection_constraints':constraints},
+            'model':model,'scoring_ceiling':scoring_ceiling(mass),
+            'calibrator':calibrator,'goal_model':goal_model,'candidates':candidates,'issues':issues,'as_of':sports['as_of'],
+            'synthetic':bool(sports.get('synthetic',False)) or bool(goal_model and goal_model['synthetic']),'mode':'UNKNOWN' if witness['novelty'] or min(model['team_games'])<policy.min_team_games or any(i['code'] in ('COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SCENARIO_CONSTRAINT_UNVERIFIED','PROFILE_MODEL_UNFITTED','THRESHOLD_MODEL_UNFITTED','THRESHOLD_STRESS_BIN_UNFITTED') for i in issues) else 'NORMAL'}
     result['id']=digest(result)
     return result
 
@@ -78,6 +110,11 @@ def recheck(prediction,recheck_data,at,policy):
         issues.append(finding('witness','RECHECK_STALE'))
     merged={**prediction['sports'],'as_of':recheck_data['checked_at'],'evidence':recheck_data['evidence']}
     check=inspect(merged,policy);issues.extend(check['issues'])
+    constraints,constraint_issues=selection_constraints(merged,check,policy);issues.extend(constraint_issues)
+    frozen=prediction['scenario']['selection_constraints']
+    if any(constraints[key]!=frozen[key] for key in ('avoid_result','premise_hash')):
+        issues.append(finding('opponent','SPORTS_CHANGED_RECALCULATE','BLOCK',constraints['evidence_ids'],
+                              'Explicit selection constraint changed; create a new sports-only seal'))
     if check['novelty']:issues.append(finding('competence','UNKNOWN_CONTEXT','BLOCK',detail=','.join(check['novelty'])))
     old=prediction['witness']['resolved'];new=check['resolved']
     for key in ('lineup','injuries','coach','rotation','tactics','format','home_team','away_team'):
@@ -92,6 +129,9 @@ def recheck(prediction,recheck_data,at,policy):
 def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     if prediction['policy_hash']!=policy.fingerprint or prediction['code_hash']!=code_hash():raise ValueError('replay requires same policy/code version')
     match=prediction['sports']['match'];issues=list(prediction['issues'])
+    constraints,constraint_issues=selection_constraints(prediction['sports'],inspect(prediction['sports'],policy),policy)
+    if constraints!=prediction['scenario']['selection_constraints']:raise ValueError('sealed selection constraints do not reproduce')
+    issues.extend(constraint_issues)
     if time(at)<time(prediction['as_of']) or time(at)>=time(match['kickoff']):raise ValueError('decision must be prematch after seal')
     checked,check=recheck(prediction,recheck_data,at,policy);issues.extend(checked)
     # Corroboration and movement explanations use the same active, reliable facts
@@ -107,7 +147,8 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         if q['phase']=='CLOSE': raise ValueError('closing odds cannot inform admission')
         quote_map.setdefault(m.key,[]).append(q)
     for c in prediction['candidates']:
-        local=[];available=[q for q in quote_map.get(c['key'],[]) if q['phase'] in ('FINAL','ENTRY')]
+        local=market_constraint_issues(market_of(c['market']),constraints)
+        available=[q for q in quote_map.get(c['key'],[]) if q['phase'] in ('FINAL','ENTRY')]
         admission_low=c['calibration_low'] if policy.stress_mode=='GRADED' else c['low']
         admission_high=c['calibration_high'] if policy.stress_mode=='GRADED' else c['high']
         if c['calibration']!='CALIBRATED_BIN':local.append(finding('probability','CALIBRATION_INSUFFICIENT'))
@@ -138,16 +179,21 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         reference=market_reference(quotes,q,win,push,reference_bookmakers=policy.reference_bookmakers,
                                    at=at,max_age_seconds=policy.quote_max_age_seconds)
         divergence=reference['divergence']
+        divergence_status=divergence_level(divergence,policy)
         if divergence is None:local.append(finding('market','MARKET_REFERENCE_MISSING'))
-        elif abs(divergence)>=policy.extreme_divergence:
+        elif divergence_status=='EXTREME_RECALCULATE':
             local.append(finding('opponent','MODEL_MARKET_DIVERGENCE','BLOCK',detail='Extreme discrepancy requires a new sports-only seal; reference='+reference['method']))
-        if divergence is not None and abs(divergence)>policy.divergence:
+        corroboration={'status':'NOT_REQUIRED','independence_groups':None}
+        if divergence_status in ('CORROBORATION_REQUIRED','EXTREME_RECALCULATE'):
             per_key={key:set() for key in ('lineup','injuries','tactics')}
             for e in current_facts.values():
                 if e['key'] in per_key and e['kind']=='FACT':
                     src=check['sources'][e['source_id']]
                     if src['enabled'] and src['reliability']>=policy.min_source_reliability:per_key[e['key']].add(src['independence_group'])
-            if any(len(groups)<2 for groups in per_key.values()):local.append(finding('opponent','DIVERGENCE_NEEDS_CORROBORATION'))
+            corroborated=all(len(groups)>=2 for groups in per_key.values())
+            corroboration={'status':'CURRENT_FACTS_CORROBORATED' if corroborated else 'INSUFFICIENT',
+                           'independence_groups':{key:sorted(groups) for key,groups in per_key.items()}}
+            if not corroborated:local.append(finding('opponent','DIVERGENCE_NEEDS_CORROBORATION'))
         opening=[x for x in quote_map[c['key']] if x['phase']=='OPEN' and x['bookmaker']==q['bookmaker']]
         movement=None
         if opening:
@@ -178,6 +224,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         public_trap={'status':'CHECKED','rule':'no popularity or market movement may replace sports evidence',
                      'unexplained_movement':any(x['code']=='UNEXPLAINED_LINE_MOVEMENT' for x in local)}
         evaluations.append({**c,'odds':odd,'quote':q,'implied_probability':implied(odd),'market_reference':reference,
+                            'corroboration':corroboration,
                             'fair_odds':fair_odds(win,push) if win>0 else None,'edge':edge,'ev':ev,'ev_low':low_ev,'ev_high':high_ev,
                             'uncertainty':width,'admission_low':admission_low,'admission_high':admission_high,
                             'probability_bound_basis':'CALIBRATION_ONLY' if policy.stress_mode=='GRADED' else 'CALIBRATION_AND_SENSITIVITY',
@@ -218,7 +265,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
     grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
-    unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
+    unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SCENARIO_CONSTRAINT_UNVERIFIED','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
     out={'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
             'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
             'selected_market':selected['key'] if final=='BET' else None,

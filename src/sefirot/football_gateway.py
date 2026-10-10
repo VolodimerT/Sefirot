@@ -10,7 +10,7 @@ from urllib.request import Request, build_opener
 from .contracts import digest, time
 from .credentials import credential
 from .football_provider import HOST, PARAMETERS, FootballRequestError, get
-from .provider_transport import MAX_RESPONSE, NoRedirect
+from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
 
 
 def transport_status():
@@ -63,6 +63,12 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if response.status != 200 or wrapper.get('ok') is not True:
             if response.status == 422 and wrapper.get('error') == 'PROVIDER_REJECTED_REQUEST':
                 raise FootballRequestError(wrapper.get('provider_errors', {}))
+            if wrapper.get('error') == 'UPSTREAM_HTTP_ERROR':
+                status = wrapper.get('upstream_http_status')
+                if type(status) is int and 100 <= status <= 599:
+                    raise ValueError('sports gateway upstream HTTP ' + str(status))
+            if wrapper.get('error') in ('UPSTREAM_TIMEOUT', 'UPSTREAM_UNAVAILABLE'):
+                raise ValueError('sports gateway network unavailable')
             raise ValueError('sports gateway HTTP ' + str(int(response.status)))
         received = clock().isoformat()
         if (wrapper.get('provider') != 'API_FOOTBALL_V3' or wrapper.get('provider_host') != HOST
@@ -79,9 +85,17 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if endpoint != 'status' and (not isinstance(data.get('response'), list)
                 or data.get('results') != len(data['response']) or data.get('paging', {}).get('total', 1) > 1):
             raise ValueError('sports gateway incomplete provider response')
-        return {'data': data, 'receipt': {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
+        receipt = {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
             'endpoint': '/' + endpoint, 'parameters': params, 'request_started_at': started,
             'received_at': received, 'payload_hash': digest(data), 'http_status': 200, 'sports_only': True,
-            'transport': 'SUPABASE_GATEWAY', 'upstream_received_at': wrapper['received_at']}}
+            'transport': 'SUPABASE_GATEWAY', 'upstream_received_at': wrapper['received_at']}
+        if 'quota' in wrapper:
+            quota = wrapper['quota']
+            if (not isinstance(quota, dict) or set(quota) - set(QUOTA_HEADERS)
+                    or any(not isinstance(v, str) or not re.fullmatch(r'[0-9]{1,12}', v)
+                           for v in quota.values())):
+                raise ValueError('sports gateway quota response malformed')
+            receipt['quota'] = dict(quota)
+        return {'data': data, 'receipt': receipt}
     finally:
         response.close()

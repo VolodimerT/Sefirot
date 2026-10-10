@@ -61,6 +61,46 @@ def _score(rows, field):
     return metrics([r[field] for r in selected], [ORDER.index(r['outcome']) for r in selected], bins=10)
 
 
+def _decision_history(repo, prediction, at):
+    """All recorded decisions on the original seal; selection never sees results."""
+    rows=[]
+    for d in repo.all('decisions',at,prediction_id=prediction['id']):
+        if (d['id']!=digest({k:v for k,v in d.items() if k!='id'})
+            or d['match_id']!=prediction['sports']['match']['id']
+            or not time(prediction['sealed_at'])<=time(d['at'])<time(prediction['sports']['match']['kickoff'])
+            or time(d['at'])>time(at) or d['decision'] not in ('BET','PASS')):
+            raise ValueError('invalid original prematch decision identity or chronology')
+        codes={i['code'] for i in d['issues'] if i['severity']=='BLOCK'}
+        codes.update(i['code'] for c in d['candidates'] for i in c['issues'] if i['severity']=='BLOCK')
+        card=d.get('decision_card',{});trust=card.get('probability_trust')
+        rows.append({'id':d['id'],'at':d['at'],'decision':d['decision'],'class':d['class'],
+                     'selected_market':d['selected_market'],'blockers':sorted(codes),
+                     'probability_trust_status':trust['status'] if trust else
+                         'BLOCKED' if card.get('alternatives') and all(c.get('probability_trust',{}).get('status')=='BLOCKED'
+                             for c in card['alternatives']) else 'LEGACY_OR_NO_FOCUS',
+                     'search_review':card.get('search_review')})
+    return sorted(rows,key=lambda d:(time(d['at']),d['id']))
+
+
+def _reliability_table(rows, league, profile, market):
+    output=[]
+    for field in ('raw','base'):
+        for index,outcome in enumerate(ORDER):
+            for bucket in range(10):
+                part=[r for r in rows if min(9,int(r[field][index]*10))==bucket]
+                if not part:continue
+                scored=_score(part,field)
+                output.append({'league':league,'competition_profile':profile,'market':market,
+                    'probability_version':field,'outcome':outcome,'bin':bucket,
+                    'bin_low':bucket/10,'bin_high':(bucket+1)/10,'n':len(part),
+                    'predicted_mean':sum(r[field][index] for r in part)/len(part),
+                    'actual_rate':sum(r['outcome']==outcome for r in part)/len(part),
+                    'brier':scored['brier'],'log_loss':scored['log_loss'],
+                    'score_scope':'FULL_WIN_PUSH_LOSS_VECTOR_ON_THIS_BIN',
+                    'certification':False})
+    return output
+
+
 def create_scorecard(service, plan_id, at):
     service._time(at)
     plan = _plan(service, plan_id, current=False)
@@ -90,7 +130,8 @@ def create_scorecard(service, plan_id, at):
         predictions = repo.all('predictions', at, match_id=mid)
         row = {'match_id': mid, 'kickoff': kickoff, 'league': member['match']['league'],
                'competition_profile': member['match']['competition_profile'],
-               'prediction_id': None, 'status': 'NO_SEAL', 'last_capture_status': None}
+               'prediction_id': None, 'status': 'NO_SEAL', 'last_capture_status': None,
+               'prematch_decisions':[],'decision_status':'NO_ORIGINAL_SEAL_DECISION'}
         if attempts[mid]: row['last_capture_status'] = max(attempts[mid], key=lambda x: (time(x[0]), x[1]))[2]['status']
         if not predictions:
             if time(at) >= time(kickoff): row['status'] = 'MISSED_PREMATCH_WINDOW'
@@ -98,6 +139,8 @@ def create_scorecard(service, plan_id, at):
             row['status'] = 'INVALID_OR_REVISED_SEAL'
         else:
             p = predictions[0]; row['prediction_id'] = p['id']
+            row['prematch_decisions']=_decision_history(repo,p,at)
+            row['decision_status']=row['prematch_decisions'][-1]['decision'] if row['prematch_decisions'] else 'NO_ORIGINAL_SEAL_DECISION'
             proof = [a for a, finished in capture_proofs[p['id']] if a.get('sports_hash') == digest(p['sports'])
                      and time(a['at']) <= time(p['sealed_at']) <= time(finished)
                      and a.get('source_receipts') and all(_receipt(r, p['sealed_at']) for r in a['source_receipts'])]
@@ -131,7 +174,7 @@ def create_scorecard(service, plan_id, at):
                                     'history_reference_n': historical['history_n'] if historical else 0})
                 row['status'] = 'SCORED'; row['source_blockers'] = sorted({i['code'] for i in p['issues'] if i['severity'] == 'BLOCK'})
         fixtures.append(row)
-    groups = []
+    groups = [];reliability=[]
     # Seven contracts from one game remain seven dependent observations, never seven independent matches.
     group_keys = {(r['league'], r['competition_profile'], market_of(m).key) for r in fixtures for m in plan['markets']}
     for league, profile, key in sorted(group_keys):
@@ -140,6 +183,7 @@ def create_scorecard(service, plan_id, at):
         raw, base, neutral, historical = [_score(selected, field) for field in ('raw', 'base', 'neutral', 'history_reference')]
         paired = [r for r in selected if r['history_reference'] is not None]
         paired_base = _score(paired, 'base')
+        reliability.extend(_reliability_table(selected,league,profile,key))
         groups.append({'league': league, 'competition_profile': profile, 'market': key,
                        'planned_fixtures': denominator, 'scored_fixtures': len(selected),
                        'coverage': len(selected)/denominator,
@@ -159,6 +203,13 @@ def create_scorecard(service, plan_id, at):
               'status_counts': dict(sorted(Counter(r['status'] for r in fixtures).items())),
               'last_capture_status_counts': dict(sorted(Counter(r['last_capture_status'] for r in fixtures if r['last_capture_status']).items())),
               'fixtures': fixtures, 'groups': groups, 'observations': records,
+              'reliability_table':reliability,
+              'decision_registry':{'scope':'ALL_LOCAL_PREMATCH_DECISIONS_ON_ORIGINAL_COHORT_SEALS',
+                  'fixture_status_counts':dict(sorted(Counter(r['decision_status'] for r in fixtures).items())),
+                  'recorded_decisions':sum(len(r['prematch_decisions']) for r in fixtures),
+                  'blocker_fixture_counts':dict(sorted(Counter(code for r in fixtures for code in {
+                      c for d in r['prematch_decisions'] for c in d['blockers']}).items())),
+                  'selection_uses_results':False,'missing_decisions_are_not_pass':True},
               'status': 'NO_SCORABLE_API_RESULTS' if not scored else 'PARTIAL_RESEARCH_SCORECARD' if scored < len(fixtures) else 'RESEARCH_SCORECARD',
               'outcome_order': list(ORDER), 'brier_normalization': 'half sum squared multiclass errors',
               'reliability_bins': 10, 'history_reference_method': 'Laplace counts on original frozen input history; no refit or result-driven tuning',
@@ -182,5 +233,8 @@ def render_scorecard(report):
         if not group['scored_fixtures']: continue
         lines.append(f"{group['league']} | {group['market']}: n={group['scored_fixtures']}; Brier={group['base']['brier']:.4f}; log loss={group['base']['log_loss']:.4f}.")
     if report['last_capture_status_counts']: lines.append('Последние попытки: '+str(report['last_capture_status_counts']))
+    if report.get('decision_registry'):
+        registry=report['decision_registry']
+        lines.append('Записанные решения по исходным seals: '+str(registry['fixture_status_counts'])+'. Нет решения ≠ PASS.')
     lines.append('Сравнение с линией БК отсутствует. Доходность и holdout не подтверждены; разрешения на ставку нет.')
     return '\n'.join(lines)

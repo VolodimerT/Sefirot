@@ -1,5 +1,179 @@
 # SEFIROT: актуальная база разработки
 
+## Локальная ручная очередь, 08.10.2026
+
+Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
+дополнительных агентов не создавать. API/keys/cloud по-прежнему на паузе.
+См. docs/OFFLINE_QUEUE.md; `work inbox --web` запускает существующий worker
+по кнопке на 127.0.0.1. GET только читает проверенный журнал и имена JSON,
+не открывает pending quotes и не создаёт БД. POST требует exact Host/Origin
+и session token; action/receipt/audit остаются одной transaction ядра.
+Повторное нажатие не дублирует прогноз/receipt. Ошибка журнала блокирует
+обработку. Сохранённая карточка — архивное решение, для нового входа нужна
+новая перепроверка. Все timestamps отображаются в Киеве; last_run живёт
+только в процессе. JSON — прежний вход, просмотр ограничен 30 receipts.
+Обычных команд 10; `work --text`/`--watch` сохранены, с `--web` несовместимы.
+Семь MODEL_MODULES/BASELINE_V1/STRICT и Policy побайтно прежние. Web UI
+не новый runtime/модель, денежный допуск или executor. Новых текстовых
+аудитов после поставки 07.10 не обнаружено; UI закрывает оставшуюся задачу.
+Локальный полный release: 596/596, 18 новых проверок, ни одного skipped;
+replay/integrity=true. CI проверять на exact final head, во всех 4 jobs.
+Test fixture использует canonical temp root, как Panel: short-name/junction
+aliases не должны отключать перехват quote read на Windows. Сам факт
+перехвата проверяется явно, а не только через итоговый статус задания.
+code_hash: 321d7b37ab04380e374170b170e015ce5bd5623e93ecba80d12fe1c8dfe0e331.
+Реальные HTTP-запросы проверены; browser click/layout не проверены:
+в среде нет Chromium. examples/offline_queue_preview.html — отключённый
+синтетический образец, не рабочая страница. Доступ с телефона и публичный
+hosting не реализованы; большой journal при каждом GET проверяется целиком.
+Нижние разделы — исторические срезы; отсутствие web UI ниже относится к 07.10.
+
+## Новый аудит: вероятность и registry, 07.10.2026
+
+Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
+дополнительных агентов не создавать. API всё ещё на паузе, keys/cloud
+не менять. См. docs/AUDIT_FOLLOWUP_20261007.md и десять задач в матрице.
+Исправлен corroboration на ровно .10 и extreme на .20 с машинным roundoff;
+существующие Policy thresholds сохранены. Trust disclosure — existing
+gate proof, score=null, не эмпирическая accuracy/новый денежный допуск.
+Search review — один original sealed pool; внешние просмотры неизвестны.
+Raw P(home/away>=3/4)/under loss — projection того же score mass, не новый
+ceiling model или veto. Narrative/causality не выводить из score branches.
+Forward scorecard хранит все original prematch decisions, missing ≠ PASS,
+flat reliability exact profile/contract/line/bin. CLV selection единый
+observed/received/digest; missing close в coverage, same-book raw ratio
+не считать sharp no-vig edge. Archived records/seals не переписывать.
+Семь MODEL_MODULES/BASELINE_V1/STRICT и Policy побайтно прежние; обычных
+команд 10, `work inbox --text` остаётся простым file workflow, web UI нет.
+Полный локальный release 578/578, 30 новых контрпримеров, replay/integrity
+true; Node aggregate исполняет все 19 групп. CI сверять на exact final
+head. code_hash: c6301d4f8dbaedb62baf1827283d9e72850fed27e72514edffe614a010e29513.
+Numeric trust weights, .15 veto, search penalty, causal engine, Dixon–Coles
+и независимый prospective model holdout ещё не проверены/не внедрены.
+Новые программные тесты не повышают оценку качества футбольной модели.
+Нижние разделы — исторические срезы.
+
+## Продолжение системы без API, 06.10.2026
+
+API по указанию пользователя отложен. Cloud/keys не трогать в этом этапе.
+Та же ветка / PR #11, main не сливать, дополнительных агентов не создавать.
+См. docs/OFFLINE_WORKFLOW.md и docs/SYSTEM_REVIEW_20261006.md.
+`work inbox --text` — существующий canonical file workflow: русский status/
+карточка, named prediction_job_id → CAPTURE, прежний default main pool.
+Файл quotes открывать после seal; timestamps не переписывать. Action +
+jobs receipt + audit коммитятся одной transaction с nested savepoints.
+Busy COMMIT -> rollback всей pending transaction, затем безопасный retry.
+ERROR job -> exit 2; PASS решения остаётся нормальным результатом обработки.
+Новые jobs receipts имеют RECORD binding; старые не переписывать.
+report/accounting/replay/compare без rollback — только существующая ro БД;
+backtest standalone. Обычных команд всё ещё 10: work вместо api-health,
+последняя сохранена для явного вызова/--labs. Новый runtime не добавлен.
+Модель/Policy прежние; math tests не доказывают forecast superiority.
+Frozen effectiveness audit воспроизвёл 380 просмотренных historical TEST:
+SoS кандидат 3/7 лучше, 4/7 хуже; KEEP_SHADOW. Не refit по этому TEST.
+Локальный полный release 548/548; replay_matches/integrity=true. Проверки
+Node handler не skipped. code_hash:
+70aea1f55fbed4be9ef7bf10cbe3dbc627fa82debedea0787db3e2542d384b69.
+CI сверять на конечном опубликованном head; API-срезы ниже
+исторические. Новый server key проверен 06.10 23:08 Киев, по-прежнему
+ACCOUNT_SUSPENDED; последнее server v11. Повторять API в этом этапе не надо.
+
+## Уточнение доступа и минутной квоты, 06.10.2026 16:18 UTC
+
+Та же ветка / PR #11, main не сливать; дополнительных агентов не создавать.
+См. docs/API_ACCESS_RECOVERY_20261006.md. Свежий единственный provider status
+подтвердил PROVIDER_ACCOUNT_SUSPENDED; исторические runner logs согласуются.
+Это сообщение поставщика, а не установленная причина приостановки.
+Обход/смену ключа/подписки не выполнять. Следующий sporting collection —
+после восстановления доступа владельцем, новая bounded заранее назначенная
+сессия. Старые REPORT/manifests/seals не переписывать под новый code hash.
+camel-case errors.rateLimit теперь quota failure; отдельный числовой
+x-ratelimit-remaining ограничивает минутные вызовы без auto retry/ожидания.
+Дневной reserve сохранён; quota не резервируется глобально между процессами.
+Server v9 побайтно сверён, временный auth удалён, исходный auth сохранён.
+Полный локальный release 527/527; Python aggregate исполняет 19 Node groups.
+Семь MODEL_MODULES и Policy неизменны. code_hash:
+01d895ab7e2a09143c0dc11262fa52313c98e88462301436e6014067221597c9.
+Server template SHA-256:
+5f019b238bf8423879002f2040c617aef5fe4de3e86f9e5447e1795f7397b8f1.
+Нижележащие 517/18, v6 и неустановленный account state — прошлые срезы.
+
+## Проверенный шлюз и фактический отказ API, 06.10.2026
+
+Та же feature/stability-reset-20261005/PR #11, main не сливать.
+См. docs/GATEWAY_COMPLETION_20261006.md. server/sports_gateway.js —
+канонический source template с пустой DEPLOYED_AUTH: fail closed.
+При deployment приватно вставляются hashes прежнего runner credential;
+compiled auth config и provider key в Git не помещать. API key остаётся
+в существующем Vault/RPC, schema/подписка не менялись. Шлюз обновлён,
+старый sefirot-debug-football заменён на HTTP 410 без I/O. Временный
+credential проверки отозван, его файл удалён; исходный credential сохранён.
+16 KB input/RPC, 2 MB upstream, 3/9 s timeouts, без redirects; exact
+endpoint/params/count/paging, account redaction, numeric quota whitelist.
+HTTP 200 + errors.access -> PROVIDER_ACCESS_DENIED; collector прекращает
+последующие запросы. Не путать с неверным token/Free/expired: эти причины
+не подтверждены. 06.10 15:31 UTC: final data-session одной заранее
+объявленной cohort, 1 status attempt, 0 packets/fixtures/seals/forecasts.
+api-health отдельно подтвердил отказ. Stake/Odds в этой среде не настроены;
+исторический Stake 403 за 05.10 не считать свежей проверкой 06.10.
+Локальный release: 517/517, demo/replay/integrity; один Python aggregate
+исполняет 18 Node handler contract groups. CI явно ставит Node 22 во всех
+4 Windows/Ubuntu × Python 3.11/3.13 jobs; CI сверять на exact final head.
+Семь MODEL_MODULES/Policy прежние. Клиентский code_hash не включает JS
+server: его SHA-256 отдельно указан в completion doc. HOLDOUT не пройден.
+Нижележащие заявления «cloud не менялся» относятся к предыдущим срезам.
+
+## Явная диагностика API, 06.10.2026
+
+Та же feature/stability-reset-20261005: см. docs/API_HEALTH_20261006.md.
+api-health --odds-provider stake выполняет один upcoming soccer catalogue
+request, до пяти events в output helper, без UserIdentity/рынков/цен.
+Наличие токена отдельно от HTTP 401/403/429 и fixed provider reasons.
+Missing credentials: 0 requests. RESEARCH_API_READY не admission;
+admission_ready/monetary_permission/execution_enabled=false. Default
+The Odds API сохранён. Import-time Stake probe и raw debug errors удалены;
+старые env flags не выполняют I/O и не открывают private messages.
+19 новых offline контрпримеров; полный локальный release 510 тестов,
+demo/replay/integrity успешны. MODEL_MODULES/Policy прежние, code_hash новый.
+Настроенный облачный CLI этим изменением ещё не запускался; исторический
+05.10 22:24 UTC Stake HTTP 403 не считать свежим статусом. Deployments
+и секреты не менять молча. Current CI проверять на новом exact head.
+
+## Ограничение сценария по DAILY AUDIT, 05.10.2026
+
+Текущий head той же feature/stability-reset-20261005 продолжает STABILITY
+RESET. См. docs/SCENARIO_CONSTRAINT_20261005.md: explicit sports-only
+matchup_signal.value.selection_constraint.avoid_result=true, reliable/fresh
+active FACT support. Запрет блокирует 1X2/DC/DNB/HANDICAP до ranking и
+результатные Builder legs, сохраняется в research outputs. Добавление,
+снятие или изменение содержания premises на recheck требует нового seal.
+Нельзя превращать каждый проигрышный score branch в veto или выводить
+restriction из коэффициента/прошедшего результата. Текст чата не parser.
+Семь MODEL_MODULES и Policy неизменны; code_hash изменён. Старые seals
+воспроизводить на архивной сборке. Draft PR #11 направлен в точную
+feature/api-data-session-20261005, main не сливать. Дополнительных агентов
+не создавать. Финансовые записи/исходные аудиты и личные receipts не
+публиковать; external tip + filter не считать чистой модельной выборкой.
+
+## Первый шаг STABILITY RESET, 05.10.2026
+
+Текущая ветка: feature/stability-reset-20261005, поверх точного 8e6a3ab.
+Карта зависимостей до изменений: reports/ARCHITECTURE_BASELINE_20261005.json.
+Матрица всех modules/CLI, migration и предложенный accuracy protocol:
+docs/STABILITY_RESET_20261005.md. Это не готовая 2.5-RC1 и не новая модель.
+Один runtime sefirot.cli:main; launchers run_sefirot.py/SEFIROT_CORE.py
+по умолчанию wrappers текущего CLI, прежние interfaces только --legacy.
+В обычной справке 10 основных команд; --labs --help показывает все.
+Старые явно вызванные команды сохраняются: help не является permission gate.
+data-session по умолчанию cohort+baseline seals, без market/Builder grids;
+они доступны только с --research-grids и lazy imports. build-info не
+открывает БД/сеть и показывает code/model/policy identities. Model hash,
+BASELINE_V1/STRICT, денежные caps и historical seals не менять.
+Нижележащие разделы описывают исторические этапы; их старые hashes и
+названия branch не заменяют текущую ветку. Main не сливать; секреты,
+SQLite и личные receipts не публиковать. Дополнительных агентов не создавать.
+Проверки: python test_sefirot.py и python scripts/verify_release.py.
+
 ## Единый API-сбор data-session, 05.10.2026
 
 Продолжение в отдельной feature/api-data-session-20261005 поверх точного

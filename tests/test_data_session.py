@@ -65,7 +65,7 @@ class DataSessionTests(unittest.TestCase):
                                getter=self.get, clock=lambda: self.clock, **kwargs)
 
     def test_one_history_query_per_league_and_complete_research_grids(self):
-        report = self.run_session()
+        report = self.run_session(research_grids=True)
         self.assertEqual(report['request_attempts'], 3)
         self.assertEqual(report['planned_fixtures'], 2)
         self.assertEqual(report['forecasts_created'], 2)
@@ -93,6 +93,40 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(report['forecasts_created'], 0)
         self.assertEqual(report['fixture_counts'], {'INSUFFICIENT_HISTORY': 2})
         self.assertEqual(report['fixtures'][0]['coverage']['teams']['home']['games_needed'], 8)
+
+    def test_default_collection_never_calls_research_grids(self):
+        with patch('sefirot.market_grid.create_grid', side_effect=AssertionError('LABS entered')), \
+             patch('sefirot.builder_research.create_builder_grid', side_effect=AssertionError('LABS entered')):
+            report = self.run_session()
+        self.assertEqual(report['forecasts_created'], 2)
+        self.assertFalse(report['research_grids_enabled'])
+        for fixture in report['fixtures']:
+            self.assertEqual(fixture['artifact_status'], 'SEALED_FORECAST_ONLY')
+            self.assertEqual(fixture['main_research_contracts'], 0)
+            self.assertEqual(fixture['goal_builders'], 0)
+        self.assertFalse(list(self.directory.rglob('*grid.json')))
+        self.assertNotIn('RESEARCH_GRID_UNAVAILABLE', report['blockers'])
+
+    def test_enabling_grids_preserves_original_forecasts_and_cohort(self):
+        lean = self.run_session()
+        with closing(Repository(self.directory/'research.sqlite', read_only=True)) as repo:
+            original = repo.all('predictions')
+            cohort = repo.all('split_assignments')
+        self.directory = Path(self.temp.name) / 'labs'
+        labs = self.run_session(research_grids=True)
+        with closing(Repository(self.directory/'research.sqlite', read_only=True)) as repo:
+            self.assertEqual(repo.all('predictions'), original)
+            self.assertEqual(repo.all('split_assignments'), cohort)
+            self.assertEqual(repo.all('bets'), [])
+        self.assertEqual(lean['plan_id'], labs['plan_id'])
+        self.assertEqual(lean['forecasts_created'], labs['forecasts_created'])
+
+    def test_non_boolean_research_mode_rejected_before_io(self):
+        for mode in ('false', 1, None):
+            with self.assertRaisesRegex(ValueError, 'explicit boolean'):
+                self.run_session(research_grids=mode)
+        self.assertFalse(self.directory.exists())
+        self.assertEqual(self.calls, [])
 
     def test_provider_season_denial_is_not_retried_per_fixture_or_turned_into_forecast(self):
         self.history_failure = FootballRequestError({'plan': 'Free plan season unavailable PRIVATE_SECRET'})
@@ -146,6 +180,64 @@ class DataSessionTests(unittest.TestCase):
             return out
         self.get = get
         self.assertEqual(self.run_session()['request_attempts'], 1)
+
+    def test_empty_minute_window_stops_before_date_despite_available_daily_quota(self):
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '0', 'x-ratelimit-limit': '10'}
+            return out
+        self.get = get
+        report = self.run_session()
+        self.assertEqual(report['request_attempts'], 1)
+        self.assertEqual(report['received_packets'], 1)
+        self.assertGreater(report['quota_remaining_conservative'], 5)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertIn('PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED', report['blockers'])
+        self.assertFalse((self.directory/'research.sqlite').exists())
+
+    def test_minute_budget_stops_another_league_and_preserves_cohort(self):
+        self.targets[1]['league']['id'] = 10
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '2' if endpoint == 'status' else '1'}
+            return out
+        report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['planned_fixtures'], 2)
+        self.assertEqual(report['forecasts_created'], 1)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertEqual(report['history_queries'][1]['status'], 'PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED')
+
+    def test_larger_minute_header_does_not_refill_a_conservative_session_allowance(self):
+        self.targets[1]['league']['id'] = 10
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            out['receipt']['quota'] = {'x-ratelimit-remaining': '2' if endpoint == 'status' else '99'}
+            return out
+        report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['minute_remaining_conservative'], 0)
+        self.assertEqual(report['history_queries'][1]['status'], 'PROVIDER_RATE_LIMIT_WINDOW_EXHAUSTED')
+
+    def test_invalid_minute_header_is_rejected_without_private_text(self):
+        original = self.get
+        for value in ('PRIVATE_SECRET', True, '-1 PRIVATE_SECRET', '١'):
+            with self.subTest(value=value):
+                self.directory = Path(self.temp.name)/('invalid-minute-'+str(len(self.calls)))
+                def get(endpoint, params):
+                    out = original(endpoint, params)
+                    out['receipt']['quota'] = {'x-ratelimit-remaining': value}
+                    return out
+                report = collect_session(self.directory,'2030-01-01',{9:'LOWER'},
+                    source_reliability=.95,getter=get,clock=lambda:self.clock)
+                self.assertEqual(report['request_attempts'], 1)
+                self.assertEqual(report['received_packets'], 0)
+                self.assertNotIn('PRIVATE_SECRET', json.dumps(report))
 
     def test_inactive_subscription_stops_without_fixture_calls(self):
         self.active = False
@@ -233,8 +325,8 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(report['fixture_counts'],{'MISSED_PREMATCH_WINDOW':2})
 
     def test_grid_failure_does_not_erase_sealed_forecasts_or_other_fixture(self):
-        with patch('sefirot.data_session.create_grid',side_effect=ValueError('cannot freeze')):
-            report=self.run_session()
+        with patch('sefirot.market_grid.create_grid',side_effect=ValueError('cannot freeze')):
+            report=self.run_session(research_grids=True)
         self.assertEqual(report['forecasts_created'],2)
         self.assertEqual(len(report['fixtures']),2)
         self.assertEqual(report['status'],'RESEARCH_COLLECTION_WITH_ARTIFACT_GAPS')
@@ -263,6 +355,35 @@ class DataSessionTests(unittest.TestCase):
             self.assertEqual(main(argv),2)
         self.assertFalse((Path(self.temp.name)/'unused.sqlite').exists())
         with closing(Repository(self.directory/'research.sqlite',read_only=True)) as repo:self.assertTrue(repo.verify())
+
+
+    def test_provider_access_denial_stops_remaining_league_requests(self):
+        self.targets[1]['league']['id']=10
+        self.history_failure=FootballRequestError({'access':'PRIVATE_SECRET'})
+        report=collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+            source_reliability=.95,getter=self.get,clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'],3)
+        self.assertEqual(len(report['history_queries']),2)
+        self.assertTrue(all(q['status']=='PROVIDER_ACCESS_DENIED' for q in report['history_queries']))
+        self.assertEqual(report['forecasts_created'],0)
+        self.assertEqual(report['planned_fixtures'],2)
+        self.assertNotIn('PRIVATE_SECRET',json.dumps(report))
+
+    def test_camel_case_rate_limit_and_account_suspension_stop_other_leagues(self):
+        self.targets[1]['league']['id'] = 10
+        for index, (errors, reason) in enumerate([
+                ({'rateLimit':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'RATELIMIT':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'access':'Your account has been suspended PRIVATE_SECRET'},'PROVIDER_ACCOUNT_SUSPENDED')]):
+            with self.subTest(reason=reason):
+                self.directory = Path(self.temp.name)/('provider-stop-'+str(index))
+                self.history_failure = FootballRequestError(errors)
+                report = collect_session(self.directory,'2030-01-01',{9:'LOWER',10:'MEN'},
+                    source_reliability=.95,getter=self.get,clock=lambda:self.clock)
+                self.assertEqual(report['request_attempts'], 3)
+                self.assertEqual(report['planned_fixtures'], 2)
+                self.assertTrue(all(q['status']==reason for q in report['history_queries']))
+                self.assertNotIn('PRIVATE_SECRET', json.dumps(report))
 
 
 class GatewayTests(unittest.TestCase):
@@ -312,6 +433,60 @@ class GatewayTests(unittest.TestCase):
             self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',provider_errors={'plan':'season PRIVATE_SECRET'}),422)
         self.assertEqual(error.exception.code,'SEASON_ACCESS_DENIED')
         self.assertNotIn('PRIVATE_SECRET',str(error.exception))
+
+    def test_http_200_provider_access_denial_is_not_reported_as_invalid_token(self):
+        with self.assertRaises(FootballRequestError) as error:
+            self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',
+                provider_errors={'access':'PRIVATE_SECRET'}),422)
+        self.assertEqual(error.exception.code,'PROVIDER_ACCESS_DENIED')
+        self.assertNotIn('PRIVATE_SECRET',str(error.exception))
+
+    def test_gateway_preserves_observed_quota_in_fixture_receipt(self):
+        out=self.call(lambda w:w.update(quota={'x-ratelimit-requests-remaining':'5'}))
+        self.assertEqual(out['receipt']['quota']['x-ratelimit-requests-remaining'],'5')
+        validate_packet(out,stamp())
+
+    def test_gateway_preserves_minute_allowance_and_limit(self):
+        out=self.call(lambda w:w.update(quota={'x-ratelimit-remaining':'0','x-ratelimit-limit':'10'}))
+        self.assertEqual(out['receipt']['quota'], {'x-ratelimit-remaining':'0','x-ratelimit-limit':'10'})
+        validate_packet(out,stamp())
+
+    def test_gateway_rate_limit_and_suspension_have_typed_private_safe_reasons(self):
+        for errors, reason in (({'rateLimit':'PRIVATE_SECRET'},'PROVIDER_QUOTA_EXHAUSTED'),
+                ({'access':'provider account suspended PRIVATE_SECRET'},'PROVIDER_ACCOUNT_SUSPENDED'),
+                ({'access':'account is not suspended PRIVATE_SECRET'},'PROVIDER_ACCESS_DENIED')):
+            with self.subTest(reason=reason), self.assertRaises(FootballRequestError) as caught:
+                self.call(lambda w:w.update(ok=False,error='PROVIDER_REJECTED_REQUEST',provider_errors=errors),422)
+            self.assertEqual(caught.exception.code,reason)
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
+
+    def test_gateway_rejects_malformed_or_unexpected_quota_without_echo(self):
+        for quota in (None,[],{'token':'PRIVATE_SECRET'},
+                      {'x-ratelimit-requests-remaining':'-1 PRIVATE_SECRET'},
+                      {'x-ratelimit-requests-remaining':True}):
+            with self.subTest(quota=quota),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(quota=quota))
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
+
+    def test_gateway_upstream_http_codes_survive_outer_502(self):
+        from sefirot.data_session import _reason
+        from sefirot.api_health import _failure
+        for status,reason in ((401,'PROVIDER_AUTH_FAILED'),(403,'PROVIDER_AUTH_FAILED'),
+                             (429,'PROVIDER_QUOTA_EXHAUSTED')):
+            with self.subTest(status=status),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(ok=False,error='UPSTREAM_HTTP_ERROR',
+                    upstream_http_status=status,detail='PRIVATE_SECRET'),502)
+            self.assertEqual(_reason(caught.exception),reason)
+            self.assertEqual(_failure(caught.exception)['http_status'],status)
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
+
+    def test_gateway_timeout_and_network_failure_stop_collection(self):
+        from sefirot.data_session import _reason
+        for error in ('UPSTREAM_TIMEOUT','UPSTREAM_UNAVAILABLE'):
+            with self.subTest(error=error),self.assertRaises(ValueError) as caught:
+                self.call(lambda w:w.update(ok=False,error=error,detail='PRIVATE_SECRET'),502)
+            self.assertEqual(_reason(caught.exception),'PROVIDER_NETWORK_UNAVAILABLE')
+            self.assertNotIn('PRIVATE_SECRET',str(caught.exception))
 
     def test_redirect_credentials_in_url_and_live_odds_endpoints_are_refused(self):
         urls=['http://kxqpwgwihtjmqlcxgfxp.supabase.co/functions/v1/sefirot-sports-gateway',

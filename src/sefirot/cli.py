@@ -11,8 +11,10 @@ import tempfile
 from .contracts import Policy,VERSION,time
 from .repository import Repository
 from .service import Service
-from .fixtures import example
 from .markets import DEFAULT_POOL
+
+CORE_COMMANDS = ('build-info', 'work', 'data-session', 'capture', 'readiness',
+                 'fetch-odds', 'decide', 'forward-settle', 'forward-scorecard', 'verify')
 
 
 def load(path):return json.loads(Path(path).read_text(encoding='utf-8'))
@@ -49,16 +51,25 @@ def main(argv=None):
     # The CLI's JSON and Russian cards use UTF-8 in both pipes and terminals.
     for stream in (sys.stdout,sys.stderr):
         if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8')
-    parser=argparse.ArgumentParser(description='SEFIROT CORE '+VERSION+' — prematch analysis and audit')
+    arguments=list(sys.argv[1:] if argv is None else argv)
+    parser=argparse.ArgumentParser(description='SEFIROT CORE '+VERSION+' — prematch analysis and audit',
+        epilog='Без API: work ПАПКА --text (готовые локальные задания). '
+               'Сбор: data-session → readiness → fetch-odds → decide → forward-settle → forward-scorecard. '
+               'Все research/compatibility команды: --labs --help. Это не денежный допуск.')
     parser.add_argument('--db',default='data/sefirot.sqlite')
     parser.add_argument('--policy',help='versioned experimental JSON policy')
+    parser.add_argument('--labs',action='store_true',help='show all research and compatibility commands; does not grant permissions')
     sub=parser.add_subparsers(dest='command',required=True)
-    worker=sub.add_parser('work');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
+    sub.add_parser('build-info',help='read exact canonical build/model/policy identity without a database or network')
+    worker=sub.add_parser('work',help='process local jobs atomically without API calls');worker.add_argument('directory');worker.add_argument('--watch',action='store_true')
+    worker.add_argument('--text',action='store_true',help='concise Russian status and recorded decision cards')
+    worker.add_argument('--web',action='store_true',help='open a local manual queue UI; no automatic processing')
+    worker.add_argument('--port',type=int,help='local UI port (default 8765; 0 selects a free port)')
     demo=sub.add_parser('demo',help='complete synthetic workflow in a temporary database')
     demo.add_argument('--text',action='store_true',help='concise Russian decision card')
     fixture=sub.add_parser('fixture',help='write synthetic JSON input files');fixture.add_argument('directory')
     capture=sub.add_parser('capture',help='seal sports-only probability before reading any prices');capture.add_argument('sports');capture.add_argument('--markets');capture.add_argument('--calibrator');capture.add_argument('--parent');capture.add_argument('--reason');capture.add_argument('--goal-model',help='frozen sports-only SoS/count artifact')
-    decision=sub.add_parser('decide');decision.add_argument('prediction_id');decision.add_argument('quotes');decision.add_argument('recheck');decision.add_argument('--bankroll',type=float,default=1000);decision.add_argument('--peak',type=float,default=1000)
+    decision=sub.add_parser('decide',help='compare sealed probabilities and price with the existing risk gates');decision.add_argument('prediction_id');decision.add_argument('quotes');decision.add_argument('recheck');decision.add_argument('--bankroll',type=float,default=1000);decision.add_argument('--peak',type=float,default=1000)
     decision.add_argument('--text',action='store_true',help='print the decision card; save the full decision in the ledger')
     result=sub.add_parser('result');result.add_argument('file')
     closing=sub.add_parser('closing');closing.add_argument('match_id');closing.add_argument('file')
@@ -124,14 +135,16 @@ def main(argv=None):
     market_scope=fetch_odds.add_mutually_exclusive_group()
     market_scope.add_argument('--main-markets',action='store_true',help='request supported families in the sealed pool; quota depends on returned markets')
     market_scope.add_argument('--grid',help='frozen market-grid JSON; enables alternate main lines for research only')
-    health=sub.add_parser('api-health',help='check both API credentials and quotas without fetching prices')
+    health=sub.add_parser('api-health',help='check sports API and selected odds catalogue without prices')
+    health.add_argument('--odds-provider',choices=('the-odds-api','stake'),default='the-odds-api')
     health.add_argument('--output',help='save a credential-free connection report')
-    collection=sub.add_parser('data-session',help='bounded API sports collection, full calibration cohort and research grids in one run')
+    collection=sub.add_parser('data-session',help='bounded sports API collection and full baseline cohort; optional research grids')
     collection.add_argument('--date',required=True);collection.add_argument('--directory',required=True)
     collection.add_argument('--league-profile',action='append',required=True)
     collection.add_argument('--source-reliability',type=float,required=True)
     collection.add_argument('--max-requests',type=int,default=12);collection.add_argument('--quota-reserve',type=int,default=5)
     collection.add_argument('--source-archive');collection.add_argument('--timezone',default='Europe/Kyiv')
+    collection.add_argument('--research-grids',action='store_true',help='explicit LABS: create 50-contract and Builder research grids after seals')
     collection.add_argument('--text',action='store_true')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
     football.add_argument('--endpoint',required=True,choices=['leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries'])
@@ -154,17 +167,32 @@ def main(argv=None):
     recovery=sub.add_parser('recover');recovery.add_argument('context_key');recovery.add_argument('validation_id');recovery.add_argument('--fix',required=True)
     comparison=sub.add_parser('compare');comparison.add_argument('old_model');comparison.add_argument('new_model');comparison.add_argument('--apply-rollback',action='store_true')
     activate=sub.add_parser('activate');activate.add_argument('model_id')
-    sub.add_parser('report');sub.add_parser('accounting');sub.add_parser('verify')
+    sub.add_parser('report');sub.add_parser('accounting');sub.add_parser('verify',help='check existing ledger integrity')
     sync_parser=sub.add_parser('sync-supabase',help='explicit, verified SQLite -> private Supabase ledger mirror')
     sync_parser.add_argument('--check-local',action='store_true',help='validate source ledger without a cloud connection')
     review=sub.add_parser('postmortem');review.add_argument('decision_id');review.add_argument('file')
     execution=sub.add_parser('execution');execution.add_argument('decision_id');execution.add_argument('file')
     approval=sub.add_parser('approve-policy');approval.add_argument('--operator',required=True);approval.add_argument('--statement',required=True)
-    args=parser.parse_args(argv)
+    if '--labs' not in arguments:
+        # Keep every parser for existing explicit callers, while restricting
+        # only the default help surface (argparse has no hide-subcommand API).
+        sub.metavar='{'+','.join(CORE_COMMANDS)+'}'
+        sub._choices_actions[:]=[action for action in sub._choices_actions if action.dest in CORE_COMMANDS]
+    args=parser.parse_args(arguments)
     repo=None
     try:
         policy=Policy(**load(args.policy)) if args.policy else Policy()
-        if args.command=='data-session':
+        if args.command=='build-info':
+            from .identity import code_hash,model_code_hash
+            out={'version':VERSION,'runtime':'sefirot','entrypoint':'sefirot.cli:main',
+                 'code_hash':code_hash(),'model_hash':model_code_hash(),'policy_hash':policy.fingerprint,
+                 'goal_model':policy.goal_model,'core_commands':list(CORE_COMMANDS),
+                 'daily_workflow':'data-session','monetary_permission':False,'execution_enabled':False}
+        elif args.command=='work' and (args.web or args.port is not None):
+            if not args.web or args.watch or args.text:raise ValueError('--web requires manual mode without --watch or --text; --port requires --web')
+            from .offline_panel import serve
+            return serve(args.db,args.directory,policy,args.port if args.port is not None else 8765)
+        elif args.command=='data-session':
             from .data_session import collect_session,render_session
             profiles={}
             for entry in args.league_profile:
@@ -173,7 +201,7 @@ def main(argv=None):
                 profiles[key]=value
             out=collect_session(args.directory,args.date,profiles,source_reliability=args.source_reliability,
                 max_requests=args.max_requests,quota_reserve=args.quota_reserve,source_archive=args.source_archive,
-                timezone_name=args.timezone,policy=policy)
+                timezone_name=args.timezone,policy=policy,research_grids=args.research_grids)
             if args.text:
                 print(render_session(out));return 2 if out['status']=='COLLECTION_INCOMPLETE' else 0
         elif args.command=='stake-snapshot':
@@ -204,7 +232,7 @@ def main(argv=None):
                  'monetary_permission':False,'execution_enabled':False}
         elif args.command=='api-health':
             from .api_health import check
-            out=check()
+            out=check(odds_provider=args.odds_provider)
             if args.output:
                 path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
                 with path.open('x',encoding='utf-8') as file:json.dump(out,file,ensure_ascii=False,indent=2,allow_nan=False)
@@ -277,10 +305,12 @@ def main(argv=None):
             out={k:r[k] for k in ('run_id','status','monetary_permission','split_counts','selected','temperature')}
             out['report']=str(Path(args.output).resolve())
         elif args.command=='fixture':
+            from .fixtures import example
             root=Path(args.directory);root.mkdir(parents=True,exist_ok=True);case=example()
             for key in ('sports','markets','quotes','recheck','result'):(root/(key+'.json')).write_text(json.dumps(case[key],ensure_ascii=False,indent=2),encoding='utf-8')
             out={'directory':str(root.resolve()),'synthetic':True,'note':'quotes are timestamped one minute ahead; refresh at observation time for capture/decide'}
         elif args.command=='demo':
+            from .fixtures import example
             import tempfile
             with tempfile.TemporaryDirectory() as temp:
                 repo=Repository(Path(temp)/'demo.sqlite');case=example();clock=[time(case['sports']['as_of'])]
@@ -404,8 +434,21 @@ def main(argv=None):
         elif args.command=='sync-supabase':
             from .cloud_sync import check_local,sync
             out=check_local(args.db) if args.check_local else sync(args.db)
+        elif args.command=='verify':
+            database=Path(args.db).resolve()
+            if not database.is_file():raise ValueError('ledger does not exist')
+            repo=Repository(database,read_only=True)
+            out={'integrity':repo.verify()}
+        elif args.command=='backtest':
+            from .backtesting import walk_forward
+            out=walk_forward(load(args.file),policy)
         else:
-            path=Path(args.db);path.parent.mkdir(parents=True,exist_ok=True);repo=Repository(path);service=Service(repo,policy);now=service.now()
+            read_only=(args.command in ('report','accounting','replay') or
+                       args.command=='compare' and not args.apply_rollback)
+            path=Path(args.db)
+            if read_only and not path.is_file():raise ValueError('ledger does not exist')
+            if not read_only:path.parent.mkdir(parents=True,exist_ok=True)
+            repo=Repository(path,read_only=read_only);service=Service(repo,policy);now=service.now()
             cmd=args.command
             if cmd in ('forward-plan','forward-capture','forward-settle'):
                 from .forward import create_plan,capture_plan,settle_plan
@@ -453,13 +496,15 @@ def main(argv=None):
                     if grid:payload['receipt'].update(grid_hash=grid['hash'],monetary_permission=False)
                     out=write_quotes(args.output,payload)
             elif cmd=='work':
-                from .worker import process_inbox
+                from .worker import process_inbox,render_inbox
                 import time as timer
                 while True:
                     out=process_inbox(service,args.directory)
                     if not args.watch:break
-                    print(json.dumps(out,ensure_ascii=False),flush=True)
+                    print(render_inbox(out) if args.text else json.dumps(out,ensure_ascii=False),flush=True)
                     timer.sleep(5)
+                if args.text:
+                    print(render_inbox(out));return 2 if any(r['status']=='ERROR' for r in out) else 0
             elif cmd=='capture':out=service.capture(load(args.sports),load(args.markets) if args.markets else DEFAULT_POOL,args.calibrator,parent=args.parent,reason=args.reason,goal_model=load(args.goal_model) if args.goal_model else None)
             elif cmd=='decide':out=service.decide(args.prediction_id,load(args.quotes),load(args.recheck),{'bankroll':args.bankroll,'peak':args.peak},now)
             elif cmd=='result':out=service.result(load(args.file))
@@ -468,9 +513,6 @@ def main(argv=None):
             elif cmd=='reserve':service.reserve(args.match_ids,args.role,now);out={'reserved':args.match_ids,'role':args.role}
             elif cmd=='calibrate':out=service.calibrate(now)
             elif cmd=='validate':out=service.validate(args.model_id,now)
-            elif cmd=='backtest':
-                from .backtesting import walk_forward
-                out=walk_forward(load(args.file),policy)
             elif cmd=='recover':out=service.recover(args.context_key,args.fix,args.validation_id,now)
             elif cmd=='compare':
                 from .feedback import compare_versions
@@ -478,7 +520,6 @@ def main(argv=None):
             elif cmd=='activate':out=service.activate(args.model_id,now)
             elif cmd=='report':out=service.report()
             elif cmd=='accounting':out=service.accounting()
-            elif cmd=='verify':out={'integrity':repo.verify()}
             elif cmd=='postmortem':out=service.postmortem(args.decision_id,load(args.file),now)
             elif cmd=='execution':out=service.execution(args.decision_id,load(args.file),now)
             elif cmd=='approve-policy':out=service.approve_policy(args.operator,args.statement,now)
@@ -486,8 +527,10 @@ def main(argv=None):
             from .decision_card import render_card
             print(render_card(out['decision_card']))
         else:print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
-        return 2 if ((args.command=='api-health' and out['status']!='API_READY')
-            or (args.command=='data-session' and out['status']=='COLLECTION_INCOMPLETE')) else 0
+        return 2 if ((args.command=='api-health' and out['status'] not in ('API_READY','RESEARCH_API_READY'))
+            or (args.command=='data-session' and out['status']=='COLLECTION_INCOMPLETE')
+            or (args.command=='verify' and not out['integrity'])
+            or (args.command=='work' and any(r['status']=='ERROR' for r in out))) else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:
