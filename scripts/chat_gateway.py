@@ -98,10 +98,22 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
                 raise ValueError("parent and reason must be supplied together for a real evidence revision")
             result = service.capture(data["sports"], data.get("markets", DEFAULT_POOL),
                                      parent=data.get("parent"), reason=data.get("reason"))
+            model = result["model"]
             return {**build_info(), "stage": "FORECAST_SEALED", "prediction_id": result["id"],
                     "sealed_at": result["sealed_at"], "fixture": result["sports"]["match"],
                     "synthetic": result["synthetic"], "candidates": result["candidates"],
-                    "model_id": result["model_id"], "captured_prematch": result["captured_prematch"]}
+                    "model_id": result["model_id"], "captured_prematch": result["captured_prematch"],
+                    "revision": result["revision"], "parent": result["parent"],
+                    "issues": result["issues"], "forecast_mode": result["mode"],
+                    "model_vector": {"rates": model["rates"], "team_games": model["team_games"],
+                                     "effective_games": model["effective_games"],
+                                     "used_history_n": len(model["used_history"]),
+                                     "excluded_history_n": len(model["excluded_history"]),
+                                     "goal_thresholds": model["goal_thresholds"],
+                                     "score_scenarios": model["score_scenarios"],
+                                     "tail_bound": model["tail_bound"],
+                                     "competition_profile": model["competition_profile"],
+                                     "calibration": {c["key"]: c["calibration"] for c in result["candidates"]}}}
         if kind == "decide":
             if set(data) != {"prediction_id", "quotes", "recheck", "portfolio"}:
                 raise ValueError("decide requires prediction_id, quotes, recheck and portfolio")
