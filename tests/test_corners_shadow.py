@@ -15,7 +15,7 @@ def rows(n=180,*,future=False):
         a=teams[(i+1+i//12)%12]
         if h==a:a=teams[(i+2)%12]
         hc=2+(i*3)%8
-        ac=1+(i*7)%7
+        ac=1+(i*5)%7
         t=START+timedelta(days=i)
         out.append(CornerMatch(f"fixture-{i}","COL-PRIMERA-A",h,a,t,
                                t+timedelta(hours=4),hc,ac,hc//2,ac//2,"verified-archive"))
