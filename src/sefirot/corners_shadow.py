@@ -105,10 +105,12 @@ def _dispersion(values: list[int], weights: list[float]) -> float | None:
     return max(2., min(40., mu*mu/(variance-mu) + 8.))
 
 def fit(history: Iterable[CornerMatch], *, league: str, home: str, away: str,
-        as_of: datetime, max_age_days: int = 730, min_league: int = 80,
+        as_of: datetime, kickoff: datetime, max_age_days: int = 730, min_league: int = 80,
         min_team: int = 8, prior_games: float = 8.) -> CornerForecast:
     """The input MUST cover the league, not only the two teams."""
     at = utc(as_of, "as_of")
+    if at >= utc(kickoff, "target kickoff"):
+        raise ValueError("target fixture is not prematch")
     if not league or not home or not away or home == away:
         raise ValueError("bad fixture")
     if not 1 <= max_age_days <= 3650 or not 10 <= min_league <= 10000 or not 1 <= min_team <= 200:
@@ -129,6 +131,8 @@ def fit(history: Iterable[CornerMatch], *, league: str, home: str, away: str,
     rows.sort(key=lambda r: (utc(r.kickoff,"kickoff"),r.fixture_id))
     h = [r for r in rows if r.home == home]
     a = [r for r in rows if r.away == away]
+    if len({t for r in rows for t in (r.home,r.away)}) < 12:
+        raise ValueError("INSUFFICIENT_LEAGUE_COVERAGE: at least 12 distinct teams")
     if len(rows) < min_league or len(h) < min_team or len(a) < min_team:
         raise ValueError(f"INSUFFICIENT_HISTORY: league={len(rows)} home_venue={len(h)} away_venue={len(a)}")
     def weights(rs):
@@ -257,7 +261,7 @@ def walk_forward(history: Iterable[CornerMatch],market: Market,
         train=[r for r in rows[:i] if utc(r.available_at,"available_at")<=at]
         try:
             f=fit(train,league=league,home=target.home,away=target.away,
-                  as_of=at,min_league=min_league,min_team=min_team)
+                  as_of=at,kickoff=target.kickoff,min_league=min_league,min_team=min_team)
         except ValueError as exc:
             if str(exc).startswith("INSUFFICIENT_HISTORY"):
                 continue
