@@ -2,6 +2,10 @@
 
 **Evidence:** seven Parik24 screenshots + user-confirmed 2300 UAH starting bank, 2843 UAH ending bank, and 150 UAH stake on #3027. These screenshots establish ticket settlement but NOT the accuracy of SEFIROT forecasting, which requires original sealed prematch probability vectors and immutable source receipts.
 
+## Source clarification (user-confirmed 10.10.2026)
+
+**Stake originals = YARYI PROPOSALS; Parik24 settled tickets = OUR EXECUTIONS.** Do not record Parik losses under Yaryi bankroll even if inspired by the same Yaryi Stake pick. Separate recommendation correctness (Stake originals) from our Parik24 ROI, and tag OUR_COPY vs OUR_MODIFIED vs OUR_INDEPENDENT only when evidenced. Source-of-origin comparison is in docs/YARYI_STAKE_PARIK_PROVENANCE_20261010.md and the private Supabase manual_source_comparison ledger.
+
 ## Reconciliation
 
 | Measure | UAH |
