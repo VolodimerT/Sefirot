@@ -8,12 +8,12 @@ UTC=timezone.utc
 START=datetime(2026,1,1,12,tzinfo=UTC)
 
 def rows(n=180,*,future=False):
-    teams=("A","B","C","D","E","F")
+    teams=tuple("ABCDEFGHIJKL")
     out=[]
     for i in range(n):
-        h=teams[i%6]
-        a=teams[(i+1+i//6)%6]
-        if h==a:a=teams[(i+2)%6]
+        h=teams[i%12]
+        a=teams[(i+1+i//12)%12]
+        if h==a:a=teams[(i+2)%12]
         hc=2+(i*3)%8
         ac=1+(i*7)%7
         t=START+timedelta(days=i)
@@ -28,7 +28,7 @@ def rows(n=180,*,future=False):
 
 def predict(data=None):
     return fit(rows() if data is None else data,league="COL-PRIMERA-A",
-               home="A",away="B",as_of=START+timedelta(days=185),min_league=80,min_team=8)
+               home="A",away="B",as_of=START+timedelta(days=185),kickoff=START+timedelta(days=186),min_league=80,min_team=8)
 
 class CornerShadowContract(unittest.TestCase):
     def test_future_and_availability_leakage(self):
@@ -36,6 +36,8 @@ class CornerShadowContract(unittest.TestCase):
             predict(rows(future=True))
         with self.assertRaisesRegex(ValueError,"result availability"):
             CornerMatch("bad","COL-PRIMERA-A","A","B",START,START,4,5,2,3,"x")
+        with self.assertRaisesRegex(ValueError,"not prematch"):
+            fit(rows(),league="COL-PRIMERA-A",home="A",away="B",as_of=START+timedelta(days=185),kickoff=START+timedelta(days=184))
         with self.assertRaisesRegex(ValueError,"timezone-aware"):
             CornerMatch("bad","COL-PRIMERA-A","A","B",START.replace(tzinfo=None),
                         START+timedelta(hours=4),4,5,2,3,"x")
@@ -55,11 +57,11 @@ class CornerShadowContract(unittest.TestCase):
                         START+timedelta(hours=4),True,5,0,3,"src")
 
     def test_fail_closed_insufficient_data(self):
-        with self.assertRaisesRegex(ValueError,"INSUFFICIENT_HISTORY"):
+        with self.assertRaisesRegex(ValueError,"INSUFFICIENT_LEAGUE_COVERAGE|INSUFFICIENT_HISTORY"):
             predict(rows(25))
         with self.assertRaisesRegex(ValueError,"INSUFFICIENT_HISTORY"):
             fit(rows(80),league="COL-PRIMERA-A",home="Z",away="B",
-                as_of=START+timedelta(days=185))
+                as_of=START+timedelta(days=185),kickoff=START+timedelta(days=186))
 
     def test_shadow_has_no_bet_permission(self):
         f=predict()
@@ -99,7 +101,7 @@ class CornerShadowContract(unittest.TestCase):
 
     def test_walk_forward_research_not_independent_holdout(self):
         r=walk_forward(rows(190),Market("FT","TOTAL","OVER",9.5),
-                       league="COL-PRIMERA-A",min_league=70,min_team=7)
+                       league="COL-PRIMERA-A",min_league=70,min_team=4)
         self.assertIn(r["status"],("INSUFFICIENT_HOLDOUT","RESEARCH_WALK_FORWARD_ONLY"))
         if r["scored"]:
             self.assertTrue(0<=r["brier"]<=1)
