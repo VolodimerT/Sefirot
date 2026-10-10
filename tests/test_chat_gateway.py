@@ -46,6 +46,28 @@ class BridgeTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "prematch"):
                     gateway.execute("capture", {"sports": case["sports"]})
 
+    def test_real_prematch_revision_requires_explicit_parent_and_reason(self):
+        from datetime import datetime, timedelta, timezone
+        from sefirot.fixtures import example
+        from copy import deepcopy
+        base = datetime.now(timezone.utc).replace(microsecond=0)
+        case = example(base, "bridge-revision-fixture")
+        with tempfile.TemporaryDirectory() as folder:
+            with patch.dict("os.environ", {"SEFIROT_BRIDGE_DB": str(Path(folder) / "ledger.sqlite")}):
+                first = gateway.execute("capture", {"sports": case["sports"], "markets": case["markets"]})
+                self.assertEqual(first["stage"], "FORECAST_SEALED")
+                newer = deepcopy(case["sports"])
+                newer["as_of"] = (base + timedelta(seconds=10)).isoformat()
+                newer["history"] = newer["history"][1:]
+                with self.assertRaisesRegex(ValueError, "parent and reason"):
+                    gateway.execute("capture", {"sports": newer, "markets": case["markets"],
+                                                "parent": first["prediction_id"]})
+                second = gateway.execute("capture", {"sports": newer, "markets": case["markets"],
+                                                  "parent": first["prediction_id"], "reason": "NEW_INFORMATION"})
+                self.assertNotEqual(first["prediction_id"], second["prediction_id"])
+                self.assertEqual(second["stage"], "FORECAST_SEALED")
+
+
 
 if __name__ == "__main__":
     unittest.main()
