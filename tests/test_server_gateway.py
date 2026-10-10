@@ -13,7 +13,7 @@ class ServerGatewayTests(unittest.TestCase):
         result = subprocess.run(['node', str(ROOT / 'scripts/test_sports_gateway.mjs')],
                                 cwd=ROOT, capture_output=True, encoding='utf-8', timeout=30)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn('GATEWAY_CONTRACTS_PASSED=19', result.stdout)
+        self.assertIn('GATEWAY_CONTRACTS_PASSED=23', result.stdout)
 
 
 if __name__ == '__main__':

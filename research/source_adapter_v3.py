@@ -5,7 +5,7 @@ training_rows remains empty until a separately reviewed attestation gate exists.
 Canonical CORE and V3 model modules are not modified or imported for fitting.
 """
 from collections import Counter, defaultdict
-from datetime import date, timedelta
+from datetime import timedelta
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -14,6 +14,7 @@ import sqlite3
 
 from sefirot.contracts import Policy, digest, integer, time
 from sefirot.football_provider import MAX_PROVIDER_ID, fixture_identity
+from sefirot.football_query import FootballQueryError, validate_fixture_echo, fixture_query_row_reason
 from sefirot.forward_scorecard import _forecast_valid
 from sefirot.identity import model_code_hash
 from sefirot.repository import Repository
@@ -60,13 +61,10 @@ def _scan(directory):
                 raise SourceError('ARCHIVE_HASH_MISMATCH')
             if _has_prices(packet['data']):
                 raise SourceError('PRICE_CONTAMINATION')
-            if packet['data'].get('get') != 'fixtures':
-                raise SourceError('ENDPOINT_ECHO_MISMATCH')
-            # Provider echoes often stringify parameter values; compare canonical strings.
-            echoed = packet['data'].get('parameters')
-            requested = packet['receipt']['parameters']
-            if not isinstance(echoed, dict) or {k: str(v) for k,v in echoed.items()} != {k: str(v) for k,v in requested.items()}:
-                raise SourceError('QUERY_ECHO_MISMATCH')
+            try:
+                validate_fixture_echo(packet['data'], packet['receipt']['parameters'])
+            except FootballQueryError as exc:
+                raise SourceError(exc.code) from None
             for row in packet['data']['response']:
                 try:
                     integer(row['league'].get('season'), 'source season', 1900, 2200)
@@ -89,31 +87,13 @@ def _scan(directory):
 
 
 def _query_row(packet, row):
-    p = packet['receipt']['parameters']; fid = row['fixture']['id']
+    p = packet['receipt']['parameters']
     # Bounded support: reject selectors whose completeness/order cannot be replayed.
     if set(p) - {'id','ids','date','league','season','team','from','to','status','timezone'}:
         return 'QUERY_PARAMETER_SEMANTICS_UNSUPPORTED'
-    if p.get('timezone','UTC') not in ('UTC','Etc/UTC'):
-        return 'QUERY_TIMEZONE_UNSUPPORTED'
-    for key, actual in (('league', row['league']['id']), ('season', row['league'].get('season')), ('id', fid)):
-        if key in p and str(p[key]) != str(actual): return 'QUERY_RESPONSE_MISMATCH'
-    if 'ids' in p and str(fid) not in str(p['ids']).split('-'): return 'QUERY_RESPONSE_MISMATCH'
-    if 'team' in p and str(p['team']) not in {str(row['teams'][s]['id']) for s in ('home','away')}:
-        return 'QUERY_RESPONSE_MISMATCH'
-    if 'status' in p and row['fixture']['status']['short'] not in str(p['status']).split('-'):
-        return 'QUERY_RESPONSE_MISMATCH'
-    kickoff_date = time(row['fixture']['date']).date()
-    for key in ('date','from','to'):
-        if key not in p: continue
-        try:
-            if not isinstance(p[key],str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}',p[key]):
-                return 'QUERY_DATE_INVALID'
-            boundary = date.fromisoformat(p[key])
-        except ValueError:
-            return 'QUERY_DATE_INVALID'
-        if ((key=='date' and kickoff_date!=boundary) or (key=='from' and kickoff_date<boundary)
-                or (key=='to' and kickoff_date>boundary)):
-            return 'QUERY_RESPONSE_MISMATCH'
+    reason = fixture_query_row_reason(p, row)
+    if reason:
+        return reason
     # FT history must be exactly scoped by league+season or an explicit fixture id.
     if row['fixture']['status']['short']=='FT' and not ({'league','season'} <= p.keys() or 'id' in p or 'ids' in p):
         return 'HISTORY_QUERY_SCOPE_MISSING'

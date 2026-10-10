@@ -2,6 +2,7 @@
 import re
 from .contracts import PROFILES, digest, integer, number, text, time
 from .credentials import credential
+from .football_query import validate_fixture_query, validate_fixture_query_parameters
 from .provider_transport import ProviderConnection, request_json
 
 HOST = 'v3.football.api-sports.io'
@@ -42,6 +43,8 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
         raise ValueError('unsupported sports endpoint/parameters; odds and live queries disabled')
     if any(not isinstance(v, (str,int)) or isinstance(v,bool) for v in params.values()):
         raise ValueError('invalid sports query parameter')
+    if endpoint == 'fixtures':
+        validate_fixture_query_parameters(params)
     packet = request_json(HOST, '/' + endpoint, params,
                           {'x-apisports-key': api_key or credential('API_FOOTBALL_KEY')},
                           connection_factory=connection_factory)
@@ -55,6 +58,8 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
             raise ValueError('API-Football response count malformed')
         if data.get('paging', {}).get('total', 1) > 1:
             raise ValueError('API-Football incomplete pagination; do not import partial data')
+    if endpoint == 'fixtures':
+        validate_fixture_query(data, params)
     packet['receipt'].update(provider='API_FOOTBALL_V3', sports_only=True)
     return packet
 

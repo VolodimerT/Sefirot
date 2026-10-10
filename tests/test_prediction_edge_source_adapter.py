@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -232,9 +233,30 @@ class SourceAdapterTests(unittest.TestCase):
         self.add(scoped([row(10)],params={'league':9,'season':2030,'last':10}))
         self.reason(self.adapt(),'QUERY_PARAMETER_SEMANTICS_UNSUPPORTED')
 
-    def test_unverified_query_timezone_is_explicit(self):
+    def test_echo_alone_cannot_hide_wrong_timezone_offset(self):
         self.add(scoped([row(10)],params={'id':10,'timezone':'Europe/Kyiv'}))
-        self.reason(self.adapt(),'QUERY_TIMEZONE_UNSUPPORTED')
+        self.reason(self.adapt(),'QUERY_TIMEZONE_RESPONSE_MISMATCH')
+
+    def test_valid_kyiv_query_uses_local_date_and_keeps_training_closed(self):
+        item = row(10, hours=-10)  # UTC Dec 31; Kyiv Jan 1.
+        item['fixture']['date'] = time(item['fixture']['date']).astimezone(ZoneInfo('Europe/Kyiv')).isoformat()
+        item['fixture']['timezone'] = 'Europe/Kyiv'
+        self.add(scoped([item], params={'id':10, 'date':'2030-01-01', 'timezone':'Europe/Kyiv'}))
+        report = self.adapt()
+        self.assertEqual(report['structurally_valid_matches'], 1)
+        self.denied(report)
+
+    def test_unknown_iana_query_zone_is_explicit(self):
+        self.add(scoped([row(10)], params={'id':10, 'timezone':'Invalid/Zone'}))
+        self.reason(self.adapt(), 'QUERY_TIMEZONE_UNSUPPORTED')
+
+    def test_recovered_pattern_stays_rejected_even_if_rows_match_local_day(self):
+        p = scoped([row(10)], params={'id':10, 'timezone':'Europe/Kyiv'})
+        p['data']['parameters']['timezone'] = 'UTC'
+        path = self.add(reseal(p)); before = path.read_bytes()
+        report = self.adapt()
+        self.assertIn('QUERY_ECHO_MISMATCH', report['blockers'])
+        self.assertEqual(path.read_bytes(), before); self.denied(report)
 
     def test_missing_or_invalid_season_is_fixed_rejection(self):
         for value in (None,True,'2030',[]):

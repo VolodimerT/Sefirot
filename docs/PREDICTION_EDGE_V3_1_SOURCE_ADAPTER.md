@@ -1,5 +1,10 @@
 # SEFIROT V3.1: P0 — адаптер исходных наблюдений
 
+Последующее уточнение от 10.10.2026: проверка fixture query/echo и поддержка
+локальной IANA семантики описаны в
+[FIXTURE_QUERY_CONTRACT_20261010.md](FIXTURE_QUERY_CONTRACT_20261010.md).
+Ограничение UTC и identities ниже относятся к исходному срезу draft #23.
+
 Задание: `SEFIROT_TASK_AUDIT_V3_1_2026-10-09.md` и
 `SEFIROT_SOL_ASTRA_NEXT_TASK_2026-10-09.txt`, прочитанные целиком.
 База: draft PR #21, commit `121a580143e8b4c0d98669bb5c0a0b7dbcfe317b`.

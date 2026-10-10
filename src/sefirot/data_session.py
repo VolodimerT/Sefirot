@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from .contracts import PROFILES, Policy, digest, integer, number, time
 from .football_gateway import get_sports, transport_status
 from .football_provider import HOST, MAX_PROVIDER_ID, FootballRequestError, status_summary
+from .football_query import FootballQueryError, validate_fixture_query
 from .forward import create_plan, capture_plan, inspect_plan
 from .identity import code_hash, model_code_hash
 from .repository import Repository
@@ -22,6 +23,8 @@ def _write(path, value):
 
 
 def _reason(exc):
+    if isinstance(exc, FootballQueryError):
+        return exc.code
     if isinstance(exc, FootballRequestError):
         return exc.code
     message = str(exc).lower()
@@ -62,6 +65,10 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         if profile not in PROFILES or profile == 'UNKNOWN':
             raise ValueError('explicit competition profile required')
     previous = read_archive(source_archive, now.isoformat()) if source_archive else []
+    # Read old receipts as recorded. A new collection must not reuse a packet
+    # whose provider echo or date scope disagrees with its original request.
+    for packet in previous:
+        validate_fixture_query(packet['data'], packet['receipt']['parameters'])
     root = Path(directory)
     if root.exists():
         raise ValueError('data session directory already exists; choose a new directory')
@@ -116,6 +123,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
                 raise ValueError('provider receipt mismatch')
             if endpoint == 'fixtures':
                 validate_packet(packet, clock().isoformat())
+                validate_fixture_query(packet['data'], params)
                 if 'league' in params and any(r['league']['id'] != params['league']
                         or r['league'].get('season') != params['season']
                         or r['fixture']['status']['short'] != 'FT'
@@ -137,7 +145,7 @@ def collect_session(directory, day, profiles, *, source_reliability, max_request
         except (ValueError, OSError, KeyError, TypeError) as exc:
             reason = _reason(exc)
             attempt.update(status=reason, finished_at=clock().isoformat())
-            if reason in ('PROVIDER_AUTH_FAILED', 'PROVIDER_QUOTA_EXHAUSTED',
+            if isinstance(exc, FootballQueryError) or reason in ('PROVIDER_AUTH_FAILED', 'PROVIDER_QUOTA_EXHAUSTED',
                           'PROVIDER_ACCESS_DENIED', 'PROVIDER_ACCOUNT_SUSPENDED',
                           'PROVIDER_NETWORK_UNAVAILABLE', 'CREDENTIAL_MISSING_OR_INVALID'):
                 stopped = reason
