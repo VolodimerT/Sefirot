@@ -15,7 +15,7 @@ for English Premier League 2018/2019:
 - Team Pt.2: https://footystats.org/c-dl.php?comp=1625&type=teams2
 - Players: https://footystats.org/c-dl.php?comp=1625&type=players
 
-The linked CSV **text** and real header (64 columns) were inspected via
+The linked CSV **text** and real header (66 fields in the observed download; the overview describes 64) were inspected via
 public web source `c-dl.php?comp=1625&type=matches`. First rows include
 Manchester United–Leicester City (2:1, 2:5 corners) and
 Newcastle United–Tottenham Hotspur (1:2, 3:5 corners), consistent with the
