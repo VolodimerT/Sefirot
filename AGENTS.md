@@ -1,5 +1,28 @@
 # SEFIROT: актуальная база разработки
 
+## Situational V3.3 P0–P1, 11.10.2026
+
+Ветка feature/situation-bridge-v33-20261011 от exact PR #22
+9b88d130e69e3be5ee69723469913b36c28bb3e8. Прототип PR #30
+b7266fd60fdcce39b8aa0ab044fdd0292675f260 переиспользован и ужесточён.
+См. docs/SITUATION_BRIDGE_P1_20261011.md. Только status-only situation:
+CLI/REST/MCP/worker читают enrolled оригинальную квитанцию с проверкой
+identity/collector HMAC/chronology. HMAC не доказательство API-происхождения;
+реальные пакеты UNATTESTED_ARCHIVE дают HOLD. SYNTHETIC_TEST_ONLY opt-in,
+все outputs явно помечены, все разрешения false. Нет live-прогноза/quotes/
+CORE invocation, snapshot restore/checkpoint или нового prediction/decision.
+SQL/schema и Edge source — reviewable templates, НЕ применены к production.
+Новая situation completion сверяет attempt, старый RPC её не обходит;
+остальные шесть kinds и canonical tables сохранены. Тестовый PostgreSQL
+18 WASM отличается от Supabase 17: cloud rollout здесь не проверялся.
+Src/BASELINE/Policy побайтно прежние. API/keys/подписки/deployments не менять,
+main не сливать, дополнительных агентов не создавать. STOP после P1;
+P2 exact bookmaker receipts >=2.00 и P3 live-model требуют отдельной приёмки.
+Проверки: npm ci --ignore-scripts --no-audit --no-fund, python test_sefirot.py,
+python scripts/verify_release.py. Никаких skip при отсутствии Node/PGlite.
+Скорость full DEEP/очереди/cloud cold start и реальный HOLDOUT не доказаны.
+Нижние разделы — исторические срезы.
+
 ## Локальная ручная очередь, 08.10.2026
 
 Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
