@@ -5,10 +5,10 @@ No live sporting API credentials obtained, no subscription changed, no CORE or m
 
 ## Provider decision
 
-**FootyStats** offers public \`key=example\` samples for English Premier League 2018/19
+**FootyStats** offers public `key=example` samples for English Premier League 2018/19
 season 1625, or other demonstrator season IDs described on the official pages.
-The \`league-matches\` endpoint reports fixture identity, regulation goal counts,
-FT corners, and other statistics, with \`max_time\` query support; a \`match\`
+The `league-matches` endpoint reports fixture identity, regulation goal counts,
+FT corners, and other statistics, with `max_time` query support; a `match`
 endpoint has lineups and odds comparison. Its Hobby offer is GBP 29.99/month
 for up to 50 chosen leagues and 1,800 calls/hour. Free plan/test key does **not**
 prove full historical coverage in user's intended leagues.
@@ -45,7 +45,7 @@ The tests use **synthetic** rows. No tested claim of real model accuracy or ROI.
 
 Fetch a public sample independently in a browser, save complete JSON locally,
 keep the collection timestamp from the actual request and protect the file.
-The \`example\` key is public for designated demo seasons; do not use a real key
+The `example` key is public for designated demo seasons; do not use a real key
 in command-line arguments, GitHub files or logs.
 
 Example test URL (browser only, demo):
@@ -53,15 +53,15 @@ https://api.football-data-api.com/league-matches?key=example&season_id=1625
 
 Then, in the project checkout:
 
-\`\`\`sh
+```sh
 python scripts/footystats_probe.py --input /private/footystats-1625.json --season-id 1625 --received-at 2026-10-11T06:00:00+00:00 --output /private/footystats-report.json
 python -m unittest discover -s tests -p test_footystats_probe.py
-\`\`\`
+```
 
 Replace received-at with the **actual first-observed capture timestamp**; the
 above time is a syntax example, not a statement that data was collected then.
 
-- \`success\`, match IDs, competition selector, score/corner validity, basic
+- `success`, match IDs, competition selector, score/corner validity, basic
   pagination and chronology are checked.
 - The adapter never interprets historical kickoff as publication or
   received-at time. It records the actual collection timestamp on all rows.
@@ -69,7 +69,7 @@ above time is a syntax example, not a statement that data was collected then.
   Missing corner values remain null rather than invented 0.
 - All bookmaker odds, pre-match potential and trend fields are deliberately
   **excluded** from candidate output until temporally verified.
-- Successful parsing is merely \`KEEP_SHADOW\`: model fit=false, holdout=false,
+- Successful parsing is merely `KEEP_SHADOW`: model fit=false, holdout=false,
   money=false, not a certified provider statement.
 - The full raw JSON is not copied to the resulting report; only up to three
   non-sensitive observation summaries. Preserve original private raw receipts
