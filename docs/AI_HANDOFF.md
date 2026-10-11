@@ -20,6 +20,10 @@
 4. Read back changed files and commit. Run tests and inspect 4-job CI for the exact SHA.
 5. Report accomplished changes, blockers and a single next action; never claim unverified CI or real-model edge.
 
+## Private cloud archive (P2, 2026-10-11)
+
+The live private Supabase project `sefirot-core` now has `sefirot.save_daily_report(jsonb)` and append-only `sefirot.daily_report_archive`. Use connected authenticated Supabase SQL connector for final daily summaries, with explicit readback receipt. See `docs/SEFIROT_CLOUD_AUTOSAVE.md` and copy-ready `docs/PROJECT_INSTRUCTIONS_DAILY_SAVE.md`. This is **not** an automatic message listener; no connected tool or no acknowledgment means NOT_SAVED. GitHub remains for code only. The previous local daily-autosave script remains available for separate local archiving.
+
 ## Every final daily betting report (Europe/Kyiv)
 
 1. Finish exactly one day report: separate CORE BET/PASS from research, Parik24 tickets from Stake/Yaryi proposals, PENDING/VOID/CASHOUT and unreconciled balances.
