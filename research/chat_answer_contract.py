@@ -107,12 +107,24 @@ def _schema(value, spec, path='$', depth=0):
 def _record(repo, decision_id):
     if repo is None: raise AnswerError('ORIGINAL_REPOSITORY_REQUIRED')
     try:
+        if (repo.db.execute('PRAGMA quick_check').fetchone()[0] != 'ok'
+                or repo.db.execute('PRAGMA foreign_key_check').fetchall()):
+            raise AnswerError('ORIGINAL_SQL_INTEGRITY_FAILED')
         if not repo.verify(): raise AnswerError('ORIGINAL_LEDGER_INTEGRITY_FAILED')
         d = repo.get('decisions', decision_id)
         p = repo.get('predictions', d['prediction_id'])
         for item in (d, p):
             body = dict(item); identifier = body.pop('id')
             if digest(body) != identifier: raise AnswerError('ORIGINAL_RECORD_ID_MISMATCH')
+        dr = repo.db.execute('SELECT * FROM decisions WHERE id=?', (decision_id,)).fetchone()
+        pr = repo.db.execute('SELECT * FROM predictions WHERE id=?', (d['prediction_id'],)).fetchone()
+        if (d['id'] != decision_id or p['id'] != d['prediction_id']
+                or d['match_id'] != p['sports']['match']['id']
+                or dr['prediction_id'] != p['id'] or time(dr['at']) != time(d['at'])
+                or pr['match_id'] != d['match_id'] or pr['model_id'] != p['model_id']
+                or time(pr['at']) != time(p['sealed_at'])
+                or not time(p['as_of']) <= time(p['sealed_at']) <= time(d['at'])):
+            raise AnswerError('ORIGINAL_RECORD_COLUMN_OR_TIME_MISMATCH')
         return d, p
     except (KeyError, TypeError, ValueError, sqlite3.Error): raise AnswerError('ORIGINAL_RECORD_NOT_VERIFIED') from None
 

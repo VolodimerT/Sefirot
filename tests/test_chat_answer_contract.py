@@ -119,6 +119,25 @@ class ChatAnswerContractTests(unittest.TestCase):
         with self.assertRaises(AnswerError):
             validate_answer(self.answer, expected_fixtures=self.fixtures, at=self.at)
 
+    def test_sql_columns_cannot_disagree_with_original_payload(self):
+        # Payload-only journal hashes cannot detect a changed SQL timestamp.
+        for table in ('predictions', 'decisions'):
+            with self.subTest(table=table):
+                self.repo.close()
+                db=sqlite3.connect(self.path)
+                try:
+                    db.execute('DROP TRIGGER '+table+'_no_update')
+                    db.execute('UPDATE '+table+' SET at=?',((self.at+timedelta(seconds=1)).isoformat(),))
+                    db.commit()
+                finally:db.close()
+                self.repo=Repository(str(self.path),read_only=True)
+                try:
+                    self.assertTrue(self.repo.verify())
+                    with self.assertRaises(AnswerError):self.check()
+                finally:
+                    self.repo.close();self.path.write_bytes(self.before)
+                    self.repo=Repository(str(self.path),read_only=True)
+
     def test_screenshot_without_core_is_not_executed(self):
         a = build_answer(self.fixtures[0], self.fixtures, at=self.at)
         out = validate_answer(a, expected_fixtures=self.fixtures, at=self.at)

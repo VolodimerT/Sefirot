@@ -54,8 +54,9 @@ SEFIROT_RESEARCH_CANDIDATE, EXTERNAL_STAKE_YARYI_PROPOSAL и OUR_PARIK24_TICKET.
 - `runtime_status`, `model_build`, `model_hash`, `code_hash`, `policy_hash`,
   `forecast_seal_id`, `decision_id`, `core_decision`, `core_class`: связываются
   с записью из одобренного оператором оригинального read-only ledger.
-  Проверяется весь hash journal и digest prediction/decision, а не клиентский
-  hash. Архивное исполнение не называется новым запуском.
+  Проверяется весь hash journal и digest prediction/decision, SQL integrity/
+  foreign keys и соответствие ID/time/model/fixture столбцов payload,
+  а не клиентский hash. Архивное исполнение не называется новым запуском.
 - `data_origin`: SYNTHETIC явно виден; запись в durable ledger сама по себе
   не удостоверяет поставщика. Для несинтетической записи без внешнего
   origin attestation — ORIGIN_NOT_INDEPENDENTLY_ATTESTED.
