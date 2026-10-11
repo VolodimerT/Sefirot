@@ -1,3 +1,22 @@
+## Текущий этап V4.0: первый P0, 11.10.2026
+
+Issue #33 + три прикреплённых документа V4.0 прочитаны целиком. Рабочая ветка
+feature/chat-answer-contract-v4-20261011 от exact PR #22 HEAD
+9b88d130e69e3be5ee69723469913b36c28bb3e8. Нормативный стандарт:
+docs/SEFIROT_CHAT_STANDARD_V1_20261011.md; copy/paste Project Instructions рядом.
+Verifier read-only, сохраняет original PASS/BET; не вызывает CORE и не даёт
+денежного допуска. src/sefirot, MODEL_MODULES, Policy и old seals не менять.
+Small readiness — preview, не observation-v2/full-league QC или fit.
+После первого рабочего draft PR + exact four-platform CI + отчёта остановиться
+на этом checkpoint. Следующий отдельный P0: full-league/source QC. Не создавать
+дополнительных агентов, не сливать main, не вызывать оплаченные/suspended API,
+не менять production. Настройки ChatGPT Project не считать автоматически
+обновлёнными. Три независимых чата и новый независимый HOLDOUT не проведены.
+Проверки: python test_sefirot.py, python scripts/verify_release.py; generated
+legacy report outputs сохранить вне Git и восстановить архивные tracked bytes.
+Личные ledger/receipt/coupon/API secrets в публичный Git не помещать.
+Нижние разделы — история, не замена текущей области работы.
+
 # SEFIROT: актуальная база разработки
 
 ## Локальная ручная очередь, 08.10.2026

@@ -23,3 +23,5 @@ jobs:
         run: python test_sefirot.py
       - name: Full synthetic lifecycle
         run: python sefirot.py demo
+      - name: Full release verification
+        run: python scripts/verify_release.py

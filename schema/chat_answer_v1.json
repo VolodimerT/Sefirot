@@ -1,0 +1,619 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/VolodimerT/Sefirot/schema/sefirot-chat-answer-v1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "sefirot-chat-answer-v1"
+    },
+    "fixture_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+    },
+    "requested_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+      },
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "PREMATCH",
+        "LIVE_RESEARCH",
+        "POSTMATCH",
+        "HOLD"
+      ]
+    },
+    "phase_source": {
+      "type": "string",
+      "enum": [
+        "ORIGINAL_LEDGER_ARCHIVE",
+        "NOT_ATTESTED"
+      ]
+    },
+    "observed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "maxLength": 40
+    },
+    "received_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "maxLength": 40
+    },
+    "answered_at": {
+      "type": "string",
+      "format": "date-time",
+      "maxLength": 40
+    },
+    "runtime_status": {
+      "type": "string",
+      "enum": [
+        "ORIGINAL_CORE_RECORD_VERIFIED",
+        "SEFIROT_NOT_EXECUTED"
+      ]
+    },
+    "model_build": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "maxLength": 30,
+          "minLength": 1,
+          "pattern": "^[0-9]+[.][0-9]+(?:[.][0-9]+)?$"
+        },
+        "goal_model": {
+          "type": "string",
+          "maxLength": 60,
+          "minLength": 1,
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "executed_at": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "version",
+        "goal_model",
+        "executed_at"
+      ],
+      "additionalProperties": false
+    },
+    "model_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "maxLength": 64
+    },
+    "code_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "maxLength": 64
+    },
+    "policy_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "maxLength": 64
+    },
+    "forecast_seal_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "maxLength": 64
+    },
+    "decision_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "maxLength": 64
+    },
+    "core_decision": {
+      "type": "string",
+      "enum": [
+        "BET",
+        "PASS",
+        "NO_MODEL_DECISION"
+      ]
+    },
+    "core_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "A",
+        "B",
+        "C",
+        "D",
+        "RED"
+      ]
+    },
+    "evidence_level": {
+      "type": "string",
+      "enum": [
+        "CORE_BET",
+        "CORE_PASS",
+        "RESEARCH_ONLY",
+        "BOOKMAKER_QUOTE_OBSERVED",
+        "REAL_TICKET_SETTLED"
+      ]
+    },
+    "data_origin": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SYNTHETIC",
+        "ORIGIN_NOT_INDEPENDENTLY_ATTESTED"
+      ]
+    },
+    "source_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "maxItems": 100,
+      "uniqueItems": true
+    },
+    "priced_market_count": {
+      "type": "integer",
+      "const": 0
+    },
+    "alternatives_ge_2": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/alternative"
+      },
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "missing_data": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "maxItems": 100,
+      "uniqueItems": true
+    },
+    "next_action": {
+      "type": "string",
+      "enum": [
+        "OBTAIN_ORIGINAL_CORE_DECISION",
+        "READ_ORIGINAL_JOURNAL",
+        "REQUEST_SMALL_MARKET_DATA",
+        "WAIT_FOR_VALIDATED_LIVE_MODEL"
+      ]
+    },
+    "ticket_record": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "source_class": {
+          "type": "string",
+          "enum": [
+            "OUR_PARIK24_TICKET",
+            "EXTERNAL_STAKE_YARYI_PROPOSAL"
+          ]
+        },
+        "ticket_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "PENDING",
+            "WON",
+            "LOST",
+            "CASHOUT",
+            "VOID",
+            "UNKNOWN"
+          ]
+        },
+        "verification": {
+          "type": "string",
+          "const": "USER_REPORTED_NOT_ATTESTED"
+        }
+      },
+      "required": [
+        "source_class",
+        "ticket_id",
+        "status",
+        "verification"
+      ],
+      "additionalProperties": false
+    },
+    "audit_period": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d\\d-\\d\\d$",
+      "maxLength": 10
+    },
+    "monetary_permission": {
+      "type": "boolean",
+      "const": false
+    },
+    "live_state": {
+      "$ref": "#/$defs/live"
+    },
+    "research_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/research"
+      },
+      "maxItems": 3,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema",
+    "fixture_id",
+    "requested_scope",
+    "mode",
+    "phase_source",
+    "observed_at",
+    "received_at",
+    "answered_at",
+    "runtime_status",
+    "model_build",
+    "model_hash",
+    "code_hash",
+    "policy_hash",
+    "forecast_seal_id",
+    "decision_id",
+    "core_decision",
+    "core_class",
+    "evidence_level",
+    "data_origin",
+    "source_conflicts",
+    "priced_market_count",
+    "alternatives_ge_2",
+    "missing_data",
+    "next_action",
+    "ticket_record",
+    "audit_period",
+    "monetary_permission",
+    "live_state",
+    "research_checks"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "alternative": {
+      "type": "object",
+      "properties": {
+        "fixture_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+        },
+        "market_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Z0-9:._-]+$"
+        },
+        "bookmaker": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "REGULATION_90",
+            "1H",
+            "2H"
+          ]
+        },
+        "line_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+        },
+        "decimal_odds": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 10000
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 40
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 40
+        },
+        "source_receipt_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "maxLength": 64
+        },
+        "evidence_level": {
+          "type": "string",
+          "enum": [
+            "RESEARCH_ONLY",
+            "BOOKMAKER_QUOTE_OBSERVED"
+          ]
+        },
+        "monetary_permission": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "fixture_id",
+        "market_key",
+        "bookmaker",
+        "period",
+        "line_id",
+        "decimal_odds",
+        "observed_at",
+        "received_at",
+        "source_receipt_hash",
+        "evidence_level",
+        "monetary_permission"
+      ],
+      "additionalProperties": false
+    },
+    "live": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "fixture_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "1H",
+            "HT",
+            "2H",
+            "ET"
+          ]
+        },
+        "minute": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "home_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "away_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "red_home": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 11
+        },
+        "red_away": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 11
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 40
+        },
+        "quote_home_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "quote_away_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "quote_period": {
+          "type": "string",
+          "enum": [
+            "1H",
+            "HT",
+            "2H",
+            "ET"
+          ]
+        },
+        "quote_minute": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "quote_observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "fixture_id",
+        "period",
+        "minute",
+        "home_score",
+        "away_score",
+        "red_home",
+        "red_away",
+        "observed_at",
+        "quote_home_score",
+        "quote_away_score",
+        "quote_period",
+        "quote_minute",
+        "quote_observed_at"
+      ],
+      "additionalProperties": false
+    },
+    "research": {
+      "type": "object",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "enum": [
+            "CORNERS",
+            "SHOTS",
+            "SOT",
+            "FOULS",
+            "YELLOW_CARDS",
+            "RED_CARDS",
+            "BOOKING_POINTS"
+          ]
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "FT",
+            "1H",
+            "2H"
+          ]
+        },
+        "counts": {
+          "type": "object",
+          "properties": {
+            "shots": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "sot": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "corners_ft": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "corners_1h": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "fouls_committed": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "yellow_cards": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "red_cards": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "booking_points": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "shots",
+            "sot",
+            "corners_ft",
+            "corners_1h",
+            "fouls_committed",
+            "yellow_cards",
+            "red_cards",
+            "booking_points"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "metric",
+        "period",
+        "counts"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
