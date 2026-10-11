@@ -1,6 +1,7 @@
 """Synthetic adversarial replies; original Service decisions remain authoritative."""
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -264,7 +265,8 @@ class ChatAnswerContractTests(unittest.TestCase):
         f = Path(self.temp.name) / 'answer.json'; f.write_text(json.dumps(self.answer), encoding='utf-8')
         cmd = [sys.executable, str(ROOT / 'scripts/verify_chat_answer.py'), '--answer', str(f),
                '--fixture', self.fixtures[0], '--db', str(self.path), '--at', self.at.isoformat()]
-        result = subprocess.run(cmd, capture_output=True, encoding='utf-8')
+        result = subprocess.run(cmd, capture_output=True, encoding='utf-8',
+                                env={**os.environ,'PYTHONIOENCODING':'cp1252'})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('PASS', json.loads(result.stdout)['summary'])
         f.write_text('{"fixture_id":"a","fixture_id":"b"}', encoding='utf-8')
