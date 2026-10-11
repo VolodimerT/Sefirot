@@ -23,14 +23,14 @@ REQUIRED = (
 ALLOWED_STATUSES = {"complete", "incomplete", "postponed", "canceled", "cancelled", "suspended"}
 
 
-def _nonnegative_int(row, key):
+def _nonnegative_int(row, key, *, upper=1000):
     value = row.get(key)
     if value is None or value == "":
         return None
-    if not value.isascii() or not value.isdecimal() or len(value) > 8:
+    if not value.isascii() or not value.isdecimal() or len(value) > 16:
         raise ValueError("invalid integer in " + key)
     n = int(value)
-    if n > 1000:
+    if n > upper:
         raise ValueError("oversized count in " + key)
     return n
 
@@ -66,7 +66,7 @@ def inspect_csv(raw, *, season, received_at, expected_matches=None):
     if not set(REQUIRED).issubset(header):
         raise ValueError("not FootyStats Match CSV; required columns missing")
     seen = set()
-    complete = incomplete = goals_n = corners_n = extra = unknown_match_features = 0
+    complete = incomplete = goals_n = corners_n = 0
     records = []
     for row in reader:
         if len(records) >= MAX_ROWS:
@@ -76,7 +76,7 @@ def inspect_csv(raw, *, season, received_at, expected_matches=None):
         status = row["status"].strip()
         if status not in ALLOWED_STATUSES:
             raise ValueError("unknown match status")
-        ts = _nonnegative_int(row, "timestamp")
+        ts = _nonnegative_int(row, "timestamp", upper=253402300799)
         if ts is None or ts <= 0:
             raise ValueError("missing or invalid kickoff timestamp")
         try:
