@@ -1,5 +1,6 @@
 """Offline FootyStats Premium/free Match CSV research validation, no network."""
 import argparse
+import csv
 import json
 from pathlib import Path
 import sys
@@ -33,7 +34,7 @@ def main(argv=None):
                           "goals": report["coverage"]["complete_goal_scores"],
                           "corners": report["coverage"]["complete_corner_scores"],
                           "training_allowed": False}))
-    except (OSError, ValueError, TypeError) as exc:
+    except (OSError, ValueError, TypeError, csv.Error) as exc:
         p.exit(2, str(exc) + "\n")
 
 
