@@ -97,3 +97,14 @@ above time is a syntax example, not a statement that data was collected then.
    alter deployed services, merge main, or enable wagers automatically.
 
 Current decision: **PROTOTYPE_READY, SOURCE_NOT_CERTIFIED, KEEP_SHADOW**.
+
+## Optional one-request public demo smoke
+
+Run only when internet access is available. This uses the published public `example` key for EPL 2018/19, requests only the first page, and writes a new local summary; it does **not** obtain a subscription or certify live data. No retry or paid call is performed.
+
+```sh
+python scripts/footystats_public_demo.py --execute-public-demo-request --output /private/footystats-demo-smoke.json
+python -m unittest discover -s tests -p 'test_footystats*py'
+```
+
+The actual demo HTTP request has **not** been executed in the current development session because direct external networking is unavailable. Automated CI tests mock the HTTP response and must not be described as real API data collection.
