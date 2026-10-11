@@ -101,6 +101,41 @@ class DailyAutosaveTests(unittest.TestCase):
         path.write_text("{}")
         self.assertEqual(main(["--report", str(path), "--store", str(self.store)]), 2)
 
+    def test_malformed_ticket_day_lists_fail_closed(self):
+        report = daily(); report["origin"] = "TICKET_AUDIT"
+        for value in ("bad", None, [None], 5, [{"day": "2030-02-01"}, {}]):
+            bad = copy.deepcopy(report)
+            bad["report"] = {"schema": "ticket-audit-v1", "status": "REPORTED_UNVERIFIED",
+                             "monetary_permission": False, "days": value}
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "INVALID_TICKET_AUDIT"):
+                save(bad, self.store)
+
+    def test_retry_older_day_keeps_latest_pointer(self):
+        old = save(daily(), self.store)
+        newer = daily(); newer["day"] = "2030-02-02"
+        saved = save(newer, self.store)
+        self.assertFalse(save(daily(), self.store)["new_version"])
+        self.assertEqual(verify(self.store)["latest"]["sha256"], saved["sha256"])
+        self.assertNotEqual(old["sha256"], saved["sha256"])
+
+    def test_partial_uncommitted_temp_does_not_change_archive(self):
+        saved = save(daily(), self.store)
+        path = Path(saved["path"]).parent / ".pending-orphan"
+        path.write_text("partial")
+        self.assertEqual(verify(self.store)["snapshots"], 1)
+        self.assertFalse(save(daily(), self.store)["new_version"])
+
+    def test_latest_pointer_missing_detected(self):
+        save(daily(), self.store)
+        (self.store / "latest.json").unlink()
+        with self.assertRaisesRegex(ValueError, "MISSING_LATEST"):
+            verify(self.store)
+
+    def test_extra_keys_and_non_dict_reports_rejected(self):
+        for data in ([], None, "hello", {**daily(), "money_permission": True}):
+            with self.subTest(data=data), self.assertRaises(ValueError):
+                save(data, self.store)
+
     def test_no_public_repo_mutation(self):
         self.assertNotIn("github", str(self.store))
         self.assertNotIn("monetary_permission", daily())
