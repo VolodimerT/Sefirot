@@ -9,3 +9,6 @@ data/
 venv/
 build/
 *.egg-info/
+
+# Private daily report snapshots (never commit personal tickets)
+.sefirot/
