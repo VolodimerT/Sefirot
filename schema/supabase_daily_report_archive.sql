@@ -55,10 +55,10 @@ BEGIN
        NOT (p_payload ?& ARRAY['schema','day','timezone','origin','status','source_refs','report']) THEN
         RAISE EXCEPTION 'INVALID_DAILY_REPORT_FIELDS' USING ERRCODE = '22023';
     END IF;
-    IF p_payload->>'schema' <> 'sefirot-daily-report-v1'
-        OR p_payload->>'timezone' <> 'Europe/Kyiv'
-        OR p_payload->>'status' <> 'REPORTED_UNVERIFIED'
-        OR p_payload->>'origin' NOT IN ('CHAT_DAILY','TICKET_AUDIT') THEN
+    IF (p_payload->>'schema') IS DISTINCT FROM 'sefirot-daily-report-v1'
+        OR (p_payload->>'timezone') IS DISTINCT FROM 'Europe/Kyiv'
+        OR (p_payload->>'status') IS DISTINCT FROM 'REPORTED_UNVERIFIED'
+        OR coalesce(p_payload->>'origin','') NOT IN ('CHAT_DAILY','TICKET_AUDIT') THEN
         RAISE EXCEPTION 'INVALID_DAILY_REPORT_CONTRACT' USING ERRCODE = '22023';
     END IF;
     IF jsonb_typeof(p_payload->'day') <> 'string'
@@ -89,17 +89,17 @@ BEGIN
         END IF;
     ELSE
         IF jsonb_typeof(p_payload->'report') <> 'object'
-           OR p_payload->'report'->>'schema' <> 'ticket-audit-v1'
-           OR p_payload->'report'->>'status' <> 'REPORTED_UNVERIFIED'
-           OR p_payload->'report'->'monetary_permission' <> 'false'::jsonb THEN
+           OR (p_payload->'report'->>'schema') IS DISTINCT FROM 'ticket-audit-v1'
+           OR (p_payload->'report'->>'status') IS DISTINCT FROM 'REPORTED_UNVERIFIED'
+           OR (p_payload->'report'->'monetary_permission') IS DISTINCT FROM 'false'::jsonb THEN
             RAISE EXCEPTION 'INVALID_TICKET_AUDIT' USING ERRCODE = '22023';
         END IF;
-        IF jsonb_typeof(p_payload->'report'->'days') <> 'array' THEN
+        IF jsonb_typeof(p_payload->'report'->'days') IS DISTINCT FROM 'array' THEN
             RAISE EXCEPTION 'INVALID_TICKET_AUDIT_DAYS' USING ERRCODE = '22023';
         END IF;
         IF jsonb_array_length(p_payload->'report'->'days') <> 1
-           OR p_payload->'report'->'days'->0->>'day' <> v_day::text
-           OR p_payload->'report'->>'timezone' <> 'Europe/Kyiv' THEN
+           OR (p_payload->'report'->'days'->0->>'day') IS DISTINCT FROM v_day::text
+           OR (p_payload->'report'->>'timezone') IS DISTINCT FROM 'Europe/Kyiv' THEN
             RAISE EXCEPTION 'MIXED_OR_DIFFERENT_REPORT_DAYS' USING ERRCODE = '22023';
         END IF;
     END IF;
