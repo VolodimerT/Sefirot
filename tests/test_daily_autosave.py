@@ -136,6 +136,26 @@ class DailyAutosaveTests(unittest.TestCase):
             with self.subTest(data=data), self.assertRaises(ValueError):
                 save(data, self.store)
 
+    def test_existing_ticket_audit_sample_autosaves_in_one_invocation(self):
+        root = Path(__file__).resolve().parents[1]
+        example = root / "examples" / "ops_ticket_audit.json"
+        self.assertEqual(main(["--ticket-input", str(example), "--store", str(self.store)]), 0)
+        result = verify(self.store)
+        self.assertEqual(result["snapshots"], 1)
+        data = json.loads(next(self.store.glob("????-??-??/*.json")).read_text())
+        self.assertEqual(data["origin"], "TICKET_AUDIT")
+        self.assertEqual(data["status"], "REPORTED_UNVERIFIED")
+        self.assertFalse(data["report"]["monetary_permission"])
+
+    def test_multi_day_ticket_input_fails_without_saving(self):
+        root = Path(__file__).resolve().parents[1]
+        example = json.loads((root / "examples" / "ops_ticket_audit.json").read_text())
+        example["tickets"][-1]["day"] = "2030-01-02"
+        inp = Path(self.temp.name) / "two_days.json"
+        inp.write_text(json.dumps(example))
+        self.assertEqual(main(["--ticket-input", str(inp), "--store", str(self.store)]), 2)
+        self.assertFalse(list(self.store.glob("????-??-??/*.json")))
+
     def test_no_public_repo_mutation(self):
         self.assertNotIn("github", str(self.store))
         self.assertNotIn("monetary_permission", daily())
