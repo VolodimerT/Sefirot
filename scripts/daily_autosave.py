@@ -49,10 +49,12 @@ def check_report(report: object) -> dict:
         if not isinstance(body, str) or not body.strip():
             raise ValueError("EMPTY_CHAT_REPORT")
     else:
+        days = body.get("days") if isinstance(body, dict) else None
         if (not isinstance(body, dict) or body.get("schema") != "ticket-audit-v1"
                 or body.get("status") != "REPORTED_UNVERIFIED"
                 or body.get("monetary_permission") is not False
-                or [d.get("day") for d in body.get("days", [])] != [day]):
+                or not isinstance(days, list) or not all(isinstance(d, dict) for d in days)
+                or [d.get("day") for d in days] != [day]):
             raise ValueError("INVALID_TICKET_AUDIT_OR_DAY")
     payload = canonical(report)
     if len(payload) > MAX_BYTES:
