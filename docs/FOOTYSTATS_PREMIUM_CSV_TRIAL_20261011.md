@@ -13,7 +13,7 @@ for English Premier League 2018/2019:
 - League: https://footystats.org/c-dl.php?comp=1625&type=league
 - Teams: https://footystats.org/c-dl.php?comp=1625&type=teams
 - Team Pt.2: https://footystats.org/c-dl.php?comp=1625&type=teams2
-- Players: accessible on the downloads page, inspect actual URL there
+- Players: https://footystats.org/c-dl.php?comp=1625&type=players
 
 The linked CSV **text** and real header (64 columns) were inspected via
 public web source `c-dl.php?comp=1625&type=matches`. First rows include
