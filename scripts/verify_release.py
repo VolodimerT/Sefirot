@@ -15,6 +15,7 @@ from sefirot.identity import code_hash,model_code_hash
 from sefirot.retrospective import audit_cases
 
 def main():
+    sys.stdout.reconfigure(encoding='utf-8',errors='strict')
     report_dir=ROOT/'reports';report_dir.mkdir(exist_ok=True)
     started=time.monotonic()
     test=subprocess.run([sys.executable,str(ROOT/'test_sefirot.py')],cwd=ROOT,capture_output=True,encoding='utf-8')
