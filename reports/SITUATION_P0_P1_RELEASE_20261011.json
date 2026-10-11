@@ -4,7 +4,7 @@
   "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
   "python": "3.12.14",
   "platform": "Linux",
-  "elapsed_seconds": 53.752,
+  "elapsed_seconds": 54.511,
   "test_exit": 0,
   "tests": 802,
   "backtest_fixtures": 12,
@@ -12,7 +12,7 @@
   "audit_cases": 49,
   "audit_holdout_eligible": false,
   "statistical_profitability_proven": false,
-  "generated_at": "2026-10-11T08:57:43.448876+00:00",
+  "generated_at": "2026-10-11T09:05:38.358068+00:00",
   "replay_matches": true,
   "integrity": true,
   "skipped": 0,
@@ -31,5 +31,5 @@
   "added_python_tests_this_delivery": 45,
   "sql_groups": 14,
   "relay_groups": 11,
-  "windows_cp1252_regression": "UTF8_CLI_AND_NODE_PIPE_EXPLICIT; EXPECT_RUSSIAN_SUMMARY"
+  "windows_cp1252_regression": "UTF8_CLI_AND_NODE_PIPE_EXPLICIT; ASCII_STRFTIME_THEN_RUSSIAN_LABEL; EXPECT_RUSSIAN_SUMMARY"
 }

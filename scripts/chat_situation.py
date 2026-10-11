@@ -116,7 +116,7 @@ def short_summary(request, phase, depth, body, synthetic, age, action, reason):
     if body:
         start = time(body["kickoff"])
         lines.append("Начало: " + start.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-                     + " / " + start.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%H:%M:%S Киев"))
+                     + " / " + start.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%H:%M:%S") + " Киев")
         lag = f"{age:.0f} с" if age >= 0 else "противоречие времени"
         lines.append(f"Статус: {body['provider_status']} | давность: {lag} | источник: "
                      + ("тестовый" if synthetic else "внешнее происхождение не удостоверено"))
