@@ -206,6 +206,8 @@ def execute_situation(data, *, clock=None):
 
 
 def main():
+    # CLI JSON is UTF-8 on every platform, including redirected Windows stdout.
+    sys.stdout.reconfigure(encoding="utf-8", errors="strict")
     import argparse
     parser = argparse.ArgumentParser(description="Read an enrolled status receipt; never fetch sporting data")
     parser.add_argument("--request", type=Path, required=True)

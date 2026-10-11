@@ -11,6 +11,7 @@ import hmac
 import http.client
 from http.server import ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -327,9 +328,12 @@ class SituationTests(SituationHarness):
         q=self.enroll(source()); q["request_at"]=datetime.now(timezone.utc).isoformat()
         p=self.folder/"request.json"; p.write_text(json.dumps(q))
         (self.receipts/(q["original_provider_receipt_id"]+".json")).unlink()
-        run=subprocess.run([sys.executable,str(ROOT/"scripts/chat_situation.py"),"--request",str(p)],capture_output=True,text=True,timeout=15)
+        run=subprocess.run([sys.executable,str(ROOT/"scripts/chat_situation.py"),"--request",str(p)],
+            capture_output=True,text=True,encoding="utf-8",timeout=15,
+            env={**os.environ,"PYTHONIOENCODING":"cp1252"})
         self.assertEqual(run.returncode,0,run.stderr)
         self.assertEqual(json.loads(run.stdout)["phase"],"HOLD")
+        self.assertIn("Следующее действие",json.loads(run.stdout)["summary"])
         self.assertFalse((self.folder/"canonical.sqlite").exists())
 
 

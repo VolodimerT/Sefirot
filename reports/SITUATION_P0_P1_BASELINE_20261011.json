@@ -2,7 +2,6 @@
   "schema": "situation-p0-p1-baseline-v1",
   "audit": {
     "name": "SEFIROT_TASK_AUDIT_V3_3_LIVE_PREMATCH_SPEED_ODDS2_2026-10-11.md",
-    "library_file_id": "libfile_b2f4d63397e48191b13b7e95106f99e5",
     "size_bytes": 29025,
     "lines": 168,
     "read_in_full": true

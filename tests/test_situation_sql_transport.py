@@ -40,7 +40,7 @@ class SQLTransportTests(unittest.TestCase):
 
     def test_actual_sql_roles_idempotency_leases_and_gateway_errors(self):
         run=subprocess.run([self.node(),str(ROOT/"scripts/test_chat_situation.mjs")],
-            cwd=ROOT,capture_output=True,text=True,timeout=60)
+            cwd=ROOT,capture_output=True,text=True,encoding="utf-8",timeout=60)
         self.assertEqual(run.returncode,0,run.stderr)
         result=json.loads(run.stdout)
         self.assertEqual(result["sql_groups"],14)
@@ -51,7 +51,8 @@ class SQLTransportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             root=Path(directory).resolve()
             process=subprocess.Popen([self.node(),str(ROOT/"scripts/test_chat_situation.mjs"),"--serve",str(root/"pg")],
-                cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)
+                cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                text=True,encoding="utf-8",bufsize=1)
             try:
                 initial=json.loads(process.stdout.readline())
                 self.assertTrue(initial["ready"])
@@ -89,6 +90,7 @@ class SQLTransportTests(unittest.TestCase):
                 job=control({"command":"read","id":queued["job_id"]})
                 self.assertEqual(job["status"],"DONE");self.assertEqual(job["attempts"],1)
                 self.assertEqual(job["response"]["phase"],"PREMATCH")
+                self.assertIn("Следующее действие",job["response"]["summary"])
                 self.assertIs(job["response"]["monetary_permission"],False)
                 new_calls=control({"command":"calls"})[len(calls_before):]
                 self.assertEqual(new_calls,["sefirot_chat_claim","sefirot_situation_source","sefirot_situation_complete"])

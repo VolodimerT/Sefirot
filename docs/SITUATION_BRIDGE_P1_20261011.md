@@ -111,6 +111,10 @@ The local full queue test records an original synthetic CORE prediction/decision
 checkpoints the SQLite, processes situation, restarts PostgreSQL, re-enqueues the
 same job, restores identical SQLite bytes and replays the original decision.
 Only claim/source/complete RPCs occur during situation. No pull/save/checkpoint.
+CLI JSON and the Node subprocess protocol explicitly use UTF-8. The CLI regression
+forces PYTHONIOENCODING=cp1252 and requires the Russian summary to survive. The
+initial Windows CI exposed both missing encoding declarations; they were fixed,
+not skipped or treated as a flaky transport.
 
 Commands: `npm ci --ignore-scripts --no-audit --no-fund`,
 `python test_sefirot.py`, `python scripts/verify_release.py`.
