@@ -11,6 +11,28 @@ from chat_gateway import Handler, MAX_REQUEST_BYTES, configured_token, execute, 
 
 PROTOCOL = "2025-03-26"
 TOOLS = [
+    {"name": "sefirot_situation",
+     "description": "Read-only phase/readiness from a server-enrolled original status receipt. No sporting fetch, live probability, CORE decision or betting permission. Real un-attested sources HOLD.",
+     "inputSchema": {"type": "object", "properties": {
+         "fixture_id": {"type": "string", "maxLength": 128},
+         "provider_status": {"type": "string", "maxLength": 16},
+         "kickoff": {"type": "string", "format": "date-time"},
+         "status_observed_at": {"type": "string", "format": "date-time"},
+         "request_at": {"type": "string", "format": "date-time"},
+         "intent": {"type": "string", "enum": ["auto", "prematch", "live"]},
+         "depth": {"type": "string", "enum": ["auto", "fast", "deep"]},
+         "original_provider_receipt_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+         "identity": {"type": "object", "properties": {
+             "source_id": {"type": "string", "maxLength": 128},
+             "source_revision": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+             "receipt_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+             "model_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+             "required": ["source_id", "source_revision", "receipt_hash", "model_hash"],
+             "additionalProperties": False}},
+         "required": ["fixture_id", "provider_status", "kickoff", "status_observed_at", "request_at",
+                      "intent", "depth", "original_provider_receipt_id", "identity"],
+         "additionalProperties": False},
+     "annotations": {"readOnlyHint": True}},
     {"name": "sefirot_status",
      "description": "Check canonical SEFIROT model hashes, journal integrity and available research records.",
      "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
@@ -47,6 +69,7 @@ TOOLS = [
 
 
 def call_tool(name, arguments):
+    if name == "sefirot_situation": return execute("situation", arguments)
     if name == "sefirot_status": return execute("status", {})
     if name == "sefirot_demo": return run_demo()
     if name == "sefirot_capture": return execute("capture", arguments)

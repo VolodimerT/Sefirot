@@ -10,7 +10,7 @@ from threading import Thread
 from chat_store import request
 from chat_gateway import execute, run_demo
 
-SAFE_KINDS={"status","report","demo","capture","decide","result"}
+SAFE_KINDS={"status","report","demo","capture","decide","result","situation"}
 
 def process_one() -> bool:
     envelope=request({"action":"claim"})
@@ -25,6 +25,8 @@ def process_one() -> bool:
     try:
         if kind not in SAFE_KINDS or not isinstance(payload,dict):
             raise ValueError("INVALID_RESEARCH_JOB")
+        if kind == "situation" and (type(job.get("attempt")) is not int or not 1 <= job["attempt"] <= 3):
+            raise ValueError("INVALID_SITUATION_LEASE")
         if kind in ("status","report","demo") and payload:
             raise ValueError("READ_ONLY_JOB_ARGS_FORBIDDEN")
         result=run_demo() if kind=="demo" else execute(kind,payload)
@@ -38,8 +40,12 @@ def process_one() -> bool:
     except Exception:
         error="RESEARCH_RUNNER_ERROR"
     result=result if success else None
-    acknowledgment=request({"action":"complete","id":uid,"success":success,
-                             "response":result,"error":error})
+    complete={"action":"complete","id":uid,"success":success,
+              "response":result,"error":error}
+    if kind == "situation":
+        # SQL compares this lease; a reclaimed worker cannot overwrite the new one.
+        complete["attempt"]=job.get("attempt")
+    acknowledgment=request(complete)
     if acknowledgment.get("completed") is not True:
         raise RuntimeError("CHAT_JOB_NOT_ACKNOWLEDGED")
     print("SEFIROT_CHAT_JOB_"+("DONE" if success else "PASS")+
