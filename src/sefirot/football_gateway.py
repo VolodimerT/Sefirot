@@ -9,7 +9,7 @@ from urllib.request import Request, build_opener
 
 from .contracts import digest, time
 from .credentials import credential
-from .football_provider import HOST, PARAMETERS, FootballRequestError, get
+from .football_provider import HOST, PARAMETERS, OBJECT_RESPONSE_ENDPOINTS, FootballRequestError, get, validate_enrichment_request
 from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
 
 
@@ -38,6 +38,7 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
     if (endpoint not in PARAMETERS or set(params) - PARAMETERS[endpoint]
             or any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in params.values())):
         raise ValueError('unsupported sports endpoint/parameters')
+    validate_enrichment_request(endpoint, params)
     token = credential('SEFIROT_SPORTS_GATEWAY_TOKEN')
     clock = clock or (lambda: datetime.now(timezone.utc))
     started = clock().isoformat()
@@ -82,9 +83,15 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         data = wrapper['data']
         if not isinstance(data, dict) or data.get('errors') not in ({}, []):
             raise ValueError('sports gateway provider response malformed')
-        if endpoint != 'status' and (not isinstance(data.get('response'), list)
-                or data.get('results') != len(data['response']) or data.get('paging', {}).get('total', 1) > 1):
-            raise ValueError('sports gateway incomplete provider response')
+        if endpoint != 'status':
+            if endpoint in OBJECT_RESPONSE_ENDPOINTS:
+                if (not isinstance(data.get('response'), dict) or type(data.get('results')) is not int
+                        or data['results'] < 0):
+                    raise ValueError('sports gateway invalid object response')
+            elif not isinstance(data.get('response'), list) or data.get('results') != len(data['response']):
+                raise ValueError('sports gateway incomplete provider response')
+            if data.get('paging', {}).get('total', 1) > 1:
+                raise ValueError('sports gateway incomplete provider response')
         receipt = {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
             'endpoint': '/' + endpoint, 'parameters': params, 'request_started_at': started,
             'received_at': received, 'payload_hash': digest(data), 'http_status': 200, 'sports_only': True,

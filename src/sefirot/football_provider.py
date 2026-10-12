@@ -14,7 +14,63 @@ PARAMETERS = {
     'fixtures/lineups': {'fixture','team','player','type'},
     'fixtures/statistics': {'fixture','team','type','half'},
     'injuries': {'league','season','fixture','team','player','date','ids','timezone'},
+    # Quota-aware, read-only research sources; no odds, provider predictions or live.
+    'standings': {'league','season','team'},
+    'teams/statistics': {'league','season','team','date'},
+    'fixtures/headtohead': {'h2h','last','league','season','from','to','status','venue'},
+    'fixtures/events': {'fixture','team','player','type'},
+    'fixtures/players': {'fixture','team'},
+    'coachs': {'id','team','search'},
+    'players/squads': {'team','player'},
+    'players/topscorers': {'league','season'},
+    'players/topassists': {'league','season'},
+    'players/topyellowcards': {'league','season'},
+    'players/topredcards': {'league','season'},
 }
+OBJECT_RESPONSE_ENDPOINTS = frozenset({'teams/statistics'})
+ENRICHMENT_REQUIRED = {
+    'standings': {'league','season'},
+    'teams/statistics': {'league','season','team'},
+    'fixtures/headtohead': {'h2h'},
+    'fixtures/events': {'fixture'},
+    'fixtures/players': {'fixture'},
+    'coachs': set(),
+    'players/squads': set(),
+    'players/topscorers': {'league','season'},
+    'players/topassists': {'league','season'},
+    'players/topyellowcards': {'league','season'},
+    'players/topredcards': {'league','season'},
+}
+
+
+def validate_enrichment_request(endpoint, params):
+    """Extra fail-closed validation for new endpoints, keeping old API contracts."""
+    required = ENRICHMENT_REQUIRED.get(endpoint)
+    if required is None:
+        return
+    if not required.issubset(params):
+        raise ValueError('missing required sports query parameter')
+    if endpoint in {'coachs', 'players/squads'} and not params:
+        raise ValueError('sports identity selector required')
+    import re as _re
+    for name in ('fixture','league','season','team','id','player','last'):
+        if name in params:
+            value = params[name]
+            if isinstance(value, bool) or not _re.fullmatch(r'[0-9]{1,10}', str(value)) or int(value) <= 0:
+                raise ValueError('invalid sports numeric selector')
+    if endpoint == 'fixtures/headtohead':
+        pair = params['h2h']
+        if not isinstance(pair, str) or not _re.fullmatch(r'[1-9][0-9]{0,9}-[1-9][0-9]{0,9}', pair):
+            raise ValueError('invalid head-to-head team pair')
+        if len(set(pair.split('-'))) != 2:
+            raise ValueError('head-to-head requires distinct teams')
+    if endpoint == 'coachs' and 'search' in params and (
+            not isinstance(params['search'], str) or len(params['search']) < 3):
+        raise ValueError('coach search too short')
+    if endpoint == 'teams/statistics' and 'date' in params and (
+            not isinstance(params['date'], str) or
+            not _re.fullmatch(r'20[0-9]{2}-[01][0-9]-[0-3][0-9]', params['date'])):
+        raise ValueError('invalid statistics cutoff date')
 
 
 class FootballRequestError(ValueError):
@@ -42,6 +98,7 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
         raise ValueError('unsupported sports endpoint/parameters; odds and live queries disabled')
     if any(not isinstance(v, (str,int)) or isinstance(v,bool) for v in params.values()):
         raise ValueError('invalid sports query parameter')
+    validate_enrichment_request(endpoint, params)
     packet = request_json(HOST, '/' + endpoint, params,
                           {'x-apisports-key': api_key or credential('API_FOOTBALL_KEY')},
                           connection_factory=connection_factory)
@@ -51,7 +108,11 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
     if data['errors']:
         raise FootballRequestError(data['errors'], packet['receipt'])
     if endpoint != 'status':
-        if not isinstance(data['response'], list) or data.get('results') != len(data['response']):
+        if endpoint in OBJECT_RESPONSE_ENDPOINTS:
+            if (not isinstance(data['response'], dict) or type(data.get('results')) is not int
+                    or data['results'] < 0):
+                raise ValueError('API-Football object response malformed')
+        elif not isinstance(data['response'], list) or data.get('results') != len(data['response']):
             raise ValueError('API-Football response count malformed')
         if data.get('paging', {}).get('total', 1) > 1:
             raise ValueError('API-Football incomplete pagination; do not import partial data')
