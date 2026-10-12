@@ -171,7 +171,8 @@ def throttle():
     sql("update sefirot_budget_private.sports_budget set minute_limit=1, "
         "last_started_at=clock_timestamp()-interval '59 seconds';")
     stop('MINUTE_LIMIT')
-    sql("update sefirot_budget_private.sports_budget set last_started_at=clock_timestamp()-interval '61 seconds';")
+    sql("update sefirot_budget_private.sports_budget set last_started_at=clock_timestamp()-interval '61 seconds', "
+        "minute_ready_at=clock_timestamp()-interval '61 seconds';")
     # Sliding window still has the original attempt even if spacing is cleared.
     stop('MINUTE_LIMIT')
     sql("update sefirot_budget_private.sports_attempt set started_at=clock_timestamp()-interval '61 seconds';")
