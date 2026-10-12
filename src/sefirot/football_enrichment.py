@@ -35,11 +35,12 @@ def _packet(packet, endpoint, as_of):
 
 
 def plan_fixture_enrichment(fixture_packet, league_packet, status_packet, fixture_id, *,
-                            at, max_calls=6, reserve=RESERVE_MIN):
+                            at, max_calls=6, reserve=RESERVE_MIN, spent_since_status=0):
     """Generate a frozen, budget-bound single-fixture plan, never execute it."""
     integer(fixture_id, 'fixture id', 1)
     integer(max_calls, 'max calls', 1, MAX_CALLS)
     integer(reserve, 'quota reserve', RESERVE_MIN, 1000000)
+    integer(spent_since_status, 'requests since status', 0, MAX_CALLS)
     cutoff = time(at)
     if cutoff > datetime.now(timezone.utc):
         raise ValueError('future analysis cutoff not allowed')
@@ -66,8 +67,8 @@ def plan_fixture_enrichment(fixture_packet, league_packet, status_packet, fixtur
     if minute is not None and (not isinstance(minute, str) or
                                not minute.isascii() or not minute.isdecimal()):
         raise ValueError('invalid minute quota header')
-    budget = max(0, min(max_calls, limit - used - reserve,
-                        int(minute) if minute is not None else max_calls))
+    budget = max(0, min(max_calls, limit - used - reserve - spent_since_status,
+                        int(minute) - spent_since_status if minute is not None else max_calls))
     matches = [r for r in fixtures if r.get('fixture', {}).get('id') == fixture_id]
     if len(matches) != 1:
         raise ValueError('unique target fixture required')
@@ -139,7 +140,7 @@ def plan_fixture_enrichment(fixture_packet, league_packet, status_packet, fixtur
                                 status_packet['receipt']['payload_hash']],
               'quota': {'used': used, 'limit_day': limit, 'reserve': reserve,
                         'minute_remaining': int(minute) if minute is not None else None,
-                        'budget': budget},
+                        'spent_since_status': spent_since_status, 'budget': budget},
               'requested': selected, 'skipped': len(options) - len(selected),
               'coverage_available': len(options), 'status': 'READY_FOR_MANUAL_FETCH'
                 if selected else 'NO_ADMISSIBLE_REQUESTS',
