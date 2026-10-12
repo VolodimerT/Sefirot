@@ -91,6 +91,9 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
         if not repo.verify():
             raise ValueError("JOURNAL_INTEGRITY: closed")
         service = Service(repo, Policy())
+        if kind == "stake_snapshot":
+            from chat_stake import collect
+            return {**build_info(), **collect(repo, data)}
         if kind == "capture":
             if set(data) - {"sports", "markets", "parent", "reason"} or "sports" not in data:
                 raise ValueError("capture requires sports, optionally markets and paired parent/reason")
