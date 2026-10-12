@@ -85,7 +85,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
             raise ValueError('sports gateway provider response malformed')
         if endpoint != 'status':
             if endpoint in OBJECT_RESPONSE_ENDPOINTS:
-                if not isinstance(data.get('response'), dict) or data.get('results') != 1:
+                if (not isinstance(data.get('response'), dict) or type(data.get('results')) is not int
+                        or data['results'] < 0):
                     raise ValueError('sports gateway invalid object response')
             elif not isinstance(data.get('response'), list) or data.get('results') != len(data['response']):
                 raise ValueError('sports gateway incomplete provider response')
