@@ -149,7 +149,11 @@ def main(argv=None):
     collection.add_argument('--research-grids',action='store_true',help='explicit LABS: create 50-contract and Builder research grids after seals')
     collection.add_argument('--text',action='store_true')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
-    football.add_argument('--endpoint',required=True,choices=['leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries'])
+    football.add_argument('--endpoint',required=True,choices=[
+        'leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries',
+        'standings','teams/statistics','fixtures/headtohead','fixtures/events','fixtures/players',
+        'coachs','players/squads','players/topscorers','players/topassists',
+        'players/topyellowcards','players/topredcards'])
     football.add_argument('--param',action='append',default=[],help='provider filter NAME=VALUE; repeat as needed')
     football.add_argument('--output',required=True)
     normalize=sub.add_parser('football-normalize',help='convert collected API fixtures to sports input; missing facts stay missing')
