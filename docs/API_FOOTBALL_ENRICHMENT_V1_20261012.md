@@ -31,6 +31,19 @@ python scripts/football_enrichment_plan.py \
 ```
 For a plan's approved entry, the existing single-call `python sefirot.py football-fetch --endpoint standings --param league=39 --param season=2026 --output private/standings.json` retrieves one packet. Do not run repeatedly without fresh quota receipts and centralized budget. There is no batch mode or automatic network executor in this draft.
 
+## Explicit bounded collection (research only)
+The new `scripts/football_enrichment_collect.py` can fetch and save the frozen sports observations for **one** requested fixture, without betting, live execution, cron or hidden network retries. It uses the existing `get_sports` authenticated transport (private Supabase Vault key or a direct private server secret). It always calls `/status` first and verifies active subscription and daily budget. If sufficient, it requests one exact `/fixtures?id=ID` and one `/leagues?id=LEAGUE` packet, confirms the fixture belongs to the requested league/season, and plans additional coverage-aware prematch or FT research endpoints. A per-request quota header can terminate the batch early. The provider status is kept in memory and **never written in its raw account form**. No credentials are saved.
+
+```bash
+python scripts/football_enrichment_collect.py \
+  --fixture-id 123456 --league-id 39 --season 2026 \
+  --max-requests 8 --reserve 5 \
+  --output private/new-fixture-snapshot.json \
+  --execute-single-fixture
+```
+
+Max 10 requests total including status and two base calls; default 8. A missing minute header cannot authorize more than 10 from this runner, but **does not establish** quota remaining for other simultaneous processes. For safety the runner must be invoked only by the designated exclusive/single collector until a shared database-wide quota lock is implemented. No output file overwrite; raw packets in the bundle are **private**, never commit them to Git or allow a public URL. A failed run stops without retry and may already have used quota. A packet is a collected source observation, not a trained model feature or verified bookmaker quote.
+
 ## Integration and evaluation gates
 - New source observations are **research-only** and do not alter or silently enhance `BASELINE_V1` or archived signed prematch CORE predictions.
 - A provider response is not an independent source signature; publication time may precede collection but is not independently proved.
