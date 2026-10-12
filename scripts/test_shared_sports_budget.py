@@ -15,7 +15,7 @@ DSN = os.environ.get('SEFIROT_TEST_POSTGRES_URL', '')
 parsed = urlparse(DSN)
 if (parsed.scheme not in ('postgres', 'postgresql')
         or parsed.hostname not in ('127.0.0.1', 'localhost', '::1')
-        or parsed.path != '/sefirot_budget_test'):
+        or parsed.path != '/sefirot_budget_test' or parsed.query or parsed.fragment):
     raise SystemExit('LOCAL_TEST_DATABASE_REQUIRED')
 
 
