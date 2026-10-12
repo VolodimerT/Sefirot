@@ -109,7 +109,8 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
         raise FootballRequestError(data['errors'], packet['receipt'])
     if endpoint != 'status':
         if endpoint in OBJECT_RESPONSE_ENDPOINTS:
-            if not isinstance(data['response'], dict) or data.get('results') != 1:
+            if (not isinstance(data['response'], dict) or type(data.get('results')) is not int
+                    or data['results'] < 0):
                 raise ValueError('API-Football object response malformed')
         elif not isinstance(data['response'], list) or data.get('results') != len(data['response']):
             raise ValueError('API-Football response count malformed')
