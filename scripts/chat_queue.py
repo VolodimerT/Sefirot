@@ -56,6 +56,18 @@ def process_one() -> bool:
                 error="CAPTURE_VALIDATION:INPUT_FIELDS"
             elif detail.startswith(("source reliability:", "match:", "home goals:", "away goals:")):
                 error="CAPTURE_VALIDATION:INPUT_RANGE"
+        if kind == "stake_snapshot" and isinstance(exc, ValueError):
+            detail = str(exc)
+            if detail == "STAKE_API_TOKEN is missing or invalid":
+                error = "STAKE_TOKEN_MISSING_OR_INVALID"
+            elif detail.startswith("stake provider HTTP "):
+                error = "STAKE_PROVIDER_HTTP_ERROR"
+            elif detail.startswith("fixture missing or ambiguous in Stake provider"):
+                error = "STAKE_FIXTURE_MISSING_OR_AMBIGUOUS"
+            elif detail.startswith("Stake") or detail.startswith("stake"):
+                error = "STAKE_RESEARCH_GATE_CLOSED"
+            elif "prematch" in detail or "sealed" in detail:
+                error = "STAKE_PREMATCH_SEAL_REQUIRED"
     except Exception:
         error="RESEARCH_RUNNER_ERROR"
     result=result if success else None
