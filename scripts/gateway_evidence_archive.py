@@ -30,7 +30,7 @@ def main(argv=None):
             handle.write(rendered)
         print(json.dumps({'status': report['status'], 'api_calls': 0, 'monetary_permission': False}))
         return 0
-    except (OSError, ValueError, KeyError, TypeError, OverflowError):
+    except (OSError, ValueError, KeyError, TypeError, OverflowError, RecursionError):
         print('GATEWAY_EVIDENCE_REJECTED', file=sys.stderr)
         return 2
 

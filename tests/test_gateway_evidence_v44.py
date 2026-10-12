@@ -184,7 +184,8 @@ class GatewayEvidenceTests(unittest.TestCase):
         self.assertEqual(a['response_digest'], b['response_digest'])
 
     def test_duplicate_json_keys_size_and_nonfinite_rejected(self):
-        for value in (b'{"secret":1,"secret":2}', b'{"secret":NaN}', b'x' * 2_000_001):
+        for value in (b'{"secret":1,"secret":2}', b'{"secret":NaN}', b'x' * 2_000_001,
+                      b'[' * 2000 + b']' * 2000):
             with self.assertRaises(ValueError):
                 inspect(value, imported_at=stamp(1))
 

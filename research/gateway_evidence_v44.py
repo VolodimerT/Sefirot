@@ -25,7 +25,7 @@ def decode(raw):
         raise ValueError('NONFINITE_JSON')
     try:
         return json.loads(raw.decode('utf-8'), object_pairs_hook=pairs, parse_constant=constant)
-    except (UnicodeError, ValueError):
+    except (UnicodeError, ValueError, RecursionError):
         raise ValueError('EVIDENCE_JSON_REJECTED') from None
 
 
