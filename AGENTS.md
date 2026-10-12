@@ -1,3 +1,23 @@
+## B1 saved-source adapter, 12.10.2026
+
+Пользователь разрешил продолжение после #37. Отдельная ветка
+feature/small-source-adapter-20261012 от exact #37
+c4d2495086acf5f125d7f7ba8d8294ce90bdf84c. См.
+docs/SMALL_SOURCE_ADAPTER_20261012.md. Явный offline saved API-Football
+FT packet importer переиспользует original validators и #37 QC.
+Связь байтов/ID/JSON pointers проверяется механически; source/license/whole
+league completeness остаются NOT_ATTESTED. available_at=local import,
+не старый receipt/kickoff. Старые raw snapshots только provenance;
+normalized output latest revision0, не выдуманный исторический revision chain.
+FT corners/shots/SOT/YC/RC; таймы/foul direction/referee/second yellow/points
+остаются null. Данные не предоставлены, fit/money/holdout=false. Все
+src/sefirot и старые reports/seals сохранить побайтно. Main/deploy/cloud/keys
+не менять; дополнительных агентов не создавать. Проверки test_sefirot.py,
+verify_release.py и exact-head CI 4/4. Generated historical reports восстановить.
+Следующий этап — independently verified permitted whole-league saved archive,
+затем explicit import + coverage audit; API не запрашивать для снятия блокера.
+Ниже исторические контрольные точки.
+
 ## Продолжение P0 source contracts, 12.10.2026
 
 Пользователь разрешил продолжение после поставленного #35. Новая отдельная
