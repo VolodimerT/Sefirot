@@ -1,3 +1,44 @@
+## V4.4 evidence/integration candidate, 12.10.2026
+
+Новая feature/gateway-evidence-v44-20261012: exact #41
+5a4b1d9a4ae95a1ab11f50f63a834a6d11a82991 + exact #38
+f547cc4f98d00313892322559e56b65d8082302e; общий предок #37.
+См. docs/V44_GATEWAY_EVIDENCE_INTEGRATION_20261012.md.
+Явный offline whitelist-only status/single-fixture receipt archiver;
+headers запрещены, import time текущий, source=OFFLINE_CALLER_SUPPLIED,
+fit/money=false, P/EV=null. Подтверждение HTTP 200 или пересказ ответа
+в чате не заменяет сохранённые исходные response/receipt bytes.
+Private checkpoint revision57 исследован original calibration preflight:
+0 ready observations/plans; fit не выполнен. Приватные данные/отчёты
+не публиковать. Это один интеграционный кандидат, не production runtime.
+Все src/sefirot/Policy/MODEL_MODULES сохранить побайтно относительно #41.
+Main/deploy/cloud/keys не менять; API не вызывать для снятия data-blocker;
+дополнительных агентов не создавать. Полный test/release + exact-head
+CI 4/4 обязательны; generated historical reports восстановить.
+Далее independently verified original source receipts, затем заранее
+назначенная реальная TRAIN/CAL/HOLDOUT выборка. KEEP_SHADOW до evidence.
+Ниже исторические checkpoint, не повторять выполненные #38/#41.
+
+## B1 saved-source adapter, 12.10.2026
+
+Пользователь разрешил продолжение после #37. Отдельная ветка
+feature/small-source-adapter-20261012 от exact #37
+c4d2495086acf5f125d7f7ba8d8294ce90bdf84c. См.
+docs/SMALL_SOURCE_ADAPTER_20261012.md. Явный offline saved API-Football
+FT packet importer переиспользует original validators и #37 QC.
+Связь байтов/ID/JSON pointers проверяется механически; source/license/whole
+league completeness остаются NOT_ATTESTED. available_at=local import,
+не старый receipt/kickoff. Старые raw snapshots только provenance;
+normalized output latest revision0, не выдуманный исторический revision chain.
+FT corners/shots/SOT/YC/RC; таймы/foul direction/referee/second yellow/points
+остаются null. Данные не предоставлены, fit/money/holdout=false. Все
+src/sefirot и старые reports/seals сохранить побайтно. Main/deploy/cloud/keys
+не менять; дополнительных агентов не создавать. Проверки test_sefirot.py,
+verify_release.py и exact-head CI 4/4. Generated historical reports восстановить.
+Следующий этап — independently verified permitted whole-league saved archive,
+затем explicit import + coverage audit; API не запрашивать для снятия блокера.
+Ниже исторические контрольные точки.
+
 ## Продолжение P0 source contracts, 12.10.2026
 
 Пользователь разрешил продолжение после поставленного #35. Новая отдельная
