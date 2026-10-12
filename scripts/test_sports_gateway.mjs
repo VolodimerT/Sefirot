@@ -179,4 +179,59 @@ await test("server configuration and secret lookup fail closed", async () => {
   s = setup({rpc: Response.json("bad key PRIVATE_TOKEN")});
   assert.equal((await s.call()).body.error, "API_FOOTBALL_KEY_NOT_CONFIGURED"); assert.equal(s.calls.length, 1);
 });
+await test("context and postmatch endpoint selectors are bounded and allowed", async () => {
+  const samples = [
+    ["standings", {league: 39, season: 2026}],
+    ["teams/statistics", {league: 39, season: 2026, team: 101}],
+    ["fixtures/headtohead", {h2h: "101-202", last: 5}],
+    ["fixtures/events", {fixture: 50001}],
+    ["fixtures/players", {fixture: 50001}],
+    ["coachs", {team: 101}],
+    ["players/squads", {team: 101}],
+    ["players/topscorers", {league: 39, season: 2026}],
+  ];
+  for (const [endpoint, params] of samples) {
+    const data = endpoint === "teams/statistics"
+      ? {errors: [], results: 1, paging: {current: 1, total: 1}, response: {team: {id: 101}}}
+      : fixtures;
+    const x = setup({upstream: Response.json(data)});
+    const result = await x.call({body: {endpoint, params}});
+    assert.equal(result.status, 200, endpoint);
+    assert.equal(x.calls.length, 2);
+    assert.ok(x.calls[1].url.includes("/" + endpoint + "?"), endpoint);
+    assert.ok(!JSON.stringify(result).includes("PRIVATE_API_KEY"));
+  }
+});
+await test("invalid new endpoint selectors rejected before private secret lookup", async () => {
+  const invalid = [
+    ["standings", {season: 2026}],
+    ["teams/statistics", {team: 101}],
+    ["fixtures/headtohead", {h2h: "12-12"}],
+    ["fixtures/headtohead", {h2h: "evil.test"}],
+    ["fixtures/events", {}],
+    ["fixtures/players", {fixture: -1}],
+    ["coachs", {}],
+    ["players/squads", {}],
+    ["players/topscorers", {league: 39}],
+  ];
+  for (const [endpoint, params] of invalid) {
+    const x = setup();
+    const result = await x.call({body: {endpoint, params}});
+    assert.equal(result.status, 400, endpoint);
+    assert.equal(x.calls.length, 0);
+  }
+});
+await test("team statistics object response validates exact shape, not arbitrary objects", async () => {
+  for (const response of [[], null, "PRIVATE_TOKEN"]) {
+    const x = setup({upstream: Response.json({
+      errors: [], results: 1, paging: {current: 1, total: 1}, response})});
+    const result = await x.call({body: {endpoint: "teams/statistics",
+        params: {league: 39, season: 2026, team: 101}}});
+    assert.equal(result.status, 422);
+  }
+  const x = setup({upstream: Response.json({
+    errors: [], results: 1, paging: {current: 1, total: 2}, response: {ok: true}})});
+  assert.equal((await x.call({body: {endpoint: "teams/statistics",
+    params: {league: 39, season: 2026, team: 101}}})).status, 422);
+});
 process.stdout.write("GATEWAY_CONTRACTS_PASSED=" + tests + "\n");
