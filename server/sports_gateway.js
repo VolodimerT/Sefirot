@@ -215,7 +215,7 @@ Deno.serve(async req => {
       const objectResponse = OBJECT_RESPONSE_ENDPOINTS.has(endpoint);
       const validShape = objectResponse
         ? data.response && typeof data.response === "object" && !Array.isArray(data.response) &&
-          data.results === 1
+          Number.isSafeInteger(data.results) && data.results >= 0
         : Array.isArray(data.response) && data.results === data.response.length;
       if (!validShape || !Number.isSafeInteger(data.results) || data.paging?.current !== 1 ||
           ![0, 1].includes(data.paging?.total)) {
