@@ -192,7 +192,7 @@ await test("context and postmatch endpoint selectors are bounded and allowed", a
   ];
   for (const [endpoint, params] of samples) {
     const data = endpoint === "teams/statistics"
-      ? {errors: [], results: 1, paging: {current: 1, total: 1}, response: {team: {id: 101}}}
+      ? {errors: [], results: 11, paging: {current: 1, total: 1}, response: {team: {id: 101}}}
       : fixtures;
     const x = setup({upstream: Response.json(data)});
     const result = await x.call({body: {endpoint, params}});
