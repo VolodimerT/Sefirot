@@ -71,6 +71,12 @@ class EnrichmentContracts(unittest.TestCase):
         with self.assertRaises(ValueError): self.plan(max_calls=9)
         self.assertEqual(len(self.plan(max_calls=8)['requested']), 7)
 
+    def test_season_team_totals_do_not_depend_on_detailed_fixture_stats_flag(self):
+        self.coverage['fixtures']['statistics_fixtures'] = False
+        self.leagues['receipt']['payload_hash'] = digest(self.leagues['data'])
+        requested = self.plan()['requested']
+        self.assertEqual(sum(r['endpoint'] == 'teams/statistics' for r in requested), 2)
+
     def test_lineup_allowed_only_close_to_kickoff(self):
         self.fixture_row['fixture']['date'] = (self.at + timedelta(minutes=45)).isoformat()
         self.fixtures['receipt']['payload_hash'] = digest(self.fixtures['data'])
