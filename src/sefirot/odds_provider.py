@@ -7,9 +7,10 @@ from __future__ import annotations
 
 import http.client
 import json
-import os
 import re
 from urllib.parse import urlencode
+from .credentials import credential
+from .provider_transport import ProviderConnection, request_json
 
 from .contracts import digest, number, time
 from .markets import complete_overround, validate_quote
@@ -26,13 +27,10 @@ def _key(value, pattern, label):
 
 
 def _api_key():
-    key = os.environ.get('SEFIROT_ODDS_API_KEY', '')
-    if not key or key != key.strip():
-        raise ValueError('SEFIROT_ODDS_API_KEY is missing or invalid')
-    return key
+    return credential('SEFIROT_ODDS_API_KEY')
 
 
-def _get_json(path, params, connection_factory=http.client.HTTPSConnection):
+def _get_json(path, params, connection_factory=ProviderConnection):
     # No redirects: the key is a query parameter in the provider's v4 contract.
     connection = connection_factory(HOST, timeout=10)
     try:
@@ -55,7 +53,15 @@ def _get_json(path, params, connection_factory=http.client.HTTPSConnection):
         connection.close()
 
 
-def events(sport, api_key=None, connection_factory=http.client.HTTPSConnection):
+def sports_catalogue(api_key=None, connection_factory=ProviderConnection):
+    packet = request_json(HOST, '/v4/sports/', {}, {},
+                          query_credential=api_key or _api_key(), connection_factory=connection_factory)
+    if not isinstance(packet['data'], list):
+        raise ValueError('odds provider sports directory malformed')
+    return packet
+
+
+def events(sport, api_key=None, connection_factory=ProviderConnection):
     """Read the provider's zero-quota event directory, filtering out live games."""
     sport = _key(sport, r'soccer_[a-z0-9_]+', 'soccer sport key')
     data = _get_json(f'/v4/sports/{sport}/events', {'apiKey': api_key or _api_key()}, connection_factory)
@@ -104,7 +110,7 @@ def require_prematch_seal(prediction, received_at):
     return _sealed_match(prediction, received_at)
 
 
-def event_odds(sport, event_id, region, api_key=None, connection_factory=http.client.HTTPSConnection):
+def event_odds(sport, event_id, region, api_key=None, connection_factory=ProviderConnection):
     sport = _key(sport, r'soccer_[a-z0-9_]+', 'soccer sport key')
     event_id = _key(event_id, r'[A-Za-z0-9_-]{4,100}', 'event id')
     region = _key(region, r'(eu|uk|us|us2|au|ca|fr|se|fi)', 'region')

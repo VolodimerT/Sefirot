@@ -1,5 +1,18 @@
 {
-  "version": "research-policy-v2",
+  "version": "research-policy-v3",
+  "goal_model": "BASELINE_V1",
+  "stress_mode": "STRICT",
+  "min_profile_games": 60,
+  "min_threshold_bin": 30,
+  "threshold_prior_games": 30.0,
+  "sos_weight_min": 0.67,
+  "sos_weight_max": 1.5,
+  "aggressive_stress_floor": -0.25,
+  "fragile_stake_multiplier": 0.5,
+  "aggressive_stake_multiplier": 0.2,
+  "reference_bookmakers": [
+    "pinnacle"
+  ],
   "min_team_games": 8,
   "history_days": 730,
   "half_life_days": 180.0,

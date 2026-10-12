@@ -61,7 +61,7 @@ def inspect(sports, policy):
             issues.append(finding('witness','WEAK_EVIDENCE','WARN',[e['id']]))
         if not bad and not stale and e['kind']=='FACT':
             buckets.setdefault(e['key'],[]).append(e);usable.append(e)
-    resolved={}; conflicts=[]
+    resolved={}; conflicts=[]; eligible_fact_ids=[]
     for key, es in buckets.items():
         active=[]
         for e in es:
@@ -75,7 +75,9 @@ def inspect(sports, policy):
         if len(values)>1:
             conflict={'key':key,'evidence':[e['id'] for e in active],'resolution':'RECALCULATE_OR_PASS'}
             conflicts.append(conflict);issues.append(finding('opponent','UNRESOLVED_CONFLICT','BLOCK',conflict['evidence'],key))
-        elif active: resolved[key]=max(active,key=lambda e:(time(e['received_at']),e['id']))
+        elif active:
+            resolved[key]=max(active,key=lambda e:(time(e['received_at']),e['id']))
+            eligible_fact_ids.extend(e['id'] for e in active)
     for key in REQUIRED:
         if key not in resolved: issues.append(finding('witness','MISSING_'+key.upper()))
     for key,target in (('home_team','home'),('away_team','away'),('format','format')):
@@ -107,7 +109,8 @@ def inspect(sports, policy):
               'premises':[resolved[k]['id'] for k in sorted(resolved)],'critical_assumptions':[e['id'] for e in evidence.values() if e['critical'] and e['kind']=='ASSUMPTION'],
               'tactical_evidence':resolved.get('tactics',{}).get('id'),'novelty':novelty,
               'sports_digest':digest(sports)}
-    return {'issues':issues,'resolved':resolved,'conflicts':conflicts,'sources':sources,'groups':groups,'novelty':novelty,'scenario':scenario}
+    return {'issues':issues,'resolved':resolved,'conflicts':conflicts,'sources':sources,'groups':groups,'novelty':novelty,'scenario':scenario,
+            'eligible_fact_ids':sorted(eligible_fact_ids)}
 
 
 def eligible_history(sports,policy):
