@@ -1,5 +1,6 @@
 """Fresh bytes, orphan coverage and bounded-query integrity verification."""
 import copy
+from contextlib import closing
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -42,10 +43,9 @@ class BatchedIntegrityTests(unittest.TestCase):
         self.assertFalse(any('WHERE id=' in q for q in reads))
 
     def test_warm_cache_reads_external_updates_and_new_orphans(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory() as directory, closing(
+                Repository(Path(directory) / 'ledger.sqlite')) as repo:
             path = Path(directory) / 'ledger.sqlite'
-            repo = Repository(path)
-            self.addCleanup(repo.close)
             row = self.seed(repo)
             self.assertTrue(repo.verify())
             other = sqlite3.connect(path)

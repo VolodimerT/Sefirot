@@ -185,6 +185,19 @@ class PanelHttpTests(PanelFixture,unittest.TestCase):
         self.assertEqual(self.post(**{'Transfer-Encoding':'chunked'})[0],400)
         self.assertFalse(self.database.exists())
 
+    def test_real_chunked_bodies_are_rejected_without_processing_or_socket_abort(self):
+        self.job('01-capture','CAPTURE',{'sports':self.case['sports']})
+        for _ in range(4):
+            with closing(http.client.HTTPConnection('127.0.0.1',self.server.server_port,timeout=2)) as client:
+                client.request('POST','/run',body=iter([b'token=',self.panel.token.encode('ascii')]),
+                               headers={'Origin':self.origin,'Content-Type':'application/x-www-form-urlencoded',
+                                        'Transfer-Encoding':'chunked'},encode_chunked=True)
+                response=client.getresponse()
+                self.assertEqual(response.status,400)
+                response.read()
+        self.assertEqual(self.request()[0],200)
+        self.assertFalse(self.database.exists())
+
     def test_manual_repeat_does_not_duplicate_capture_or_change_record(self):
         self.job('01-capture','CAPTURE',{'sports':self.case['sports']})
         self.assertEqual(self.post()[0],303)

@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 import secrets
 import sqlite3
+from time import monotonic
 from urllib.parse import parse_qs
 from zoneinfo import ZoneInfo
 
@@ -149,16 +150,37 @@ def handler_for(panel):
             # before the client sees 403/413. Drain only a bounded form body
             # without parsing it or invoking any user action.
             values = self.headers.get_all('Content-Length') or []
+            framed = False
             if not self.headers.get('Transfer-Encoding') and len(values) == 1:
                 raw = values[0]
                 if raw.isascii() and raw.isdecimal():
                     size = int(raw)
                     if size <= 2048:
+                        framed = True
                         self.connection.settimeout(0.5)
                         try:
                             self.rfile.read(size)
                         except (OSError, TimeoutError):
                             pass
+            if not framed:
+                # A rejected/ambiguous framing header is never parsed or
+                # trusted. Discard at most 2 KiB of opaque wire bytes, with a
+                # total deadline, so closing does not race the error response
+                # on Windows. No chunk decoder or queue action is invoked.
+                deadline = monotonic() + 0.1
+                remaining = 2048
+                while remaining:
+                    timeout = deadline - monotonic()
+                    if timeout <= 0:
+                        break
+                    self.connection.settimeout(timeout)
+                    try:
+                        block = self.rfile.read1(remaining)
+                    except (OSError, TimeoutError):
+                        break
+                    if not block:
+                        break
+                    remaining -= len(block)
             self.send(status)
 
         def do_GET(self):
