@@ -78,7 +78,8 @@ end;
 $$;
 
 create function public.sefirot_sports_budget_finish(
-  permit uuid, outcome text, remaining_day bigint, remaining_minute integer)
+  permit uuid, outcome text, remaining_day bigint, remaining_minute integer,
+  observed_minute_limit integer)
 returns jsonb language plpgsql security invoker set search_path = '' as $$
 declare
   b sefirot_budget_private.sports_budget%rowtype;
@@ -91,7 +92,8 @@ begin
     return jsonb_build_object('ok', false);
   end if;
   success := outcome = 'SUCCESS' and remaining_day between 0 and 1000000
-    and remaining_minute between 0 and 300;
+    and observed_minute_limit between 1 and 300
+    and remaining_minute between 0 and observed_minute_limit;
   success := coalesce(success, false);
   update sefirot_budget_private.sports_attempt set finished_at=t,
     outcome=case when success then 'SUCCESS' else 'FAILURE' end
@@ -107,14 +109,16 @@ begin
         or sefirot_sports_budget_finish.remaining_day <= b.reserve_day
         or sefirot_sports_budget_finish.remaining_minute = 0 then 'QUOTA_STOP'
       else 'READY' end,
-    minute_ready_at=greatest(b.minute_ready_at, t + interval '60 seconds' / b.minute_limit),
+    minute_limit=case when success then least(b.minute_limit, observed_minute_limit) else b.minute_limit end,
+    minute_ready_at=greatest(b.minute_ready_at, t + interval '60 seconds' /
+      case when success then least(b.minute_limit, observed_minute_limit) else b.minute_limit end),
     in_flight=null, reserved_at=null
     where singleton;
   return jsonb_build_object('ok', true);
 end;
 $$;
 revoke execute on function public.sefirot_sports_budget_reserve() from public, anon, authenticated;
-revoke execute on function public.sefirot_sports_budget_finish(uuid,text,bigint,integer) from public, anon, authenticated;
+revoke execute on function public.sefirot_sports_budget_finish(uuid,text,bigint,integer,integer) from public, anon, authenticated;
 grant execute on function public.sefirot_sports_budget_reserve() to service_role;
-grant execute on function public.sefirot_sports_budget_finish(uuid,text,bigint,integer) to service_role;
+grant execute on function public.sefirot_sports_budget_finish(uuid,text,bigint,integer,integer) to service_role;
 commit;

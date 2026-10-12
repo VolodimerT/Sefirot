@@ -215,13 +215,28 @@ await test("every uncertain upstream attempt opens the shared circuit without re
 });
 await test("only observed numeric quota can keep the circuit active", async () => {
   for (const [headers, active, expected] of [[{}, true, "FAILURE"],
-      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2"}, true, "SUCCESS"],
-      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2"}, false, "FAILURE"],
+      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2",
+        "x-ratelimit-requests-limit": "7500", "x-ratelimit-limit": "300"}, true, "SUCCESS"],
+      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2",
+        "x-ratelimit-requests-limit": "7500", "x-ratelimit-limit": "300"}, false, "FAILURE"],
       [{"x-ratelimit-requests-remaining": "1000001", "x-ratelimit-remaining": "2"}, true, "FAILURE"]]) {
     const data = {...status, response: {...status.response, subscription: {active}}};
     const s = setup({upstream: Response.json(data, {headers})});
     assert.equal((await s.call({body: {endpoint: "status"}})).status, 200);
     assert.equal(JSON.parse(s.calls[3].options.body).outcome, expected);
+  }
+});
+await test("observed limit and counter contradictions cannot authorize another call", async () => {
+  for (const [daily, dayLimit, minute, minuteLimit] of [["2", "1", "1", "300"],
+      ["1", "7500", "2", "1"], ["1", "7500", "1", "0"], ["1", "7500", "1", "301"],
+      ["1", "7500", "1", "1"]]) {
+    const s = setup({upstream: Response.json(fixtures, {headers: {
+      "x-ratelimit-requests-remaining": daily, "x-ratelimit-requests-limit": dayLimit,
+      "x-ratelimit-remaining": minute, "x-ratelimit-limit": minuteLimit}})});
+    assert.equal((await s.call()).status, 200);
+    const observed = JSON.parse(s.calls[3].options.body);
+    assert.equal(observed.outcome, minuteLimit === "1" && minute === "1" ? "SUCCESS" : "FAILURE");
+    if (observed.outcome === "SUCCESS") assert.equal(observed.observed_minute_limit, 1);
   }
 });
 await test("failed finalization returns fixed error and makes no retry", async () => {

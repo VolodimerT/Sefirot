@@ -188,7 +188,7 @@ Deno.serve(async req => {
     const budget = await reserveBudget();
     if (!budget.allowed) return json({ok: false, error: "SHARED_BUDGET_STOP",
       budget_reason: budget.reason}, 429);
-    const observation = {outcome: "FAILURE", remaining_day: null, remaining_minute: null};
+    const observation = {outcome: "FAILURE", remaining_day: null, remaining_minute: null, observed_minute_limit: null};
     try {
     const query = new URLSearchParams();
     for (const [name, value] of Object.entries(params)) query.set(name, String(value));
@@ -225,12 +225,17 @@ Deno.serve(async req => {
     // Missing/unknown quota may be returned as evidence but cannot authorize another call.
     const daily = quota["x-ratelimit-requests-remaining"];
     const minute = quota["x-ratelimit-remaining"];
-    if (daily !== undefined && minute !== undefined &&
-        Number(daily) <= 1000000 && Number(minute) <= 300 &&
+    const dayLimit = quota["x-ratelimit-requests-limit"];
+    const minuteLimit = quota["x-ratelimit-limit"];
+    if (dayLimit !== undefined && minuteLimit !== undefined && daily !== undefined && minute !== undefined &&
+        Number(dayLimit) >= 1 && Number(dayLimit) <= 1000000 &&
+        Number(daily) <= Number(dayLimit) && Number(minuteLimit) >= 1 &&
+        Number(minuteLimit) <= 300 && Number(minute) <= Number(minuteLimit) &&
         (endpoint !== "status" || data.response.subscription?.active === true)) {
       observation.outcome = "SUCCESS";
       observation.remaining_day = Number(daily);
       observation.remaining_minute = Number(minute);
+      observation.observed_minute_limit = Number(minuteLimit);
     }
     return json({ok: true, provider: "API_FOOTBALL_V3", provider_host: HOST,
       endpoint: "/" + endpoint, params, received_at: receivedAt, data, quota,

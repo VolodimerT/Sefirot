@@ -22,7 +22,7 @@ provider request, or fit is performed by this change.
   latches the circuit instead of releasing capacity to another caller.
 - Late success cannot reopen an already latched circuit. A repeated or wrong
   permit cannot change counters. Provider observations only LOWER the shared
-  daily remainder. A success cannot silently renew the operator's approval.
+  daily remainder and minute cap. Inconsistent counters stop collection. A success cannot silently renew the operator's approval.
 - UTC rollover, expired approval, missing approval and approval more than 15
   minutes ahead fail closed. New day never restores an assumed Pro allowance.
 - No provider key, token, account identity, fixture ID, raw error or request params
@@ -78,7 +78,7 @@ silently resumes unguarded API calls.
 ## Verification
 
 `node scripts/test_sports_gateway.mjs` runs the actual gateway handler against
-24 offline contract groups: old auth/redaction/transport cases plus reservation
+25 offline contract groups: old auth/redaction/transport cases plus reservation
 refusals, malformed RPCs, uncertain outcomes, observed quota and failed finish.
 `python scripts/verify_release.py` covers the existing Python aggregate and
 synthetic replay/integrity; generated historical report bytes are restored.

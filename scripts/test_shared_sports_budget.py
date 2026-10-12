@@ -33,9 +33,9 @@ def reserve():
     return json.loads(sql('select public.sefirot_sports_budget_reserve();', role='service_role'))
 
 
-def finish(permit, outcome='SUCCESS', day=90, minute=299):
+def finish(permit, outcome='SUCCESS', day=90, minute=299, limit=300):
     return json.loads(sql("select public.sefirot_sports_budget_finish('" + permit + "','" +
-                          outcome + "'," + str(day) + ',' + str(minute) + ');', role='service_role'))
+                          outcome + "'," + str(day) + ',' + str(minute) + ',' + str(limit) + ');', role='service_role'))
 
 
 def arm(day=100):
@@ -58,7 +58,7 @@ sql("do $$ begin "
     "if not exists(select from pg_roles where rolname='authenticated') then create role authenticated; end if; "
     "if not exists(select from pg_roles where rolname='service_role') then create role service_role bypassrls; end if; "
     "end $$; drop function if exists public.sefirot_sports_budget_reserve(); "
-    "drop function if exists public.sefirot_sports_budget_finish(uuid,text,bigint,integer); "
+    "drop function if exists public.sefirot_sports_budget_finish(uuid,text,bigint,integer,integer); "
     "drop schema if exists sefirot_budget_private cascade;")
 sql((ROOT / 'server/migrations/20261012_shared_sports_budget.sql').read_text())
 checks = 0
@@ -78,7 +78,7 @@ def permission_checks():
     for role in ('anon', 'authenticated'):
         for statement in ('select public.sefirot_sports_budget_reserve();',
                           'select * from sefirot_budget_private.sports_budget;',
-                          "select public.sefirot_sports_budget_finish(null,'SUCCESS',10,10);"):
+                          "select public.sefirot_sports_budget_finish(null,'SUCCESS',10,10,10);"):
             try:
                 sql(statement, role=role)
             except RuntimeError as exc:
@@ -190,4 +190,17 @@ def cooldown():
 
 
 check('external-window cooldown and daily reserve block before reservation', cooldown)
+def lowered_minute_limit():
+    arm()
+    p = reserve()['permit']
+    assert finish(p, minute=1, limit=1)['ok']
+    assert sql('select minute_limit from sefirot_budget_private.sports_budget;') == '1'
+    stop('MINUTE_LIMIT')
+    arm()
+    p = reserve()['permit']
+    assert finish(p, minute=2, limit=1)['ok']
+    stop('PAUSED')
+
+
+check('observed minute limit lowers cap and inconsistent counters stop collection', lowered_minute_limit)
 print('SHARED_BUDGET_POSTGRES_PASSED=' + str(checks))
