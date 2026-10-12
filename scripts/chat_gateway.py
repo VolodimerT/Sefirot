@@ -137,7 +137,10 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
         if kind == "report":
             return {**build_info(), "stage": "AUDIT_REPORT", "report": service.report()}
         if kind == "status":
-            return {**build_info(), "stage": "READY", "ledger_integrity": True,
+            from sefirot.credentials import credential_status
+            return {**build_info(), "stake_credential_status": credential_status()["STAKE_API_TOKEN"],
+                    "stake_snapshot_job_enabled": True,
+                    "stage": "READY", "ledger_integrity": True,
                     "stored_predictions": len(repo.all("predictions")),
                     "stored_decisions": len(repo.all("decisions"))}
         raise ValueError("unsupported operation")
