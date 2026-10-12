@@ -1,3 +1,19 @@
+## Продолжение P0 source contracts, 12.10.2026
+
+Пользователь разрешил продолжение после поставленного #35. Новая отдельная
+feature/small-observation-v2-20261012 от exact #35 9024889b1269ca846dfa1adfcaf5339990c14023.
+См. docs/SMALL_OBSERVATION_V2_20261012.md. Offline observation/market contracts,
+league manifest denominator, nullable counts, revision cutoff and quarantine;
+никакой source attestation/fit/verified odds/money. CLI вызывается явно,
+не подключён к worker. Реальный raw sample не предоставлен; readiness matrix
+INSUFFICIENT_REAL_DATA, denominators null, scores null. SOURCE hashes не доказательство
+origin. Все src/sefirot и old reports сохранить побайтно. Main/cloud/keys не менять,
+дополнительных агентов не создавать. Проверки test_sefirot.py и verify_release.py;
+CI на exact финальном head, 4 OS/Python jobs. Архивные tracked reports после
+release восстановить. Следующая задача — один лицензированный offline raw
+source adapter с full-league manifest; suspended API не запрашивать.
+Ниже исторические контрольные точки, уже выполненный первый P0 не повторять.
+
 ## Текущий этап V4.0: первый P0, 11.10.2026
 
 Issue #33 + три прикреплённых документа V4.0 прочитаны целиком. Рабочая ветка

@@ -1,0 +1,450 @@
+{
+  "archive_audited": false,
+  "evaluated_at": "2026-10-12T05:00:00+00:00",
+  "markets": [
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "CORNERS",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "CORNERS",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "CORNERS",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SHOTS",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SHOTS",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SHOTS",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SOT",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SOT",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SOT",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "FOULS_COMMITTED",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "FOULS_COMMITTED",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "FOULS_COMMITTED",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "YELLOW_CARDS",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "YELLOW_CARDS",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "YELLOW_CARDS",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "RED_CARDS",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "RED_CARDS",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "RED_CARDS",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SECOND_YELLOW",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SECOND_YELLOW",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "SECOND_YELLOW",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "BOOKING_POINTS",
+      "period": "FT",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "BOOKING_POINTS",
+      "period": "1H",
+      "probability": null,
+      "verified_coverage": null
+    },
+    {
+      "CALIBRATION": 0,
+      "HOLDOUT": 0,
+      "TRAIN": 0,
+      "blockers": [
+        "LICENSED_FULL_LEAGUE_ARCHIVE_NOT_SUPPLIED",
+        "RAW_RECEIPTS_NOT_BOUND",
+        "SETTLEMENT_NOT_ATTESTED",
+        "NO_INDEPENDENT_HOLDOUT"
+      ],
+      "eligible_denominator": null,
+      "ev": null,
+      "fit_allowed": false,
+      "metric": "BOOKING_POINTS",
+      "period": "2H",
+      "probability": null,
+      "verified_coverage": null
+    }
+  ],
+  "monetary_permission": false,
+  "next_action": "Supply a licensed league manifest and immutable source archive; do not query suspended providers.",
+  "registered_leagues": [],
+  "schema": "small-market-data-readiness-v2",
+  "scores": {
+    "brier": null,
+    "clv": null,
+    "ece": null,
+    "log_loss": null
+  },
+  "source_attested": false,
+  "status": "INSUFFICIENT_REAL_DATA"
+}
