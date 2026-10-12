@@ -40,6 +40,12 @@ def collect_one(fixture_id, league_id, season, *, max_requests=8, reserve=5,
         raise ValueError('minute quota insufficient for base calls')
     # Even a temporary network failure never triggers an automatic retry.
     fixture = getter('fixtures', {'id': fixture_id})
+    matching = [x for x in fixture.get('data', {}).get('response', [])
+                if x.get('fixture', {}).get('id') == fixture_id]
+    if (len(matching) != 1 or
+            matching[0].get('league', {}).get('id') != league_id or
+            matching[0].get('league', {}).get('season') != season):
+        raise ValueError('fixture/league/season identity mismatch')
     league = getter('leagues', {'id': league_id})
     plan = plan_fixture_enrichment(
         fixture, league, status, fixture_id, at=clock().isoformat(),
@@ -57,6 +63,8 @@ def collect_one(fixture_id, league_id, season, *, max_requests=8, reserve=5,
                 receipt.get('parameters') != item['params'] or
                 receipt.get('sports_only') is not True or
                 receipt.get('payload_hash') != digest(data) or
+                data.get('errors') not in ([], {}) or
+                (data.get('paging', {}).get('total', 1) > 1) or
                 time(receipt['received_at']) > clock()):
             raise ValueError('enrichment receipt provenance or timestamp invalid')
         rows.append({'endpoint': item['endpoint'], 'params': item['params'], 'packet': packet})
