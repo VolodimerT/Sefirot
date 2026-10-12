@@ -10,7 +10,7 @@ from threading import Thread
 from chat_store import request
 from chat_gateway import execute, run_demo
 
-SAFE_KINDS={"status","report","demo","capture","decide","result"}
+SAFE_KINDS={"status","report","demo","capture","decide","result","stake_snapshot"}
 
 def process_one() -> bool:
     envelope=request({"action":"claim"})
