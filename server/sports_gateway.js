@@ -72,22 +72,54 @@ function parse(text) {
   catch { throw new GatewayError("INVALID_JSON"); }
 }
 
-async function apiKey() {
+async function serverRpc(name, body) {
   const url = Deno.env.get("SUPABASE_URL");
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !/^https:\/\/[a-z0-9]{20}\.supabase\.co\/?$/.test(url) || !key) {
     throw new GatewayError("SERVER_CONFIGURATION_UNAVAILABLE");
   }
-  const result = await fetchBounded(url.replace(/\/$/, "") + "/rest/v1/rpc/sefirot_api_football_secret", {
+  const result = await fetchBounded(url.replace(/\/$/, "") + "/rest/v1/rpc/" + name, {
     method: "POST", headers: {apikey: key, authorization: "Bearer " + key,
-      "content-type": "application/json"}, body: "{}",
+      "content-type": "application/json"}, body: JSON.stringify(body),
   }, MAX_BODY, 3000);
-  if (result.response.status !== 200) throw new GatewayError("API_FOOTBALL_KEY_NOT_CONFIGURED");
-  const value = parse(result.text);
+  if (result.response.status !== 200) throw new GatewayError("SERVER_RPC_UNAVAILABLE");
+  return parse(result.text);
+}
+
+async function apiKey() {
+  let value;
+  try { value = await serverRpc("sefirot_api_football_secret", {}); }
+  catch (error) {
+    if (error.code === "SERVER_CONFIGURATION_UNAVAILABLE") throw error;
+    throw new GatewayError("API_FOOTBALL_KEY_NOT_CONFIGURED");
+  }
   if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,256}$/.test(value.trim())) {
     throw new GatewayError("API_FOOTBALL_KEY_NOT_CONFIGURED");
   }
   return value.trim();
+}
+
+const BUDGET_REASONS = ["PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET",
+  "DAILY_LIMIT", "MINUTE_LIMIT"];
+async function reserveBudget() {
+  try {
+    const value = await serverRpc("sefirot_sports_budget_reserve", {});
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
+    if (value.allowed === false && Object.keys(value).length === 2 &&
+        BUDGET_REASONS.includes(value.reason)) return value;
+    if (value.allowed !== true || Object.keys(value).length !== 2 ||
+        typeof value.permit !== "string" ||
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value.permit)) {
+      throw new Error();
+    }
+    return value;
+  } catch { throw new GatewayError("SHARED_BUDGET_UNAVAILABLE"); }
+}
+async function finishBudget(permit, observation) {
+  try {
+    const value = await serverRpc("sefirot_sports_budget_finish", {permit, ...observation});
+    if (!value || value.ok !== true || Object.keys(value).length !== 1) throw new Error();
+  } catch { throw new GatewayError("SHARED_BUDGET_UNAVAILABLE"); }
 }
 
 function accountSuspended(errors) {
@@ -153,6 +185,11 @@ Deno.serve(async req => {
       }
     }
     const secret = await apiKey();
+    const budget = await reserveBudget();
+    if (!budget.allowed) return json({ok: false, error: "SHARED_BUDGET_STOP",
+      budget_reason: budget.reason}, 429);
+    const observation = {outcome: "FAILURE", remaining_day: null, remaining_minute: null};
+    try {
     const query = new URLSearchParams();
     for (const [name, value] of Object.entries(params)) query.set(name, String(value));
     const url = "https://" + HOST + "/" + endpoint + (query.size ? "?" + query : "");
@@ -185,9 +222,20 @@ Deno.serve(async req => {
       if (!/^[0-9]{1,12}$/.test(value)) throw new GatewayError("INVALID_QUOTA_HEADER");
       quota[name] = value;
     }
+    // Missing/unknown quota may be returned as evidence but cannot authorize another call.
+    const daily = quota["x-ratelimit-requests-remaining"];
+    const minute = quota["x-ratelimit-remaining"];
+    if (daily !== undefined && minute !== undefined &&
+        Number(daily) <= 1000000 && Number(minute) <= 300 &&
+        (endpoint !== "status" || data.response.subscription?.active === true)) {
+      observation.outcome = "SUCCESS";
+      observation.remaining_day = Number(daily);
+      observation.remaining_minute = Number(minute);
+    }
     return json({ok: true, provider: "API_FOOTBALL_V3", provider_host: HOST,
       endpoint: "/" + endpoint, params, received_at: receivedAt, data, quota,
       sports_only: true, monetary_permission: false, execution_enabled: false});
+    } finally { await finishBudget(budget.permit, observation); }
   } catch (error) {
     return json({ok: false, error: error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE"}, 502);
   }
