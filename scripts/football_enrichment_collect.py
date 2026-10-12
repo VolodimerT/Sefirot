@@ -21,7 +21,7 @@ def collect_one(fixture_id, league_id, season, *, max_requests=8, reserve=5,
     integer(fixture_id, 'fixture id', 1)
     integer(league_id, 'league id', 1)
     integer(season, 'season', 1990, 2200)
-    integer(max_requests, 'max requests', 4, 11)
+    integer(max_requests, 'max requests', 4, 10)
     integer(reserve, 'daily reserve', 5, 1000000)
     getter = _get if getter is None else getter
     clock = (lambda: datetime.now(timezone.utc)) if clock is None else clock
