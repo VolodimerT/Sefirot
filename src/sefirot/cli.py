@@ -27,24 +27,40 @@ def write_new_json(path, value):
             'candidates':len(value.get('candidates',[])),'monetary_permission':False}
 
 def write_quotes(path, payload):
-    """Write a validated quote file and its provenance receipt without overwrites."""
+    """Publish a receipt and quote with exclusive, no-clobber hard links.
+
+    The quote is the last publication step: its appearance is the commit marker
+    for consumers. Staging and publication use the same filesystem. Competing
+    publishers cannot replace either path; rollback removes only links still
+    bound to this invocation's staged inode.
+    """
     destination=Path(path);receipt=Path(str(destination)+'.receipt.json')
     if destination.exists() or receipt.exists():raise ValueError('odds output already exists; choose a fresh filename')
+    result={'quotes_file':str(destination.resolve()),'receipt_file':str(receipt.resolve()),
+            'quotes':len(payload['quotes']),'overround':payload['receipt']['overround'],
+            'execution_price_verified':False}
     destination.parent.mkdir(parents=True,exist_ok=True)
-    staged=[]
+    staged=[];published=[]
     try:
         for target,value in ((receipt,payload['receipt']),(destination,payload['quotes'])):
             with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=destination.parent,
                                              prefix='.sefirot-',suffix='.staged',delete=False) as file:
+                staged.append((file.name,target))
                 json.dump(value,file,ensure_ascii=False,indent=2,allow_nan=False)
-                file.write('\n');staged.append((file.name,target))
-        for temporary,target in staged:os.replace(temporary,target)
+                file.write('\n')
+        for temporary,target in staged:
+            os.link(temporary,target)
+            published.append((temporary,target))
+    except BaseException:
+        for temporary,target in reversed(published):
+            try:
+                if os.path.samefile(temporary,target):os.unlink(target)
+            except FileNotFoundError:pass
+        raise
     finally:
         for temporary,_ in staged:
             if os.path.exists(temporary):os.unlink(temporary)
-    return {'quotes_file':str(destination.resolve()),'receipt_file':str(receipt.resolve()),
-            'quotes':len(payload['quotes']),'overround':payload['receipt']['overround'],
-            'execution_price_verified':False}
+    return result
 
 def main(argv=None):
     # Windows redirected streams can default to an encoding without Cyrillic.
@@ -149,7 +165,11 @@ def main(argv=None):
     collection.add_argument('--research-grids',action='store_true',help='explicit LABS: create 50-contract and Builder research grids after seals')
     collection.add_argument('--text',action='store_true')
     football=sub.add_parser('football-fetch',help='save an API-Football sports response and receipt, without odds')
-    football.add_argument('--endpoint',required=True,choices=['leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries'])
+    football.add_argument('--endpoint',required=True,choices=[
+        'leagues','teams','fixtures','fixtures/lineups','fixtures/statistics','injuries',
+        'standings','teams/statistics','fixtures/headtohead','fixtures/events','fixtures/players',
+        'coachs','players/squads','players/topscorers','players/topassists',
+        'players/topyellowcards','players/topredcards'])
     football.add_argument('--param',action='append',default=[],help='provider filter NAME=VALUE; repeat as needed')
     football.add_argument('--output',required=True)
     normalize=sub.add_parser('football-normalize',help='convert collected API fixtures to sports input; missing facts stay missing')

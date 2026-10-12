@@ -12,7 +12,56 @@ const ALLOWED = {
   "fixtures/lineups": ["fixture", "team", "player", "type"],
   "fixtures/statistics": ["fixture", "team", "type", "half"],
   injuries: ["league", "season", "fixture", "team", "player", "date", "ids", "timezone"],
+  // Research context and post-match evidence. Odds and live feeds remain excluded.
+  standings: ["league", "season", "team"],
+  "teams/statistics": ["league", "season", "team", "date"],
+  "fixtures/headtohead": ["h2h", "last", "league", "season", "from", "to", "status", "venue"],
+  "fixtures/events": ["fixture", "team", "player", "type"],
+  "fixtures/players": ["fixture", "team"],
+  coachs: ["id", "team", "search"],
+  "players/squads": ["team", "player"],
+  "players/topscorers": ["league", "season"],
+  "players/topassists": ["league", "season"],
+  "players/topyellowcards": ["league", "season"],
+  "players/topredcards": ["league", "season"],
 };
+const REQUIRED = {
+  standings: ["league", "season"],
+  "teams/statistics": ["league", "season", "team"],
+  "fixtures/headtohead": ["h2h"],
+  "fixtures/events": ["fixture"],
+  "fixtures/players": ["fixture"],
+  "players/topscorers": ["league", "season"],
+  "players/topassists": ["league", "season"],
+  "players/topyellowcards": ["league", "season"],
+  "players/topredcards": ["league", "season"],
+};
+const OBJECT_RESPONSE_ENDPOINTS = new Set(["teams/statistics"]);
+
+function validNewParams(endpoint, params) {
+  if (!Object.hasOwn(REQUIRED, endpoint) && !["coachs", "players/squads"].includes(endpoint)) return true;
+  if (REQUIRED[endpoint]?.some(key => !Object.hasOwn(params, key))) return false;
+  if (["coachs", "players/squads"].includes(endpoint) && !Object.keys(params).length) return false;
+  for (const key of ["fixture", "league", "season", "team", "id", "player", "last"]) {
+    if (Object.hasOwn(params, key) && !/^[0-9]{1,10}$/.test(String(params[key]))) return false;
+    if (Object.hasOwn(params, key) && Number(params[key]) <= 0) return false;
+  }
+  if (Object.hasOwn(params, "last") && Number(params.last) > 50) return false;
+  if (endpoint === "fixtures/headtohead") {
+    const pair = params.h2h;
+    if (typeof pair !== "string" || !/^[1-9][0-9]{0,9}-[1-9][0-9]{0,9}$/.test(pair)) return false;
+    if (pair.split("-")[0] === pair.split("-")[1]) return false;
+  }
+  if (endpoint === "coachs" && Object.hasOwn(params, "search") &&
+      (typeof params.search !== "string" || params.search.length < 3)) return false;
+  if (endpoint === "teams/statistics" && Object.hasOwn(params, "date") &&
+      (typeof params.date !== "string" || !/^20[0-9]{2}-[01][0-9]-[0-3][0-9]$/.test(params.date))) return false;
+  if (endpoint === "teams/statistics" && Object.hasOwn(params, "date")) {
+    const parsed = new Date(params.date + "T00:00:00Z");
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== params.date) return false;
+  }
+  return true;
+}
 const QUOTA_HEADERS = ["x-requests-remaining", "x-requests-used", "x-requests-last",
   "x-ratelimit-requests-remaining", "x-ratelimit-requests-limit",
   "x-ratelimit-remaining", "x-ratelimit-limit"];
@@ -184,6 +233,7 @@ Deno.serve(async req => {
         return json({ok: false, error: "INVALID_PARAM_VALUE"}, 400);
       }
     }
+    if (!validNewParams(endpoint, params)) return json({ok: false, error: "INVALID_PARAMS"}, 400);
     const secret = await apiKey();
     const budget = await reserveBudget();
     if (!budget.allowed) return json({ok: false, error: "SHARED_BUDGET_STOP",
@@ -204,10 +254,16 @@ Deno.serve(async req => {
     }
     if (Object.keys(data.errors).length) return json({ok: false, error: "PROVIDER_REJECTED_REQUEST",
       provider_errors: safeProviderErrors(data.errors), diagnostics: errorDiagnostics(data.errors)}, 422);
-    if (endpoint !== "status" && (!Array.isArray(data.response) || !Number.isSafeInteger(data.results) ||
-        data.results !== data.response.length || data.paging?.current !== 1 ||
-        ![0, 1].includes(data.paging?.total))) {
-      return json({ok: false, error: "INCOMPLETE_PROVIDER_RESPONSE"}, 422);
+    if (endpoint !== "status") {
+      const objectResponse = OBJECT_RESPONSE_ENDPOINTS.has(endpoint);
+      const validShape = objectResponse
+        ? data.response && typeof data.response === "object" && !Array.isArray(data.response) &&
+          Number.isSafeInteger(data.results) && data.results >= 0
+        : Array.isArray(data.response) && data.results === data.response.length;
+      if (!validShape || !Number.isSafeInteger(data.results) || data.paging?.current !== 1 ||
+          ![0, 1].includes(data.paging?.total)) {
+        return json({ok: false, error: "INCOMPLETE_PROVIDER_RESPONSE"}, 422);
+      }
     }
     if (endpoint === "status") {
       if (!data.response || typeof data.response !== "object" || Array.isArray(data.response)) {
@@ -239,6 +295,7 @@ Deno.serve(async req => {
     }
     return json({ok: true, provider: "API_FOOTBALL_V3", provider_host: HOST,
       endpoint: "/" + endpoint, params, received_at: receivedAt, data, quota,
+      shared_budget_guard: "POSTGRES_RESERVATION_V1",
       sports_only: true, monetary_permission: false, execution_enabled: false});
     } finally { await finishBudget(budget.permit, observation); }
   } catch (error) {

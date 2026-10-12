@@ -213,6 +213,9 @@ def settle_plan(service, plan_id, packet):
 
 
 def inspect_plan(service, plan_id):
+    # Share exact original-seal validation with the scorecard. Import locally
+    # because the read-only scorecard also uses this module's plan validator.
+    from .forward_scorecard import _original_forecast
     plan = _plan(service, plan_id, current=False)
     assignments = {a['match_id']: a for a in service.repo.all('split_assignments')}
     results = {r['match_id']: r for r in service.repo.all('results')}
@@ -226,16 +229,9 @@ def inspect_plan(service, plan_id):
     for member in plan['members']:
         mid = member['match']['id']; predictions = service.repo.all('predictions', match_id=mid)
         assignment = assignments.get(mid, {})
-        valid = [p for p in predictions if p['captured_prematch'] and not p['reconstructed']
-            and not p['synthetic'] and p['parent'] is None and p['revision'] == 0
-            and p['code_hash'] == plan['code_hash'] and p['model_hash'] == plan['model_hash']
-            and p['policy_hash'] == plan['policy_hash'] and p['sports']['match'] == member['match']
-            and p['market_pool'] == plan['markets']
-            and (p['calibrator']['hash'] if p['calibrator'] else None) == plan['calibrator_id']
-            and assignment.get('role') == plan['role'] and assignment.get('at') == plan['at']
-            and time(plan['at']) <= time(p['sealed_at']) < time(member['match']['kickoff'])]
+        original = _original_forecast(predictions, plan, member, assignment)
         result = results.get(mid)
-        status = ('NO_SEAL' if not predictions else 'INVALID_OR_REVISED_SEAL' if len(predictions) != 1 or len(valid) != 1
+        status = ('NO_SEAL' if not predictions else 'INVALID_OR_REVISED_SEAL' if original is None
                   else 'SETTLED' if result else 'AWAITING_RESULT')
         if status == 'NO_SEAL' and time(service.now()) >= time(member['match']['kickoff']):
             status = 'MISSED_PREMATCH_WINDOW'

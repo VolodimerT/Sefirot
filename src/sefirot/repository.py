@@ -114,18 +114,31 @@ class Repository:
         self.db.execute('INSERT INTO audit_logs(at,event,payload,previous_hash,hash) VALUES(?,?,?,?,?)',(at,event,data,prev,hash_))
 
     def verify(self):
-        prev='0'*64; referenced=set()
+        # Read the current audit chain and current record bytes on EVERY call.
+        # Batch record reads by table, rather than issuing one SELECT per event.
+        # Only content canonicalization is cached; never cache journal_ok.
+        prev='0'*64; referenced=set();expected={}
         for row in self.db.execute('SELECT * FROM audit_logs ORDER BY id'):
             if row['previous_hash']!=prev or row['hash']!=digest([prev,row['at'],row['event'],row['payload']]): return False
             prev=row['hash'];payload=json.loads(row['payload'])
             if 'record_table' in payload:
-                try: record_hash=self._record_digest(payload['record_table'],payload['record_id'])
-                except ValueError: return False
-                if record_hash!=payload['record_hash']: return False
-                referenced.add((payload['record_table'],payload['record_id']))
+                table=payload['record_table'];identifier=payload.get('record_id')
+                if table not in TABLES or table=='audit_logs' or not isinstance(identifier,str):return False
+                expected.setdefault(table,{}).setdefault(identifier,[]).append(payload['record_hash'])
+                referenced.add((table,identifier))
         # Every probability and decision must have a content-bound audit event.
-        for table in ('predictions','decisions','results','calibrators','validation_runs','bets'):
-            if any((table,r['id']) not in referenced for r in self.db.execute(f'SELECT id FROM {table}')): return False
+        guarded={'predictions','decisions','results','calibrators','validation_runs','bets'}
+        for table in TABLES:
+            if table not in guarded and table not in expected:continue
+            pending=set(expected.get(table,{}))
+            for row in self.db.execute(f'SELECT id,payload FROM {table}'):
+                identifier=row['id']
+                if table in guarded and (table,identifier) not in referenced:return False
+                if identifier not in pending:continue
+                record_hash=self._payload_digest(table,identifier,row['payload'])
+                if any(record_hash!=value for value in expected[table][identifier]):return False
+                pending.remove(identifier)
+            if pending:return False
         return True
 
     def _record_digest(self,table,identifier):
@@ -139,7 +152,11 @@ class Repository:
         if table not in TABLES or table=='audit_logs':raise ValueError('invalid ledger table')
         row=self.db.execute(f'SELECT payload FROM {table} WHERE id=?',(identifier,)).fetchone()
         if row is None:raise ValueError('record not found')
-        blob=row['payload'];raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
+        return self._payload_digest(table,identifier,row['payload'])
+
+    def _payload_digest(self,table,identifier,blob):
+        """Canonicalize freshly read bytes, with the existing bounded cache."""
+        raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
         key=(table,identifier);saved=self._record_digests.get(key)
         if saved is not None and saved[0]==raw_hash:return saved[1]
         record_hash=digest(json.loads(blob))

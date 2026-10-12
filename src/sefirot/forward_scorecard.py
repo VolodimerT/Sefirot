@@ -55,6 +55,20 @@ def _forecast_valid(prediction, plan, member, assignment):
             and time(plan['at']) <= time(prediction['sealed_at']) < time(member['match']['kickoff']))
 
 
+def _original_forecast(predictions, plan, member, assignment):
+    """One original cohort seal; reconstruction siblings are not replacements.
+
+    Actual prematch revisions or additional original models still invalidate
+    this fixed-cohort protocol. Keep the original identity and source proofs.
+    """
+    originals = [p for p in predictions if not
+                 (p.get('reconstructed') is True and p.get('captured_prematch') is False)]
+    if len(originals) != 1:
+        return None
+    original = originals[0]
+    return original if _forecast_valid(original, plan, member, assignment) else None
+
+
 def _score(rows, field):
     selected = [r for r in rows if r.get(field) is not None]
     if not selected: return {'n': 0, 'brier': None, 'log_loss': None, 'ece_macro': None, 'classwise': []}
@@ -128,6 +142,7 @@ def create_scorecard(service, plan_id, at):
     for member in plan['members']:
         mid = member['match']['id']; kickoff = member['match']['kickoff']
         predictions = repo.all('predictions', at, match_id=mid)
+        original = _original_forecast(predictions, plan, member, assignments.get(mid, {}))
         row = {'match_id': mid, 'kickoff': kickoff, 'league': member['match']['league'],
                'competition_profile': member['match']['competition_profile'],
                'prediction_id': None, 'status': 'NO_SEAL', 'last_capture_status': None,
@@ -135,10 +150,10 @@ def create_scorecard(service, plan_id, at):
         if attempts[mid]: row['last_capture_status'] = max(attempts[mid], key=lambda x: (time(x[0]), x[1]))[2]['status']
         if not predictions:
             if time(at) >= time(kickoff): row['status'] = 'MISSED_PREMATCH_WINDOW'
-        elif len(predictions) != 1 or not _forecast_valid(predictions[0], plan, member, assignments.get(mid, {})):
+        elif original is None:
             row['status'] = 'INVALID_OR_REVISED_SEAL'
         else:
-            p = predictions[0]; row['prediction_id'] = p['id']
+            p = original; row['prediction_id'] = p['id']
             row['prematch_decisions']=_decision_history(repo,p,at)
             row['decision_status']=row['prematch_decisions'][-1]['decision'] if row['prematch_decisions'] else 'NO_ORIGINAL_SEAL_DECISION'
             proof = [a for a, finished in capture_proofs[p['id']] if a.get('sports_hash') == digest(p['sports'])
