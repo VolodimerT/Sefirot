@@ -114,6 +114,28 @@ class EnrichmentContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'future'):
             self.plan()
 
+    def test_stale_account_quota_receipt_stops_automated_plan(self):
+        self.status['receipt']['received_at'] = (self.at - timedelta(minutes=6)).isoformat()
+        with self.assertRaisesRegex(ValueError, 'snapshot stale'):
+            self.plan()
+
+    def test_object_response_may_have_multiple_aggregate_subkeys(self):
+        import json
+        raw = json.dumps({'errors': [], 'response': {'league': {'id': 39}, 'team': {'id': 101}},
+                          'results': 11, 'paging': {'current': 1, 'total': 1}}).encode()
+        class Resp:
+            status = 200
+            def read(self, n): return raw[:n]
+            def getheader(self, n): return None
+        class Conn:
+            def __init__(self, host, timeout=15): self.r = Resp()
+            def request(self, method, path, headers): pass
+            def getresponse(self): return self.r
+            def close(self): pass
+        value = get('teams/statistics', {'league':39, 'season':2026, 'team':101},
+                    api_key='SYNTHETIC', connection_factory=Conn)
+        self.assertEqual(value['data']['results'], 11)
+
     def test_inactive_status_or_malformed_quota_rejected(self):
         self.status['data']['response']['subscription']['active'] = False
         self.status['receipt']['payload_hash'] = digest(self.status['data'])
