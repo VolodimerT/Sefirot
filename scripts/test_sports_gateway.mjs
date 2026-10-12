@@ -247,4 +247,128 @@ await test("failed finalization returns fixed error and makes no retry", async (
     assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
   }
 });
+
+const enrichment = [
+  ["standings", {league: 39, season: 2026}],
+  ["teams/statistics", {league: 39, season: 2026, team: 101, date: "2026-10-12"}],
+  ["fixtures/headtohead", {h2h: "101-202", last: 5}],
+  ["fixtures/events", {fixture: 50001}], ["fixtures/players", {fixture: 50001}],
+  ["coachs", {team: 101}], ["players/squads", {team: 101}],
+  ...["players/topscorers", "players/topassists", "players/topyellowcards", "players/topredcards"]
+    .map(endpoint => [endpoint, {league: 39, season: 2026}]),
+];
+const validQuota = {"x-ratelimit-requests-remaining": "90", "x-ratelimit-requests-limit": "100",
+  "x-ratelimit-remaining": "10", "x-ratelimit-limit": "300"};
+function dataFor(endpoint) {
+  return {...fixtures, ...(endpoint === "teams/statistics" ? {response: {team: {id: 101}}, results: 11} : {})};
+}
+await test("all enrichment endpoints preserve the shared reservation and finish order", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({upstream: Response.json(dataFor(endpoint), {headers: validQuota})});
+    const out = await s.call({body: {endpoint, params}});
+    assert.equal(out.status, 200); assert.equal(s.calls.length, 4);
+    assert.ok(s.calls[0].url.endsWith("/sefirot_api_football_secret"));
+    assert.ok(s.calls[1].url.endsWith("/sefirot_sports_budget_reserve"));
+    assert.ok(s.calls[2].url.startsWith("https://v3.football.api-sports.io/" + endpoint + "?"));
+    assert.ok(s.calls[3].url.endsWith("/sefirot_sports_budget_finish"));
+    assert.equal(out.body.monetary_permission, false); assert.equal(out.body.execution_enabled, false);
+  }
+});
+await test("every budget refusal protects every enrichment endpoint", async () => {
+  for (const [endpoint, params] of enrichment) {
+    for (const reason of ["PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET", "DAILY_LIMIT", "MINUTE_LIMIT"]) {
+      const s = setup({budget: Response.json({allowed: false, reason})});
+      const out = await s.call({body: {endpoint, params}});
+      assert.equal(out.status, 429); assert.equal(out.body.budget_reason, reason);
+      assert.equal(s.calls.length, 2); assert.ok(s.calls.every(c => c.url.includes("/rpc/")));
+    }
+  }
+});
+await test("malformed shared permits block enrichment before provider IO", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({budget: Response.json({allowed: true, permit: "PRIVATE_PERMIT"})});
+    const out = await s.call({body: {endpoint, params}});
+    assert.equal(out.body.error, "SHARED_BUDGET_UNAVAILABLE"); assert.equal(s.calls.length, 2);
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_PERMIT"));
+  }
+});
+await test("known valid quota completes each enrichment reservation successfully", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({upstream: Response.json(dataFor(endpoint), {headers: validQuota})});
+    assert.equal((await s.call({body: {endpoint, params}})).status, 200);
+    const finish = JSON.parse(s.calls[3].options.body);
+    assert.equal(finish.outcome, "SUCCESS"); assert.equal(finish.remaining_day, 90);
+    assert.equal(finish.remaining_minute, 10); assert.equal(finish.observed_minute_limit, 300);
+  }
+});
+await test("unknown quota latches FAILURE for every enrichment endpoint", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({upstream: Response.json(dataFor(endpoint))});
+    assert.equal((await s.call({body: {endpoint, params}})).status, 200);
+    const finish = JSON.parse(s.calls[3].options.body);
+    assert.equal(finish.outcome, "FAILURE"); assert.equal(finish.remaining_day, null);
+    assert.equal(finish.remaining_minute, null);
+  }
+});
+await test("enrichment provider failures are finalized once with sanitized errors", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({upstream: new Error("PRIVATE_ACCOUNT_OR_URL")});
+    const out = await s.call({body: {endpoint, params}});
+    assert.equal(out.body.error, "UPSTREAM_UNAVAILABLE"); assert.equal(s.calls.length, 4);
+    assert.equal(JSON.parse(s.calls[3].options.body).outcome, "FAILURE");
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_ACCOUNT_OR_URL"));
+  }
+});
+await test("failed enrichment finalization cannot return successful evidence or retry", async () => {
+  for (const [endpoint, params] of enrichment) {
+    const s = setup({upstream: Response.json(dataFor(endpoint), {headers: validQuota}),
+      finish: Response.json({ok: false})});
+    const out = await s.call({body: {endpoint, params}});
+    assert.equal(out.body.error, "SHARED_BUDGET_UNAVAILABLE"); assert.equal(s.calls.length, 4);
+  }
+});
+await test("new required selectors are enforced without budget or provider IO", async () => {
+  for (const [endpoint, params] of [["standings", {}], ["teams/statistics", {team: 101}],
+      ["fixtures/headtohead", {h2h: "101-101"}], ["fixtures/events", {}],
+      ["fixtures/players", {fixture: 0}], ["coachs", {}], ["players/squads", {}],
+      ["players/topscorers", {league: 39, season: true}]]) {
+    const s = setup(); assert.equal((await s.call({body: {endpoint, params}})).status, 400);
+    assert.equal(s.calls.length, 0);
+  }
+});
+await test("legitimate team statistics object shape is distinct from arrays", async () => {
+  for (const [response, expected] of [[{team: {id: 101}}, 200], [[], 422], [null, 422]]) {
+    const s = setup({upstream: Response.json({...fixtures, response, results: 11}, {headers: validQuota})});
+    assert.equal((await s.call({body: {endpoint: "teams/statistics", params: enrichment[1][1]}})).status, expected);
+    assert.equal(JSON.parse(s.calls[3].options.body).outcome, expected === 200 ? "SUCCESS" : "FAILURE");
+  }
+});
+await test("invalid dates and oversized new history selectors never consume quota", async () => {
+  for (const [endpoint, params] of [["teams/statistics", {...enrichment[1][1], date: "2026-02-30"}],
+      ["teams/statistics", {...enrichment[1][1], date: "2026-19-39"}],
+      ["fixtures/headtohead", {h2h: "101-202", last: 51}]]) {
+    const s = setup(); assert.equal((await s.call({body: {endpoint, params}})).status, 400);
+    assert.equal(s.calls.length, 0);
+  }
+});
+await test("partial pages and bool results cannot become enrichment observations", async () => {
+  for (const [endpoint, params] of enrichment) {
+    for (const malformed of [{paging: {current: 2, total: 1}}, {paging: {current: 1, total: true}},
+        {results: true}]) {
+      const s = setup({upstream: Response.json({...dataFor(endpoint), ...malformed}, {headers: validQuota})});
+      const out = await s.call({body: {endpoint, params}});
+      assert.equal(out.status, 422); assert.equal(s.calls.length, 4);
+      assert.equal(JSON.parse(s.calls[3].options.body).outcome, "FAILURE");
+    }
+  }
+});
+await test("shared guard marker is issued only on successfully finalized legacy and new replies", async () => {
+  for (const [endpoint, params] of [["fixtures", {id: 50001}], ...enrichment]) {
+    const s = setup({upstream: Response.json(dataFor(endpoint), {headers: validQuota})});
+    const out = await s.call({body: {endpoint, params}});
+    assert.equal(out.body.shared_budget_guard, "POSTGRES_RESERVATION_V1");
+    assert.equal(s.calls.length, 4);
+  }
+});
+
 process.stdout.write("GATEWAY_CONTRACTS_PASSED=" + tests + "\n");

@@ -167,11 +167,18 @@ class Service:
             if not inserted:return {'idempotent':True,'records':0}
             self.repo.record_log('results',result['match_id'],at,result)
             predictions=self.repo.all('predictions',match_id=match['id'])
-            # Latest prematch revision per model; all other sealed predictions stay stored.
+            # Prefer the latest original prematch revision for each model. A
+            # later replay is research and must not replace prospective scoring.
+            # Reconstructed-only models retain their existing research records;
+            # their captured_prematch flag remains false. No seal is rewritten.
+            prospective=lambda p:(p.get('captured_prematch') is True and
+                                  p.get('reconstructed') is False and
+                                  time(p['sealed_at'])<time(match['kickoff']))
+            order=lambda p:(prospective(p),time(p['sealed_at']),p['revision'],p['id'])
             latest={}
             for p in predictions:
                 key=p['model_id']
-                if key not in latest or time(p['sealed_at'])>time(latest[key]['sealed_at']):latest[key]=p
+                if key not in latest or order(p)>order(latest[key]):latest[key]=p
             for p in latest.values():
                 for c in p['candidates']:
                     if result['status']=='VOID':continue
@@ -184,7 +191,7 @@ class Service:
                             'prediction_error':[v-int(i==('WIN','PUSH','LOSS').index(outcome)) for i,v in enumerate(c['base'])],
                             'outcome':outcome,'brier':brier(c['base'],outcome),'baseline_brier':brier(baseline,outcome),
                             'baseline_log_loss':log_loss(baseline,('WIN','PUSH','LOSS').index(outcome)),
-                            'received_at':at,'synthetic':p['synthetic'],'captured_prematch':p['captured_prematch'],
+                            'received_at':at,'synthetic':p['synthetic'],'captured_prematch':prospective(p),
                             'goal_model_hash':p.get('goal_model',{}).get('hash') if p.get('goal_model') else None,
                             'calibration_status':c['calibration'],'sealed_at':p['sealed_at'],'kickoff':match['kickoff'],
                             'calibrator_id':p['calibrator']['hash'] if p['calibrator'] else None}
