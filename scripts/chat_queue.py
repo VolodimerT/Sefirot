@@ -35,6 +35,22 @@ def process_one() -> bool:
         success=True
     except (ValueError,TypeError,KeyError) as exc:
         error="INPUT_VALIDATION_OR_PREMATCH_GATE"
+        # Private, allowlisted diagnostics for malformed sports-only captures.
+        # Provider errors and arbitrary strings are intentionally not disclosed.
+        if kind == "capture" and type(exc) is ValueError:
+            detail = str(exc)
+            if detail in ("future or impossible evidence chronology", "history result chronology",
+                          "duplicate history id", "invalid ISO timestamp", "unsupported operation",
+                          "capture is no longer prematch", "history teams must differ",
+                          "source enabled must be boolean", "unknown source",
+                          "invalid evidence type", "target result must never be provided as history",
+                          "duplicate source", "SPORTS_FACTS_INVALID", "history result chronology",
+                          "history teams must differ", "invalid evidence id"):
+                error="CAPTURE_VALIDATION:"+detail.replace(" ","_").upper()
+            elif detail.startswith("fields missing="):
+                error="CAPTURE_VALIDATION:INPUT_FIELDS"
+            elif detail.startswith(("source reliability:", "match:", "home goals:", "away goals:")):
+                error="CAPTURE_VALIDATION:INPUT_RANGE"
     except Exception:
         error="RESEARCH_RUNNER_ERROR"
     result=result if success else None
