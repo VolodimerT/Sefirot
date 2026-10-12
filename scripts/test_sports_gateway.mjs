@@ -13,7 +13,7 @@ const fixtures = {errors: [], results: 0, paging: {current: 1, total: 1}, respon
 const status = {errors: [], response: {account: {email: "PRIVATE_ACCOUNT_VALUE"},
   subscription: {active: true}, requests: {current: 1, limit_day: 100}}};
 
-function setup({upstream = Response.json(fixtures), authRows = auth, env = true, rpc = null} = {}) {
+function setup({upstream = Response.json(fixtures), authRows = auth, env = true, rpc = null, budget = null, finish = null} = {}) {
   const calls = [];
   let handler;
   const sandbox = {Request, Response, TextEncoder, TextDecoder, AbortController, URLSearchParams,
@@ -25,6 +25,9 @@ function setup({upstream = Response.json(fixtures), authRows = auth, env = true,
       calls.push({url, options});
       assert.equal(options.redirect, "error");
       assert.ok(options.signal instanceof AbortSignal);
+      if (url.endsWith("/sefirot_sports_budget_reserve")) return budget ?? Response.json({allowed: true,
+        permit: "00000000-0000-0000-0000-000000000001"});
+      if (url.endsWith("/sefirot_sports_budget_finish")) return finish ?? Response.json({ok: true});
       if (url.includes("/rpc/")) return rpc ?? Response.json("PRIVATE_API_KEY");
       if (upstream instanceof Error) throw upstream;
       return upstream;
@@ -84,10 +87,10 @@ await test("oversized and malformed input make no provider request", async () =>
 });
 await test("fixed host and encoded parameters never send auth in the URL", async () => {
   const s = setup(); const out = await s.call({body: {endpoint: "fixtures", params: {league: 5, timezone: "Europe/Kyiv"}}});
-  assert.equal(out.status, 200); assert.equal(s.calls.length, 2);
-  assert.equal(s.calls[1].url, "https://v3.football.api-sports.io/fixtures?league=5&timezone=Europe%2FKyiv");
-  assert.equal(s.calls[1].options.headers["x-apisports-key"], "PRIVATE_API_KEY");
-  assert.ok(!s.calls[1].url.includes("PRIVATE"));
+  assert.equal(out.status, 200); assert.equal(s.calls.length, 4);
+  assert.equal(s.calls[2].url, "https://v3.football.api-sports.io/fixtures?league=5&timezone=Europe%2FKyiv");
+  assert.equal(s.calls[2].options.headers["x-apisports-key"], "PRIVATE_API_KEY");
+  assert.ok(!s.calls[2].url.includes("PRIVATE"));
   assert.ok(!JSON.stringify(out).includes("PRIVATE")); assert.equal(out.body.execution_enabled, false);
 });
 await test("status redacts account while preserving subscription and quota", async () => {
@@ -178,5 +181,70 @@ await test("server configuration and secret lookup fail closed", async () => {
   assert.equal(s.calls.length, 0);
   s = setup({rpc: Response.json("bad key PRIVATE_TOKEN")});
   assert.equal((await s.call()).body.error, "API_FOOTBALL_KEY_NOT_CONFIGURED"); assert.equal(s.calls.length, 1);
+});
+await test("shared budget refusals make zero provider calls", async () => {
+  for (const reason of ["PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET", "DAILY_LIMIT", "MINUTE_LIMIT"]) {
+    const s = setup({budget: Response.json({allowed: false, reason})});
+    const out = await s.call();
+    assert.equal(out.status, 429); assert.equal(out.body.budget_reason, reason);
+    assert.equal(s.calls.length, 2); assert.ok(s.calls.every(c => c.url.includes("/rpc/")));
+  }
+});
+await test("malformed or unavailable budget fails before provider IO", async () => {
+  for (const budget of [Response.json({allowed: true}), Response.json({allowed: "true"}),
+      Response.json({allowed: true, permit: "PRIVATE_TOKEN"}), Response.json(null),
+      Response.json({allowed: true, permit: "00000000-0000-0000-0000-000000000001", extra: 1}),
+      Response.json({allowed: false, reason: "PRIVATE_TOKEN"}), new Response("PRIVATE_TOKEN", {status: 503})]) {
+    const s = setup({budget}); const out = await s.call();
+    assert.equal(out.body.error, "SHARED_BUDGET_UNAVAILABLE"); assert.equal(s.calls.length, 2);
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
+  }
+});
+await test("every uncertain upstream attempt opens the shared circuit without refund or retry", async () => {
+  for (const upstream of [new Error("PRIVATE_TOKEN"), new Response("PRIVATE_TOKEN", {status: 429}),
+      Response.json({...fixtures, errors: {access: "account suspended"}}),
+      Response.json({...fixtures, results: 1}), new Response("not json")]) {
+    const s = setup({upstream}); const out = await s.call(); assert.equal(out.body.ok, false);
+    assert.equal(s.calls.length, 4);
+    const final = JSON.parse(s.calls[3].options.body);
+    assert.equal(final.outcome, "FAILURE"); assert.equal(final.remaining_day, null);
+    assert.equal(final.remaining_minute, null);
+    assert.ok(s.calls[1].url.endsWith("/sefirot_sports_budget_reserve"));
+    assert.ok(s.calls[3].url.endsWith("/sefirot_sports_budget_finish"));
+  }
+});
+await test("only observed numeric quota can keep the circuit active", async () => {
+  for (const [headers, active, expected] of [[{}, true, "FAILURE"],
+      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2",
+        "x-ratelimit-requests-limit": "7500", "x-ratelimit-limit": "300"}, true, "SUCCESS"],
+      [{"x-ratelimit-requests-remaining": "50", "x-ratelimit-remaining": "2",
+        "x-ratelimit-requests-limit": "7500", "x-ratelimit-limit": "300"}, false, "FAILURE"],
+      [{"x-ratelimit-requests-remaining": "1000001", "x-ratelimit-remaining": "2"}, true, "FAILURE"]]) {
+    const data = {...status, response: {...status.response, subscription: {active}}};
+    const s = setup({upstream: Response.json(data, {headers})});
+    assert.equal((await s.call({body: {endpoint: "status"}})).status, 200);
+    assert.equal(JSON.parse(s.calls[3].options.body).outcome, expected);
+  }
+});
+await test("observed limit and counter contradictions cannot authorize another call", async () => {
+  for (const [daily, dayLimit, minute, minuteLimit] of [["2", "1", "1", "300"],
+      ["1", "7500", "2", "1"], ["1", "7500", "1", "0"], ["1", "7500", "1", "301"],
+      ["1", "7500", "1", "1"]]) {
+    const s = setup({upstream: Response.json(fixtures, {headers: {
+      "x-ratelimit-requests-remaining": daily, "x-ratelimit-requests-limit": dayLimit,
+      "x-ratelimit-remaining": minute, "x-ratelimit-limit": minuteLimit}})});
+    assert.equal((await s.call()).status, 200);
+    const observed = JSON.parse(s.calls[3].options.body);
+    assert.equal(observed.outcome, minuteLimit === "1" && minute === "1" ? "SUCCESS" : "FAILURE");
+    if (observed.outcome === "SUCCESS") assert.equal(observed.observed_minute_limit, 1);
+  }
+});
+await test("failed finalization returns fixed error and makes no retry", async () => {
+  for (const finish of [Response.json({ok: false}), new Response("PRIVATE_TOKEN", {status: 503}),
+      Response.json({ok: true, extra: "PRIVATE_TOKEN"})]) {
+    const s = setup({finish}); const out = await s.call();
+    assert.equal(out.body.error, "SHARED_BUDGET_UNAVAILABLE"); assert.equal(s.calls.length, 4);
+    assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
+  }
 });
 process.stdout.write("GATEWAY_CONTRACTS_PASSED=" + tests + "\n");

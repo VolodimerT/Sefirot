@@ -1,3 +1,22 @@
+## Shared provider budget candidate, 12.10.2026
+
+feature/shared-provider-budget-20261012 от exact #42
+6c7b6d1525b8538cbca6e208aa5777fb08a81b0c. См.
+docs/SHARED_PROVIDER_BUDGET_20261012.md, issue #29.
+Один PostgreSQL row lock, reservation до provider I/O, daily reserve,
+rolling minute + spacing после completion; single in-flight, no retry/refund.
+Failure/unknown quota/stale lease latch circuit; approval max15min/UTC day,
+paused default. Миграция только candidate, cloud/deploy/API не выполнялись.
+Полный test/release, 4 OS/Python CI + isolated PostgreSQL concurrency job
+на exact head обязательны. Все src/sefirot/Policy/MODEL_MODULES и old reports
+сохранить побайтно относительно #42. Vault/RPC secret/auth не менять;
+main не сливать, дополнительные агенты запрещены. Приватные данные не Git.
+Guard охватывает только этот gateway/project; legacy direct Render calls
+не защищены. Следующий operational этап требует остановки bypass runners,
+согласованной миграции/deploy и independently verified original receipts;
+не заменять их ещё одним synthetic fit или повторным data-blocker audit.
+Ниже исторические checkpoints.
+
 ## V4.4 evidence/integration candidate, 12.10.2026
 
 Новая feature/gateway-evidence-v44-20261012: exact #41
