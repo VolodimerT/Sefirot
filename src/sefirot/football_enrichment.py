@@ -50,6 +50,8 @@ def plan_fixture_enrichment(fixture_packet, league_packet, status_packet, fixtur
             or sr.get('provider') != 'API_FOOTBALL_V3' or sr.get('sports_only') is not True
             or sr.get('payload_hash') != digest(sd) or time(sr['received_at']) > cutoff):
         raise ValueError('status receipt invalid')
+    if (cutoff - time(sr['received_at'])).total_seconds() > 300:
+        raise ValueError('provider quota snapshot stale; refresh status first')
     if sd.get('errors') not in ([], {}) or not isinstance(sd.get('response'), dict):
         raise ValueError('status provider error')
     info = sd['response']
