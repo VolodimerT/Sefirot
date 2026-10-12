@@ -38,7 +38,12 @@ def process_one() -> bool:
         # Private, allowlisted diagnostics for malformed sports-only captures.
         # Provider errors and arbitrary strings are intentionally not disclosed.
         if kind == "capture" and type(exc) is ValueError:
-            detail = str(exc)
+            # Private diagnostic for sports-only input errors; no odds or credentials here.
+            import re
+            diagnostic = str(exc)
+            if len(diagnostic) <= 160 and re.fullmatch(r"[A-Za-z0-9 _.,:;=+()\[\]'-]+", diagnostic):
+                error = "CAPTURE_VALIDATION:" + diagnostic[:160]
+            detail = diagnostic
             if detail in ("future or impossible evidence chronology", "history result chronology",
                           "duplicate history id", "invalid ISO timestamp", "unsupported operation",
                           "capture is no longer prematch", "history teams must differ",
