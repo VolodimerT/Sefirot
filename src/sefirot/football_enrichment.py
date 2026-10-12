@@ -114,7 +114,7 @@ def plan_fixture_enrichment(fixture_packet, league_packet, status_packet, fixtur
         for team in (home, away):
             offer('teams/statistics', {'league': league_id, 'season': season,
                   'team': team, 'date': cutoff.date().isoformat()},
-                  covered('fixtures', 'statistics_fixtures'), 'TEAM_SEASON_TOTALS; AS_OBSERVED_NOW')
+                  True, 'TEAM_SEASON_TOTALS; AS_OBSERVED_NOW')
         offer('fixtures/headtohead', {'h2h': str(home) + '-' + str(away),
               'league': league_id, 'last': 5}, True, 'H2H_CONTEXT_ONLY; NOT_BASELINE')
         offer('injuries', {'fixture': fixture_id}, covered('injuries'), 'INJURIES_BY_FIXTURE')
