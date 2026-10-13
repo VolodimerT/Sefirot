@@ -61,3 +61,11 @@ a focused numerical fix and regression are still required.
 No production change, provider request, migration or private ledger write.
 Use a disposable checkout for release verification; generated old reports
 must be restored and fresh evidence kept separately.
+
+TESTED optimization: retain all inequalities and fsum arithmetic, replace
+per-inequality generator allocations with fixed arity evaluation. Reports
+matched on 100 synthetic normalized-vector comparisons and the default pool.
+51 alternating warm-checker pairs on the same inputs: median 4.065→1.590 ms;
+5 scenarios / 100 representative cells / 1,358 constraints per scenario.
+The earlier unpaired 13 ms was not stable; no whole-pipeline speed claim.
+Final local release 1,021/1,021, exit 0. Model/Policy hashes remain unchanged.

@@ -86,7 +86,14 @@ def check_coherence(contracts,vectors):
         return {**base,'status':'UNSUPPORTED','reason':'COHERENCE_GRID_LIMIT','constraints_checked':0,'violations':[]}
     violations=[];count=0
     for indexes,weights,lower,upper in constraints:
-        value=fsum(values[i]*w for i,w in zip(indexes,weights))
+        # The compiled relation arity is at most three; avoid thousands of
+        # generator/zip allocations while retaining the same fsum arithmetic.
+        if len(indexes)==1:
+            value=values[indexes[0]]
+        elif len(indexes)==2:
+            value=fsum((values[indexes[0]],weights[1]*values[indexes[1]]))
+        else:
+            value=fsum((values[indexes[0]],values[indexes[1]],values[indexes[2]]))
         if value<lower-TOLERANCE or value>upper+TOLERANCE:
             count+=1
             if len(violations)<16:
