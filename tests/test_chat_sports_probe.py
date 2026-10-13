@@ -41,7 +41,7 @@ class ProbeTests(unittest.TestCase):
                        "received_at":"2026-10-13T06:00:00Z","payload_hash":"abc",
                        "http_status":200,"quota":{"x-requests-remaining":"50"}},
         }
-        with patch.object(probe,"get_sports",return_value=packet) as network, \\
+        with patch.object(probe,"get_sports",return_value=packet) as network, \
              patch.object(probe,"transport_status",return_value={"transport":"SUPABASE_GATEWAY","credential_configured":True}):
             result=probe.collect({"queries":[{"endpoint":"fixtures/statistics","params":{"fixture":123}}]})
         network.assert_called_once_with("fixtures/statistics",{"fixture":123})
@@ -52,7 +52,7 @@ class ProbeTests(unittest.TestCase):
         self.assertFalse(result["execution_enabled"])
 
     def test_auth_failure_does_not_retry_or_disclose_error_text(self):
-        with patch.object(probe,"get_sports",side_effect=ValueError("TOKEN_SECRET_DO_NOT_PRINT")) as network, \\
+        with patch.object(probe,"get_sports",side_effect=ValueError("TOKEN_SECRET_DO_NOT_PRINT")) as network, \
              patch.object(probe,"transport_status",return_value={"credential_configured":False}):
             result=probe.collect({"queries":[
                 {"endpoint":"status","params":{}},
