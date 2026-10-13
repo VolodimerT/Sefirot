@@ -16,7 +16,7 @@ TIME_FIELDS = {
 }
 
 
-def validate_row(table, row):
+def validate_row(table, row, *, require_canonical=True):
     """Validate the stored ID, timestamp and foreign keys against the payload.
 
     Dates compare as UTC instants: equivalent ISO offsets are accepted.
@@ -24,7 +24,7 @@ def validate_row(table, row):
     """
     try:
         payload = json.loads(row['payload'])
-        if not isinstance(payload, dict) or canonical(payload) != row['payload']:
+        if not isinstance(payload, dict) or (require_canonical and canonical(payload) != row['payload']):
             raise ValueError('noncanonical payload')
         if table == 'audit_logs':
             time(row['at'])

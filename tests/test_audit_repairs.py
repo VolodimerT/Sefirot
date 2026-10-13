@@ -60,7 +60,7 @@ class ResultChronologyTests(LedgerCase):
                 case = deepcopy(self.case)
                 end = time(case['sports']['match']['kickoff']) + timedelta(seconds=elapsed)
                 case['result'].update(finished_at=end.isoformat(), received_at=end.isoformat())
-                with self.assertRaisesRegex(ValueError, 'ninety minutes'):
+                with self.assertRaisesRegex(ValueError, 'premature REGULATION_90 FINISHED'):
                     walk_forward([case])
 
     def test_backtest_accepts_boundary_finished_and_early_scoreless_void(self):
@@ -91,7 +91,7 @@ class ResultChronologyTests(LedgerCase):
                                          timedelta(seconds=elapsed)).isoformat()
                 result['received_at'] = result['finished_at']
                 self.clock[0] = time(result['received_at'])
-                with self.assertRaisesRegex(ValueError, 'ninety minutes'):
+                with self.assertRaisesRegex(ValueError, 'premature REGULATION_90 FINISHED'):
                     self.service.result(result)
                 for table in ('results', 'calibration_history', 'postmatch_reports', 'health_events'):
                     self.assertEqual(self.repo.all(table), [])
@@ -119,7 +119,7 @@ class ResultChronologyTests(LedgerCase):
     def test_premature_history_is_rejected_before_a_probability_seal(self):
         row = self.case['sports']['history'][0]
         row['finished_at'] = (time(row['kickoff']) + timedelta(seconds=1)).isoformat()
-        with self.assertRaisesRegex(ValueError, 'ninety minutes'):
+        with self.assertRaisesRegex(ValueError, 'premature REGULATION_90 FINISHED'):
             self.capture()
         self.assertEqual(self.repo.all('predictions'), [])
 

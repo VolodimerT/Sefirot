@@ -64,9 +64,9 @@ class ProfileTests(unittest.TestCase):
         records=[{'match_id':str(i),'market':'1X2:HOME','kind':'1X2','raw_win':.5,'outcome':'WIN',
                   'received_at':NOW.isoformat(),'synthetic':True,'competition_profile':'MEN'} for i in range(30)]
         artifact=fit_calibrator(records,'m','p',NOW.isoformat())
-        self.assertEqual(calibrate('1X2',[.5,0,.5],artifact,Policy(),'MEN')['status'],'CALIBRATED_BIN')
+        self.assertEqual(calibrate(market_of({'kind':'1X2','side':'HOME'}),[.5,0,.5],artifact,Policy(),'MEN')['status'],'CALIBRATED_BIN')
         for profile in ('WOMEN','RESERVE','LOWER','UNKNOWN'):
-            self.assertEqual(calibrate('1X2',[.5,0,.5],artifact,Policy(),profile)['status'],'INSUFFICIENT_BIN')
+            self.assertEqual(calibrate(market_of({'kind':'1X2','side':'HOME'}),[.5,0,.5],artifact,Policy(),profile)['status'],'INSUFFICIENT_BIN')
 
     def test_context_and_sephira_history_are_profile_specific(self):
         self.assertNotEqual(context_key('L','TOTAL:OVER:2.5','B','M','MEN'),context_key('L','TOTAL:OVER:2.5','B','M','WOMEN'))

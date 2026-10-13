@@ -13,6 +13,16 @@ def market_of(obj):
     return Market(obj['kind'],obj['side'],obj.get('line'))
 
 
+def market_from_key(key):
+    """Read canonical archived contracts without guessing a side or line."""
+    text(key,'market key')
+    parts=key.split(':')
+    if len(parts) not in (2,3):raise ValueError('invalid market key')
+    market=Market(parts[0],parts[1],float(parts[2]) if len(parts)==3 else None)
+    if market.key!=key:raise ValueError('noncanonical market key')
+    return market
+
+
 def pool(markets,policy):
     if not isinstance(markets,list) or not 1<=len(markets)<=policy.max_candidates: raise ValueError('bounded market pool required')
     parsed=[market_of(m) for m in markets]
@@ -47,7 +57,7 @@ def complete_overround(quotes):
     return output
 
 
-def market_reference(quotes,quote,win,push):
+def market_reference(quotes,quote,win,push,*,reference_bookmakers=(),at=None,max_age_seconds=120):
     """No-vig comparison only for an exhaustive simultaneous bookmaker line.
 
     Integer lines and DNB compare conditional probabilities given no PUSH.
@@ -56,6 +66,32 @@ def market_reference(quotes,quote,win,push):
     number(win,'win probability',0,1);number(push,'push probability',0,1)
     if win+push>1+1e-10:raise ValueError('invalid win/push probabilities')
     market=market_of(quote['market']);line_id=quote.get('line_id')
+    if reference_bookmakers and at is not None:
+        references={}
+        for q in quotes:
+            if q['bookmaker'] not in reference_bookmakers or q['phase'] not in ('FINAL','ENTRY') or not q.get('line_id'):
+                continue
+            if market_of(q['market']).key!=market.key or q['rules']!=quote['rules']:
+                continue
+            age=(time(at)-time(q['observed_at'])).total_seconds()
+            if not 0<=age<=max_age_seconds or time(q['received_at'])>time(at):continue
+            ref=market_reference(quotes,q,win,push)
+            if ref['method']!='PROPORTIONAL_COMPLETE_BOOKMAKER_LINE':continue
+            prior=references.get(q['bookmaker'])
+            order=(time(q['observed_at']),q['line_id'])
+            if not prior or order>prior[0]:references[q['bookmaker']]=(order,ref,q)
+        if references:
+            refs=[v for _,v in sorted(references.items())]
+            ps=[r[1]['probability'] for r in refs];reference=sum(ps)/len(ps)
+            model=refs[0][1]['model_probability']
+            return {'method':'DESIGNATED_BOOKMAKER_CONSENSUS' if len(ps)>1 else 'DESIGNATED_BOOKMAKER_LINE',
+                    'probability':reference,'model_probability':model,'divergence':model-reference,
+                    'conditional_on_no_push':push>0,'overround':None,'sharp_consensus':len(ps)>1,
+                    'designation':'configured reference source; quality is not established by its name',
+                    'reference_bookmakers':sorted(references),'reference_n':len(ps),
+                    'dispersion':max(ps)-min(ps),
+                    'sources':[{'bookmaker':r[2]['bookmaker'],'observed_at':r[2]['observed_at'],
+                                'line_id':r[2]['line_id'],'overround':r[1]['overround']} for r in refs]}
     group=[q for q in quotes if line_id and q.get('line_id')==line_id and
            (q['bookmaker'],q['observed_at'],q['phase'])==(quote['bookmaker'],quote['observed_at'],quote['phase'])]
     pairs={}

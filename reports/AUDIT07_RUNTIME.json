@@ -1,0 +1,288 @@
+{
+  "schema": "runtime-benchmark-v1",
+  "synthetic": true,
+  "python": "3.12.14",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "source_root": "/workspace/scratch/9dade03af036/sefirot",
+  "code_hash": "c6301d4f8dbaedb62baf1827283d9e72850fed27e72514edffe614a010e29513",
+  "benchmark_source_sha256": "482e854fe1d6ee3b2c3b38ebc89f7b852431952f2f8932ced33344d49587cf77",
+  "fixture_hash": "719e56892b567ac39beb00a1b72c1e5b1b481710b92144d6606be66f8084969a",
+  "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "repeats": 3,
+  "prepare_seven_markets": {
+    "median_seconds": 0.02164313100001891,
+    "samples_seconds": [
+      0.02775122299999566,
+      0.021540876000017306,
+      0.02164313100001891
+    ]
+  },
+  "initialize_empty_ledger": {
+    "median_seconds": 0.0014195359999575885,
+    "samples_seconds": [
+      0.001946640000141997,
+      0.0013884790000702196,
+      0.0014195359999575885
+    ]
+  },
+  "probabilities_hash": "8db25c895b23c687572c9bfe972b1241836545c88c3e6d4f7455c68322101c37",
+  "journals": [
+    {
+      "unrelated_fixtures": 0,
+      "feedback_rows": 7,
+      "recapture": {
+        "median_seconds": 0.0038555319999886706,
+        "samples_seconds": [
+          0.003916835000154606,
+          0.0038555319999886706,
+          0.0038300340002024313
+        ]
+      },
+      "verify": {
+        "median_seconds": 0.00031133800007410173,
+        "samples_seconds": [
+          0.0023398220000672154,
+          0.00031100799992600514,
+          0.00031133800007410173
+        ]
+      },
+      "context": {
+        "median_seconds": 0.0008506499998475192,
+        "samples_seconds": [
+          0.0009169400000246242,
+          0.0007766690000607923,
+          0.0008506499998475192
+        ]
+      },
+      "cold_context_seconds": 0.003239063999899372,
+      "settle": {
+        "median_seconds": 0.002656438000030903,
+        "samples_seconds": [
+          0.0024994020000121964,
+          0.002656438000030903,
+          0.002739682999845172
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "4b2ee2d7b6d1f5e2de895e100389db0390658e1964b6e67d50dc9181cd624e27",
+        "health": {
+          "1X2:HOME": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "DNB:HOME": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "95d442ecbe00c00eba622922e7d0f1b73ff018248be20b2562af2534d78b8b8c"
+      }
+    },
+    {
+      "unrelated_fixtures": 200,
+      "feedback_rows": 1407,
+      "recapture": {
+        "median_seconds": 0.004277927999964959,
+        "samples_seconds": [
+          0.004277927999964959,
+          0.004491710000138482,
+          0.003957535999916217
+        ]
+      },
+      "verify": {
+        "median_seconds": 0.013154747000044154,
+        "samples_seconds": [
+          0.20293686200011507,
+          0.012820163000014873,
+          0.013154747000044154
+        ]
+      },
+      "context": {
+        "median_seconds": 0.048981672999843795,
+        "samples_seconds": [
+          0.048981672999843795,
+          0.051036975999977585,
+          0.04694649999987632
+        ]
+      },
+      "cold_context_seconds": 0.242097233000095,
+      "settle": {
+        "median_seconds": 0.037867096000127276,
+        "samples_seconds": [
+          0.037867096000127276,
+          0.03663956800005508,
+          0.03795118299990463
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "e13ab096f0ae75fe8b3bc247d272a6ec6142f23bdf8a4e11821147a6d2482043",
+        "health": {
+          "1X2:HOME": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DNB:HOME": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "a623199c082a2b81752e7fa433c804f4209a07490c49b6d1bb43bc379b255d08"
+      }
+    },
+    {
+      "unrelated_fixtures": 1000,
+      "feedback_rows": 7007,
+      "recapture": {
+        "median_seconds": 0.003969994000044608,
+        "samples_seconds": [
+          0.003946359000110533,
+          0.0041840359999696375,
+          0.003969994000044608
+        ]
+      },
+      "verify": {
+        "median_seconds": 0.08113471499996194,
+        "samples_seconds": [
+          1.0750596430000314,
+          0.08113471499996194,
+          0.06969978600000104
+        ]
+      },
+      "context": {
+        "median_seconds": 0.281064151999999,
+        "samples_seconds": [
+          0.281064151999999,
+          0.26415585599988844,
+          0.287840499999902
+        ]
+      },
+      "cold_context_seconds": 1.1536090019999392,
+      "settle": {
+        "median_seconds": 0.22615089900000385,
+        "samples_seconds": [
+          0.23388877499996852,
+          0.21843750099992576,
+          0.22615089900000385
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "aef9359879394c40c0c5fe3196faf02bfb4ba3d4d36ef0810511a6b4643dc621",
+        "health": {
+          "1X2:HOME": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DNB:HOME": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "5a43c397c287f5935e215f2142925680177593d4f933262f07c4613c9f538776"
+      }
+    }
+  ],
+  "statistical_profitability_proven": false
+}

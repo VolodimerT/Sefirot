@@ -1,0 +1,83 @@
+{
+  "Brier": null,
+  "CALIBRATION": 0,
+  "CLV": null,
+  "ECE": null,
+  "HOLDOUT": 0,
+  "TRAIN": 0,
+  "base_pr": 37,
+  "base_sha": "c4d2495086acf5f125d7f7ba8d8294ce90bdf84c",
+  "branch": "feature/small-source-adapter-20261012",
+  "core_source_hash": "5bde1cbf96efab4bfd3890c4802f86a14f193564bdd047e4db78e1fc4f6fe95f",
+  "core_version": "2.4.2",
+  "current_queue_status": "NOT_QUERIED_THIS_TURN; prior #37 counts are historical",
+  "eligible_real_denominator": null,
+  "fit_allowed": false,
+  "license_verified": false,
+  "live_ready": false,
+  "local_validation": {
+    "integrity": true,
+    "new_tests": 37,
+    "platform": "Linux",
+    "python": "3.12.14",
+    "replay": true,
+    "synthetic_contract_tests_only": true,
+    "tests": 866
+  },
+  "log_loss": null,
+  "model_gain": "NOT_MEASURED",
+  "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+  "monetary_permission": false,
+  "needed_inputs": [
+    {
+      "name": "expected_manifest",
+      "requirements": "provider/league/season/roster/assigned calendar and explicit venue; independently verify completeness and license",
+      "schema": "small-league-manifest-v1"
+    },
+    {
+      "name": "schedule_packet",
+      "requirements": "saved UTF-8 bytes, exact league+season fixture query, complete page, matching manifest raw SHA",
+      "schema": "original SEFIROT data+receipt"
+    },
+    {
+      "name": "statistic_packets",
+      "requirements": "saved post-FT full unfiltered per-fixture statistics; raw data/receipt hashes and IDs match",
+      "schema": "original SEFIROT data+receipt"
+    },
+    {
+      "name": "origin_and_definitions",
+      "requirements": "independent source origin/license and metric/settlement definitions; caller flags cannot certify them",
+      "schema": null
+    },
+    {
+      "name": "new_holdout",
+      "requirements": "future independently registered fixtures; inspected October tickets are debug only",
+      "schema": null
+    }
+  ],
+  "next_single_action": "Verify one permitted complete-league saved FT schedule/statistic archive and run explicit offline importer.",
+  "original_http_bytes_bound": false,
+  "original_seals_changed": false,
+  "original_src_and_policy_unchanged": true,
+  "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "production_touched": false,
+  "real_archive_audited": false,
+  "real_leagues_registered": [],
+  "remote_ci": "PENDING_AT_COMMIT; final exact-head receipts belong in PR body",
+  "saved_packet_binding_implemented": true,
+  "schema": "small-source-adapter-engineering-checkpoint-v1",
+  "source_attested": false,
+  "task": "B1_SAVED_API_FOOTBALL_FT_SOURCE_ADAPTER",
+  "unsupported": [
+    "1H",
+    "2H",
+    "FOULS_DIRECTION",
+    "SECOND_YELLOW",
+    "BOOKING_POINTS",
+    "REFEREE_PRIORS",
+    "ODDS",
+    "BUILDER"
+  ],
+  "verified_real_coverage": null,
+  "worker_connected": false
+}

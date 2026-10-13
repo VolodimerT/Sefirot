@@ -1,0 +1,1148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sefirot:small-observation-batch-v2",
+  "description": "Syntax only; Python validator adds joins, chronology, revision and count constraints. No provenance attestation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "manifest",
+    "observations"
+  ],
+  "properties": {
+    "schema": {
+      "const": "small-observation-batch-v2"
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "provider",
+        "competition_id",
+        "season",
+        "competition_type",
+        "registered_at",
+        "source_sha256",
+        "pagination_complete",
+        "license_ref",
+        "team_ids",
+        "fixtures"
+      ],
+      "properties": {
+        "schema": {
+          "const": "small-league-manifest-v1"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "competition_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "season": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "competition_type": {
+          "const": "LEAGUE"
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pagination_complete": {
+          "type": "boolean"
+        },
+        "license_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "team_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 1000,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "fixtures": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fixture_id",
+              "home_id",
+              "away_id",
+              "kickoff",
+              "venue",
+              "status"
+            ],
+            "properties": {
+              "fixture_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "home_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "away_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "kickoff": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+              },
+              "venue": {
+                "enum": [
+                  "HOME",
+                  "NEUTRAL"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "FT",
+                  "VOID",
+                  "PST",
+                  "ABD",
+                  "AET",
+                  "PEN",
+                  "NS",
+                  "LIVE"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "maxItems": 20000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "provider",
+          "competition_id",
+          "season",
+          "competition_type",
+          "fixture_id",
+          "home_id",
+          "away_id",
+          "kickoff",
+          "venue",
+          "status",
+          "revision",
+          "supersedes_sha256",
+          "published_at",
+          "received_at",
+          "available_at",
+          "raw_sha256",
+          "source_kind",
+          "license_ref",
+          "metric_definitions",
+          "counts",
+          "referee"
+        ],
+        "properties": {
+          "schema": {
+            "const": "small-match-observation-v2"
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "competition_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "season": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "competition_type": {
+            "const": "LEAGUE"
+          },
+          "fixture_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "home_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "away_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "kickoff": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "venue": {
+            "enum": [
+              "HOME",
+              "NEUTRAL"
+            ]
+          },
+          "status": {
+            "enum": [
+              "FT",
+              "VOID",
+              "PST",
+              "ABD",
+              "AET",
+              "PEN",
+              "NS",
+              "LIVE"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "supersedes_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "available_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "raw_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_kind": {
+            "enum": [
+              "SYNTHETIC",
+              "RETROSPECTIVE_IMPORT",
+              "ARCHIVE_UNATTESTED"
+            ]
+          },
+          "license_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metric_definitions": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "CORNERS",
+              "SHOTS",
+              "SOT",
+              "FOULS_COMMITTED",
+              "YELLOW_CARDS",
+              "RED_CARDS",
+              "SECOND_YELLOW",
+              "BOOKING_POINTS"
+            ],
+            "properties": {
+              "CORNERS": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "SHOTS": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "SOT": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "FOULS_COMMITTED": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "YELLOW_CARDS": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "RED_CARDS": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "SECOND_YELLOW": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "BOOKING_POINTS": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "FT",
+              "1H",
+              "2H"
+            ],
+            "properties": {
+              "FT": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "CORNERS",
+                  "SHOTS",
+                  "SOT",
+                  "FOULS_COMMITTED",
+                  "YELLOW_CARDS",
+                  "RED_CARDS",
+                  "SECOND_YELLOW",
+                  "BOOKING_POINTS"
+                ],
+                "properties": {
+                  "CORNERS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SHOTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SOT": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "FOULS_COMMITTED": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "YELLOW_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "RED_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SECOND_YELLOW": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "BOOKING_POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  }
+                }
+              },
+              "1H": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "CORNERS",
+                  "SHOTS",
+                  "SOT",
+                  "FOULS_COMMITTED",
+                  "YELLOW_CARDS",
+                  "RED_CARDS",
+                  "SECOND_YELLOW",
+                  "BOOKING_POINTS"
+                ],
+                "properties": {
+                  "CORNERS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SHOTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SOT": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "FOULS_COMMITTED": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "YELLOW_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "RED_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SECOND_YELLOW": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "BOOKING_POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  }
+                }
+              },
+              "2H": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "CORNERS",
+                  "SHOTS",
+                  "SOT",
+                  "FOULS_COMMITTED",
+                  "YELLOW_CARDS",
+                  "RED_CARDS",
+                  "SECOND_YELLOW",
+                  "BOOKING_POINTS"
+                ],
+                "properties": {
+                  "CORNERS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SHOTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SOT": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "FOULS_COMMITTED": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "YELLOW_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "RED_CARDS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "SECOND_YELLOW": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  },
+                  "BOOKING_POINTS": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "home",
+                      "away"
+                    ],
+                    "properties": {
+                      "home": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "away": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "referee": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "referee_id",
+                  "competition_id",
+                  "season",
+                  "yc_per_game",
+                  "yc_per_foul",
+                  "sample_matches",
+                  "available_at",
+                  "raw_sha256"
+                ],
+                "properties": {
+                  "referee_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "competition_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "season": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "yc_per_game": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "yc_per_foul": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "sample_matches": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "available_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "(Z|[+-]\\d{2}:\\d{2})$"
+                  },
+                  "raw_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
