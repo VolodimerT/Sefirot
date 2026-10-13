@@ -1,3 +1,20 @@
+## Issues #57–61, user-authorized sequential work, 13.10.2026
+
+Start #57 on a separate RC branch from exact #56
+fbab85d0d0666ec593cb739d3a81f357279c59ea. Recheck current #53–#56 ancestry,
+review the final code independently of earlier reports, repair confirmed
+defects minimally and rerun full release/CLI/adversarial and exact-head CI.
+Reuse existing draft integration PR #56 for the unified candidate; no duplicate
+implementation PR. Keep MODEL_MODULES/Policy and old seals/approvals/reports.
+Any non-model code_hash change must be explicit; never relabel old artifacts.
+After verified #57 proceed to #58 audited offline PREMATCH, then #59 honest
+calibration/holdout audit. #60 small families and #61 phone read-only cockpit
+follow their stated dependencies. Reuse existing components, each stage has
+exact SHA/tests/fixes/blockers. No main merge, production deploy/SQL, real
+provider calls, paid APIs, secret access/rotation, monetary promotion, live or
+additional agents. Unknown evidence stays PASS/D/stake=0 or unavailable.
+Prior headers are historical completed scopes.
+
 ## Situation bridge integration, 13.10.2026
 
 User-authorized continuation: selectively integrate the research-only situation
