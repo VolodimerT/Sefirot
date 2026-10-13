@@ -1,3 +1,19 @@
+## Source adapter integration, 13.10.2026
+
+User-authorized continuation: selectively integrate the read-only source adapter
+from #23, with the query/IANA refinements of exact #24
+3707cbf2f2fcafaa773cd82015e2f8537becf74b, onto exact #54
+9744ba23953b2db101f8af38d5a6cfd8abfbac6c. Separate branch/draft PR.
+Port only adapter, CLI, tests and documentation; retain all current query,
+gateway, receipt, budget, chronology and ledger/cache checks. Compatible
+SQLite snapshots must remain immutable and read-only. Keep every src/sefirot
+module, Policy, V3 model module and tracked report byte-identical to #54.
+No provider requests, credentials, production/cloud/deploy/main changes, real
+fit, money, new data attestations or additional agents. training_rows stays
+empty, external origin unverified and the decision KEEP_SHADOW.
+Required: full local release, four exact-head OS/Python CI jobs and disposable
+local PostgreSQL mirror/shared-budget checks. Prior scopes are historical.
+
 ## PR53 review repairs, 13.10.2026
 
 User explicitly authorized fixes after the read-only review of exact PR #53
