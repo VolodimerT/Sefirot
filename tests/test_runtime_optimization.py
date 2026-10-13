@@ -2,6 +2,7 @@
 import copy
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import timedelta
+from decimal import Decimal, localcontext
 import io
 import json
 from pathlib import Path
@@ -24,19 +25,24 @@ from test_audit_upgrade import NOW, controlled
 
 
 def reference_probabilities(market, mass):
-    result = {'WIN': 0., 'PUSH': 0., 'LOSS': 0.}
-    for (home, away), p in mass.items():
-        value = number(p, 'score probability')
-        if value < 0:
-            raise ValueError('negative probability')
-        result[settle(market, home, away)] += value
-    if abs(sum(result.values()) - 1) > 1e-8:
-        raise ValueError('score mass must sum to one')
-    return result['WIN'], result['PUSH'], result['LOSS']
+    # V5.1 intentionally changes accumulation/model identity. Keep exact
+    # equality against an independent high-precision oracle, not the old
+    # rounding-prone += implementation; cache assertions remain unchanged.
+    with localcontext() as ctx:
+        ctx.prec = 80
+        result = {outcome: Decimal(0) for outcome in ('WIN', 'PUSH', 'LOSS')}
+        for (home, away), p in mass.items():
+            value = number(p, 'score probability')
+            if not 0 <= value <= 1:
+                raise ValueError('invalid score probability')
+            result[settle(market, home, away)] += Decimal.from_float(value)
+        if abs(sum(result.values()) - 1) > Decimal('1e-8'):
+            raise ValueError('score mass must sum to one')
+        return tuple(float(result[outcome]) for outcome in ('WIN', 'PUSH', 'LOSS'))
 
 
 class SettlementCacheTests(unittest.TestCase):
-    def test_all_supported_contracts_match_original_accumulation_exactly(self):
+    def test_all_supported_contracts_match_high_precision_projection_exactly(self):
         markets = [Market('1X2', s) for s in ('HOME', 'DRAW', 'AWAY')]
         markets += [Market('DOUBLE_CHANCE', s) for s in ('1X', 'X2', '12')]
         markets += [Market('DNB', s) for s in ('HOME', 'AWAY')]

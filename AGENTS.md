@@ -1,3 +1,17 @@
+## V5.1 stable probability summation candidate, 13.10.2026
+
+Continue from exact PR #47 head 955c409462044877421a6a8181debc6753b1200d.
+The authorized numerical repair uses fsum for Poisson normalization/tail and
+WIN/PUSH/LOSS aggregation. Only aggregate overshoot within four ULP at one
+is bounded; input cells >1/material excess fail, small opposing mass survives.
+This intentionally changes _payoffs.py/probability.py and model_hash; old
+calibrators/approvals/seals are not relabelled or refitted. Policy/rate equations,
+settlement rules and archived reports remain unchanged. The old cache parity
+oracle now uses independent Decimal(80) sums with exact assertions, not +=.
+See docs/PROBABILITY_SUMMATION_V51_20261013.md. Full release and exact-head
+four OS/Python jobs plus PostgreSQL CI required. No production/API/fit/main,
+keys/money, private journals or new agents. Older scope checkpoints follow.
+
 ## V5.1 calibration coherence admission candidate, 13.10.2026
 
 Continue from exact PR #46 head 6fb99cef655b6208f05e72e7b11f891532f5637a.
