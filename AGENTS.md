@@ -1,3 +1,19 @@
+## PR53 review repairs, 13.10.2026
+
+User explicitly authorized fixes after the read-only review of exact PR #53
+1e3936ca9f48bd5a0568568a6a7e51014cd5db6c. Separate branch/draft PR.
+Repair store redirects, malformed MCP parameters, and upstream fixture echo/
+IANA/calendar validation with a selective port of #24. Preserve the current
+shared budget, enrichment endpoints, all chronology and metadata checks.
+Then optimize only bounded row-binding validation, keyed by fresh payload
+bytes AND fresh SQL metadata; never cache journal_ok, permissions or full rows.
+Keep all seven MODEL_MODULES and Policy byte-identical to #53. Old forecasts,
+fits, approvals and tracked reports stay original; new code_hash is explicit.
+No provider calls, cloud/deploy/keys/main changes, refit, money or new agents.
+Required: full local release, four exact-head OS/Python CI jobs, isolated
+PostgreSQL mirror and shared-budget checks, plus paired integrity timing.
+The older headers below are historical scopes.
+
 ## CORE 2.4.2 integration candidate, 13.10.2026
 
 User-authorized continuation: integrate exact main d09a8af22 plus PR #52

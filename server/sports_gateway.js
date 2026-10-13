@@ -74,6 +74,17 @@ function json(data, status = 200) {
   return Response.json(data, {status, headers: {"cache-control": "no-store"}});
 }
 
+function checkFixtureEcho(data, params) {
+  if (data.get !== "fixtures") throw new GatewayError("ENDPOINT_ECHO_MISMATCH");
+  const echoed = data.parameters;
+  if (!echoed || typeof echoed !== "object" || Array.isArray(echoed) ||
+      Object.keys(echoed).length !== Object.keys(params).length ||
+      Object.entries(echoed).some(([key, value]) => !Object.hasOwn(params, key) ||
+        !(typeof value === "string" || Number.isSafeInteger(value)) || String(value) !== String(params[key]))) {
+    throw new GatewayError("QUERY_ECHO_MISMATCH");
+  }
+}
+
 async function sha256(value) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("");
@@ -265,6 +276,7 @@ Deno.serve(async req => {
         return json({ok: false, error: "INCOMPLETE_PROVIDER_RESPONSE"}, 422);
       }
     }
+    if (endpoint === "fixtures") checkFixtureEcho(data, params);
     if (endpoint === "status") {
       if (!data.response || typeof data.response !== "object" || Array.isArray(data.response)) {
         return json({ok: false, error: "MALFORMED_PROVIDER_RESPONSE"}, 502);
