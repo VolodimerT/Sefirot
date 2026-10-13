@@ -11,14 +11,39 @@ import io
 import json
 import os
 from pathlib import Path
+import tempfile
 from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import Request, build_opener
 from sefirot.provider_transport import NoRedirect
+from sefirot.repository import Repository
 
 MAX_GZIP_BYTES = 2_100_000
 MAX_SQLITE_BYTES = 8_000_000
 MAX_RESPONSE_BYTES = 4_100_000
+
+
+def _verify_snapshot_bytes(raw):
+    """Validate the exact captured bytes in an owned temporary read-only DB."""
+    with tempfile.TemporaryDirectory(prefix="sefirot-snapshot-verify-") as directory:
+        path = Path(directory) / "snapshot.sqlite"
+        path.write_bytes(raw)
+        repo = Repository(str(path), read_only=True)
+        try:
+            if not repo.verify():
+                raise ValueError("snapshot journal integrity failed")
+        finally:
+            repo.close()
+
+
+def _require_offline_snapshot(path):
+    if any(Path(str(path)+suffix).exists() for suffix in ("-wal", "-shm", "-journal")):
+        raise RuntimeError("SQLITE_CHECKPOINT_REQUIRES_OFFLINE_SNAPSHOT")
+
+
+def _read_snapshot_bytes(path):
+    with path.open("rb") as handle:
+        return handle.read(MAX_SQLITE_BYTES+1)
 
 def configured() -> bool:
     return bool(os.environ.get("SEFIROT_STORE_URL", ""))
@@ -87,17 +112,27 @@ def restore(path:Path) -> int:
             raw=handle.read(MAX_SQLITE_BYTES+1)
         if len(raw)>MAX_SQLITE_BYTES or not raw.startswith(b"SQLite format 3\x00"):
             raise ValueError("SQLite payload invalid")
+        _verify_snapshot_bytes(raw)
     except Exception as exc:
-        raise RuntimeError("STORE_SNAPSHOT_INTEGRITY_FAILED") from exc
+        raise RuntimeError("STORE_SNAPSHOT_INTEGRITY_FAILED") from None
     path.parent.mkdir(parents=True,exist_ok=True)
     with path.open("xb") as stream: stream.write(raw)
     return revision
 
 def checkpoint(path:Path, expected_revision:int) -> int:
-    if expected_revision<0:raise ValueError("invalid revision")
-    raw=path.read_bytes()
+    if type(expected_revision) is not int or expected_revision<0:raise ValueError("invalid revision")
+    path=Path(path)
+    _require_offline_snapshot(path)
+    raw=_read_snapshot_bytes(path)
     if len(raw)>MAX_SQLITE_BYTES or not raw.startswith(b"SQLite format 3\x00"):
         raise RuntimeError("SQLITE_CHECKPOINT_TOO_LARGE_OR_INVALID")
+    try:
+        _verify_snapshot_bytes(raw)
+    except Exception:
+        raise RuntimeError("SQLITE_CHECKPOINT_INTEGRITY_FAILED") from None
+    _require_offline_snapshot(path)
+    if _read_snapshot_bytes(path)!=raw:
+        raise RuntimeError("SQLITE_CHECKPOINT_CHANGED_DURING_READ")
     packed=gzip.compress(raw,mtime=0)
     if len(packed)>MAX_GZIP_BYTES:raise RuntimeError("SQLITE_COMPRESSED_CHECKPOINT_TOO_LARGE")
     checksum=hashlib.sha256(packed).hexdigest()

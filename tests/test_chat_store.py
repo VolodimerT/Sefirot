@@ -21,6 +21,55 @@ import chat_store
 from sefirot.repository import Repository
 
 class DurableStoreTests(unittest.TestCase):
+    def test_live_wal_checkpoint_is_rejected_before_transport(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/"synthetic.sqlite"
+            repo=Repository(str(path))
+            try:
+                repo.db.execute('PRAGMA journal_mode=WAL')
+                payload={'id':'synthetic-job','at':'2030-01-01T00:00:00+00:00'}
+                with repo.transaction():
+                    repo.insert('jobs',payload['id'],payload,at=payload['at'])
+                    repo.record_log('jobs',payload['id'],payload['at'],payload)
+                before=path.read_bytes()
+                with patch.object(chat_store,'request') as transport:
+                    with self.assertRaisesRegex(RuntimeError,'REQUIRES_OFFLINE_SNAPSHOT'):
+                        chat_store.checkpoint(path,0)
+                transport.assert_not_called()
+                self.assertEqual(path.read_bytes(),before)
+            finally:repo.close()
+
+    def test_header_and_checksum_do_not_make_corrupt_restore_valid(self):
+        packed=gzip.compress(b'SQLite format 3\x00'+b'\x00'*4096,mtime=0)
+        record={'revision':1,'snapshot':base64.b64encode(packed).decode(),
+                'checksum':hashlib.sha256(packed).hexdigest()}
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'not-created'/'synthetic.sqlite'
+            with patch.object(chat_store,'request',return_value=record):
+                with self.assertRaisesRegex(RuntimeError,'STORE_SNAPSHOT_INTEGRITY_FAILED'):
+                    chat_store.restore(path)
+            self.assertFalse(path.parent.exists())
+
+    def test_invalid_journal_checkpoint_is_rejected_before_transport(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'synthetic.sqlite';path.write_bytes(b'SQLite format 3\x00'+b'\x00'*4096)
+            before=path.read_bytes()
+            with patch.object(chat_store,'request') as transport:
+                with self.assertRaisesRegex(RuntimeError,'SQLITE_CHECKPOINT_INTEGRITY_FAILED'):
+                    chat_store.checkpoint(path,0)
+            transport.assert_not_called();self.assertEqual(path.read_bytes(),before)
+
+    def test_checkpoint_source_change_during_verification_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'synthetic.sqlite';repo=Repository(str(path));repo.close()
+            verify=chat_store._verify_snapshot_bytes
+            def concurrent(raw):
+                verify(raw);path.write_bytes(raw+b'changed')
+            with patch.object(chat_store,'_verify_snapshot_bytes',side_effect=concurrent),patch.object(chat_store,'request') as transport:
+                with self.assertRaisesRegex(RuntimeError,'SQLITE_CHECKPOINT_CHANGED_DURING_READ'):
+                    chat_store.checkpoint(path,0)
+            transport.assert_not_called()
+
     def test_roundtrip_preserves_original_verified_sqlite(self):
         state={"revision":0,"snapshot":None,"checksum":None}
         def fake_request(message):
