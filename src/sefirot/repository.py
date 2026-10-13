@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 from hashlib import sha256
 from .contracts import canonical,digest,time,text
-from .ledger_integrity import validate_row
+from .ledger_integrity import validate_row, validate_schema
 
 TABLES=('teams','matches','markets','odds_snapshots','predictions','bets','results','closing_odds',
         'calibration_history','model_versions','audit_logs','decisions','postmortems','health_events',
@@ -55,9 +55,12 @@ class Repository:
         self._record_digests={}
         self._row_validations={}
         self._transaction_sequence=0
-        if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
+        try:
+            if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
+                raise ValueError('unsupported database version')
+        except Exception:
             self.db.close()
-            raise ValueError('unsupported database version')
+            raise
         if read_only: return
         # Set foreign keys before BEGIN (SQLite ignores this PRAGMA in a
         # transaction). Bootstrap all tables/triggers in one durable commit.
@@ -127,6 +130,7 @@ class Repository:
         # Only content canonicalization is cached; never cache journal_ok.
         if self.db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':return False
         if self.db.execute('PRAGMA foreign_key_check').fetchone():return False
+        validate_schema(self.db)
         prev='0'*64; referenced=set();expected={}
         for sequence,row in enumerate(self.db.execute('SELECT * FROM audit_logs ORDER BY id'),1):
             payload=validate_row('audit_logs',row,require_canonical=False)

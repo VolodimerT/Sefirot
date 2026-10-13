@@ -5,6 +5,32 @@ from .contracts import canonical, digest, time
 from .markets import market_of
 
 
+# Every name is a constant, never assembled from input. Parents precede children.
+COLUMNS = {
+    'teams': ('id', 'payload'),
+    'markets': ('id', 'payload'),
+    'model_versions': ('id', 'at', 'payload'),
+    'matches': ('id', 'home', 'away', 'kickoff', 'league', 'payload'),
+    'predictions': ('id', 'match_id', 'model_id', 'at', 'payload'),
+    'decisions': ('id', 'prediction_id', 'at', 'payload'),
+    'odds_snapshots': ('id', 'prediction_id', 'market_id', 'at', 'payload'),
+    'bets': ('id', 'decision_id', 'at', 'payload'),
+    'results': ('id', 'at', 'payload'),
+    'closing_odds': ('id', 'match_id', 'market_id', 'at', 'payload'),
+    'calibration_history': ('id', 'prediction_id', 'market_id', 'at', 'payload'),
+    'postmatch_reports': ('id', 'decision_id', 'at', 'payload'),
+    'postmortems': ('id', 'decision_id', 'at', 'payload'),
+    'health_events': ('id', 'at', 'payload'),
+    'calibrators': ('id', 'at', 'payload'),
+    'validation_runs': ('id', 'at', 'payload'),
+    'split_assignments': ('id', 'at', 'payload'),
+    'overrides': ('id', 'at', 'payload'),
+    'model_routes': ('id', 'at', 'payload'),
+    'policy_approvals': ('id', 'at', 'payload'),
+    'jobs': ('id', 'at', 'payload'),
+    'audit_logs': ('id', 'at', 'event', 'payload', 'previous_hash', 'hash'),
+}
+
 TIME_FIELDS = {
     'model_versions': 'registered_at', 'predictions': 'sealed_at',
     'decisions': 'at', 'odds_snapshots': 'received_at', 'bets': 'at',
@@ -80,3 +106,17 @@ def validate_row(table, row, *, require_canonical=True):
         return payload
     except (KeyError, IndexError, TypeError, ValueError, OverflowError):
         raise ValueError(f'invalid {table} ledger row') from None
+
+
+def validate_schema(db):
+    """Check lookup columns and single-ID primary keys, even in empty tables.
+
+    Read schema metadata afresh. This is a local structural check, not source
+    authentication; no journal outcome or permission is cached.
+    """
+    for table, required in COLUMNS.items():
+        columns = list(db.execute(f'PRAGMA table_info({table})'))
+        names = {column[1].lower() for column in columns}
+        primary = [column[1].lower() for column in columns if column[5]]
+        if not set(required) <= names or primary != ['id']:
+            raise ValueError('invalid SQLite ledger schema')
