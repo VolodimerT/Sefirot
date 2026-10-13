@@ -1,5 +1,5 @@
 """Chronological replay of captured inputs. Reconstructed tests cannot certify release."""
-from .contracts import time,Policy,digest
+from .contracts import time,Policy,digest,regulation_result_times
 from .engine import prepare,decide
 from .markets import market_of,settle
 from .feedback import brier,summary
@@ -11,8 +11,10 @@ def walk_forward(cases,policy=None):
         sports=case['sports'];mid=sports['match']['id'];result=case['result']
         if mid in seen:raise ValueError('duplicate backtest fixture')
         seen.add(mid)
-        if result['match_id']!=mid or time(result['finished_at'])<=time(sports['match']['kickoff']) or time(result['received_at'])<time(result['finished_at']):raise ValueError('backtest result mismatch/chronology')
+        if result['match_id']!=mid:raise ValueError('backtest result mismatch/chronology')
         if result['status'] not in ('VOID','FINISHED'):raise ValueError('unsupported result')
+        regulation_result_times(sports['match']['kickoff'],result['finished_at'],result['received_at'],
+                                finished=result['status']=='FINISHED')
         p=prepare(sports,case['markets'],policy,case.get('calibrator'));p['sealed_at']=sports['as_of'];p['model_id']=digest([p['code_hash'],p['policy_hash'],case.get('calibrator',{}).get('hash')])
         context={'journal_ok':True,'health':{},'releases':{},'policy_approved':False,'captured_prematch':False,'exposures':[]}
         d=decide(p,case['quotes'],case['recheck'],case['decision_at'],context,{'bankroll':1000.,'peak':1000.},policy);decisions.append(d)

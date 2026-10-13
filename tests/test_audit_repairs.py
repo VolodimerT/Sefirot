@@ -16,6 +16,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from sefirot.cloud_sync import snapshot
+from sefirot.backtesting import walk_forward
 from sefirot.contracts import time
 from sefirot.fixtures import example
 from sefirot.repository import Repository
@@ -53,6 +54,28 @@ class LedgerCase(unittest.TestCase):
 
 
 class ResultChronologyTests(LedgerCase):
+    def test_premature_backtest_result_cannot_enter_scoring(self):
+        for elapsed in (1, 45 * 60, 90 * 60 - 1):
+            with self.subTest(elapsed=elapsed):
+                case = deepcopy(self.case)
+                end = time(case['sports']['match']['kickoff']) + timedelta(seconds=elapsed)
+                case['result'].update(finished_at=end.isoformat(), received_at=end.isoformat())
+                with self.assertRaisesRegex(ValueError, 'ninety minutes'):
+                    walk_forward([case])
+
+    def test_backtest_accepts_boundary_finished_and_early_scoreless_void(self):
+        for status, elapsed, scored in (('FINISHED', 90 * 60, 7), ('VOID', 1, 0)):
+            with self.subTest(status=status):
+                case = deepcopy(self.case)
+                end = time(case['sports']['match']['kickoff']) + timedelta(seconds=elapsed)
+                case['result'].update(status=status, finished_at=end.isoformat(), received_at=end.isoformat())
+                if status == 'VOID':
+                    case['result'].update(home_goals=None, away_goals=None)
+                report = walk_forward([case])
+                self.assertEqual(report['metrics']['n'], scored)
+                self.assertFalse(report['can_certify_release'])
+                self.assertEqual(report['BET'], 0)
+
     def test_premature_finished_never_settles_or_enters_feedback(self):
         prediction = self.capture()
         decision = self.decision(prediction)
