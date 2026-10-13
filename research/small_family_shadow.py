@@ -4,6 +4,7 @@ from hashlib import sha256
 from sefirot.contracts import digest
 from research.small_observation_v2 import audit_dataset, PERIODS
 from scripts.small_market_qc import readiness_without_archive
+from research.referee_yc_shadow import inspect_referee
 
 FAMILY_SPECS = {"CORNERS": {"metrics": ("CORNERS",),
     "method": "CORNERS_SHADOW_V0_POISSON_NEGATIVE_BINOMIAL",
@@ -19,7 +20,12 @@ FAMILY_SPECS = {"CORNERS": {"metrics": ("CORNERS",),
         "method": "OWN_DIRECT_COMMITTED_AND_SUFFERED_FOUL_POISSON_UNVALIDATED",
         "module": "research/fouls_shadow.py",
         "rate_basis": "OWN_DIRECT_FOUL_COUNTS; NO_YC_OR_OPPONENT_PROXY",
-        "extra_blockers": ["FOUL_DIRECTION_AND_STYLE_NOT_ATTESTED"]}}
+        "extra_blockers": ["FOUL_DIRECTION_AND_STYLE_NOT_ATTESTED"]},
+    "YC": {"metrics": ("YELLOW_CARDS",),
+        "method": "OWN_YC_COUNT_BASELINE_REFEREE_GATED_UNVALIDATED",
+        "module": "research/referee_yc_shadow.py", "rate_basis": "OWN_YC_COUNTS; NO_FOUL_SURROGATE",
+        "extra_blockers": ["REFEREE_GATE_HOLD", "PREMATCH_CONFIRMED_REFEREE_REQUIRED",
+            "YC_PER_GAME_AND_FOUL_REQUIRED", "RISK_0_1_REQUIRED", "NO_CLEANER_MARKET_PROOF_REQUIRED"]}}
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -70,5 +76,10 @@ def family_report(family, *, data=None, at):
         "network_requests": 0, "real_training_performed": False,
         "holdout_passed": False, "statistical_profitability_proven": False,
         "monetary_permission": False, "execution_enabled": False, "stake": 0.0}
+    if family == "YC":
+        result["referee_gate"] = inspect_referee()
+        for row in result["matrix"]:
+            row["blockers"] = sorted(set(row["blockers"]) | set(result["referee_gate"]["blockers"]))
+            row["status"] = "HOLD/PASS"
     result["hash"] = digest(result)
     return result

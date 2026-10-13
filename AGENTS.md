@@ -1,3 +1,17 @@
+## Issue #60 referee YC: final family after verified FOULS, 13.10.2026
+
+Base #66 1675092228ffaa13e270b9439c13144b82b3519b, 12/12 exact-head CI.
+Reuse original source/observation/referee QC and family matrix/CLI. Strict
+fixture/prematch referee/rates/risk 0-1/rules/cleaner-market/calibration/EV
+shape checks; absent independent source authority always HOLD/PASS/D/0,
+no caller source_verified or checksum promotion. Own YC count lab never foul
+or goal surrogate. Public parameters/P/EV null, no real fit/providers.
+All src/MODEL_MODULES/Policy/historical sources/seals/reports byte-identical
+to #66. Full release/exact OS/Python/actual PG CI, one small family draft.
+Then final verified report for #57-61; empirical/data and #61 remote/device
+blockers explicit. No main/prod/deploy/paid API/secrets/refit/money/LIVE or
+additional agents. Prior scopes historical.
+
 ## Issue #60 FOULS: third family after verified SHOTS/SOT, 13.10.2026
 
 Base #65 1e60cc0d0cfc4b1c04c257abdab89af36090e483, 12/12 exact-head CI.
