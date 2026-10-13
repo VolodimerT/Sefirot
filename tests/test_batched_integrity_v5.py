@@ -108,6 +108,65 @@ class BatchedIntegrityTests(unittest.TestCase):
                 finally:
                     repo.close()
 
+    def test_validation_cache_is_bounded_and_uncached_tail_is_checked(self):
+        repo=Repository(':memory:')
+        self.addCleanup(repo.close)
+        at='2026-10-10T12:00:00Z'
+        for i in range(4100):
+            identifier='cache-job-'+str(i)
+            repo.insert('jobs',identifier,{'id':identifier,'at':at},at=at)
+        self.assertTrue(repo.verify())
+        self.assertLessEqual(len(repo._row_validations),4096)
+        tail=next('cache-job-'+str(i) for i in range(4100)
+                  if ('jobs','cache-job-'+str(i)) not in repo._row_validations)
+        repo.db.execute('DROP TRIGGER jobs_no_update')
+        repo.db.execute("UPDATE jobs SET at='2000-01-01T00:00:00Z' WHERE id=?",(tail,))
+        self.assertFalse(repo.verify())
+        self.assertLessEqual(len(repo._row_validations),4096)
+
+    def test_validation_after_rollback_rechecks_reused_record_id(self):
+        repo=Repository(':memory:')
+        self.addCleanup(repo.close)
+        at='2026-10-10T12:00:00Z'
+        with self.assertRaisesRegex(ValueError,'rollback'):
+            with repo.transaction():
+                repo.insert('jobs','reused',{'id':'reused','at':at},at=at)
+                self.assertTrue(repo.verify())
+                raise ValueError('rollback')
+        self.assertTrue(repo.verify())
+        repo.insert('jobs','reused',{'id':'reused','at':at},at='2000-01-01T00:00:00Z')
+        self.assertFalse(repo.verify())
+
+    def test_warm_metadata_cache_does_not_hide_a_new_orphan(self):
+        repo=Repository(':memory:')
+        self.addCleanup(repo.close)
+        row=self.seed(repo)
+        self.assertTrue(repo.verify())
+        row=copy.deepcopy(row);row.pop('id');row['revision']=1;row['id']=digest(row)
+        repo.insert('predictions',row['id'],row,match_id=row['sports']['match']['id'],
+                    model_id=row['model_id'],at=row['sealed_at'])
+        self.assertFalse(repo.verify())
+
+    def test_close_discards_both_bounded_caches(self):
+        repo=Repository(':memory:')
+        self.seed(repo);self.assertTrue(repo.verify())
+        self.assertTrue(repo._row_validations);self.assertTrue(repo._record_digests)
+        repo.close()
+        self.assertFalse(repo._row_validations);self.assertFalse(repo._record_digests)
+
+    def test_payload_column_case_does_not_put_payload_in_metadata_cache(self):
+        repo=Repository(':memory:')
+        self.addCleanup(repo.close)
+        repo.db.execute('ALTER TABLE jobs RENAME COLUMN payload TO Payload')
+        at='2026-10-10T12:00:00Z'
+        note='SYNTHETIC_PRIVATE_NOTE_'+'x'*2000
+        repo.insert('jobs','case-job',{'id':'case-job','at':at,'note':note},at=at)
+        self.assertTrue(repo.verify());self.assertTrue(repo.verify())
+        self.assertNotIn(note,repr(repo._row_validations))
+        repo.db.execute('DROP TRIGGER jobs_no_update')
+        repo.db.execute("UPDATE jobs SET at='2000-01-01T00:00:00Z'")
+        self.assertFalse(repo.verify())
+
     def test_unguarded_record_bindings_remain_checked(self):
         repo = Repository(':memory:')
         self.addCleanup(repo.close)

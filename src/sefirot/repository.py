@@ -53,6 +53,7 @@ class Repository:
         self.db=sqlite3.connect(target,timeout=10,isolation_level=None,uri=read_only)
         self.db.row_factory=sqlite3.Row
         self._record_digests={}
+        self._row_validations={}
         self._transaction_sequence=0
         if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
             self.db.close()
@@ -69,7 +70,7 @@ class Repository:
             self.db.rollback();self.db.close();raise
 
     def close(self):
-        self.db.close();self._record_digests.clear()
+        self.db.close();self._record_digests.clear();self._row_validations.clear()
 
     def transaction(self): return Transaction(self)
 
@@ -144,15 +145,33 @@ class Repository:
             for row in self.db.execute(f'SELECT * FROM {table}'):
                 # Local audit binds canonical content; the cloud exporter also
                 # requires canonical stored bytes. Keep legacy JSON formatting.
-                validate_row(table,row,require_canonical=False)
+                raw_hash=self._validate_current_row(table,row)
                 identifier=row['id']
                 if table in guarded and (table,identifier) not in referenced:return False
                 if identifier not in pending:continue
-                record_hash=self._payload_digest(table,identifier,row['payload'])
+                record_hash=self._payload_digest(table,identifier,row['payload'],raw_hash=raw_hash)
                 if any(record_hash!=value for value in expected[table][identifier]):return False
                 pending.remove(identifier)
             if pending:return False
         return True
+
+    def _validate_current_row(self,table,row):
+        """Cache only row validation, bound to EVERY freshly read SQL field.
+
+        Do not retain payloads or journal/approval status. Every verification
+        still scans the current chain, records, references and orphan coverage.
+        Payload or metadata changes (also after rollback) force revalidation.
+        """
+        blob=row['payload']
+        raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
+        key=(table,row['id'])
+        signature=(raw_hash,tuple((name,row[name]) for name in row.keys() if name.lower()!='payload'))
+        saved=self._row_validations.get(key)
+        if saved!=signature:
+            validate_row(table,row,require_canonical=False)
+            if saved is not None or len(self._row_validations)<4096:
+                self._row_validations[key]=signature
+        return raw_hash
 
     def _record_digest(self,table,identifier):
         """Read current bytes every time; cache only canonicalization by content.
@@ -167,9 +186,9 @@ class Repository:
         if row is None:raise ValueError('record not found')
         return self._payload_digest(table,identifier,row['payload'])
 
-    def _payload_digest(self,table,identifier,blob):
+    def _payload_digest(self,table,identifier,blob,*,raw_hash=None):
         """Canonicalize freshly read bytes, with the existing bounded cache."""
-        raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
+        if raw_hash is None:raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
         key=(table,identifier);saved=self._record_digests.get(key)
         if saved is not None and saved[0]==raw_hash:return saved[1]
         record_hash=digest(json.loads(blob))

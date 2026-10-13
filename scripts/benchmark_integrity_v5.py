@@ -13,7 +13,6 @@ import statistics
 import subprocess
 import sys
 from time import perf_counter
-from types import MethodType
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
@@ -45,17 +44,21 @@ def run(reference, size, repeats):
                             match_id=row['sports']['match']['id'],
                             model_id=row['model_id'], at=row['sealed_at'])
                 repo.record_log('predictions', row['id'], row['sealed_at'], row)
-        repo._record_digest = MethodType(original._record_digest, repo)
-        methods = {'reference': original.verify, 'candidate': Repository.verify}
+        # A class-bound proxy shares the exact DB/digest cache. Calling an old
+        # verify on the candidate object would dispatch its helper methods to
+        # the NEW implementation and falsely benchmark the candidate twice.
+        reference_repo=original.__new__(original)
+        reference_repo.__dict__.update(repo.__dict__)
+        methods = {'reference': reference_repo.verify, 'candidate': repo.verify}
         for method in methods.values():
-            if method(repo) is not True:
+            if method() is not True:
                 raise ValueError('benchmark journal integrity failed')
         query_counts = {}
         for name, method in methods.items():
             queries = []
             repo.db.set_trace_callback(queries.append)
             try:
-                if method(repo) is not True:
+                if method() is not True:
                     raise ValueError('benchmark journal integrity failed')
             finally:
                 repo.db.set_trace_callback(None)
@@ -68,7 +71,7 @@ def run(reference, size, repeats):
             sample = {}
             for name in order:
                 started = perf_counter()
-                if methods[name](repo) is not True:
+                if methods[name]() is not True:
                     raise ValueError('benchmark journal integrity failed')
                 sample[name] = (perf_counter() - started) * 1000
             rows.append(sample)
