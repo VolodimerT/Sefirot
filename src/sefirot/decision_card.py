@@ -16,6 +16,8 @@ REASON_TEXT={
     'ROBUST_EV_INSUFFICIENT':'цена не проходит Base/Low EV',
     'DEATH_TEST_PRICE_FRAGILITY':'цена не выдерживает стресс-сценарий',
     'CALIBRATION_INSUFFICIENT':'недостаточно калибровочных данных',
+    'CALIBRATION_COHERENCE_CONFLICT':'вероятности противоречат правилам расчёта рынков',
+    'CALIBRATION_COHERENCE_UNVERIFIED':'согласованность вероятностей не проверена',
     'STRESS_CALIBRATION_INSUFFICIENT':'недостаточно калибровки стресс-сценариев',
     'GRADED_DEATH_TEST_UNVALIDATED':'стресс-класс не прошёл независимую проверку',
     'DEATH_TEST_SEVERE_FRAGILITY':'цена не проходит нижний предел стресс-EV',
