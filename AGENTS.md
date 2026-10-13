@@ -1,3 +1,21 @@
+## V5.2 guarded probe/source evidence candidate, 13.10.2026
+
+Base exact PR #49 head 7a4d644e820e2b26767200d8f1320af2d25cb438.
+Selectively port only the sports_probe route from exact #48 b5e61f5,
+not its unrelated old runtime/model stack. No production worker deploy.
+Probe requires shared-budget gateway (no DIRECT), bounded safe canonical
+source evidence + projection binding, typed statistics, exact requested
+fixture binding and real calendar dates. Existing ledger is read-only;
+missing/corrupt ledger refuses before I/O, no checkpoint for research.
+Archives never attest origin/license/coverage/HTTP wire bytes or allow fit.
+Old compact jobs stay original/unverifiable; private observations not Git.
+CORE/Policy/MODEL_MODULES and archived reports remain byte-identical to #49;
+probe script has explicit version/hash. Full release + exact-head four
+OS/Python jobs and isolated PostgreSQL CI required. API calls/deploy/main/
+fit/money/new agents are prohibited in this candidate scope. Approved
+gateway v15 rollout is a separate completed operational stage; Render
+legacy pause still requires owner browser sign-in. Older checkpoints follow.
+
 ## V5.1 stable probability summation candidate, 13.10.2026
 
 Continue from exact PR #47 head 955c409462044877421a6a8181debc6753b1200d.

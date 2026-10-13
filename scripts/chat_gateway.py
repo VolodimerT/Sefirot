@@ -85,12 +85,17 @@ def execute(kind: str, data: dict) -> dict:
 
 
 def _execute_at(kind: str, data: dict, location: Path) -> dict:
+    if kind == "sports_probe" and not location.is_file():
+        raise ValueError("JOURNAL_REQUIRED_FOR_PROBE")
     location.parent.mkdir(parents=True, exist_ok=True)
-    repo = Repository(str(location))
+    repo = Repository(str(location), read_only=kind == "sports_probe")
     try:
         if not repo.verify():
             raise ValueError("JOURNAL_INTEGRITY: closed")
         service = Service(repo, Policy())
+        if kind == "sports_probe":
+            from chat_sports_probe import collect
+            return {**build_info(), **collect(data)}
         if kind == "capture":
             if set(data) - {"sports", "markets"} or "sports" not in data:
                 raise ValueError("capture requires sports and optionally markets")
