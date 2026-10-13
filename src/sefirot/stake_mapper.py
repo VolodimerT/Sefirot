@@ -49,6 +49,20 @@ def _main_market_rows(market, home, away):
     rows = []
     rejected = []
 
+    supported = {"1x2", "Draw No Bet", "Both Teams to Score", "Double Chance",
+                 "Asian Total", "Asian Handicap"}
+    if template in supported and name == template:
+        expected = {"total"} if template == "Asian Total" else {"hcp"} if template == "Asian Handicap" else set()
+        if expected - set(specs):
+            raise ValueError("required Stake line specifier missing")
+        # A generic template does not override a half/extra-time group or
+        # period specifier. Unknown scope remains unmapped research evidence.
+        groups = ("main", "Main", "total") if template == "Asian Total" else ("main", "Main")
+        if market.get("group") not in groups or set(specs) != expected:
+            return [], [{"reason": "MAIN_SCOPE_UNVERIFIED"}]
+        if not isinstance(outcomes, list) or any(not isinstance(o, dict) for o in outcomes):
+            return [], [{"reason": "INVALID_MAIN_OUTCOMES"}]
+
     def emit(contract, outcome):
         contract = _supported_contract(contract)
         if contract is None:
@@ -68,19 +82,19 @@ def _main_market_rows(market, home, away):
 
     if template == "1x2" and name == "1x2":
         sides = {home: "HOME", "Draw": "DRAW", away: "AWAY"}
-        if len(outcomes) != 3 or any(o.get("name") not in sides for o in outcomes):
+        if len(sides) != 3 or len(outcomes) != 3 or {o.get("name") for o in outcomes} != set(sides):
             return [], [{"reason": "INVALID_1X2_PARTITION"}]
         for outcome in outcomes:
             emit({"kind": "1X2", "side": sides[outcome["name"]]}, outcome)
     elif template == "Draw No Bet" and name == "Draw No Bet":
         sides = {home: "HOME", away: "AWAY"}
-        if len(outcomes) != 2 or any(o.get("name") not in sides for o in outcomes):
+        if len(outcomes) != 2 or {o.get("name") for o in outcomes} != set(sides):
             return [], [{"reason": "INVALID_DNB_PARTITION"}]
         for outcome in outcomes:
             emit({"kind": "DNB", "side": sides[outcome["name"]]}, outcome)
     elif template == "Both Teams to Score" and name == "Both Teams to Score":
         sides = {"Yes": "YES", "No": "NO"}
-        if len(outcomes) != 2 or any(o.get("name") not in sides for o in outcomes):
+        if len(outcomes) != 2 or {o.get("name") for o in outcomes} != set(sides):
             return [], [{"reason": "INVALID_BTTS_PARTITION"}]
         for outcome in outcomes:
             emit({"kind": "BTTS", "side": sides[outcome["name"]]}, outcome)
@@ -92,34 +106,53 @@ def _main_market_rows(market, home, away):
         }
         if len(outcomes) != 3:
             return [], [{"reason": "INVALID_DOUBLE_CHANCE_PARTITION"}]
+        mapped = []
         for outcome in outcomes:
             parts = [part.strip() for part in str(outcome.get("name", "")).split(" or ")]
             side = aliases.get(frozenset(parts)) if len(parts) == 2 else None
             if side is None:
                 return [], [{"reason": "UNKNOWN_DOUBLE_CHANCE_OUTCOME", "outcome": outcome.get("name")}]
+            mapped.append((side, outcome))
+        if {side for side, _ in mapped} != {"1X", "X2", "12"}:
+            return [], [{"reason": "INVALID_DOUBLE_CHANCE_PARTITION"}]
+        for side, outcome in mapped:
             emit({"kind": "DOUBLE_CHANCE", "side": side}, outcome)
     elif template == "Asian Total" and name == "Asian Total":
         total = _line(specs.get("total"))
         if len(outcomes) != 2:
             return [], [{"reason": "INVALID_TOTAL_PARTITION"}]
+        mapped = []
         for outcome in outcomes:
             raw = str(outcome.get("name", ""))
-            side = "OVER" if raw.startswith("Over ") else "UNDER" if raw.startswith("Under ") else None
-            if side is None:
-                return [], [{"reason": "UNKNOWN_TOTAL_OUTCOME", "outcome": raw}]
+            match = re.fullmatch(r"(Over|Under) ([+-]?\d+(?:\.\d+)?)", raw)
+            if match is None or _line(match.group(2)) != total:
+                return [], [{"reason": "TOTAL_OUTCOME_LINE_MISMATCH", "outcome": raw}]
+            side = match.group(1).upper()
+            mapped.append((side, outcome))
+        if {side for side, _ in mapped} != {"OVER", "UNDER"}:
+            return [], [{"reason": "INVALID_TOTAL_PARTITION"}]
+        for side, outcome in mapped:
             emit({"kind": "TOTAL", "side": side, "line": total}, outcome)
     elif template == "Asian Handicap" and name == "Asian Handicap":
         home_line = _line(specs.get("hcp"))
         if len(outcomes) != 2:
             return [], [{"reason": "INVALID_HANDICAP_PARTITION"}]
+        mapped = []
         for outcome in outcomes:
             raw = str(outcome.get("name", ""))
-            if raw.startswith(home + " "):
-                emit({"kind": "HANDICAP", "side": "HOME", "line": home_line}, outcome)
-            elif raw.startswith(away + " "):
-                emit({"kind": "HANDICAP", "side": "AWAY", "line": -home_line}, outcome)
-            else:
-                return [], [{"reason": "UNKNOWN_HANDICAP_OUTCOME", "outcome": raw}]
+            side = None
+            for team, candidate, line in ((home, "HOME", home_line), (away, "AWAY", -home_line)):
+                match = re.fullmatch(re.escape(team) + r" \(([+-]?\d+(?:\.\d+)?)\)", raw)
+                if match and _line(match.group(1)) == line:
+                    side = candidate
+                    mapped.append((side, line, outcome))
+                    break
+            if side is None:
+                return [], [{"reason": "HANDICAP_OUTCOME_LINE_MISMATCH", "outcome": raw}]
+        if {side for side, _, _ in mapped} != {"HOME", "AWAY"}:
+            return [], [{"reason": "INVALID_HANDICAP_PARTITION"}]
+        for side, line, outcome in mapped:
+            emit({"kind": "HANDICAP", "side": side, "line": line}, outcome)
     return rows, rejected
 
 

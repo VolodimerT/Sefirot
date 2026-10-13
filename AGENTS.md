@@ -1,3 +1,18 @@
+## Issue #58: audited offline PREMATCH, 13.10.2026
+
+Base exact verified Issue #57 RC 22ac74911301d65e831a757222502781842c3bd9,
+draft #56, all 18 exact-head CI jobs success. New small branch/PR for #58,
+reuse gateway/probe/archive/adapter/Service/worker/Stake/chat, no duplicate stack.
+Frozen synthetic scenario only in owned temp directory; no real source/quote
+attestation. Readiness only reads existing ledger in one read-only snapshot,
+never reads credentials or fetches. Repair confirmed Stake scope/partition/
+line mapping; explicit non-model code_hash change, MODEL_MODULES/Policy and
+old reports/seals unchanged. Full release, OS/Python matrix, PG mirror/budget.
+After verified #58 proceed #59 then #60/#61 by dependencies. Main/production/
+deploy/paid providers/secret access or rotation/money/LIVE/additional agents
+forbidden. Unknown facts remain unavailable or original PASS/D/stake=0.
+Prior scopes below are historical.
+
 ## Issues #57–61, user-authorized sequential work, 13.10.2026
 
 Start #57 on a separate RC branch from exact #56
