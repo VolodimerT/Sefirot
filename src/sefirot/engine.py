@@ -9,6 +9,7 @@ from .markets import pool,probabilities,settle,market_of,validate_quote,payoff_e
 from .risk import size_risk
 from .identity import code_hash,model_code_hash
 from .probability_review import scoring_ceiling,under_ceiling,divergence_level
+from .probability_coherence import audit_candidates,admission_findings
 
 
 def selection_constraints(sports,witness,policy):
@@ -94,7 +95,8 @@ def prepare(sports,markets,policy,calibrator=None,goal_model=None):
                            'under_ceiling':under_ceiling(m,mass),
                            'additional_assumptions':int(m.kind in ('HANDICAP','TEAM_TOTAL')),
                            'selection_issues':market_constraint_issues(m,constraints)})
-    result={'version':VERSION,'model_version':model['model_version'],'code_hash':code_hash(),'model_hash':model_code_hash(),'policy':asdict(policy),'policy_hash':policy.fingerprint,
+    coherence=audit_candidates(candidates);issues.extend(admission_findings(coherence))
+    result={'coherence':coherence,'version':VERSION,'model_version':model['model_version'],'code_hash':code_hash(),'model_hash':model_code_hash(),'policy':asdict(policy),'policy_hash':policy.fingerprint,
             'sports':sports,'market_pool':markets,'witness':witness,'scenario':{**witness['scenario'],'score_scenarios':model['score_scenarios'],'selection_constraints':constraints},
             'model':model,'scoring_ceiling':scoring_ceiling(mass),
             'calibrator':calibrator,'goal_model':goal_model,'candidates':candidates,'issues':issues,'as_of':sports['as_of'],
@@ -129,6 +131,7 @@ def recheck(prediction,recheck_data,at,policy):
 def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     if prediction['policy_hash']!=policy.fingerprint or prediction['code_hash']!=code_hash():raise ValueError('replay requires same policy/code version')
     match=prediction['sports']['match'];issues=list(prediction['issues'])
+    coherence=audit_candidates(prediction['candidates']);issues.extend(admission_findings(coherence))
     constraints,constraint_issues=selection_constraints(prediction['sports'],inspect(prediction['sports'],policy),policy)
     if constraints!=prediction['scenario']['selection_constraints']:raise ValueError('sealed selection constraints do not reproduce')
     issues.extend(constraint_issues)
@@ -147,7 +150,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         if q['phase']=='CLOSE': raise ValueError('closing odds cannot inform admission')
         quote_map.setdefault(m.key,[]).append(q)
     for c in prediction['candidates']:
-        local=market_constraint_issues(market_of(c['market']),constraints)
+        local=market_constraint_issues(market_of(c['market']),constraints)+admission_findings(coherence)
         available=[q for q in quote_map.get(c['key'],[]) if q['phase'] in ('FINAL','ENTRY')]
         admission_low=c['calibration_low'] if policy.stress_mode=='GRADED' else c['low']
         admission_high=c['calibration_high'] if policy.stress_mode=='GRADED' else c['high']
@@ -266,7 +269,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
     grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
     unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SCENARIO_CONSTRAINT_UNVERIFIED','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
-    out={'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
+    out={'coherence':coherence,'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
             'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
             'selected_market':selected['key'] if final=='BET' else None,
             'screened_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,

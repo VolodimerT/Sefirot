@@ -1,3 +1,18 @@
+## V5.1 calibration coherence admission candidate, 13.10.2026
+
+Continue from exact PR #46 head 6fb99cef655b6208f05e72e7b11f891532f5637a.
+Price-blind necessary settlement constraints check base and aligned stress
+vectors at prepare and again at decide. Conflicts/unverified scope -> PASS/D,
+all candidates ineligible, stake=0; never normalize/rewrite probabilities.
+This is an admission safeguard, not a fitted joint calibration or full LP
+feasibility proof. MODEL_MODULES/Policy/payoffs stay byte-identical to #46;
+code_hash changes, exact old money approvals are not inherited. One existing
+ranking test had incompatible HOME probabilities; its inputs now share one
+joint result distribution while the original assertions remain unchanged.
+See docs/CALIBRATION_COHERENCE_GATE_V51_20261013.md. Full release and exact-head
+OS/Python + PostgreSQL CI required. No production/API/fit/main/keys/money,
+private journals or new agents. Older scope checkpoints follow.
+
 ## V5.1 regulation result chronology candidate, 13.10.2026
 
 Continuation from exact PR #45 head 975b69458888652ece5f75a2b6fcc91db234fa77.
