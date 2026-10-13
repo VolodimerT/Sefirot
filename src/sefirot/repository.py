@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from .contracts import canonical,digest,time,text
+from .ledger_integrity import validate_row
 
 TABLES=('teams','matches','markets','odds_snapshots','predictions','bets','results','closing_odds',
         'calibration_history','model_versions','audit_logs','decisions','postmortems','health_events',
@@ -43,6 +44,7 @@ class Repository:
     def __init__(self,path):
         self.db=sqlite3.connect(path,timeout=10,isolation_level=None)
         self.db.row_factory=sqlite3.Row
+        self._savepoint_sequence=0
         if self.db.execute('PRAGMA user_version').fetchone()[0] not in (0,2): raise ValueError('unsupported database version')
         self.db.executescript(SCHEMA)
         for table in TABLES:
@@ -84,25 +86,47 @@ class Repository:
         self.db.execute('INSERT INTO audit_logs(at,event,payload,previous_hash,hash) VALUES(?,?,?,?,?)',(at,event,data,prev,hash_))
 
     def verify(self):
-        prev='0'*64; referenced=[]
-        for row in self.db.execute('SELECT * FROM audit_logs ORDER BY id'):
-            if row['previous_hash']!=prev or row['hash']!=digest([prev,row['at'],row['event'],row['payload']]): return False
-            prev=row['hash'];payload=json.loads(row['payload'])
-            if 'record_table' in payload:
-                try: record=self.get(payload['record_table'],payload['record_id'])
-                except ValueError: return False
-                if digest(record)!=payload['record_hash']: return False
-                referenced.append((payload['record_table'],payload['record_id']))
-        # Every probability and decision must have a content-bound audit event.
-        for table in ('predictions','decisions','results','calibrators','validation_runs','bets'):
-            if any((table,r['id']) not in referenced for r in self.db.execute(f'SELECT id FROM {table}')): return False
-        return True
+        try:
+            if self.db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':return False
+            if self.db.execute('PRAGMA foreign_key_check').fetchone():return False
+            for table in TABLES:
+                for row in self.db.execute(f'SELECT * FROM {table}'):
+                    validate_row(table,row)
+            prev='0'*64; referenced=set()
+            for sequence,row in enumerate(self.db.execute('SELECT * FROM audit_logs ORDER BY id'),1):
+                if row['id']!=sequence or row['previous_hash']!=prev or row['hash']!=digest([prev,row['at'],row['event'],row['payload']]):return False
+                prev=row['hash'];payload=json.loads(row['payload'])
+                if 'record_table' in payload:
+                    record=self.get(payload['record_table'],payload['record_id'])
+                    if digest(record)!=payload['record_hash']:return False
+                    referenced.add((payload['record_table'],payload['record_id']))
+            # Every probability and decision must have a content-bound audit event.
+            for table in ('predictions','decisions','results','calibrators','validation_runs','bets'):
+                if any((table,r['id']) not in referenced for r in self.db.execute(f'SELECT id FROM {table}')):return False
+            return True
+        except (ValueError,KeyError,TypeError,OverflowError,sqlite3.Error):
+            return False
 
     def record_log(self,table,identifier,at,payload):
         self.log('RECORD',at,{'record_table':table,'record_id':identifier,'record_hash':digest(payload)})
 
 
 class Transaction:
-    def __init__(self,repo): self.repo=repo
-    def __enter__(self): self.repo.db.execute('BEGIN IMMEDIATE');return self.repo
-    def __exit__(self,typ,value,tb): self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
+    def __init__(self,repo): self.repo=repo;self.savepoint=None
+    def __enter__(self):
+        if self.repo.db.in_transaction:
+            self.repo._savepoint_sequence+=1
+            self.savepoint=f'sefirot_{self.repo._savepoint_sequence}'
+            self.repo.db.execute(f'SAVEPOINT {self.savepoint}')
+        else:
+            self.repo.db.execute('BEGIN IMMEDIATE')
+        return self.repo
+    def __exit__(self,typ,value,tb):
+        if self.savepoint:
+            if typ:self.repo.db.execute(f'ROLLBACK TO SAVEPOINT {self.savepoint}')
+            self.repo.db.execute(f'RELEASE SAVEPOINT {self.savepoint}')
+        else:
+            try:self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
+            except sqlite3.Error:
+                if self.repo.db.in_transaction:self.repo.db.execute('ROLLBACK')
+                raise
