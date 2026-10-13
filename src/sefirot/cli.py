@@ -74,9 +74,9 @@ def main(argv=None):
     execution=sub.add_parser('execution');execution.add_argument('decision_id');execution.add_argument('file')
     approval=sub.add_parser('approve-policy');approval.add_argument('--operator',required=True);approval.add_argument('--statement',required=True)
     args=parser.parse_args(argv)
-    policy=Policy(**load(args.policy)) if args.policy else Policy()
     repo=None
     try:
+        policy=Policy(**load(args.policy)) if args.policy else Policy()
         if args.command=='audit-regressions':
             from .retrospective import audit_cases
             out=audit_cases(load(args.file),policy)
@@ -158,7 +158,8 @@ def main(argv=None):
             elif cmd=='postmortem':out=service.postmortem(args.decision_id,load(args.file),now)
             elif cmd=='execution':out=service.execution(args.decision_id,load(args.file),now)
             elif cmd=='approve-policy':out=service.approve_policy(args.operator,args.statement,now)
-        print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False));return 0
+        print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
+        return 2 if args.command=='verify' and not out['integrity'] else 0
     except (ValueError,KeyError,TypeError,OSError,sqlite3.Error,json.JSONDecodeError) as exc:
         print(json.dumps({'status':'ERROR','decision':'PASS','error':str(exc)},ensure_ascii=False),file=sys.stderr);return 2
     finally:

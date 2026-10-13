@@ -1,7 +1,7 @@
 """Versioned, JSON-compatible contracts and strict boundary validation."""
 from __future__ import annotations
 from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from hashlib import sha256
 import json
 import math
@@ -30,6 +30,19 @@ def time(value):
 
 
 def iso(value): return time(value).isoformat()
+
+
+def regulation_result_times(kickoff, finished_at, received_at, *, finished=True):
+    """Reject impossible regulation-time FT receipts before they enter feedback.
+
+    Ninety minutes is a conservative lower bound, not an assertion that a
+    match ends then. Abandoned/void fixtures do not have to complete 90 minutes.
+    """
+    start, end, received = (time(v) for v in (kickoff, finished_at, received_at))
+    if end <= start or received < end:
+        raise ValueError('result chronology')
+    if finished and end - start < timedelta(minutes=90):
+        raise ValueError('regulation FINISHED precedes ninety minutes of play')
 
 
 def number(x, name, low=None, high=None):
