@@ -1,3 +1,19 @@
+## Situation bridge integration, 13.10.2026
+
+User-authorized continuation: selectively integrate the research-only situation
+bridge from exact #32 e291b6c039746c914ca621263aee6a04ec771242 onto exact #55
+5b11061acc9b22fce59eaea313f3c45fde4f2808. Separate branch/draft PR.
+Retain current query/IANA, gateway sports_probe, receipt, budget, MCP parameter
+validation and ledger/cache checks. Keep all src/sefirot, Policy, V3 model
+modules and tracked historical reports byte-identical to #55. No new training,
+source attestations, monetary permissions, provider calls, secrets, production
+SQL/deployment/main changes or additional agents. Real unattested status HOLD.
+Port only status contracts/router/bridge, reviewable relay/SQL templates,
+tests, pinned local test dependency and docs. Repair confirmed regressions
+before publishing. Full local release, original Node/PostgreSQL WASM groups,
+isolated PostgreSQL mirror/shared budget and four exact-head OS/Python CI jobs
+are required. Prior scopes below are historical.
+
 ## Source adapter integration, 13.10.2026
 
 User-authorized continuation: selectively integrate the read-only source adapter

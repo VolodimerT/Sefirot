@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install pinned local PostgreSQL WASM test dependency
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install optional cloud sync dependency
         run: python -m pip install ".[sync]"
       - name: Unit and integration tests

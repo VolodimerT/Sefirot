@@ -24,7 +24,8 @@ class MCPTests(unittest.TestCase):
         tools = self.request("tools/list")["result"]["tools"]
         names = {tool["name"] for tool in tools}
         self.assertEqual(names, {"sefirot_status", "sefirot_demo", "sefirot_capture",
-                                 "sefirot_decide", "sefirot_result", "sefirot_report"})
+                                 "sefirot_decide", "sefirot_result", "sefirot_report",
+                                 "sefirot_situation"})
         self.assertNotIn("sefirot_execute", names)
 
     def test_protocol_errors_and_notification(self):

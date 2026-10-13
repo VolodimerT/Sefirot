@@ -155,9 +155,12 @@ BAT-файлы сами переходят в папку проекта. Не н
 
 ```powershell
 py -3 sefirot.py demo
+npm ci --ignore-scripts --no-audit --no-fund
 py -3 test_sefirot.py
 py -3 sefirot.py --help
 ```
+
+Для полного набора автоматических тестов установите Node.js 22 и один раз выполните указанную команду `npm ci`: она устанавливает закреплённый PostgreSQL WASM для проверок квитанций и очереди. Затем можно пользоваться `TEST_SEFIROT.bat`.
 
 На Linux/macOS замените `py -3` на `python3`. Для основного demo установка через pip не нужна. Для `ticket-audit` и новых тестов на Windows один раз выполните `py -3 -m pip install .`: установится закреплённая база IANA timezone. При установке пакета также доступна команда `sefirot`.
 

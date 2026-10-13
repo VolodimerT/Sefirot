@@ -12,7 +12,7 @@ import tempfile
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Lock
+from threading import BoundedSemaphore, Lock
 from urllib.parse import urlsplit
 
 from sefirot.contracts import Policy, VERSION
@@ -22,9 +22,15 @@ from sefirot.markets import DEFAULT_POOL
 from sefirot.repository import Repository
 from sefirot.service import Service
 import chat_store
+from chat_situation import execute_situation, strict_json
 
 MAX_REQUEST_BYTES = 512 * 1024
 GATE = Lock()
+SITUATION_GATE = BoundedSemaphore(4)
+
+
+class SituationBusy(RuntimeError):
+    pass
 
 
 def configured_token() -> str:
@@ -70,6 +76,13 @@ def run_demo() -> dict:
 
 def execute(kind: str, data: dict) -> dict:
     """Invoke the canonical Service against a fresh, integrity-checked durable snapshot."""
+    if kind == "situation":
+        if not SITUATION_GATE.acquire(blocking=False):
+            raise SituationBusy("STATUS_CAPACITY_EXCEEDED")
+        try:
+            return execute_situation(data)
+        finally:
+            SITUATION_GATE.release()
     with GATE:
         if chat_store.configured():
             with tempfile.TemporaryDirectory(prefix="sefirot-durable-") as directory:
@@ -152,7 +165,7 @@ class Handler(BaseHTTPRequestHandler):
     def authorized(self) -> bool:
         expected = configured_token()
         provided = self.headers.get("Authorization", "")
-        if not provided.startswith("Bearer ") or not hmac.compare_digest(provided[7:], expected):
+        if not provided.startswith("Bearer ") or not hmac.compare_digest(provided[7:].encode(), expected.encode()):
             self.respond(401, {"ok": False, "error": "UNAUTHORIZED"})
             return False
         return True
@@ -189,7 +202,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if not self.authorized():
             return
-        operations = {"/v1/capture": "capture", "/v1/decide": "decide", "/v1/result": "result"}
+        operations = {"/v1/capture": "capture", "/v1/decide": "decide", "/v1/result": "result",
+                      "/v1/situation": "situation"}
         if path not in operations:
             self.respond(404, {"ok": False, "error": "NOT_FOUND"})
             return
@@ -202,10 +216,12 @@ class Handler(BaseHTTPRequestHandler):
             if length <= 0 or length > MAX_REQUEST_BYTES:
                 self.respond(413, {"ok": False, "error": "INVALID_REQUEST_SIZE"})
                 return
-            payload = json.loads(self.rfile.read(length))
+            payload = strict_json(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError("request must be a JSON object")
             self.respond(200, {"ok": True, "data": execute(operations[path], payload)})
+        except SituationBusy:
+            self.respond(429, {"ok": False, "error": "STATUS_CAPACITY_EXCEEDED"})
         except (ValueError, KeyError, TypeError) as exc:
             self.respond(422, {"ok": False, "error": "VALIDATION_FAILED", "detail": str(exc)[:200]})
         except Exception:
