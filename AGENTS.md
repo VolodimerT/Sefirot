@@ -12,6 +12,10 @@ No fit, API calls, production/cloud/main changes, secrets, money or new agents.
 SDK integration uses mocked HTTP only. Full release and four exact-head
 OS/Python jobs plus isolated PostgreSQL CI are required. Previous scope
 headers below are historical checkpoints, not a prohibition on this repair.
+The first Windows 3.11 CI failed an existing panel client five-second timeout
+after real local processing. Correct only bounded test-client waiting to 30s;
+retain every auth/303/ledger assertion and no retry or production change.
+Controlled delayed-action reproduction is recorded in the delivery evidence.
 
 ## V5.2 guarded probe/source evidence candidate, 13.10.2026
 

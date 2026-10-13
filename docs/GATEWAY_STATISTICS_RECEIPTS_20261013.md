@@ -36,6 +36,16 @@ Existing probe (27) and saved-source adapter (37) suites also passed.
 Full local release passed 1077/1077 in 60.724 seconds with integrity/replay=true.
 Exact-head remote CI results are recorded in the PR/report.
 
+VERIFIED/FIXED: the first Windows 3.11 CI run exposed an unrelated existing
+PanelHttpTests client timeout at five seconds while a valid /run completed
+real SQLite/CORE work. The handler reached send(303) after the client closed.
+Controlled 5.1-second action delay reproduced TimeoutError with the unchanged
+auth test (5.158s); bounded 30-second test-client waiting passed the same
+test (5.166s). All authorization/303/durable-ledger assertions remain; no
+POST retry, production timeout or handler behavior is changed. This is a
+test harness timing correction, not a production speed improvement. The
+initial failed CI remains evidence; the updated exact head is checked afresh.
+
 small_market.py is outside MODEL_MODULES: exact CORE code_hash changes,
 model_hash and Policy remain unchanged. No old money approval is inherited
 by a different build, and no model/calibrator is fitted or relabelled.
