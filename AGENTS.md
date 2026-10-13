@@ -1,3 +1,20 @@
+## Issue #60 corners: reuse #25 after verified #58/#59, 13.10.2026
+
+Base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4 (#63, 12/12 CI).
+Reuse existing draft #25 and its pure corner modules/tests/docs from exact
+eb4f8f1c1ee24cd55499b794c60d429e12a4e089; selective integration with genuine
+both-parent history, preserve #59 tree except research files/minimal fixes.
+Retarget #25 to evidence branch, no duplicate PR. Correct confirmed 1H DC
+walk-forward FT-outcome bug; add 2H same typed FT-minus-1H count model, never
+goal lambda. Public family matrix reuses #37/#38 QC; real unknown counts/
+source/coverage/calibration/rules -> null P/EV/parameters, SHADOW/stake=0.
+Legacy numeric functions mathematical lab only, no real fit/API invocation.
+MODEL_MODULES/Policy and old source/seals/reports unchanged. Non-model exact
+code_hash changes due added research src modules. Full release/exact OS/PG CI.
+After corners, SHOTS/SOT -> FOULS -> referee YC, each small draft increment.
+Phone read-only #61 dependencies #57/#58 satisfied; no deploy/main/paid APIs/
+credentials/real refit/money/LIVE/additional agents. Prior scopes historical.
+
 ## Issue #59: honest original evidence and prospective audit, 13.10.2026
 
 After verified #58 exact e32fd7e7a4876005f337314822354bbbabfee2c3 (#62,
