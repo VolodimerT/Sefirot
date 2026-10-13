@@ -50,7 +50,15 @@ def _query(q):
         if params.get("last", 0) > 10 or params.get("season", 2026) < 2024:
             raise ValueError("PROBE_UNBOUNDED_HISTORY")
     else:
-        if set(params) != {"fixture"} or not _positive(params["fixture"]):
+        keys = set(params)
+        if endpoint == "fixtures/statistics":
+            if keys not in ({"fixture"}, {"fixture", "half"}):
+                raise ValueError("PROBE_FIXTURE_FILTERS")
+            if "half" in params and (type(params["half"]) is not int or params["half"] not in (1, 2)):
+                raise ValueError("PROBE_HALF_REQUIRED")
+        elif keys != {"fixture"}:
+            raise ValueError("PROBE_FIXTURE_FILTERS")
+        if not _positive(params["fixture"]):
             raise ValueError("PROBE_FIXTURE_REQUIRED")
     return endpoint, params
 
