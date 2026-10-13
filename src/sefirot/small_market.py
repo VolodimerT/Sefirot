@@ -1,10 +1,12 @@
 """API-only statistic coverage and long/recent diagnostics; no probability model."""
 from collections import Counter, defaultdict
+import re
 from statistics import mean
 
 from .contracts import PROFILES, digest, integer, strict, time
 from .football_provider import HOST, MAX_PROVIDER_ID, PARAMETERS
 from .sports_archive import validate_packet
+from .provider_transport import QUOTA_HEADERS
 
 METRICS = {'SHOTS': 'Total Shots', 'SOT': 'Shots on Goal', 'CORNERS': 'Corner Kicks',
            'FOULS': 'Fouls', 'CARDS': 'Yellow Cards'}
@@ -18,11 +20,23 @@ def validate_statistics_packet(packet):
     strict(packet, ('data', 'receipt'))
     r = packet['receipt']
     strict(r, ('provider_host', 'endpoint', 'parameters', 'request_started_at', 'received_at',
-               'payload_hash', 'http_status', 'provider', 'sports_only'), ('quota',))
+               'payload_hash', 'http_status', 'provider', 'sports_only'),
+           ('quota', 'transport', 'upstream_received_at'))
     if (r['provider_host'] != HOST or r['endpoint'] != '/fixtures/statistics' or
-            r['provider'] != 'API_FOOTBALL_V3' or r['http_status'] != 200 or r['sports_only'] is not True):
+            r['provider'] != 'API_FOOTBALL_V3' or type(r['http_status']) is not int
+            or r['http_status'] != 200 or r['sports_only'] is not True):
         raise ValueError('successful sports-only API statistics receipt required')
     if time(r['request_started_at']) > time(r['received_at']): raise ValueError('impossible statistics chronology')
+    if 'transport' in r or 'upstream_received_at' in r:
+        if (r.get('transport') != 'SUPABASE_GATEWAY' or 'upstream_received_at' not in r
+                or not time(r['request_started_at']) <= time(r['upstream_received_at']) <= time(r['received_at'])):
+            raise ValueError('gateway statistics receipt chronology required')
+    if 'quota' in r:
+        quota = r['quota']
+        if (not isinstance(quota, dict) or set(quota) - set(QUOTA_HEADERS)
+                or any(not isinstance(value, str) or not re.fullmatch(r'[0-9]{1,12}', value)
+                       for value in quota.values())):
+            raise ValueError('numeric whitelisted statistics quota required')
     params = r['parameters']
     if (not isinstance(params, dict) or set(params) - PARAMETERS['fixtures/statistics'] or
             any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in params.values())):

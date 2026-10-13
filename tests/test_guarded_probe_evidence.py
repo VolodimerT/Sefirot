@@ -30,7 +30,9 @@ def packet(endpoint='fixtures',params=None):
           'paging':{'current':1,'total':1},'response':[row]}
     receipt={'provider':'API_FOOTBALL_V3','provider_host':'v3.football.api-sports.io',
              'endpoint':'/'+endpoint,'parameters':params,'received_at':'2026-10-13T10:00:00Z',
-             'payload_hash':digest(data),'http_status':200,'transport':'SUPABASE_GATEWAY',
+             'payload_hash':digest(data),'http_status':200,'sports_only':True,
+             'request_started_at':'2026-10-13T09:59:59Z',
+             'upstream_received_at':'2026-10-13T10:00:00Z','transport':'SUPABASE_GATEWAY',
              'quota':{'x-requests-remaining':'100'}}
     return {'data':data,'receipt':receipt}
 

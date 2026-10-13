@@ -29,7 +29,9 @@ def main():
           'score':{'fulltime':{'home':None,'away':None}}}]}
     packet={'data':data,'receipt':{'provider':'API_FOOTBALL_V3','provider_host':'v3.football.api-sports.io',
             'endpoint':'/fixtures','parameters':{'id':123},'received_at':'2026-10-13T10:00:00Z',
-            'payload_hash':digest(data),'http_status':200,'transport':'SUPABASE_GATEWAY'}}
+            'payload_hash':digest(data),'http_status':200,'sports_only':True,
+            'request_started_at':'2026-10-13T09:59:59Z',
+            'upstream_received_at':'2026-10-13T10:00:00Z','transport':'SUPABASE_GATEWAY'}}
     for module in (before,after):
         module.get_sports=lambda *a,**kw:copy.deepcopy(packet)
         module.transport_status=lambda:{'transport':'SUPABASE_GATEWAY','credential_configured':False}
@@ -48,7 +50,11 @@ def main():
             row[label]=(perf_counter_ns()-started)/10/1e6
         timings.append(row)
     print(json.dumps({'synthetic':True,'provider_calls':0,'ledger_writes':0,'queries_per_job':8,
-          'pairs':31,'same_compact_rows':True,'before_rehashable_packets':0,'after_rehashable_packets':8,
+          'pairs':31,'same_compact_rows':True,
+          'before_rehashable_packets':sum(1 for q in old['queries'] if hasattr(before,'verify_evidence')
+              and before.verify_evidence(q)['status']=='CANONICAL_PACKET_ARCHIVED'),
+          'after_rehashable_packets':8,
+          'before_probe_version':old.get('probe_version'),'after_probe_version':new.get('probe_version'),
           'source_archive_bytes':new['source_archive_bytes'],
           'serialized_before_bytes':len(json.dumps(old).encode()),'serialized_after_bytes':len(json.dumps(new).encode()),
           'before_median_ms':median(x['before'] for x in timings),

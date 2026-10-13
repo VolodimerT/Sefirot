@@ -127,7 +127,10 @@ class PanelHttpTests(PanelFixture,unittest.TestCase):
         self.server.shutdown();self.thread.join(timeout=3);self.server.server_close()
 
     def request(self,method='GET',path='/',body=None,headers=None):
-        with closing(http.client.HTTPConnection('127.0.0.1',self.server.server_port,timeout=5)) as client:
+        # Valid /run executes a real SQLite/CORE job before replying. This is
+        # an HTTP/auth contract test, not a five-second performance assertion;
+        # allow bounded time on loaded Windows runners without retrying POST.
+        with closing(http.client.HTTPConnection('127.0.0.1',self.server.server_port,timeout=30)) as client:
             client.request(method,path,body=body,headers=headers or {})
             response=client.getresponse();return response.status,dict(response.getheaders()),response.read().decode('utf-8')
 
