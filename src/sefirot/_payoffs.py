@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
-from math import isfinite
+from math import fsum, isfinite, ulp
 
 MAIN_ORDER = ("1X2", "DOUBLE_CHANCE", "DNB", "HANDICAP", "TOTAL", "BTTS", "TEAM_TOTAL")
 
@@ -106,8 +106,8 @@ def probabilities(market: Market, score_mass: dict[tuple[int, int], float]) -> t
     values = []
     for (home, away), p in zip(scores, score_mass.values()):
         value = number(p, "score probability")
-        if value < 0:
-            raise ValueError("negative probability")
+        if not 0 <= value <= 1:
+            raise ValueError("score probability must be in [0, 1]")
         # Validate every call before cache lookup: bool/float keys compare equal
         # to integer keys in Python and must not inherit a cached valid result.
         if type(home) is int and type(away) is int:
@@ -121,9 +121,22 @@ def probabilities(market: Market, score_mass: dict[tuple[int, int], float]) -> t
     # for larger grids and duck-typed callers of the original public function.
     outcomes = (_score_outcomes(market, scores) if isinstance(market, Market) and len(scores) <= 4096
                 else tuple(settle(market, home, away) for home, away in scores))
-    result = {"WIN": 0., "PUSH": 0., "LOSS": 0.}
+    buckets = {"WIN": [], "PUSH": [], "LOSS": []}
     for outcome, value in zip(outcomes, values):
-        result[outcome] += value
-    if abs(sum(result.values()) - 1) > 1e-8:
+        buckets[outcome].append(value)
+    result = {outcome: fsum(bucket) for outcome, bucket in buckets.items()}
+    # Check the uncorrected partition total; reuse stable category sums rather
+    # than traverse all validated cells again. No excess mass is hidden by the
+    # unit-boundary correction below.
+    if abs(fsum(result.values()) - 1) > 1e-8:
         raise ValueError("score mass must sum to one")
+    # Normalized marginals, products and final aggregation can leave a few
+    # ULPs at the unit boundary. Only that boundary is corrected: never rescale
+    # the vector or erase a small nonzero opposing outcome. Material excess
+    # and out-of-range individual cells remain invalid.
+    for outcome, value in result.items():
+        if value > 1:
+            if value - 1 > 4 * ulp(1.):
+                raise ValueError("projected probability exceeds one")
+            result[outcome] = 1.
     return result["WIN"], result["PUSH"], result["LOSS"]
