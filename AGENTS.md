@@ -1,3 +1,17 @@
+## V5.1 regulation result chronology candidate, 13.10.2026
+
+Continuation from exact PR #45 head 975b69458888652ece5f75a2b6fcc91db234fa77.
+The authorized global repair now fixes premature REGULATION_90 FINISHED
+across service, history, backtest and offline provider/archive adapters.
+contracts.py/evidence.py change intentionally changes model_hash: historical
+fit compatibility must fail closed, not inherit validation. Policy/payoffs,
+archived seals/results, source packets and historical reports stay unchanged.
+VOID keeps existing post-kickoff chronology and is not calibration feedback.
+See docs/REGULATION_FINISHED_GATE_V51_20261013.md. Full release + exact-head
+four OS/Python jobs and PostgreSQL concurrency are required. No production,
+API, keys, main merge, refit, money or additional agents. Below are historical
+checkpoints, not a prohibition on this authorized repair.
+
 ## Shared provider budget candidate, 12.10.2026
 
 feature/shared-provider-budget-20261012 от exact #42

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import re
 
-from .contracts import Policy, digest, integer, number, strict, text, time
+from .contracts import Policy, digest, integer, number, strict, text, time, result_chronology
 from .evidence import eligible_history, inspect
 from .football_provider import HOST, MAX_PROVIDER_ID, PARAMETERS, fixture_identity, normalize_sports
 
@@ -166,6 +166,12 @@ def export_sports(directory, fixture_id, as_of, *, profile, source_reliability, 
             continue
         first_packet, first = finals[0]
         ident = fixture_identity(first)
+        try:
+            result_chronology(ident['kickoff'],first_packet['receipt']['received_at'],
+                              first_packet['receipt']['received_at'])
+        except ValueError:
+            exclusions.append({'fixture_id': fid, 'reason': 'IMPOSSIBLE_RESULT_CHRONOLOGY'})
+            continue
         if any(first['teams'][side]['id'] not in target_names and
                first['teams'][side]['name'] in target_names.values() for side in ('home', 'away')):
             exclusions.append({'fixture_id': fid, 'reason': 'TEAM_NAME_COLLISION'})

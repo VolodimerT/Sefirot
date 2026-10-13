@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from datetime import datetime,timezone,timedelta
 from math import sqrt
-from .contracts import Policy,REASONS,SEPHIROT,digest,time,iso,number,integer,text,strict
+from .contracts import Policy,REASONS,SEPHIROT,digest,time,iso,number,integer,text,strict,result_chronology
 from .engine import prepare,decide,code_hash,model_code_hash
 from .repository import Repository
 from .markets import market_of,settle,validate_quote
@@ -157,7 +157,8 @@ class Service:
         strict(result,('match_id','status','home_goals','away_goals','finished_at','received_at','source'))
         match=self.repo.get('matches',result['match_id']);self._time(result['received_at']);text(result['source'],'result source')
         if result['status'] not in ('FINISHED','VOID'):raise ValueError('unsupported result status')
-        if time(result['finished_at'])<=time(match['kickoff']) or time(result['received_at'])<time(result['finished_at']):raise ValueError('result chronology')
+        result_chronology(match['kickoff'],result['finished_at'],result['received_at'],
+                          status=result['status'],match_format=match.get('format','REGULATION_90'))
         if result['status']=='FINISHED':
             integer(result['home_goals'],'home score',0,50);integer(result['away_goals'],'away score',0,50)
         elif result['home_goals'] is not None or result['away_goals'] is not None:raise ValueError('VOID result has no score')

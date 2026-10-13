@@ -1,6 +1,6 @@
 """Threshold, Witness and Scenario. Sports inputs never include prices."""
 from __future__ import annotations
-from .contracts import strict,text,time,iso,number,integer,finding,digest,PROFILES
+from .contracts import strict,text,time,iso,number,integer,finding,digest,PROFILES,result_chronology
 
 REQUIRED = ('home_team','away_team','format','lineup','injuries','coach','rotation','tactics')
 
@@ -122,8 +122,7 @@ def eligible_history(sports,policy):
         seen.add(row['id'])
         if row['home']==row['away']: raise ValueError('history teams must differ')
         integer(row['home_goals'],'home goals',0,50);integer(row['away_goals'],'away goals',0,50)
-        start,end,received=(time(row[k]) for k in ('kickoff','finished_at','received_at'))
-        if start>=end or end>received: raise ValueError('history result chronology')
+        start,end,received=result_chronology(row['kickoff'],row['finished_at'],row['received_at'])
         if row['id']==sports['match']['id']: raise ValueError('target result must never be provided as history')
         if received>cutoff or start>=cutoff or (cutoff-start).days>policy.history_days or row['league']!=sports['match']['league'] or profile_of(row)!=profile_of(sports['match']):
             excluded.append(row['id']);continue
