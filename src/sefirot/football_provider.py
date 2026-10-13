@@ -3,6 +3,7 @@ from datetime import date
 import re
 from .contracts import PROFILES, digest, integer, number, text, time, result_chronology
 from .credentials import credential
+from .football_query import validate_fixture_query, validate_fixture_query_parameters
 from .provider_transport import ProviderConnection, request_json
 
 HOST = 'v3.football.api-sports.io'
@@ -129,6 +130,8 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
     if any(not isinstance(v, (str,int)) or isinstance(v,bool) for v in params.values()):
         raise ValueError('invalid sports query parameter')
     validate_enrichment_request(endpoint, params)
+    if endpoint == 'fixtures':
+        validate_fixture_query_parameters(params)
     packet = request_json(HOST, '/' + endpoint, params,
                           {'x-apisports-key': api_key or credential('API_FOOTBALL_KEY')},
                           connection_factory=connection_factory)
@@ -138,6 +141,8 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
     if data['errors']:
         raise FootballRequestError(data['errors'], packet['receipt'])
     validate_provider_data(endpoint, data)
+    if endpoint == 'fixtures':
+        validate_fixture_query(data, params)
     packet['receipt'].update(provider='API_FOOTBALL_V3', sports_only=True)
     return packet
 

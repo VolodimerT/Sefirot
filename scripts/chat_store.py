@@ -11,10 +11,14 @@ import io
 import json
 import os
 from pathlib import Path
-from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from urllib.parse import urlsplit
+from urllib.request import Request, build_opener
+from sefirot.provider_transport import NoRedirect
 
 MAX_GZIP_BYTES = 2_100_000
 MAX_SQLITE_BYTES = 8_000_000
+MAX_RESPONSE_BYTES = 4_100_000
 
 def configured() -> bool:
     return bool(os.environ.get("SEFIROT_STORE_URL", ""))
@@ -22,7 +26,16 @@ def configured() -> bool:
 def config() -> tuple[str,str]:
     url=os.environ.get("SEFIROT_STORE_URL", "").strip()
     token=os.environ.get("SEFIROT_STORE_TOKEN", "").strip()
-    if not url.startswith("https://") or not url.endswith("/functions/v1/sefirot-chat-store"):
+    try:
+        parsed = urlsplit(url)
+        valid = (parsed.scheme == 'https' and bool(parsed.hostname)
+                 and parsed.username is None and parsed.password is None
+                 and parsed.port in (None, 443)
+                 and parsed.path == '/functions/v1/sefirot-chat-store'
+                 and not parsed.query and not parsed.fragment)
+    except ValueError:
+        valid = False
+    if not valid:
         raise RuntimeError("SEFIROT durable store URL unavailable")
     if len(token)<48 or len(token)>128 or not all(c.isascii() and (c.isalnum() or c in "_-") for c in token):
         raise RuntimeError("SEFIROT durable store token unavailable")
@@ -37,18 +50,22 @@ def request(payload:dict) -> dict:
         "X-Sefirot-Bridge-Store-Token":token,
         "Accept":"application/json"})
     try:
-        with urlopen(req,timeout=20) as response:
+        # Preserve normal proxy/CA settings, but never forward this private
+        # header to a redirect destination (including a downgrade to HTTP).
+        with build_opener(NoRedirect()).open(req,timeout=20) as response:
             if response.status!=200:raise RuntimeError("durable store refused request")
-            raw=response.read(4_100_000)
+            raw=response.read(MAX_RESPONSE_BYTES+1)
+            if len(raw)>MAX_RESPONSE_BYTES:raise ValueError('store response exceeds safe size')
     except Exception as exc:
-        raise RuntimeError("SEFIROT_DURABLE_STORE_UNAVAILABLE") from exc
+        if isinstance(exc, HTTPError): exc.close()
+        raise RuntimeError("SEFIROT_DURABLE_STORE_UNAVAILABLE") from None
     try:
         packet=json.loads(raw)
-        if packet.get("ok") is not True or not isinstance(packet.get("data"),dict):
+        if not isinstance(packet,dict) or packet.get("ok") is not True or not isinstance(packet.get("data"),dict):
             raise ValueError("missing verified store response")
         return packet["data"]
     except (ValueError,TypeError,KeyError) as exc:
-        raise RuntimeError("SEFIROT_DURABLE_STORE_INVALID_RESPONSE") from exc
+        raise RuntimeError("SEFIROT_DURABLE_STORE_INVALID_RESPONSE") from None
 
 def restore(path:Path) -> int:
     record=request({"action":"pull"})

@@ -59,8 +59,8 @@ def call_tool(name, arguments):
 
 
 def process_rpc(request):
-    if request.get("jsonrpc") != "2.0":
-        return {"jsonrpc": "2.0", "id": request.get("id"),
+    if not isinstance(request, dict) or request.get("jsonrpc") != "2.0" or not isinstance(request.get('method'), str):
+        return {"jsonrpc": "2.0", "id": request.get("id") if isinstance(request, dict) else None,
                 "error": {"code": -32600, "message": "Invalid JSON-RPC request"}}
     method = request.get("method")
     ident = request.get("id")
@@ -75,9 +75,15 @@ def process_rpc(request):
     elif method == "tools/list":
         result = {"tools": TOOLS}
     elif method == "tools/call":
-        params = request.get("params") or {}
+        params = request.get("params", {})
+        if not isinstance(params, dict):
+            return {"jsonrpc": "2.0", "id": ident,
+                    "error": {"code": -32602, "message": "Tool parameters must be object"}}
         name = params.get("name")
-        arguments = params.get("arguments") or {}
+        if not isinstance(name, str):
+            return {"jsonrpc": "2.0", "id": ident,
+                    "error": {"code": -32602, "message": "Tool name must be string"}}
+        arguments = params.get("arguments", {})
         if not isinstance(arguments, dict):
             return {"jsonrpc": "2.0", "id": ident,
                     "error": {"code": -32602, "message": "Tool arguments must be object"}}

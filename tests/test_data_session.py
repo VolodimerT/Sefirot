@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from sefirot.cli import main
@@ -23,6 +24,14 @@ from test_operations_upgrade import NOW, packet, row, stamp
 
 
 def response(endpoint, params, data):
+    data = copy.deepcopy(data)
+    if endpoint == 'fixtures':
+        data['get'] = endpoint
+        data['parameters'] = dict(params)
+        zone = ZoneInfo(params.get('timezone', 'UTC'))
+        for item in data['response']:
+            item['fixture']['date'] = time(item['fixture']['date']).astimezone(zone).isoformat()
+            item['fixture']['timezone'] = zone.key
     return {'data': data, 'receipt': {'provider_host': 'v3.football.api-sports.io',
         'endpoint': '/' + endpoint, 'parameters': params, 'request_started_at': stamp(),
         'received_at': stamp(), 'payload_hash': digest(data), 'http_status': 200,
@@ -154,7 +163,7 @@ class DataSessionTests(unittest.TestCase):
         report = self.run_session(history_seasons_back=1)
         self.assertEqual(report['forecasts_created'], 0)
         self.assertEqual(report['history_queries'][-1]['status'],
-                         'INVALID_OR_UNAVAILABLE_PROVIDER_RESPONSE')
+                         'QUERY_RESPONSE_MISMATCH')
         self.assertEqual(len(list((self.directory/'sports-archive').glob('*.json'))), 2)
         self.assertTrue(report['journal_integrity'])
 
@@ -347,6 +356,61 @@ class DataSessionTests(unittest.TestCase):
         self.assertEqual(self.calls, [])
         self.assertEqual((self.directory/'REPORT.json').read_text(), 'owner content')
 
+    def test_target_timezone_fallback_stops_before_archive_plan_or_history(self):
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            if endpoint == 'fixtures':
+                out['data']['parameters']['timezone'] = 'UTC'
+                out['receipt']['payload_hash'] = digest(out['data'])
+            return out
+        self.get = get
+        report = self.run_session()
+        self.assertEqual(report['request_attempts'], 2)
+        self.assertEqual(report['blockers'], ['QUERY_ECHO_MISMATCH'])
+        self.assertEqual(report['planned_fixtures'], 0)
+        self.assertFalse((self.directory/'research.sqlite').exists())
+        self.assertEqual(list((self.directory/'sports-archive').glob('*.json')), [])
+        self.assertFalse(report['monetary_permission'])
+
+    def test_wrong_target_local_date_is_rejected_before_any_archive_write(self):
+        self.targets = [row(100, status='NS', hours=27, score=(None, None))]
+        report = self.run_session()
+        self.assertEqual(report['blockers'], ['QUERY_RESPONSE_MISMATCH'])
+        self.assertEqual(report['planned_fixtures'], 0)
+        self.assertFalse((self.directory/'research.sqlite').exists())
+        self.assertEqual(list((self.directory/'sports-archive').glob('*.json')), [])
+
+    def test_history_echo_failure_preserves_cohort_and_stops_next_league(self):
+        self.targets[1]['league']['id'] = 10
+        original = self.get
+        def get(endpoint, params):
+            out = original(endpoint, params)
+            if params.get('status') == 'FT':
+                out['data']['parameters']['timezone'] = 'UTC'
+                out['receipt']['payload_hash'] = digest(out['data'])
+            return out
+        self.get = get
+        report = collect_session(self.directory, '2030-01-01', {9:'LOWER', 10:'MEN'},
+            source_reliability=.95, getter=self.get, clock=lambda:self.clock)
+        self.assertEqual(report['request_attempts'], 3)
+        self.assertEqual(report['planned_fixtures'], 2); self.assertEqual(report['forecasts_created'], 0)
+        self.assertTrue(all(q['status'] == 'QUERY_ECHO_MISMATCH' for q in report['history_queries']))
+        self.assertEqual(report['fixture_counts'], {'INSUFFICIENT_HISTORY': 2})
+        self.assertEqual(len(list((self.directory/'sports-archive').glob('*.json'))), 1)
+        self.assertTrue(report['journal_integrity'])
+
+    def test_bad_previous_echo_is_rejected_without_network_or_rewriting(self):
+        old = Path(self.temp.name)/'bad-archive'
+        bad = packet([row(10)])
+        bad['receipt']['parameters'] = {'timezone': 'Europe/Kyiv'}
+        archive_packets([bad], old, stamp())
+        path = next(old.glob('*.json')); before = path.read_bytes()
+        with self.assertRaisesRegex(ValueError, 'QUERY_ECHO_MISMATCH'):
+            self.run_session(source_archive=old)
+        self.assertEqual(self.calls, []); self.assertFalse(self.directory.exists())
+        self.assertEqual(path.read_bytes(), before)
+
     def test_past_day_invalid_profile_and_future_archive_refused_before_network(self):
         bad_archive = Path(self.temp.name)/'future-archive'
         archive_packets([packet([row(5)], hours=1)], bad_archive, stamp(2))
@@ -474,6 +538,7 @@ class GatewayTests(unittest.TestCase):
 
     def call(self, mutate=None, http=200):
         data=packet([row(100,status='NS',hours=3,score=(None,None))])['data']
+        data['parameters']={'date':'2030-01-01'}
         wrapper={'ok':True,'provider':'API_FOOTBALL_V3','provider_host':'v3.football.api-sports.io',
             'endpoint':'/fixtures','params':{'date':'2030-01-01'},'received_at':stamp(),
             'sports_only':True,'monetary_permission':False,'execution_enabled':False,'data':data}
@@ -492,6 +557,26 @@ class GatewayTests(unittest.TestCase):
         out=self.call(); validate_packet(out,stamp())
         self.assertEqual(out['receipt']['transport'],'SUPABASE_GATEWAY')
         self.assertNotIn('FICTIONAL_TOKEN',json.dumps(out))
+
+    def test_gateway_wrapper_params_do_not_substitute_for_provider_echo(self):
+        with self.assertRaisesRegex(ValueError, 'QUERY_ECHO_MISMATCH'):
+            self.call(lambda w:w['data']['parameters'].update(timezone='UTC'))
+
+    def test_gateway_rejects_wrong_date_even_with_correct_outer_and_inner_echo(self):
+        with self.assertRaisesRegex(ValueError, 'QUERY_RESPONSE_MISMATCH'):
+            self.call(lambda w:w['data']['response'][0]['fixture'].update(date=stamp(27)))
+
+    def test_server_query_failure_remains_typed_and_private_safe(self):
+        from sefirot.data_session import _reason
+        with self.assertRaises(ValueError) as error:
+            self.call(lambda w:w.update(ok=False, error='QUERY_ECHO_MISMATCH', detail='PRIVATE_SECRET'), 502)
+        self.assertEqual(_reason(error.exception), 'QUERY_ECHO_MISMATCH')
+        self.assertNotIn('PRIVATE_SECRET', str(error.exception))
+
+    def test_invalid_query_calendar_never_calls_gateway(self):
+        with self.assertRaisesRegex(ValueError, 'QUERY_TIMEZONE_UNSUPPORTED'):
+            get_sports('fixtures', {'timezone':'Invalid/Zone'},
+                opener=lambda *a,**k:self.fail('network called'))
 
     def test_gateway_token_can_be_read_from_existing_private_env_file(self):
         with tempfile.TemporaryDirectory() as root:
