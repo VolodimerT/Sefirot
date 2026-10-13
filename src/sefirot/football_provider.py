@@ -192,6 +192,13 @@ def select_prematch(packet, fixture_id):
     row = matches[0];match = fixture_identity(row)
     if row['fixture']['status']['short'] != 'NS' or time(match['kickoff']) <= time(packet['receipt']['received_at']):
         raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
+    score = row.get('score')
+    if score is not None and not isinstance(score, dict):
+        raise ValueError('prematch score container malformed')
+    fulltime = (score or {}).get('fulltime')
+    if fulltime is not None and (not isinstance(fulltime, dict) or
+                                any(value is not None for value in fulltime.values())):
+        raise ValueError('prematch NS fixture contains a result')
     return row, match
 
 

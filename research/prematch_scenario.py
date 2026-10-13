@@ -21,7 +21,7 @@ from research.chat_answer_contract import build_answer, validate_answer, render_
 from research.prematch_readiness import operator_report
 from scripts import chat_sports_probe as probe
 
-FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "prematch_issue58"
+FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "prematch_issue59_source_v2"
 
 
 def _frozen(path, schema):

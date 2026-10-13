@@ -7,17 +7,26 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, defaultdict
-from datetime import timezone
+from contextlib import closing
+from datetime import datetime, timezone
+from hashlib import sha256
 import json
 from pathlib import Path
 from random import Random
 import sys
+import sqlite3
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sefirot.contracts import digest, time
 from sefirot.evaluation import metrics, probability_vector
 from sefirot.markets import market_from_key
 from sefirot.probability import bin_key
+from sefirot.contracts import Policy, VERSION
+from sefirot.identity import code_hash, model_code_hash
+from sefirot.markets import DEFAULT_POOL, market_of
+from sefirot.repository import Repository
+from sefirot.service import Service
+from sefirot.forward_scorecard import create_scorecard
 
 SCHEMA = "calibration-quality-audit-v1"
 OUTCOMES = ("WIN", "PUSH", "LOSS")
@@ -35,6 +44,9 @@ def _validate(report):
     signature = content.pop("hash", None)
     if not isinstance(signature, str) or signature != digest(content):
         raise ValueError("scorecard local content hash mismatch")
+    for field in ("planned_fixtures", "scored_fixtures", "market_observations", "forecasts_recomputed"):
+        if type(report.get(field)) is not int or report[field] < 0:
+            raise ValueError("integer scorecard counters required")
     if (report.get("monetary_permission") is not False
             or report.get("execution_enabled") is not False
             or report.get("holdout_passed") is not False
@@ -75,7 +87,10 @@ def _validate(report):
         if not isinstance(group, dict):
             raise ValueError("invalid group")
         market = market_from_key(group["market"])
-        valid_keys.add((group["league"], group["competition_profile"], market.key))
+        key = (group["league"], group["competition_profile"], market.key)
+        if key in valid_keys:
+            raise ValueError("duplicate declared market group")
+        valid_keys.add(key)
     if not valid_keys:
         raise ValueError("original declared market groups required")
     per_fixture = defaultdict(set)
@@ -259,13 +274,137 @@ def audit(scorecard, *, min_calibration=DEFAULT_BIN_MIN, min_holdout=DEFAULT_HOL
     return output
 
 
+def cohort_errors(plans, calibrators=None):
+    """Check every declared fixture/window together; no favorable subset."""
+    errors, seen, windows = set(), set(), defaultdict(list)
+    for plan in plans:
+        role = plan.get("role")
+        if role not in ("TRAIN", "CALIBRATION", "HOLDOUT"):
+            errors.add("UNKNOWN_COHORT_ROLE")
+            continue
+        body = dict(plan); signature = body.pop("id", None)
+        if signature != digest(body): errors.add("COHORT_CONTENT_ID_MISMATCH")
+        if not plan["members"]: errors.add("EMPTY_COHORT")
+        for member in plan["members"]:
+            match = member["match"]; kickoff = time(match["kickoff"])
+            if match["id"] in seen: errors.add("DUPLICATE_OR_CROSS_COHORT_FIXTURE")
+            seen.add(match["id"]); windows[role].append(kickoff)
+            if time(plan["at"]) >= kickoff: errors.add("PLAN_NOT_FROZEN_BEFORE_KICKOFF")
+        if role == "HOLDOUT" and not plan.get("calibrator_id"):
+            errors.add("HOLDOUT_WITHOUT_FROZEN_CALIBRATOR")
+        elif role == "HOLDOUT" and calibrators is not None:
+            fits = [c for c in calibrators if c.get("hash") == plan["calibrator_id"]]
+            if len(fits) != 1:
+                errors.add("ORIGINAL_FROZEN_FIT_NOT_FOUND")
+            else:
+                fit = dict(fits[0]); signature = fit.pop("hash")
+                if signature != digest(fit): errors.add("FROZEN_FIT_CONTENT_MISMATCH")
+                if time(fit["fit_at"]) > time(plan["at"]):
+                    errors.add("FIT_AFTER_HOLDOUT_REGISTRATION")
+                if {m["match"]["id"] for m in plan["members"]} & set(fit["fit_ids"]):
+                    errors.add("HOLDOUT_OVERLAPS_FIT_IDS")
+    for before, after in (("TRAIN", "CALIBRATION"), ("CALIBRATION", "HOLDOUT")):
+        if windows[before] and windows[after] and max(windows[before]) >= min(windows[after]):
+            errors.add("COHORT_TIME_WINDOWS_OVERLAP")
+    return sorted(errors)
+
+
+def audit_originals(database=None, *, at=None):
+    """Read original plans/seals only. Local hashes never attest real origin."""
+    cutoff = time(at) if at else datetime.now(timezone.utc)
+    build = {"version": VERSION, "code_hash": code_hash(), "model_hash": model_code_hash(),
+             "policy_hash": Policy().fingerprint}
+    output = {"schema": "prospective-evidence-audit-v1", "at": cutoff.isoformat(),
+        "current_build": build, "audit_script_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "status": "INSUFFICIENT_REAL_DATA", "ledger_status": "NOT_SUPPLIED",
+        "source_origin": "NOT_VERIFIED", "source_inventory": [], "cohort_errors": [],
+        "split_inventory": None, "planned_fixtures": None, "scored_fixtures": None,
+        "fixture_coverage": None, "distinct_fixtures": None, "missing_fixtures": None,
+        "groups": [], "bins": {"observed_bins": None, "at_or_above_min": None, "below_min": None},
+        "metrics": {k: None for k in ("raw_brier", "base_brier", "raw_logloss", "base_logloss",
+                    "ece", "occupancy", "market_implied", "paired_fixture_day_bootstrap")},
+        "historical_ev_yield": {"status": "HISTORICAL_HYPOTHESIS_NOT_NEW_PROFITABILITY",
+            "new_yield": None, "explanation": "Modeled EV assumes trustworthy P/price/settlement. Yield uses actual settled tickets. Viewed TEST, correlated lines, unknown prices, PUSH/VOID and different denominators cannot certify a new edge."},
+        "prospective_plan": {"status": "DRAFT_NOT_REGISTERED_OR_COLLECTING",
+            "frozen_build": build, "roles": ["TRAIN", "CALIBRATION", "HOLDOUT"],
+            "league_ids": None, "season": None, "competition_profiles": None,
+            "fixture_ids": None, "registered_at": None, "time_windows": None,
+            "required": ["PERMITTED_INDEPENDENT_ORIGINAL_PROVIDER_RECEIPTS",
+                "WHOLE_LEAGUE_SCHEDULE_DENOMINATOR_AND_MISSING_ROWS",
+                "EXACT_FIXTURE_TEAM_SEASON_PERIOD_IDS", "UTC_PUBLISHED_RECEIVED_REVISION_CUTOFFS",
+                "FREEZE_ALL_COHORT_IDS_BEFORE_CAPTURE", "TRAIN_BEFORE_CALIBRATION_BEFORE_HOLDOUT",
+                "FROZEN_CALIBRATOR_BEFORE_ANY_HOLDOUT_RESULT",
+                "UNCHANGED_ORIGINAL_SEALS_AND_ALL_PREDECLARED_MARKETS",
+                "VERIFIED_REAL_QUOTE_AND_SETTLEMENT_FOR_MARKET_BENCHMARK"],
+            "min_calibration_distinct_fixtures_per_exact_bin": Policy().min_calibration,
+            "min_holdout_distinct_fixtures": Policy().min_holdout,
+            "coverage_target": DEFAULT_COVERAGE_MIN, "previously_viewed_TEST_reused": False,
+            "parameters_tuned": False, "network_requests": 0},
+        "read_only": True, "forecasts_recomputed": 0, "training_performed": False,
+        "holdout_passed": False, "statistical_profitability_proven": False,
+        "monetary_permission": False, "execution_enabled": False, "stake": 0.0}
+    if database is not None and not Path(database).is_file():
+        output["ledger_status"] = "ABSENT"
+    elif database is not None:
+        try:
+            with closing(Repository(str(database), read_only=True)) as repo:
+                repo.db.execute("BEGIN")
+                try:
+                    if not repo.verify(): raise ValueError("JOURNAL_INTEGRITY_FAILED")
+                    plans = [j for j in repo.all("jobs", cutoff.isoformat())
+                             if j.get("schema") == "api-forward-plan-v1"]
+                    output["cohort_errors"] = cohort_errors(plans, repo.all("calibrators", cutoff.isoformat()))
+                    output["split_inventory"] = dict(Counter(
+                        a["role"] for a in repo.all("split_assignments", cutoff.isoformat())))
+                    service = Service(repo, clock=lambda: cutoff)
+                    for plan in plans:
+                        card = create_scorecard(service, plan["id"], cutoff.isoformat())
+                        _validate(card)
+                        output["source_inventory"].append({
+                            "plan_id": plan["id"], "scorecard_hash": card["hash"], "role": card["role"],
+                            "frozen_build": card["frozen_build"],
+                            "declared_fixtures": card["planned_fixtures"],
+                            "locally_scorable_fixtures": card["scored_fixtures"],
+                            "missing_or_void": card["planned_fixtures"]-card["scored_fixtures"],
+                            "fixture_status_counts": dict(Counter(f["status"] for f in card["fixtures"])),
+                            "real_source_eligible": False, "metrics": None,
+                            "blockers": ["INDEPENDENT_SOURCE_ORIGIN_NOT_ATTESTED"]})
+                        for group in card["groups"]:
+                            output["groups"].append({"league": group["league"],
+                                "competition_profile": group["competition_profile"],
+                                "contract": group["market"], "role": card["role"],
+                                "declared_denominator": group["planned_fixtures"],
+                                "verified_coverage": None, "distinct_real_fixtures": None,
+                                "metrics": None, "status": "NOT_VERIFIED"})
+                    output["ledger_status"] = "LOCAL_ORIGINALS_VERIFIED_ORIGIN_NOT_ATTESTED"
+                    if plans: output["status"] = "NOT_VERIFIED"
+                    if output["cohort_errors"]: output["status"] = "QUARANTINED"
+                finally: repo.db.rollback()
+        except (ValueError, KeyError, TypeError, OSError, sqlite3.Error):
+            output.update(status="QUARANTINED", ledger_status="UNVERIFIABLE",
+                          source_inventory=[], groups=[], split_inventory=None)
+    if not output["groups"]:
+        output["groups"] = [{"league": None, "competition_profile": None,
+            "contract": market_of(m).key, "declared_denominator": None,
+            "verified_coverage": None, "distinct_real_fixtures": None, "metrics": None,
+            "status": "INSUFFICIENT_REAL_DATA"} for m in DEFAULT_POOL]
+    output["hash"] = digest(output)
+    return output
+
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="SEFIROT read-only prospective calibration diagnostics")
-    parser.add_argument("scorecard", help="existing original forward-scorecard-v1 JSON")
+    parser.add_argument("scorecard", nargs="?", help="legacy descriptive forward-scorecard-v1 JSON")
     parser.add_argument("--output", required=True, help="new report path (never overwrite)")
+    parser.add_argument("--db", help="existing original ledger, read-only inventory mode")
+    parser.add_argument("--at", help="timezone-aware audit cutoff")
     args = parser.parse_args(argv)
+    if args.scorecard and (args.db or args.at):
+        parser.error("choose descriptive scorecard OR original ledger inventory")
     try:
-        report = audit(json.loads(Path(args.scorecard).read_text(encoding="utf-8")))
+        report = (audit(json.loads(Path(args.scorecard).read_text(encoding="utf-8"))) if args.scorecard
+                  else audit_originals(args.db, at=args.at))
         _target = Path(args.output)
         _target.parent.mkdir(parents=True, exist_ok=True)
         with _target.open("x", encoding="utf-8") as handle:

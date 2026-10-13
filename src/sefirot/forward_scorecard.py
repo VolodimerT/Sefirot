@@ -14,7 +14,8 @@ ORDER = ('WIN', 'PUSH', 'LOSS')
 def _receipt(receipt, at, endpoint='/fixtures'):
     return (isinstance(receipt, dict) and receipt.get('provider') == 'API_FOOTBALL_V3'
             and receipt.get('provider_host') == HOST and receipt.get('endpoint') == endpoint
-            and receipt.get('sports_only') is True and receipt.get('http_status') == 200
+            and receipt.get('sports_only') is True and type(receipt.get('http_status')) is int
+            and receipt.get('http_status') == 200
             and time(receipt['request_started_at']) <= time(receipt['received_at']) <= time(at))
 
 
