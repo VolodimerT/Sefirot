@@ -18,10 +18,10 @@ from sefirot.football_provider import FootballRequestError, status_summary
 
 MAX_QUERIES = 8
 MAX_ARCHIVE_BYTES = 128 * 1024  # Per job, inside the existing 850 KB queue cap.
-SOURCE_SCHEMA = "guarded-probe-evidence-v1"
+SOURCE_SCHEMA = "guarded-probe-evidence-v2"
 RECEIPT_FIELDS = ("provider", "provider_host", "endpoint", "parameters",
                   "request_started_at", "received_at", "upstream_received_at",
-                  "payload_hash", "http_status", "transport", "quota")
+                  "payload_hash", "http_status", "sports_only", "transport", "quota")
 STAT_TYPES = {
     "Total Shots", "Shots on Goal", "Shots off Goal", "Blocked Shots",
     "Shots insidebox", "Shots outsidebox", "Corner Kicks", "Yellow Cards",
@@ -90,9 +90,11 @@ def verify_evidence(query):
                 or receipt["provider_host"] != "v3.football.api-sports.io"
                 or receipt["endpoint"] != "/"+query["endpoint"] or receipt["parameters"] != query["params"]
                 or receipt != query["receipt"] or receipt["transport"] != "SUPABASE_GATEWAY"
+                or receipt["sports_only"] is not True
                 or type(receipt["http_status"]) is not int or receipt["http_status"] != 200):
             return {**base, "status": "SOURCE_IDENTITY_MISMATCH"}
-        time(receipt["received_at"])
+        if not time(receipt["request_started_at"]) <= time(receipt["upstream_received_at"]) <= time(receipt["received_at"]):
+            return {**base, "status": "SOURCE_CHRONOLOGY_MISMATCH"}
         if digest(source["data"]) != receipt["payload_hash"] or digest(source) != query["source_packet_hash"]:
             return {**base, "status": "SOURCE_HASH_MISMATCH"}
         if not _safe_source(source["data"], query["endpoint"]):

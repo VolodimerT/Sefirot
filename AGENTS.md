@@ -1,3 +1,18 @@
+## V5.2 gateway statistics receipt compatibility candidate, 13.10.2026
+
+Continuation of the authorized global diagnostic repair on exact PR #50
+head 5efcfa8ea4561393eb5a5f3a6eea54e6e2040a96. Separate stacked feature/PR.
+Fix the real SDK-to-statistics/archive incompatibility: retain sports_only,
+accept and validate paired gateway transport/upstream chronology, require
+integer HTTP status and safe numeric quota. Probe evidence v2 requires the
+complete original receipt; no guessing/filling old metadata or relabelling v1.
+small_market.py changes exact code_hash intentionally. MODEL_MODULES/Policy,
+old source records, approvals, seals and tracked reports stay unchanged.
+No fit, API calls, production/cloud/main changes, secrets, money or new agents.
+SDK integration uses mocked HTTP only. Full release and four exact-head
+OS/Python jobs plus isolated PostgreSQL CI are required. Previous scope
+headers below are historical checkpoints, not a prohibition on this repair.
+
 ## V5.2 guarded probe/source evidence candidate, 13.10.2026
 
 Base exact PR #49 head 7a4d644e820e2b26767200d8f1320af2d25cb438.
