@@ -179,9 +179,10 @@ class PrematchPathTests(unittest.TestCase):
 
     def test_changed_sql_metadata_blocks_operator_and_chat(self):
         r=self.run_case(); db=self.root/"work"/"scenario.sqlite"
-        with sqlite3.connect(db) as connection:
+        with closing(sqlite3.connect(db)) as connection:
             connection.execute("DROP TRIGGER decisions_no_update")
             connection.execute("UPDATE decisions SET at='2030-01-01T09:03:00+00:00'")
+            connection.commit()
         out=operator_report(db,at="2030-01-01T09:10:00+00:00")
         self.assertEqual(out["ledger_status"],"INTEGRITY_FAILED")
         self.assertEqual(out["original_decisions"],[])

@@ -54,7 +54,12 @@ half/ET, repeated sides, wrong line/sign отклоняются без partial m
 Первый local release обнаружил две совместимости: известная группа total
 нужна Builder, а отсутствующий line specifier должен сохранить прежнюю
 ошибку atlas. Исправлены входные ветви mapper; исходные тесты не ослаблены.
-Повторный полный release обязателен.
+Повторный полный release прошёл.
+Первый CI head 55425f459aa3ba9d7dbefdb84b47ef8a49a5b074 выявил ошибку
+cleanup нового adversarial теста на обеих Windows конфигурациях:
+sqlite3 connection context manager не закрывает соединение. Тест теперь
+использует closing + explicit commit, сохраняя проверку metadata/chat.
+Runtime/модель ради этого не менялись; новый head проходит полный CI заново.
 Это non-model исправление stake_mapper.py: code_hash меняется явно;
 семь MODEL_MODULES/Policy и прежние reports/seals не переписаны.
 
