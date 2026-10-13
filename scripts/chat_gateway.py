@@ -91,6 +91,9 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
         if not repo.verify():
             raise ValueError("JOURNAL_INTEGRITY: closed")
         service = Service(repo, Policy())
+        if kind == "sports_probe":
+            from chat_sports_probe import collect
+            return {**build_info(), **collect(data)}
         if kind == "stake_snapshot":
             from chat_stake import collect
             return {**build_info(), **collect(repo, data)}
