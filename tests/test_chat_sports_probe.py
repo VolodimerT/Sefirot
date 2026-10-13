@@ -16,6 +16,8 @@ class ProbeTests(unittest.TestCase):
             {"endpoint":"fixtures/statistics","params":{"fixture":"wrong"}},
             {"endpoint":"fixtures","params":{"team":1,"last":100}},
             {"endpoint":"fixtures/lineups","params":{"fixture":1,"token":"X"}},
+            {"endpoint":"fixtures/statistics","params":{"fixture":1,"half":3}},
+            {"endpoint":"fixtures/statistics","params":{"fixture":1,"half":0}},
         ]
         with patch.object(probe, "get_sports") as network:
             for q in bad:
@@ -50,6 +52,14 @@ class ProbeTests(unittest.TestCase):
         self.assertNotIn("Secret Extra",repr(result))
         self.assertFalse(result["monetary_permission"])
         self.assertFalse(result["execution_enabled"])
+
+    def test_half_specific_statistics_are_allowed_only_for_halves_one_two(self):
+        packet={"data":{"response":[]},"receipt":{"provider":"API_FOOTBALL_V3","endpoint":"/fixtures/statistics","received_at":"2026-10-13T09:00:00Z"}}
+        with patch.object(probe,"get_sports",return_value=packet) as net:
+            with patch.object(probe,"transport_status",return_value={"transport":"SUPABASE_GATEWAY"}):
+                value=probe.collect({"queries":[{"endpoint":"fixtures/statistics","params":{"fixture":123,"half":1}}]})
+        net.assert_called_once_with("fixtures/statistics",{"fixture":123,"half":1})
+        self.assertEqual(value["queries"][0]["status"],"DONE")
 
     def test_auth_failure_does_not_retry_or_disclose_error_text(self):
         with patch.object(probe,"get_sports",side_effect=ValueError("TOKEN_SECRET_DO_NOT_PRINT")) as network, \
