@@ -13,6 +13,7 @@ import sqlite3
 
 from .contracts import canonical, digest, time
 from .repository import TABLES
+from .ledger_integrity import validate_row
 
 
 # Every name is a constant, never assembled from input. Parents precede children.
@@ -73,15 +74,7 @@ def snapshot(path: str | Path) -> dict[str, list[dict]]:
             if count > MAX_ROWS:
                 raise ValueError('ledger exceeds bounded sync limit')
             for row in batch:
-                try:
-                    obj = json.loads(row['payload'])
-                    if not isinstance(obj, dict) or canonical(obj) != row['payload']:
-                        raise ValueError('noncanonical or nonobject payload')
-                    for name in ('at', 'kickoff'):
-                        if name in row:
-                            time(row[name])
-                except (TypeError, ValueError) as exc:
-                    raise ValueError(f'invalid {table} ledger row') from exc
+                validate_row(table, row)
             rows[table] = batch
         _verify_chain(rows)
         db.execute('ROLLBACK')

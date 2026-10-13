@@ -80,3 +80,60 @@ def compare_versions(old,new,policy):
     return {'n':n,'unpaired_old':len(a)-n,'unpaired_new':len(b)-n,'improvement':mean,'interval':[mean-1.96*se,mean+1.96*se],
             'recommendation':'ROLLBACK' if n>=policy.min_holdout and mean+1.96*se<0 else
                              'REVIEW_PROMOTION' if n>=policy.min_holdout and mean-1.96*se>0 else 'KEEP_SHADOW'}
+
+
+def validate_stress_classes(records, policy):
+    """Independent monetary gate for each grade; includes previously refused quotes.
+
+    Quote returns are diagnostic payoffs, not executed profit. A favourable base
+    EV or winning PASS cannot waive chronology, calibration or sample checks.
+    """
+    output = {}
+    for label in ('ROBUST_VALUE', 'FRAGILE_VALUE', 'AGGRESSIVE_VALUE'):
+        rows = sorted([r for r in records if r['stress_class'] == label],
+                      key=lambda r: (time(r['kickoff']), r['match_id']))
+        reasons = []
+        n = len(rows)
+        if n < policy.min_holdout:
+            reasons.append('CLASS_HOLDOUT_TOO_SMALL')
+        report = summary(rows)
+        returns = [r['unit_return'] for r in rows]
+        delta = [r['brier']-r['baseline_brier'] for r in rows]
+        interval = lambda values: _mean_interval(values)
+        profit_interval = interval(returns)
+        score_interval = interval(delta)
+        if not rows or profit_interval[0] <= 0:
+            reasons.append('CLASS_POSITIVE_RETURN_UNPROVEN')
+        if not rows or score_interval[1] >= 0:
+            reasons.append('CLASS_BASELINE_IMPROVEMENT_UNPROVEN')
+        halves = (rows[:n//2], rows[n//2:])
+        if not all(half and sum(r['unit_return'] for r in half)>0
+                   and sum(r['brier']-r['baseline_brier'] for r in half)<0 for half in halves):
+            reasons.append('CLASS_PERIOD_STABILITY_FAILED')
+        if rows and max(report['calibration_error'], report['multiclass']['ece_macro']) > policy.max_calibration_error:
+            reasons.append('CLASS_CALIBRATION_ERROR_HIGH')
+        if rows and report['multiclass']['log_loss'] >= sum(r['baseline_log_loss'] for r in rows)/n:
+            reasons.append('CLASS_LOGLOSS_BASELINE_NOT_BEATEN')
+        if any(r['synthetic'] or not r['captured_prematch'] for r in rows):
+            reasons.append('CLASS_RECONSTRUCTED_OR_SYNTHETIC')
+        if any(r['calibration_status'] != 'CALIBRATED_BIN' for r in rows):
+            reasons.append('CLASS_UNCALIBRATED')
+        if any(not r['sports_gates_passed'] for r in rows):
+            reasons.append('CLASS_SPORTS_GATES_FAILED')
+        if any(r['ev_low'] < policy.min_low_ev for r in rows):
+            reasons.append('CLASS_EPISTEMIC_VALUE_FAILED')
+        output[label] = {'n': n, 'passed': not reasons, 'reasons': reasons,
+                         'ids': [r['match_id'] for r in rows],
+                         'return_interval': profit_interval, 'brier_delta_interval': score_interval,
+                         'mean_ev': sum(r['ev'] for r in rows)/n if n else None,
+                         'metrics': report, 'return_kind': 'PREDECLARED_QUOTE_UNIT_PAYOFF_NOT_EXECUTION'}
+    return output
+
+
+def _mean_interval(values):
+    if not values:
+        return [None, None]
+    n = len(values)
+    mean = sum(values)/n
+    se = sqrt(sum((v-mean)**2 for v in values)/(n-1)/n) if n>1 else 1.
+    return [mean-1.96*se, mean+1.96*se]

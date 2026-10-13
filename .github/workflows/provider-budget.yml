@@ -1,0 +1,32 @@
+name: shared-provider-budget
+on:
+  pull_request:
+  push:
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: sefirot_budget_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install local database client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Concurrent shared budget and role permissions
+        env:
+          SEFIROT_TEST_POSTGRES_URL: postgresql://postgres:isolated-test-only@127.0.0.1:5432/sefirot_budget_test
+        run: python scripts/test_shared_sports_budget.py
