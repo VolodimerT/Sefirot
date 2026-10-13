@@ -1,7 +1,7 @@
 """Sports-only API-Football source; missing sporting facts remain missing."""
 from datetime import date
 import re
-from .contracts import PROFILES, digest, integer, number, text, time
+from .contracts import PROFILES, digest, integer, number, text, time, result_chronology
 from .credentials import credential
 from .provider_transport import ProviderConnection, request_json
 
@@ -213,7 +213,11 @@ def normalize_sports(target_packet, fixture_id, history_packets, *, profile, sou
             if ident['id'] == match['id']:reason = 'TARGET_RESULT_EXCLUDED'
             elif ident['league'] != match['league']:reason = 'OTHER_COMPETITION'
             elif row['fixture']['status']['short'] != 'FT':reason = 'NOT_REGULATION_FT; AET/PEN_NOT_IMPORTED'
-            elif time(ident['kickoff']) >= time(stamp):reason = 'IMPOSSIBLE_RESULT_CHRONOLOGY'
+            if reason is None:
+                try:
+                    result_chronology(ident['kickoff'],stamp,stamp)
+                except ValueError:
+                    reason = 'IMPOSSIBLE_RESULT_CHRONOLOGY'
             if reason:
                 excluded.append({'id':ident['id'],'reason':reason});continue
             goals = row.get('score', {}).get('fulltime', {})

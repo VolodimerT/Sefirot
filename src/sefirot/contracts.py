@@ -1,7 +1,7 @@
 """Versioned, JSON-compatible contracts and strict boundary validation."""
 from __future__ import annotations
 from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import json
 import math
@@ -30,6 +30,21 @@ def time(value):
 
 
 def iso(value): return time(value).isoformat()
+
+
+def result_chronology(kickoff, finished_at, received_at, *, status='FINISHED', match_format='REGULATION_90'):
+    """Validate instants, not a guessed whistle time or provider status alone.
+
+    A regulation FT receipt is an upper bound on completion. It cannot precede
+    90 elapsed minutes. VOID retains the existing post-kickoff chronology and
+    has no scored outcome; unsupported formats remain gated by inspect().
+    """
+    start, end, received = (time(v) for v in (kickoff, finished_at, received_at))
+    if start >= end or end > received:
+        raise ValueError('result chronology')
+    if status == 'FINISHED' and match_format == 'REGULATION_90' and end-start < timedelta(minutes=90):
+        raise ValueError('premature REGULATION_90 FINISHED')
+    return start, end, received
 
 
 def number(x, name, low=None, high=None):
