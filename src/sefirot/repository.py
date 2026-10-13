@@ -120,7 +120,15 @@ class Repository:
 
     def verify(self):
         try:
-            return self._verify_current_rows()
+            if self.db.in_transaction:
+                return self._verify_current_rows()
+            # Audit and records must come from one read snapshot. Separate
+            # autocommit reads can straddle another runner's valid commit.
+            self.db.execute('BEGIN')
+            try:
+                return self._verify_current_rows()
+            finally:
+                self.db.rollback()
         except (ValueError,KeyError,TypeError,OverflowError,sqlite3.Error):
             return False
 

@@ -38,9 +38,10 @@ corners prototype, FootyStats adapter, autosave/private archive и некото�
 | Высокий | CAS checkpoint принимал активный WAL; raw SQLite мог не содержать новые committed записи. | До транспорта требуется закрытый snapshot без WAL/SHM/journal; проверяются ровно сохраняемые байты и изменение файла. |
 | Средний | Правильные заголовок и gzip checksum позволяли restore создать повреждённую БД. | Полная read-only проверка snapshot перед созданием целевого файла/каталога. |
 | Средний | Пустая таблица audit без hash давала verify=true; с записью — IndexError. Потеря id PK также не обнаруживалась. | Свежая проверка обязательных колонок и единственного id PK в verify/cloud snapshot; один общий column mapping. |
+| Средний | Windows CI выявил чтение audit и records по разные стороны конкурентного commit: исправный журнал отвергался. | Один read snapshot в verify; существующая внешняя write transaction сохраняется. Детерминированная регрессия воспроизводит прежний false и новый true. |
 | Низкий | Ошибка первого PRAGMA чтения могла оставить SQLite connection открытым. | Constructor закрывает принадлежащее ему соединение при ошибке. |
 
-7 новых schema/resource/CLI регрессий и 4 CAS-регрессии. Исправления не
+9 новых schema/resource/CLI/concurrency регрессий и 4 CAS-регрессии. Исправления не
 меняют данные, миграцию SQLite, уравнения вероятностей или Policy.
 Вычитаны SQLite verify/cache/metadata, cloud mirror, HTTP redirects/credentials,
 fixture ID/timezone, gateway reserve/finish, MCP, SQL privileges, situation HOLD,
@@ -48,7 +49,7 @@ receipt/lease и CLI. Негативные тесты выполняются н�
 
 ## Проверки и воспроизведение
 
-Локальный полный release: 1293 теста — 1289 passed, 4 PostgreSQL skipped.
+Локальный полный release: 1295 тестов — 1291 passed, 4 PostgreSQL skipped.
 Четыре проверки БД выполняются отдельно; mirror — 5/5 без пропусков
 (включая ограничение тестового адреса), shared budget — 10/10, 16 callers.
 Demo integrity/replay=true, synthetic backtest 12 fixtures/84 markets,
@@ -69,8 +70,13 @@ python scripts/benchmark_integrity_v5.py --baseline-ref fbab85d0d0666ec593cb739d
 budget. Все обязательные jobs должны быть зелёными на точном RC HEAD.
 Skips общего прогона не считаются выполненными PostgreSQL-тестами.
 
+Первый RC head `5f606029223f6c0f7ac8910b516e64304ff48d26` не принят:
+Windows Python 3.11 выявил гонку `test_two_runners_cannot_process_one_job_twice`.
+Причина исправлена в verifier, исходный тест и его требования сохранены;
+новые skips или retry для сокрытия ошибки не добавлены. Новый head проверяется заново.
+
 Schema check сохраняет 22 record SELECT на каждом verify. Парный warm benchmark
-на 1000 синтетических prediction: 109,385 → 110,792 мс, median delta +1,452 мс,
+на 1000 синтетических prediction: 90,707 → 91,717 мс, median paired delta +0,985 мс,
 9 пар на одном общем хосте. Это плата за новую структурную проверку; production
 SLO не доказан. Ни journal_ok, ни permissions, ни полные records не кэшируются.
 
@@ -79,7 +85,7 @@ SLO не доказан. Ни journal_ok, ни permissions, ни полные re
 | Поле | Значение |
 |---|---|
 | version | `2.4.2` |
-| code_hash RC | `a40ed1d0e29737e004e607fdcf483f6624705ae5ff2ef255877fead8468e0853` |
+| code_hash RC | `cc6c0466b87247c8fb5e5ee19aca6533809492ad78dba88b9825e39ef67a083f` |
 | прежний code_hash №56 | `409c7fdf3cf0f401c9c4ae7fa9a14797a14cdd7d0501c86ed435c355203c0cb3` |
 | model_hash | `bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee` |
 | policy_hash | `5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9` |

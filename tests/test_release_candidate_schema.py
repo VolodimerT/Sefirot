@@ -1,5 +1,6 @@
 """Synthetic malformed SQLite schemas fail closed; input bytes stay original."""
 from contextlib import closing
+from datetime import datetime, timezone
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -15,6 +16,8 @@ sys.path.insert(0, str(ROOT / 'src'))
 from sefirot.cloud_sync import snapshot
 from sefirot.contracts import canonical
 from sefirot.repository import Repository
+from sefirot.fixtures import example
+from sefirot.service import Service
 
 
 class ReleaseSchemaTests(unittest.TestCase):
@@ -92,3 +95,31 @@ class ReleaseSchemaTests(unittest.TestCase):
                 Repository(str(corrupt),read_only=True)
         with self.assertRaises(sqlite3.ProgrammingError):
             connection.execute('SELECT 1')
+
+    def test_concurrent_valid_commit_cannot_mix_audit_and_record_snapshots(self):
+        now=datetime(2030,1,1,12,tzinfo=timezone.utc)
+        with closing(Repository(str(self.path))) as reader, closing(Repository(str(self.path))) as writer:
+            reader.db.execute('PRAGMA journal_mode=WAL')
+            case=example(now,'synthetic-snapshot-old')
+            Service(reader,clock=lambda:now).capture(case['sports'],case['markets'])
+            changed=[]
+            def concurrent(statement):
+                if statement=='SELECT * FROM teams' and not changed:
+                    changed.append(True)
+                    case=example(now,'synthetic-snapshot-new')
+                    Service(writer,clock=lambda:now).capture(case['sports'],case['markets'])
+            reader.db.set_trace_callback(concurrent)
+            try:self.assertTrue(reader.verify())
+            finally:reader.db.set_trace_callback(None)
+            self.assertEqual(changed,[True])
+            self.assertEqual(len(reader.all('predictions')),2)
+            self.assertTrue(reader.verify())
+            self.assertFalse(reader.db.in_transaction)
+
+    def test_verification_preserves_existing_write_transaction(self):
+        with closing(Repository(str(self.path))) as repo:
+            with repo.transaction():
+                repo.insert('teams','synthetic-outer',{'name':'synthetic-outer'})
+                self.assertTrue(repo.verify())
+                self.assertTrue(repo.db.in_transaction)
+            self.assertEqual(repo.get('teams','synthetic-outer'),{'name':'synthetic-outer'})
