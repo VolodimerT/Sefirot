@@ -277,33 +277,76 @@ def audit(scorecard, *, min_calibration=DEFAULT_BIN_MIN, min_holdout=DEFAULT_HOL
 def cohort_errors(plans, calibrators=None):
     """Check every declared fixture/window together; no favorable subset."""
     errors, seen, windows = set(), set(), defaultdict(list)
+    if not isinstance(plans, list) or len(plans) > MAX_FIXTURES:
+        return ["MALFORMED_COHORT_COLLECTION"]
+    if calibrators is not None and (not isinstance(calibrators, list) or len(calibrators) > MAX_FIXTURES):
+        return ["MALFORMED_FROZEN_FIT_COLLECTION"]
+    fits_by_hash = defaultdict(list)
+    for fit in calibrators or []:
+        if not isinstance(fit, dict) or not isinstance(fit.get("hash"), str):
+            errors.add("MALFORMED_FROZEN_FIT")
+            continue
+        fits_by_hash[fit["hash"]].append(fit)
     for plan in plans:
+        if not isinstance(plan, dict):
+            errors.add("MALFORMED_COHORT")
+            continue
         role = plan.get("role")
         if role not in ("TRAIN", "CALIBRATION", "HOLDOUT"):
             errors.add("UNKNOWN_COHORT_ROLE")
             continue
         body = dict(plan); signature = body.pop("id", None)
-        if signature != digest(body): errors.add("COHORT_CONTENT_ID_MISMATCH")
-        if not plan["members"]: errors.add("EMPTY_COHORT")
-        for member in plan["members"]:
-            match = member["match"]; kickoff = time(match["kickoff"])
-            if match["id"] in seen: errors.add("DUPLICATE_OR_CROSS_COHORT_FIXTURE")
-            seen.add(match["id"]); windows[role].append(kickoff)
-            if time(plan["at"]) >= kickoff: errors.add("PLAN_NOT_FROZEN_BEFORE_KICKOFF")
+        try:
+            if signature != digest(body): errors.add("COHORT_CONTENT_ID_MISMATCH")
+            registered = time(plan["at"])
+            members = plan["members"]
+            if not isinstance(members, list) or len(members) > MAX_FIXTURES:
+                raise ValueError("bounded member list required")
+            matches = []
+            for member in members:
+                if not isinstance(member, dict) or not isinstance(member.get("match"), dict):
+                    raise ValueError("match object required")
+                match = member["match"]; mid = match["id"]
+                if not isinstance(mid, str) or not mid.strip():
+                    raise ValueError("fixture string ID required")
+                matches.append((mid, time(match["kickoff"])))
+        except (KeyError, ValueError, TypeError, OverflowError):
+            errors.add("MALFORMED_COHORT")
+            continue
+        if not matches: errors.add("EMPTY_COHORT")
+        for mid, kickoff in matches:
+            if mid in seen: errors.add("DUPLICATE_OR_CROSS_COHORT_FIXTURE")
+            seen.add(mid); windows[role].append(kickoff)
+            if registered >= kickoff: errors.add("PLAN_NOT_FROZEN_BEFORE_KICKOFF")
         if role == "HOLDOUT" and not plan.get("calibrator_id"):
             errors.add("HOLDOUT_WITHOUT_FROZEN_CALIBRATOR")
         elif role == "HOLDOUT" and calibrators is not None:
-            fits = [c for c in calibrators if c.get("hash") == plan["calibrator_id"]]
+            reference = plan["calibrator_id"]
+            if not isinstance(reference, str):
+                errors.add("MALFORMED_FROZEN_FIT")
+                continue
+            fits = fits_by_hash.get(reference, [])
             if len(fits) != 1:
                 errors.add("ORIGINAL_FROZEN_FIT_NOT_FOUND")
             else:
                 fit = dict(fits[0]); signature = fit.pop("hash")
-                if signature != digest(fit): errors.add("FROZEN_FIT_CONTENT_MISMATCH")
-                if time(fit["fit_at"]) > time(plan["at"]):
+                try:
+                    if signature != digest(fit): errors.add("FROZEN_FIT_CONTENT_MISMATCH")
+                    fitted = time(fit["fit_at"])
+                except (KeyError, ValueError, TypeError, OverflowError):
+                    errors.add("MALFORMED_FROZEN_FIT")
+                    continue
+                ids = fit.get("fit_ids")
+                if (not isinstance(ids, list) or not ids or len(ids) > MAX_FIXTURES
+                        or any(not isinstance(mid, str) or not mid.strip() for mid in ids)
+                        or len(set(ids)) != len(ids)):
+                    errors.add("MALFORMED_FROZEN_FIT_IDS")
+                    continue
+                if fitted > registered:
                     errors.add("FIT_AFTER_HOLDOUT_REGISTRATION")
-                if {m["match"]["id"] for m in plan["members"]} & set(fit["fit_ids"]):
+                if {mid for mid, _ in matches} & set(ids):
                     errors.add("HOLDOUT_OVERLAPS_FIT_IDS")
-    for before, after in (("TRAIN", "CALIBRATION"), ("CALIBRATION", "HOLDOUT")):
+    for before, after in (("TRAIN", "CALIBRATION"), ("CALIBRATION", "HOLDOUT"), ("TRAIN", "HOLDOUT")):
         if windows[before] and windows[after] and max(windows[before]) >= min(windows[after]):
             errors.add("COHORT_TIME_WINDOWS_OVERLAP")
     return sorted(errors)
