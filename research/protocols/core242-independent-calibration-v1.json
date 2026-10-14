@@ -1,0 +1,127 @@
+{
+  "schema": "sefirot-independent-calibration-protocol-v1",
+  "status": "DRAFT_NOT_REGISTERED",
+  "version": "2.4.2",
+  "frozen_build": {
+    "code_hash": "56233251fdcffceb0bae3ab8bfe2a5579957ffcfcb6c86c341eac181b97bb2b9",
+    "model_hash": "bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee",
+    "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+    "goal_model": "BASELINE_V1",
+    "calibrator_id": null
+  },
+  "source_heads": {
+    "rc57": "22ac74911301d65e831a757222502781842c3bd9",
+    "prematch58": "e32fd7e7a4876005f337314822354bbbabfee2c3",
+    "audit59": "d5175c926fad2284c37b69c2d0155763fd34cf70",
+    "corners": "6275ccd183118623a4ada18a9191b335ea5b7ec9",
+    "shots": "d611c086ef71d8aafd1c55e815dcf14097ff9a9e",
+    "fouls": "d00446015d5e3ddebe88b27d78de42f71b5f8e87",
+    "yc": "9b363914d9fcab8b0b4a7566d644b80bd7412826",
+    "phone61": "ee168f8f6284179fc94c96ee5c30e0f9d8b291e3"
+  },
+  "selection": {
+    "rule": "Every future prematch fixture of the declared complete league/season schedule; no favorable subset",
+    "league_ids": null,
+    "season": null,
+    "competition_profiles": null,
+    "fixture_ids": null,
+    "source_receipt_ids": null,
+    "registered_at": null,
+    "time_windows": null,
+    "unregistered_fields_block_execution": true
+  },
+  "contracts": [
+    "1X2:HOME",
+    "DOUBLE_CHANCE:1X",
+    "DNB:HOME",
+    "HANDICAP:HOME:-1",
+    "TOTAL:OVER:2.5",
+    "BTTS:YES",
+    "TEAM_TOTAL:HOME_OVER:1.5"
+  ],
+  "source_prerequisites": [
+    "OWNER_PERMITTED_LICENSED_INDEPENDENT_ORIGINAL_RECEIPTS",
+    "CURRENT_ACCOUNT_STATUS_AND_KNOWN_QUOTA",
+    "ENABLED_SHARED_GATEWAY_BUDGET_FOR_CURRENT_UTC_DAY_WITH_VALID_APPROVAL",
+    "FULL_LEAGUE_DENOMINATOR_WITH_EXPLICIT_MISSING_NOT_ZERO",
+    "EXACT_FIXTURE_TEAM_SEASON_PERIOD_IDENTITIES",
+    "UTC_PUBLICATION_REQUEST_RECEIPT_REVISION_CUTOFFS",
+    "NS_PHASE_CONSISTENCY_NO_PLAYED_MINUTES_OR_KNOWN_RESULT",
+    "VERIFIED_BOOKMAKER_QUOTE_FRESHNESS_AND_SETTLEMENT_FOR_MARKET_BENCHMARK"
+  ],
+  "cohorts": [
+    {
+      "role": "TRAIN",
+      "purpose": "Historical sporting inputs frozen before prospective CALIBRATION; seen history never becomes new HOLDOUT",
+      "ids": null,
+      "window": null
+    },
+    {
+      "role": "CALIBRATION",
+      "purpose": "Original prospective raw seals and exact-model calibration records; separate from HOLDOUT",
+      "ids": null,
+      "window": null,
+      "research_min_distinct_fixtures": 60,
+      "policy_min_distinct_fixtures_per_exact_bin": 20
+    },
+    {
+      "role": "HOLDOUT",
+      "purpose": "Future untouched cohort registered after fit freeze and before its first forecast/outcome",
+      "ids": null,
+      "window": null,
+      "policy_min_distinct_fixtures": 60,
+      "frozen_calibrator_required": true,
+      "calibrator_fit_ids_overlap_allowed": false
+    }
+  ],
+  "chronology": [
+    "TRAIN_END_BEFORE_CALIBRATION_START",
+    "CALIBRATION_END_BEFORE_FIT_FREEZE",
+    "FIT_FREEZE_BEFORE_HOLDOUT_REGISTRATION",
+    "HOLDOUT_REGISTERED_BEFORE_FIRST_KICKOFF",
+    "NO_DUPLICATE_OR_CROSS_COHORT_FIXTURE",
+    "NO_TUNING_THRESHOLDS_OR_PARAMETERS_USING_HOLDOUT_RESULTS"
+  ],
+  "diagnostics": {
+    "coverage_target": 0.8,
+    "coverage_target_is_money_permission": false,
+    "distinct_fixture_denominator": true,
+    "retain_missing_and_void_in_denominator": true,
+    "push_probability_and_push_outcome_preserved": true,
+    "market_rows_are_correlated": true,
+    "metrics": [
+      "raw/base Brier",
+      "raw/base log loss",
+      "ECE with bin occupancy",
+      "market implied benchmark only from genuine verified quote"
+    ],
+    "paired_comparison_unit": "fixture then UTC-day clusters",
+    "bootstrap": "Existing fixed-seed paired UTC-day cluster bootstrap; no interval below 30 fixtures and 8 days",
+    "unverified_or_insufficient_metrics": null
+  },
+  "operational": {
+    "collection_started": false,
+    "real_fit_performed": false,
+    "network_requests": 0,
+    "provider_calls_allowed": false,
+    "production_changes_allowed": false,
+    "monetary_permission": false,
+    "execution_enabled": false,
+    "stake": 0,
+    "live_or_dogon_allowed": false
+  },
+  "acceptance": {
+    "engineering_ci_is_model_accuracy": false,
+    "local_checksum_is_provider_attestation": false,
+    "holdout_passed": false,
+    "statistical_profitability_proven": false,
+    "model_advantage_proven": false,
+    "updated_sefirot_action": "PASS",
+    "monetary_release_requires_separate_exact_build_owner_approval": true
+  },
+  "commands": {
+    "original_evidence": "python scripts/calibration_quality_audit.py --db /private/existing-original.sqlite --output /private/new-evidence.json",
+    "fit_preflight_only": "python scripts/calibration_fit_gate.py --db /private/existing-original.sqlite --output /private/new-preflight.json",
+    "create_cohorts": "Existing forward-create-plan workflow only after the missing real source and registration fields are verified; never fabricate fixture IDs"
+  }
+}

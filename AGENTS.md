@@ -1,3 +1,20 @@
+## Unified candidate and independent validation, 14.10.2026
+
+User explicitly requests one tested candidate from verified Issues #57–61,
+current real-source checks and preparation for independent calibration.
+Reuse existing draft integration PR #56; do not create a duplicate PR.
+Combine exact verified #67 9b363914d9fcab8b0b4a7566d644b80bd7412826
+and #64 ee168f8f6284179fc94c96ee5c30e0f9d8b291e3 with both-parent history.
+Preserve frozen RC #57 branch 22ac74911301d65e831a757222502781842c3bd9.
+Preserve all seven MODEL_MODULES, Policy and original seals/receipts/reports.
+Real-source work uses read-only connected metadata and original evidence;
+no production SQL writes, deploy, secrets access/change or paid provider calls.
+Do not perform real fit or register future fixtures without verified originals.
+No main merge, production changes, monetary permission, LIVE or new agents.
+Full release and exact-head OS/Python/PostgreSQL CI on the unified tree.
+Keep original PASS unchanged; absent verified API/HOLDOUT/edge means PASS/0.
+Prior scopes below are historical; preserve both family and phone work.
+
 ## Issue #60 referee YC: final family after verified FOULS, 13.10.2026
 
 Base #66 1675092228ffaa13e270b9439c13144b82b3519b, 12/12 exact-head CI.
@@ -56,6 +73,33 @@ code_hash changes due added research src modules. Full release/exact OS/PG CI.
 After corners, SHOTS/SOT -> FOULS -> referee YC, each small draft increment.
 Phone read-only #61 dependencies #57/#58 satisfied; no deploy/main/paid APIs/
 credentials/real refit/money/LIVE/additional agents. Prior scopes historical.
+
+## Issue #61 session follow-up, 14.10.2026
+
+User authorized continuation after verified #57-61. Reuse existing draft #64
+on exact 0f7132ae664101aff96fb21754dac3ce8c599dc8; no duplicate PR or merge.
+Confirmed actual JS 401 kept private original cards/current filter memory.
+Clear protected views on failed reads/login; ignore stale concurrent responses.
+Synthetic Node event-handler regression only, no providers/actual credentials.
+Keep all src/sefirot/MODEL_MODULES/Policy/old receipts/reports unchanged.
+Full release and exact OS/Python/actual PostgreSQL CI; main/prod/deploy/money/
+LIVE/additional agents forbidden. Hosted runtime/Android/evidence blockers stay.
+Prior scopes below historical.
+
+## Issue #61: phone read-only prototype, 13.10.2026
+
+Independent base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4;
+#57/#58 dependencies satisfied, #60 family branches separate. Reuse existing
+chat Handler/readiness/original verifier, authenticated read-only operator
+subset; never call execute/status/demo/worker/providers. Actual source/CI
+runtime states unknown; no artificial forecasts/KPIs. Original PASS/BET and
+card data only from verified originals, research separate, missing null.
+Loopback prototype/session only; no cloud hosting, no Android localhost promise.
+Tests synthetic owner token, no actual credential read/rotation. All src/core
+MODEL_MODULES/Policy and historical source/seals/reports byte-identical to #59.
+No main/prod/deploy/paid API/real refit/money/LIVE/additional agents. Full release
+and exact OS/Python/PG CI required. Remaining #60 SHOTS/SOT->FOULS->YC proceeds
+through its own audited family chain. Prior scopes below historical.
 
 ## Issue #59: honest original evidence and prospective audit, 13.10.2026
 
