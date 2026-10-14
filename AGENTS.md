@@ -1,3 +1,19 @@
+## Issue #59: honest original evidence and prospective audit, 13.10.2026
+
+After verified #58 exact e32fd7e7a4876005f337314822354bbbabfee2c3 (#62,
+12/12 CI). Extend existing calibration_quality_audit/forward scorecard and
+read-only Repository; no duplicate auditor. Repair confirmed boolean counters,
+duplicate groups, float HTTP status and NS target result before normalization.
+Non-model source code_hash change explicit. All MODEL_MODULES/Policy, historical
+reports/seals/fit/approvals and old issue58 frozen files byte-identical; new
+synthetic fixture version separate. Missing real source/independent HOLDOUT:
+metrics null, draft prospective plan, money/holdout/profit proof false. No
+source attestation by local hashes. Full release and exact OS/Python/PG CI.
+After reviewed stage continue #60 families and #61 read-only phone cockpit.
+No main merge/production/deploy/API providers/paid calls/secret access or
+rotation/real refit/monetary promotion/LIVE/additional agents. Prior scopes
+below historical; original PASS never promoted without actual proof.
+
 ## Issue #58: audited offline PREMATCH, 13.10.2026
 
 Base exact verified Issue #57 RC 22ac74911301d65e831a757222502781842c3bd9,

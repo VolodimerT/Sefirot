@@ -22,7 +22,7 @@ def validate_packet(packet, at=None):
            ('quota', 'transport', 'upstream_received_at'))
     if (receipt['provider_host'] != HOST or receipt['endpoint'] != '/fixtures'
             or receipt['provider'] != 'API_FOOTBALL_V3' or receipt['sports_only'] is not True
-            or receipt['http_status'] != 200):
+            or type(receipt['http_status']) is not int or receipt['http_status'] != 200):
         raise ValueError('successful sports-only API-Football fixture receipt required')
     started, received = time(receipt['request_started_at']), time(receipt['received_at'])
     if started > received or (at is not None and received > time(at)):
