@@ -5,6 +5,7 @@ from datetime import timedelta
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -275,3 +276,71 @@ class EvidenceAuditTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 export_sports(root,100,stamp(),profile="LOWER",source_reliability=.95)
             self.assertEqual({p.name:p.read_bytes() for p in root.glob("*.json")},before)
+
+    def test_scored_fixture_requires_a_nonempty_original_prediction_id(self):
+        for missing, value in ((True,None),(False,None),(False,""),(False," "),
+                               (False,True),(False,42),(False,[]),(False,{})):
+            s=scorecard(n=1)
+            for record in s["fixtures"]+s["observations"]:
+                if missing:record.pop("prediction_id")
+                else:record["prediction_id"]=value
+            with self.subTest(missing=missing,value=value),self.assertRaisesRegex(ValueError,"prediction.*ID"):
+                audit(resign(s))
+        # A missed capture really has no seal; retain it in the denominator.
+        s=scorecard(n=2,scored=1)
+        self.assertEqual(audit(s)["missing_or_unscored_fixtures"],1)
+
+    def test_one_original_prediction_id_cannot_belong_to_two_planned_fixtures(self):
+        s=scorecard(n=2)
+        for record in s["fixtures"]+s["observations"]:
+            record["prediction_id"]="same-seal-for-two-matches"
+        with self.assertRaisesRegex(ValueError,"unique.*prediction.*ID"):
+            audit(resign(s))
+        # Different markets of one fixture correctly share one prediction ID.
+        self.assertEqual(audit(scorecard(n=1))["market_observations"],2)
+
+    def test_frozen_build_requires_original_sha256_hashes_not_missing_or_typed_surrogates(self):
+        for field in ("code_hash","model_hash","policy_hash"):
+            for missing,value in ((True,None),(False,None),(False,True),(False,42),
+                                  (False,[]),(False,{}),(False,""),(False,"short"),(False,"g"*64)):
+                s=scorecard(n=1)
+                if missing:s["frozen_build"].pop(field)
+                else:s["frozen_build"][field]=value
+                with self.subTest(field=field,missing=missing,value=value),self.assertRaisesRegex(ValueError,"frozen build"):
+                    audit(resign(s))
+        # Historical valid hashes stay historical; no current-build replacement.
+        original=scorecard(n=1)
+        self.assertEqual(audit(original)["source_build"],original["frozen_build"])
+
+    def test_malformed_build_or_calibrator_reference_returns_a_validation_error(self):
+        for container in (None,[],"build",True):
+            s=scorecard(n=1);s["frozen_build"]=container
+            with self.subTest(container=container),self.assertRaisesRegex(ValueError,"frozen build"):
+                audit(resign(s))
+        for reference in (False,0,[],{},""," "):
+            s=scorecard(n=1);s["frozen_build"]["calibrator_id"]=reference
+            with self.subTest(reference=reference),self.assertRaisesRegex(ValueError,"calibrator.*reference"):
+                audit(resign(s))
+        missing=scorecard(n=1,calibrated=False)
+        self.assertEqual(audit(missing)["status"],"HOLDOUT_WITHOUT_FROZEN_CALIBRATOR")
+
+    def test_audit_cli_rejects_invalid_provenance_without_output_or_input_changes(self):
+        missing=scorecard(n=1)
+        for record in missing["fixtures"]+missing["observations"]:record.pop("prediction_id")
+        duplicate=scorecard(n=2)
+        for record in duplicate["fixtures"]+duplicate["observations"]:record["prediction_id"]="duplicate"
+        malformed=scorecard(n=1);malformed["frozen_build"]=[]
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for n,s in enumerate((missing,duplicate,malformed)):
+                original=root/f"synthetic-{n}.json";output=root/f"audit-{n}.json"
+                original.write_text(json.dumps(resign(s)))
+                before=original.read_bytes()
+                result=subprocess.run([sys.executable,str(ROOT/"scripts/calibration_quality_audit.py"),
+                    str(original),"--output",str(output)],capture_output=True,text=True,timeout=30)
+                with self.subTest(case=n):
+                    self.assertEqual(result.returncode,2,result.stdout+result.stderr)
+                    self.assertIn("SEFIROT calibration audit:",result.stderr)
+                    self.assertNotIn("Traceback",result.stderr)
+                    self.assertFalse(output.exists())
+                    self.assertEqual(original.read_bytes(),before)
