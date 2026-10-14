@@ -184,14 +184,14 @@ def fixture_identity(row):
             'kickoff':start.isoformat(),'sport':'football','format':'REGULATION_90'}
 
 
-def select_prematch(packet, fixture_id):
-    integer(fixture_id, 'fixture id', 1, MAX_PROVIDER_ID)
-    matches = [r for r in _rows(packet) if r.get('fixture', {}).get('id') == fixture_id]
-    if len(matches) != 1:
-        raise ValueError('exact unique API-Football fixture required')
-    row = matches[0];match = fixture_identity(row)
-    if row['fixture']['status']['short'] != 'NS' or time(match['kickoff']) <= time(packet['receipt']['received_at']):
+def validate_prematch_state(row):
+    """NS cannot coexist with played minutes; optional unknown is not zero."""
+    status = row.get('fixture', {}).get('status')
+    if not isinstance(status, dict) or status.get('short') != 'NS':
         raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
+    elapsed = status.get('elapsed')
+    if elapsed is not None:
+        integer(elapsed, 'prematch elapsed', 0, 0)
     score = row.get('score')
     if score is not None and not isinstance(score, dict):
         raise ValueError('prematch score container malformed')
@@ -199,6 +199,17 @@ def select_prematch(packet, fixture_id):
     if fulltime is not None and (not isinstance(fulltime, dict) or
                                 any(value is not None for value in fulltime.values())):
         raise ValueError('prematch NS fixture contains a result')
+
+
+def select_prematch(packet, fixture_id):
+    integer(fixture_id, 'fixture id', 1, MAX_PROVIDER_ID)
+    matches = [r for r in _rows(packet) if r.get('fixture', {}).get('id') == fixture_id]
+    if len(matches) != 1:
+        raise ValueError('exact unique API-Football fixture required')
+    row = matches[0];match = fixture_identity(row)
+    validate_prematch_state(row)
+    if time(match['kickoff']) <= time(packet['receipt']['received_at']):
+        raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
     return row, match
 
 
