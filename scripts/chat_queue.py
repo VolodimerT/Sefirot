@@ -8,11 +8,12 @@ import json
 import time
 from threading import Thread
 from chat_store import request
-from chat_gateway import execute, run_demo
+from chat_gateway import execute, read_only_mode, run_demo
 
 SAFE_KINDS={"status","report","demo","capture","decide","result","sports_probe","situation"}
 
 def process_one() -> bool:
+    if read_only_mode():return False
     envelope=request({"action":"claim"})
     job=envelope.get("job")
     if job is None:return False
@@ -52,6 +53,7 @@ def process_one() -> bool:
     return True
 
 def run():
+    if read_only_mode():return
     idle=0
     while True:
         try:
@@ -63,4 +65,6 @@ def run():
             time.sleep(60)
 
 def start():
+    if read_only_mode():return False
     Thread(target=run,daemon=True,name="sefirot-chat-job-worker").start()
+    return True

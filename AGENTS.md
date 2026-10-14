@@ -1,3 +1,18 @@
+## Read-only runtime rollout preparation, 14.10.2026
+
+User authorized continuation after the engineering handoff. Reuse draft #56
+at 79c7c5b4c9c5e8b0a10471e38956f83bf046d145; do not create a duplicate PR.
+Prepare an explicit read-only bridge mode: existing original reads only,
+no provider operation, mutation, queue claim/start or first cloud checkpoint.
+Status/report must preserve original SQLite bytes and one read snapshot.
+Only scripts, owned synthetic regression tests and documentation change.
+All src/Policy/models, protocol, reports and original source bytes preserved.
+Full release and exact-head OS/Python/actual PostgreSQL CI. Source/league/season
+inputs still require genuine originals, no cohort registration or real fit.
+No Render configuration/deploy/production SQL, secrets, paid APIs, main merge,
+money/LIVE/additional agents. Operational changes require explicit owner scope.
+Previous headers are historical completed stages.
+
 ## Independent calibration transaction follow-up, 14.10.2026
 
 User authorized continuation of the unified candidate and real-source checks.

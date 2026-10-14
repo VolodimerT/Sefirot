@@ -27,10 +27,18 @@ from chat_situation import execute_situation, strict_json
 MAX_REQUEST_BYTES = 512 * 1024
 GATE = Lock()
 SITUATION_GATE = BoundedSemaphore(4)
+READ_ONLY_OPERATIONS = frozenset(("status", "report", "decision"))
 
 
 class SituationBusy(RuntimeError):
     pass
+
+
+def read_only_mode() -> bool:
+    value = os.environ.get("SEFIROT_BRIDGE_READ_ONLY", "0")
+    if value not in ("0", "1"):
+        raise RuntimeError("INVALID_BRIDGE_READ_ONLY_MODE")
+    return value == "1"
 
 
 def configured_token() -> str:
@@ -47,6 +55,7 @@ def ledger_path() -> Path:
 def build_info() -> dict:
     return {"version": VERSION, "code_hash": code_hash(), "model_hash": model_code_hash(),
             "runtime": "SEFIROT_CANONICAL_CORE", "mode": "RESEARCH_ONLY",
+            "read_only_access": read_only_mode(),
             "money_authorized": False, "automatic_execution": False,
             "persistent_storage": False}
 
@@ -76,6 +85,8 @@ def run_demo() -> dict:
 
 def execute(kind: str, data: dict) -> dict:
     """Invoke the canonical Service against a fresh, integrity-checked durable snapshot."""
+    if read_only_mode() and kind not in READ_ONLY_OPERATIONS:
+        raise ValueError("BRIDGE_READ_ONLY")
     if kind == "situation":
         if not SITUATION_GATE.acquire(blocking=False):
             raise SituationBusy("STATUS_CAPACITY_EXCEEDED")
@@ -98,11 +109,19 @@ def execute(kind: str, data: dict) -> dict:
 
 
 def _execute_at(kind: str, data: dict, location: Path) -> dict:
+    readonly = read_only_mode()
+    if readonly and kind not in READ_ONLY_OPERATIONS:
+        raise ValueError("BRIDGE_READ_ONLY")
+    if readonly and not location.is_file():
+        raise ValueError("READ_ONLY_LEDGER_REQUIRED")
     if kind == "sports_probe" and not location.is_file():
         raise ValueError("JOURNAL_REQUIRED_FOR_PROBE")
-    location.parent.mkdir(parents=True, exist_ok=True)
-    repo = Repository(str(location), read_only=kind == "sports_probe")
+    if not readonly:
+        location.parent.mkdir(parents=True, exist_ok=True)
+    repo = Repository(str(location), read_only=readonly or kind == "sports_probe")
     try:
+        if readonly:
+            repo.db.execute("BEGIN")
         if not repo.verify():
             raise ValueError("JOURNAL_INTEGRITY: closed")
         service = Service(repo, Policy())
@@ -183,6 +202,9 @@ class Handler(BaseHTTPRequestHandler):
             elif path == "/v1/report":
                 data = execute("report", {})
             elif path == "/v1/demo":
+                if read_only_mode():
+                    self.respond(403, {"ok": False, "error": "BRIDGE_READ_ONLY"})
+                    return
                 data = run_demo()
             elif path.startswith("/v1/decision/"):
                 identifier = path[len("/v1/decision/"):]
@@ -229,6 +251,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    read_only_mode()  # Invalid non-secret rollout configuration fails before bind.
     configured_token()  # Fail closed unless operator provisioned token.
     port = int(os.environ.get("PORT", "10000"))
     if not 0 < port < 65536:

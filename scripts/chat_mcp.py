@@ -7,10 +7,11 @@ import os
 from http.server import ThreadingHTTPServer
 from urllib.parse import urlsplit
 
-from chat_gateway import Handler, MAX_REQUEST_BYTES, configured_token, execute, run_demo
+from chat_gateway import Handler, MAX_REQUEST_BYTES, configured_token, execute, read_only_mode, run_demo
 from chat_situation import strict_json
 
 PROTOCOL = "2025-03-26"
+READ_ONLY_TOOLS = frozenset(("sefirot_status", "sefirot_report"))
 TOOLS = [
     {"name": "sefirot_situation",
      "description": "Read-only phase/readiness from a server-enrolled original status receipt. No sporting fetch, live probability, CORE decision or betting permission. Real un-attested sources HOLD.",
@@ -71,6 +72,8 @@ TOOLS = [
 
 
 def call_tool(name, arguments):
+    if read_only_mode() and name not in READ_ONLY_TOOLS:
+        raise ValueError("BRIDGE_READ_ONLY")
     if name == "sefirot_situation": return execute("situation", arguments)
     if name == "sefirot_status": return execute("status", {})
     if name == "sefirot_demo": return run_demo()
@@ -94,11 +97,14 @@ def process_rpc(request):
     if method == "initialize":
         result = {"protocolVersion": PROTOCOL, "capabilities": {"tools": {"listChanged": False}},
                   "serverInfo": {"name": "sefirot-canonical-research", "version": "0.1.0"},
-                  "instructions": "Research-only. Call capture before decide; no monetary permission, LIVE or execution. Empty history must PASS."}
+                  "instructions": "Read-only rollout. Only original status/report reads; no queue, capture, providers or execution. Missing evidence stays PASS."
+                  if read_only_mode() else
+                  "Research-only. Call capture before decide; no monetary permission, LIVE or execution. Empty history must PASS."}
     elif method == "ping":
         result = {}
     elif method == "tools/list":
-        result = {"tools": TOOLS}
+        result = {"tools": [tool for tool in TOOLS if tool["name"] in READ_ONLY_TOOLS]
+                  if read_only_mode() else TOOLS}
     elif method == "tools/call":
         params = request.get("params", {})
         if not isinstance(params, dict):
@@ -157,6 +163,7 @@ class MCPHandler(Handler):
 
 
 def main():
+    readonly = read_only_mode()
     configured_token()
     smoke = run_demo()
     if not (smoke.get("synthetic") is True and smoke.get("replay_matches") is True
@@ -170,6 +177,8 @@ def main():
         from sefirot.repository import Repository
         status = execute("status", {})
         if status.get("store_revision") == 0:
+            if readonly:
+                raise RuntimeError("READ_ONLY_EXISTING_STORE_REQUIRED")
             with TemporaryDirectory(prefix="sefirot-first-ledger-") as directory:
                 initial = Path(directory) / "canonical.sqlite"
                 repository = Repository(str(initial))
@@ -183,9 +192,16 @@ def main():
         if status.get("persistent_storage") is not True or status.get("store_revision", 0) < 1:
             raise RuntimeError("SEFIROT_DURABLE_STORE_NOT_READY")
         print("SEFIROT_DURABLE_STORE_VERIFIED revision="+str(status["store_revision"]), flush=True)
-        from chat_queue import start as start_chat_worker
-        start_chat_worker()
-        print("SEFIROT_CHAT_JOB_WORKER_STARTED", flush=True)
+        if not readonly:
+            from chat_queue import start as start_chat_worker
+            start_chat_worker()
+            print("SEFIROT_CHAT_JOB_WORKER_STARTED", flush=True)
+        else:
+            print("SEFIROT_CHAT_JOB_WORKER_DISABLED read_only", flush=True)
+    elif readonly:
+        status = execute("status", {})
+        if status.get("ledger_integrity") is not True:
+            raise RuntimeError("READ_ONLY_EXISTING_LEDGER_REQUIRED")
     port = int(os.environ.get("PORT", "10000"))
     if not 0 < port < 65536: raise ValueError("invalid PORT")
     ThreadingHTTPServer(("0.0.0.0", port), MCPHandler).serve_forever()
