@@ -9,7 +9,12 @@ FAMILY_SPECS = {"CORNERS": {"metrics": ("CORNERS",),
     "method": "CORNERS_SHADOW_V0_POISSON_NEGATIVE_BINOMIAL",
     "module": "src/sefirot/corners_shadow.py",
     "rate_basis": "OWN_CORNER_COUNTS; 2H_FROM_SAME_TYPED_FT_MINUS_1H",
-    "extra_blockers": []}}
+    "extra_blockers": []},
+    "SHOTS_SOT": {"metrics": ("SHOTS", "SOT"),
+        "method": "OWN_SHOT_POISSON_WITH_CONDITIONAL_SOT_BINOMIAL_UNVALIDATED",
+        "module": "research/shots_shadow.py",
+        "rate_basis": "OWN_PAIRED_SAME_FIXTURE_SHOTS_AND_SOT_COUNTS",
+        "extra_blockers": ["PAIRED_SHOTS_SOT_SOURCE_DEFINITION_NOT_ATTESTED"]}}
 ROOT = Path(__file__).resolve().parents[1]
 
 

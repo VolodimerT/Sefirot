@@ -1,3 +1,17 @@
+## Issue #60 SHOTS/SOT: second independent family, 13.10.2026
+
+After verified corners #25 94a932af3de08714b02ee3ca690c423ae6c7a12d, all six
+required OS/Python/actual PG CI jobs success. Reuse shared observation/source
+QC and family matrix/CLI. Own paired shot/SOT count math lab, SOT<=shots,
+no goal/corner-rate substitution. Public unknown source/history/calibration/
+settlement -> null parameters/P/EV, SHADOW/zero stake; no real fit/API calls.
+All src/sefirot/MODEL_MODULES/Policy/old reports/seals remain byte-identical
+to verified corners; this is research module/matrix/tests/docs only. Full
+release + exact four OS/Python and actual mirror/budget CI. Separate draft PR,
+then FOULS then referee YC. #61 on independent verified #59 branch is permitted
+after its #57/#58 dependencies, no hosted endpoint. No main/prod/deploy/paid
+API/secrets/refit/money/LIVE/additional agents. Prior scopes historical.
+
 ## Issue #60 corners: reuse #25 after verified #58/#59, 13.10.2026
 
 Base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4 (#63, 12/12 CI).
