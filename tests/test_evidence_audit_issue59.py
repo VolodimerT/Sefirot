@@ -16,10 +16,10 @@ from scripts.calibration_quality_audit import audit, audit_originals, cohort_err
 from sefirot.contracts import digest, time
 from sefirot.forward import create_plan
 from sefirot.forward_scorecard import _receipt
-from sefirot.football_provider import select_prematch
+from sefirot.football_provider import select_prematch, normalize_sports
 from sefirot.repository import Repository
 from sefirot.service import Service
-from sefirot.sports_archive import validate_packet
+from sefirot.sports_archive import validate_packet, archive_packets, export_sports
 from test_calibration_quality_audit import scorecard, resign
 from test_operations_upgrade import packet, row, stamp, NOW
 
@@ -226,3 +226,52 @@ class EvidenceAuditTests(unittest.TestCase):
             self.assertTrue(all(v is None for v in out["metrics"].values()))
             self.assertFalse(out["holdout_passed"])
             self.assertFalse(out["statistical_profitability_proven"])
+
+    def test_ns_positive_elapsed_blocks_selection_and_normalization(self):
+        for elapsed in (1,25,90):
+            r=row(100,status="NS",hours=3,score=(None,None))
+            r["fixture"]["status"]["elapsed"]=elapsed;p=packet([r])
+            with self.subTest(elapsed=elapsed):
+                with self.assertRaises(ValueError):select_prematch(p,100)
+                with self.assertRaises(ValueError):
+                    normalize_sports(p,100,[],profile="LOWER",source_reliability=.95)
+
+    def test_ns_elapsed_requires_exact_zero_or_unknown_not_bool_float_or_string(self):
+        for elapsed in (True,False,0.0,"0",-1,[],{}):
+            r=row(100,status="NS",hours=3,score=(None,None))
+            r["fixture"]["status"]["elapsed"]=elapsed
+            with self.subTest(elapsed=elapsed),self.assertRaises(ValueError):
+                select_prematch(packet([r]),100)
+
+    def test_optional_ns_elapsed_zero_null_or_absent_are_not_rewritten(self):
+        for present,elapsed in ((False,None),(True,None),(True,0)):
+            r=row(100,status="NS",hours=3,score=(None,None))
+            if present:r["fixture"]["status"]["elapsed"]=elapsed
+            p=packet([r]);before=json.dumps(p,sort_keys=True)
+            with self.subTest(present=present,elapsed=elapsed):
+                select_prematch(p,100)
+                normalize_sports(p,100,[],profile="LOWER",source_reliability=.95)
+                self.assertEqual(json.dumps(p,sort_keys=True),before)
+
+    def test_forward_plan_rejects_contradictory_phase_before_reserving_any_fixture(self):
+        with tempfile.TemporaryDirectory() as directory,closing(Repository(str(Path(directory)/"phase.sqlite"))) as repo:
+            valid=row(101,status="NS",hours=3,score=(None,None))
+            bad=row(100,status="NS",hours=3,score=(None,None));bad["fixture"]["status"]["elapsed"]=25
+            initial=repo.db.total_changes
+            with self.assertRaises(ValueError):
+                create_plan(Service(repo,clock=lambda:NOW),packet([valid,bad]),
+                    {9:"LOWER"},role="CALIBRATION",source_reliability=.95)
+            self.assertEqual(repo.db.total_changes,initial)
+            self.assertEqual(repo.all("jobs"),[])
+            self.assertEqual(repo.all("split_assignments"),[])
+            self.assertTrue(repo.verify())
+
+    def test_bad_phase_archive_is_preserved_but_cannot_be_exported_as_prematch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)/"archive"
+            r=row(100,status="NS",hours=3,score=(None,None));r["fixture"]["status"]["elapsed"]=25
+            archive_packets([packet([r])],root,stamp(1))
+            before={p.name:p.read_bytes() for p in root.glob("*.json")}
+            with self.assertRaises(ValueError):
+                export_sports(root,100,stamp(),profile="LOWER",source_reliability=.95)
+            self.assertEqual({p.name:p.read_bytes() for p in root.glob("*.json")},before)
