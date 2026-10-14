@@ -125,6 +125,31 @@ Main и фиксированный RC #57 не переключаются. По�
 Actual mirror/budget отдельно обязательны в CI. Окончательный exact SHA,
 количество tests и все CI links записываются в описании draft PR после проверки.
 
+## Исходные prediction IDs и frozen build, 14.10.2026
+
+На проверенном #63 `dc79c938536d699571a3e0def8e9c4039ffa5233`
+descriptive-аудитор принимал SCORED fixtures/observations без prediction_id,
+либо один prediction_id у двух разных матчей. Он также принимал model_hash
+как bool; frozen_build в виде list приводил к необработанному AttributeError.
+Это дефекты проверки происхождения, а не доказательство реальной ставки:
+денежные/holdout/profitability flags уже оставались false.
+
+Теперь каждый оценённый матч требует непустой строковый ID исходного seal.
+ID уникален между fixtures; разные рынки одного матча сохраняют общий ID.
+Неоценённый матч без capture сохраняет null и входит в полный denominator.
+frozen_build требует объект и исходные SHA256 code/model/policy_hash;
+calibrator_id может быть null либо непустой строковой ссылкой. Неверные
+формы возвращают ValueError и короткую ошибку CLI, без traceback, нового
+output и изменения входного scorecard. Никакой подстановки текущей сборки
+в исторический scorecard нет; local hash не удостоверяет внешнего провайдера.
+
+Пять новых регрессий, всего 33 профильных теста; прежние проверки когорт,
+receipt chronology и PREMATCH NS/elapsed сохранены. Изменяются только
+auditor script, профильные тесты и документация. Все SRC/MODEL_MODULES,
+Policy, текущие CORE code_hash и старые reports/seals/receipts остаются
+прежними; SHA256 самого auditor script фиксируется отдельно. Перенос
+в существующий стек #63/#25/#65/#66/#67/#64 требует полного exact-head CI.
+
 ## Prospective plan и минимальный денежный допуск
 
 План является DRAFT_NOT_REGISTERED_OR_COLLECTING: fixture IDs, лиги, сезоны,
@@ -154,4 +179,9 @@ Policy approval владельца. Одних sample minima или зелёно
 source blockers/null P/EV, переиспользуя имеющуюся corners/QC инфраструктуру.
 #61 — read-only phone prototype; actual endpoints пока не подключены.
 
-Identity: code_hash `43e55e179240cbe42ae0d0973eebda6934ece715df52c4c31d8cb9d4e7bddba1`, model_hash `bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee`, policy_hash `5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9`.
+Историческая identity исходного этапа #59: code_hash `43e55e179240cbe42ae0d0973eebda6934ece715df52c4c31d8cb9d4e7bddba1`.
+После исправления NS/elapsed текущий code_hash #63/#64 — `5fddf9b1d0d1f7f02b78d5de3baa2da0b1cf32569fa772750d5328f58c80a11b`,
+а #25/#65/#66/#67 — `56233251fdcffceb0bae3ab8bfe2a5579957ffcfcb6c86c341eac181b97bb2b9`.
+Общие model_hash `bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee`
+и policy_hash `5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9` прежние.
+Новые точные commit SHA и CI links фиксируются в описаниях draft PR.
