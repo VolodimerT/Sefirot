@@ -28,6 +28,22 @@ MAX_REQUEST_BYTES = 512 * 1024
 GATE = Lock()
 SITUATION_GATE = BoundedSemaphore(4)
 READ_ONLY_OPERATIONS = frozenset(("status", "report", "decision"))
+DENIAL_BODY_TIMEOUT = 1.0
+
+
+class _TrackedRequestBody:
+    """Count explicit body reads without retaining or parsing extra payloads."""
+    def __init__(self, stream):
+        self.stream = stream
+        self.body_bytes_read = 0
+
+    def read(self, size=-1):
+        data = self.stream.read(size)
+        self.body_bytes_read += len(data)
+        return data
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
 
 
 class SituationBusy(RuntimeError):
@@ -166,6 +182,37 @@ def _execute_at(kind: str, data: dict, location: Path) -> dict:
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "SEFIROTBridge/0.1"
+
+    def setup(self):
+        super().setup()
+        self.rfile = _TrackedRequestBody(self.rfile)
+
+    def parse_request(self):
+        parsed = super().parse_request()
+        if parsed:
+            self.rfile.body_bytes_read = 0
+        return parsed
+
+    def finish(self):
+        # Closing a socket with unread incoming bytes can reset the connection
+        # and discard a denial at the peer. Flush the response FIRST, then
+        # discard only a known, bounded body before the normal close. Never
+        # parse it, dispatch it or wait indefinitely for missing bytes.
+        try:
+            headers = getattr(self, "headers", {})
+            size = int(headers.get("Content-Length", "0"))
+            remaining = size - getattr(self.rfile, "body_bytes_read", 0)
+            all_lengths = getattr(headers, "get_all", None)
+            unambiguous = all_lengths is None or len(all_lengths("Content-Length", [])) == 1
+            if (0 < remaining <= size <= MAX_REQUEST_BYTES and unambiguous
+                    and not headers.get("Transfer-Encoding") and not self.wfile.closed):
+                self.wfile.flush()
+                self.connection.settimeout(DENIAL_BODY_TIMEOUT)
+                self.rfile.read(remaining)
+        except (OSError, ValueError, TypeError):
+            pass
+        finally:
+            super().finish()
 
     def log_message(self, format, *args):
         # Do not log URLs, request bodies, tokens or private sporting data.

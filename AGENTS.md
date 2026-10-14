@@ -1,3 +1,16 @@
+## Denied HTTP completion follow-up, 14.10.2026
+
+Initial read-only head e99411268425bd05cdcb1918b8e7e51313753f2c had one
+Windows3.11 PR release error: operator forbidden /session method, WinError10053.
+No rerun. Confirmed common Handler closes before receiving a declared denied
+body; two controlled split-body socket cases reproduce early EOF. Flush denial
+first, discard only bounded known remaining bytes with <=1s transport timeout,
+no parsing/dispatch, no reread of consumed body. Keep all auth/status assertions.
+Exact WinError10053 root remains unconfirmed; preserve failed head/job evidence.
+Scripts/tests/docs only; no src/model/Policy/original data change. Reuse #56,
+full release and fresh exact-head OS/Python/PG CI. No production/env/deploy/API/
+secrets/main/money/fit/new agents. Previous headers are historical.
+
 ## Read-only runtime rollout preparation, 14.10.2026
 
 User authorized continuation after the engineering handoff. Reuse draft #56

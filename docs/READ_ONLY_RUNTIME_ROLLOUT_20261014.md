@@ -85,10 +85,36 @@ Deploy/config/stop/secret access/provider requests в данном этапе н
 лиги/сезона, разрешённых original sources и prospective registration.
 Данные не выдуманы, протокол DRAFT_NOT_REGISTERED, **PASS, stake=0**.
 
+## Завершение HTTP-отказов и первая ошибка CI
+
+На первом read-only head `e99411268425bd05cdcb1918b8e7e51313753f2c`
+Windows 3.11 PR job `115877026558` выполнил unit suite 1414/1414 с 4 PG skips,
+затем release suite упал на `test_expired_session_and_write_live_paid_policy_paths_refuse`:
+клиент получал WinError10053 вместо ожидаемого 403 при одном из запрещённых
+PUT/PATCH/DELETE `/session` (точный метод отсутствует в логе). Остальные
+11 exact-head checks успешны. Повторный запуск не запрашивался.
+
+Подтверждена отдельная транспортная проблема: common Handler закрывает
+соединение, не дочитав объявленное тело раннего отказа. Два управляемых socket
+сценария с раздельной отправкой headers/body воспроизводят ранний EOF на 401/403.
+Это подтверждает последовательность закрытия, **не точную причину WinError10053**.
+
+Теперь ответ сначала flush, затем при finish дочитываются только оставшиеся
+известные bytes тела: максимум исходного 512 KiB cap, ожидание максимум 1 секунду.
+Уже прочитанное тело повторно не читается. Неизвестный/слишком большой/неоднозначный
+Content-Length и Transfer-Encoding не drain. Никакой parsing/dispatch/CORE/provider
+по этим bytes не выполняется, тело не сохраняется/логируется. Auth/status/403
+assertions сохранены; client timeouts, skips и retries не добавлены.
+
+Добавлены три regression methods. Финальные проверки выполняются на новом
+commit; неудачный первый head/job остаётся в истории и отдельном incident JSON.
+
 ## Проверки
 
 `python -m unittest tests.test_bridge_read_only_rollout tests.test_chat_mcp
 tests.test_chat_gateway tests.test_chat_queue -v` — 26 методов.
+С `tests.test_http_denial_completion` и `tests.test_operator_cockpit_issue61`
+финальная профильная группа — 38 методов.
 Полный release и четыре OS/Python plus actual PostgreSQL mirror/budget CI
 проверяются на точном финальном коммите draft #56. Все src/model/Policy,
 старые reports/fixtures/source seals и независимый protocol неизменны;
