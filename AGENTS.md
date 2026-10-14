@@ -1,3 +1,30 @@
+## Issue #61 session follow-up, 14.10.2026
+
+User authorized continuation after verified #57-61. Reuse existing draft #64
+on exact 0f7132ae664101aff96fb21754dac3ce8c599dc8; no duplicate PR or merge.
+Confirmed actual JS 401 kept private original cards/current filter memory.
+Clear protected views on failed reads/login; ignore stale concurrent responses.
+Synthetic Node event-handler regression only, no providers/actual credentials.
+Keep all src/sefirot/MODEL_MODULES/Policy/old receipts/reports unchanged.
+Full release and exact OS/Python/actual PostgreSQL CI; main/prod/deploy/money/
+LIVE/additional agents forbidden. Hosted runtime/Android/evidence blockers stay.
+Prior scopes below historical.
+
+## Issue #61: phone read-only prototype, 13.10.2026
+
+Independent base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4;
+#57/#58 dependencies satisfied, #60 family branches separate. Reuse existing
+chat Handler/readiness/original verifier, authenticated read-only operator
+subset; never call execute/status/demo/worker/providers. Actual source/CI
+runtime states unknown; no artificial forecasts/KPIs. Original PASS/BET and
+card data only from verified originals, research separate, missing null.
+Loopback prototype/session only; no cloud hosting, no Android localhost promise.
+Tests synthetic owner token, no actual credential read/rotation. All src/core
+MODEL_MODULES/Policy and historical source/seals/reports byte-identical to #59.
+No main/prod/deploy/paid API/real refit/money/LIVE/additional agents. Full release
+and exact OS/Python/PG CI required. Remaining #60 SHOTS/SOT->FOULS->YC proceeds
+through its own audited family chain. Prior scopes below historical.
+
 ## Issue #59: honest original evidence and prospective audit, 13.10.2026
 
 After verified #58 exact e32fd7e7a4876005f337314822354bbbabfee2c3 (#62,
