@@ -7,7 +7,7 @@ from copy import deepcopy
 from collections import Counter
 
 from .contracts import PROFILES, digest, integer, number, time
-from .football_provider import MAX_PROVIDER_ID, fixture_identity
+from .football_provider import MAX_PROVIDER_ID, fixture_identity, validate_prematch_state
 from .identity import code_hash, model_code_hash
 from .markets import DEFAULT_POOL
 from .sports_archive import export_sports, read_archive, validate_packet
@@ -77,8 +77,7 @@ def create_plan(service, packet, profiles, *, role='CALIBRATION',
         match = fixture_identity(row)
         if row['fixture']['status']['short'] != 'NS' or time(match['kickoff']) <= time(at):
             excluded['NOT_FUTURE_PREMATCH'] += 1; continue
-        if any(v is not None for v in row.get('score', {}).get('fulltime', {}).values()):
-            raise ValueError('future NS fixture already contains a result')
+        validate_prematch_state(row)
         if fit and match['id'] in fit['fit_ids']:
             raise ValueError('holdout fixture overlaps calibrator training')
         match['competition_profile'] = profiles[league]
