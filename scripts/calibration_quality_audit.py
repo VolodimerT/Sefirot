@@ -56,6 +56,17 @@ def _validate(report):
     role = report.get("role")
     if role not in ("CALIBRATION", "HOLDOUT"):
         raise ValueError("unknown or retrospective scorecard role")
+    build = report.get("frozen_build")
+    if not isinstance(build, dict):
+        raise ValueError("scorecard frozen build object required")
+    for field in ("code_hash", "model_hash", "policy_hash"):
+        value = build.get(field)
+        if (not isinstance(value, str) or len(value) != 64
+                or any(c not in "0123456789abcdef" for c in value)):
+            raise ValueError("scorecard frozen build requires original SHA256 " + field)
+    calibrator = build.get("calibrator_id")
+    if calibrator is not None and (not isinstance(calibrator, str) or not calibrator.strip()):
+        raise ValueError("nonempty original calibrator reference required")
     fixtures = report.get("fixtures")
     observations = report.get("observations")
     if (not isinstance(fixtures, list) or not 1 <= len(fixtures) <= MAX_FIXTURES
@@ -64,6 +75,7 @@ def _validate(report):
     if report.get("planned_fixtures") != len(fixtures):
         raise ValueError("plan denominator mismatch")
     fixture_map = {}
+    prediction_ids = set()
     for f in fixtures:
         if not isinstance(f, dict):
             raise ValueError("invalid fixture record")
@@ -72,6 +84,13 @@ def _validate(report):
             raise ValueError("unique planned fixture ID required")
         if not isinstance(f.get("league"), str) or not isinstance(f.get("competition_profile"), str):
             raise ValueError("fixture league/profile required")
+        prediction_id = f.get("prediction_id")
+        if f.get("status") == "SCORED" or prediction_id is not None:
+            if not isinstance(prediction_id, str) or not prediction_id.strip():
+                raise ValueError("nonempty original prediction ID required")
+            if prediction_id in prediction_ids:
+                raise ValueError("unique original prediction ID per planned fixture required")
+            prediction_ids.add(prediction_id)
         if time(f["kickoff"]) > time(report["at"]) and f.get("status") == "SCORED":
             raise ValueError("scored event cannot be in the future")
         fixture_map[match_id] = f
@@ -80,7 +99,7 @@ def _validate(report):
         raise ValueError("scorecard scored/observation count mismatch")
     if abs(report.get("fixture_coverage", -1) - counted / len(fixtures)) > 1e-10:
         raise ValueError("scorecard coverage mismatch")
-    if role == "CALIBRATION" and report.get("frozen_build", {}).get("calibrator_id") is not None:
+    if role == "CALIBRATION" and calibrator is not None:
         raise ValueError("CALIBRATION scorecard must not reuse a fitted calibrator")
     valid_keys = set()
     for group in report.get("groups", []):
