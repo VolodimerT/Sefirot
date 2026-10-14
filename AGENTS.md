@@ -1,3 +1,17 @@
+## Issue #60 FOULS: third family after verified SHOTS/SOT, 13.10.2026
+
+Base #65 1e60cc0d0cfc4b1c04c257abdab89af36090e483, 12/12 exact-head CI.
+Direct committed/suffered count math lab, no YC/goal/opponent surrogate.
+Reuse original QC/matrix/CLI. Observation-v2 has no suffered field: preserve
+old schema/source, show explicit missing in matrix, not fabricated zeros.
+Unknown source/style/history/calibration/rules -> null parameters/P/EV;
+SHADOW/zero stake/no real fit. All src/core MODEL_MODULES/Policy and old
+reports/seals/receipts byte-identical to #65. Full release/exact OS/PG CI,
+small separate draft PR, then strict referee YC. #61 prototype verified
+independently #64, no hosted/Android connection claimed. Main/prod/deploy/
+paid APIs/secrets/real refit/money/LIVE/additional agents forbidden.
+Prior scopes historical.
+
 ## Issue #60 SHOTS/SOT: second independent family, 13.10.2026
 
 After verified corners #25 94a932af3de08714b02ee3ca690c423ae6c7a12d, all six

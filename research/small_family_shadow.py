@@ -14,7 +14,12 @@ FAMILY_SPECS = {"CORNERS": {"metrics": ("CORNERS",),
         "method": "OWN_SHOT_POISSON_WITH_CONDITIONAL_SOT_BINOMIAL_UNVALIDATED",
         "module": "research/shots_shadow.py",
         "rate_basis": "OWN_PAIRED_SAME_FIXTURE_SHOTS_AND_SOT_COUNTS",
-        "extra_blockers": ["PAIRED_SHOTS_SOT_SOURCE_DEFINITION_NOT_ATTESTED"]}}
+        "extra_blockers": ["PAIRED_SHOTS_SOT_SOURCE_DEFINITION_NOT_ATTESTED"]},
+    "FOULS": {"metrics": ("FOULS_COMMITTED", "FOULS_SUFFERED"),
+        "method": "OWN_DIRECT_COMMITTED_AND_SUFFERED_FOUL_POISSON_UNVALIDATED",
+        "module": "research/fouls_shadow.py",
+        "rate_basis": "OWN_DIRECT_FOUL_COUNTS; NO_YC_OR_OPPONENT_PROXY",
+        "extra_blockers": ["FOUL_DIRECTION_AND_STYLE_NOT_ATTESTED"]}}
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -24,6 +29,17 @@ def family_report(family, *, data=None, at):
     spec = FAMILY_SPECS[family]
     qc = audit_dataset(data, at) if data is not None else readiness_without_archive(at)
     selected = [r for r in qc["markets"] if r["metric"] in spec["metrics"]]
+    # Existing observation-v2 has no direct suffered field. Preserve its schema
+    # and show the missing direction; never infer it from opponent committed/YC.
+    missing_metrics = set(spec["metrics"]) - {r["metric"] for r in selected}
+    for metric in sorted(missing_metrics):
+        for period in PERIODS:
+            denominator = qc.get("eligible_unique_fixture_count")
+            selected.append({"metric": metric, "period": period,
+                "eligible_denominator": denominator, "known_fixtures": 0 if denominator is not None else None,
+                "missing_fixtures": denominator, "observed_coverage": None,
+                "blockers": ["DIRECT_METRIC_NOT_AVAILABLE_IN_OBSERVATION_V2",
+                    "SOURCE_ORIGIN_NOT_ATTESTED", "SETTLEMENT_NOT_ATTESTED", "NO_INDEPENDENT_HOLDOUT"]})
     matrix = []
     for row in selected:
         for scope in ("MATCH", "HOME", "AWAY"):
