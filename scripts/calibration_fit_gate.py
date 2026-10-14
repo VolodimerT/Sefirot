@@ -22,6 +22,11 @@ from sefirot.probability import bin_key
 from sefirot.repository import Repository
 from sefirot.service import Service
 
+if __package__:
+    from .calibration_quality_audit import cohort_errors
+else:
+    from calibration_quality_audit import cohort_errors
+
 SCHEMA = "calibration-fit-gate-v1"
 TRAINING_FIXTURE_FLOOR = 60  # research safety floor; not the core holdout release criterion
 MIN_CAPTURE_COVERAGE = 0.80
@@ -200,6 +205,14 @@ def assess(repository, policy, at):
         blockers.append({"reason": "PLANNED_COHORT_COVERAGE_LOW"})
     if not by_contract or any(v["populated_bins"] == 0 for v in by_contract.values()):
         blockers.append({"reason": "NO_READY_BIN_IN_EVERY_OBSERVED_CONTRACT"})
+    # A locally valid CAL record is not independent merely because its role
+    # matches. Reuse the original-evidence audit over ALL declared cohorts
+    # and frozen fits, within the caller's verified read/write transaction.
+    cohort_issues = cohort_errors(
+        [job for job in jobs if job.get("schema") == "api-forward-plan-v1"],
+        repository.all("calibrators", at),
+    )
+    blockers.extend({"reason": issue} for issue in cohort_issues)
     result = {
         "schema": SCHEMA, "at": at, "read_only_check": True,
         "record_count": len(records), "verified_distinct_matches": len(verified),
@@ -208,7 +221,7 @@ def assess(repository, policy, at):
         "contracts": by_contract,
         "minimum_per_exact_bin": policy.min_calibration,
         "research_fixture_floor": TRAINING_FIXTURE_FLOOR,
-        "blockers": blockers,
+        "blockers": blockers, "cohort_errors": cohort_issues,
         "fit_ready": not blockers, "fit_performed": False,
         "model_activated": False, "validation_passed": False,
         "requires_new_independent_holdout": True,

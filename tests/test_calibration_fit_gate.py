@@ -220,6 +220,61 @@ class CalibrationFitGateTests(unittest.TestCase):
         self.assertFalse(r["fit_ready"])
         self.assertIn("Policy cannot fit", str(r["blockers"]))
 
+    def add_cohort(self, db, role, mid, *, kickoff_day=1, fit=None):
+        plan = {"schema": "api-forward-plan-v1", "at": t(hours=8),
+                "role": role, "members": [{"match": {
+                    "id": mid, "kickoff": t(days=kickoff_day, hours=12),
+                    "competition_profile": "MEN"}}]}
+        if fit is not None:
+            plan["calibrator_id"] = fit["hash"]
+            db.tables.setdefault("calibrators", []).append(fit)
+        db.tables["jobs"].append(sign(plan))
+
+    def test_cross_cohort_fixture_blocks_otherwise_ready_fit(self):
+        db = fixtures(60)
+        self.add_cohort(db, "TRAIN", "F0000")
+        report = assess(db, Policy(), t(days=4))
+        self.assertFalse(report["fit_ready"])
+        self.assertEqual(report["verified_distinct_matches"], 60)
+        self.assertIn("DUPLICATE_OR_CROSS_COHORT_FIXTURE",
+                      [b["reason"] for b in report["blockers"]])
+
+    def test_train_after_calibration_blocks_even_for_disjoint_fixture_ids(self):
+        db = fixtures(60)
+        self.add_cohort(db, "TRAIN", "different-training-fixture", kickoff_day=3)
+        report = assess(db, Policy(), t(days=4))
+        self.assertFalse(report["fit_ready"])
+        self.assertIn("COHORT_TIME_WINDOWS_OVERLAP",
+                      [b["reason"] for b in report["blockers"]])
+
+    def test_previously_seen_test_cannot_be_ignored_by_fit_preflight(self):
+        db = fixtures(60)
+        self.add_cohort(db, "TEST", "already-viewed-fixture")
+        report = assess(db, Policy(), t(days=4))
+        self.assertFalse(report["fit_ready"])
+        self.assertIn("UNKNOWN_COHORT_ROLE", [b["reason"] for b in report["blockers"]])
+
+    def test_holdout_original_fit_overlap_blocks_training_preflight(self):
+        db = fixtures(60)
+        fit = {"fit_at": t(hours=5), "fit_ids": ["holdout-fixture"]}
+        fit["hash"] = digest(fit)
+        self.add_cohort(db, "HOLDOUT", "holdout-fixture", kickoff_day=3, fit=fit)
+        report = assess(db, Policy(), t(days=4))
+        self.assertFalse(report["fit_ready"])
+        self.assertIn("HOLDOUT_OVERLAPS_FIT_IDS", [b["reason"] for b in report["blockers"]])
+
+    def test_distinct_historical_train_and_calibration_remain_ready_without_fit(self):
+        db = fixtures(60)
+        self.add_cohort(db, "TRAIN", "different-training-fixture")
+        before = deepcopy(db.tables)
+        report = assess(db, Policy(), t(days=4))
+        self.assertTrue(report["fit_ready"], report["blockers"])
+        self.assertEqual(report["cohort_errors"], [])
+        self.assertEqual(db.tables, before)
+        self.assertFalse(report["fit_performed"])
+        self.assertFalse(report["monetary_permission"])
+        self.assertEqual(report["stake"], 0)
+
 
 class CalibrationFitTransactionTests(unittest.TestCase):
     """Two real SQLite connections; only assessment and fitting are synthetic."""

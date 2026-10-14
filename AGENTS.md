@@ -1,3 +1,18 @@
+## Calibration cohort fit follow-up, 14.10.2026
+
+User explicitly deferred Render rollout and authorized further code work.
+Base exact verified unified draft #56 head 538e62505b0d9f1c9dde5a66fc891b211ef208fa.
+Repair confirmed fit preflight accepting cross-cohort fixture reuse, inverted
+TRAIN/CAL windows and invalid HOLDOUT fit identity despite the existing audit
+rejecting them. Reuse shared cohort_errors in both transactional assessments;
+no new parallel subsystem. Owned synthetic regressions, full local release and
+exact-head OS/Python/actual PostgreSQL CI. Reuse #56, no duplicate PR.
+Keep src/Policy/models/protocol/original seals/receipts/reports immutable.
+No real fit, collection, provider requests, secrets, main merge or deployment.
+Earlier production consent applies only to deferred exact head 538e625;
+it does not authorize rollout of this new candidate. PASS/stake 0 persists.
+No additional agents. Prior headers describe completed historical stages.
+
 ## Denied HTTP completion follow-up, 14.10.2026
 
 Initial read-only head e99411268425bd05cdcb1918b8e7e51313753f2c had one
