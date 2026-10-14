@@ -95,6 +95,33 @@ model_hash/policy_hash и старые source/seals/reports не меняютс�
 Исправление переносится последовательно в существующие зависимые draft
 PR #25→#65→#66→#67 и независимый #64; ветка main и RC #57 неизменны.
 Точные коммиты и полный OS/Python/PostgreSQL CI фиксируются в PR и отчёте.
+
+## Противоречивый PREMATCH elapsed, 14.10.2026
+
+На проверенном #63 `5aa05f35639b80df44a4a2a1ee90f89a0a3ad730`
+статус NS вместе с elapsed=25 и будущим kickoff принимали selector,
+normalize_sports, forward-plan и export_sports. Это противоречие исходных
+данных: NS не может одновременно означать уже сыгранные минуты.
+
+Одна validate_prematch_state теперь используется selector и planner;
+normalizer и archive export используют selector. Optional elapsed может
+быть отсутствующим/null или точным integer 0. Положительные/отрицательные
+минуты, bool, float, строка и неверный контейнер отклоняются. Неизвестное
+значение не заменяется нулём. Проверки score/fulltime сохранены и также
+переиспользуются planner, без копирования противоречивой логики.
+
+5 новых регрессий, всего 28 профильных тестов: все пути отказа, типы,
+valid unknown/zero без изменения input, атомарный отказ всего plan batch
+до split/job records, сохранение сырых archive bytes при отказе экспорта.
+Это тестовые квитанции, не реальные provider calls или модельное обучение.
+
+Меняются два non-model SRC файла football_provider.py и forward.py,
+поэтому новые CORE code_hash фиксируются явно для каждого HEAD. Все
+7 MODEL_MODULES и Policy, V3 модель, старые source/seals/fit/approvals/reports
+не меняются и не переподписываются. Старый forward plan нельзя автоматически
+продолжать на другой code_hash; исторический read-only audit остаётся доступен.
+Main и фиксированный RC #57 не переключаются. Полный CI обязателен на
+каждой обновлённой зависимой draft ветке #63/#25/#65/#66/#67/#64.
 Actual mirror/budget отдельно обязательны в CI. Окончательный exact SHA,
 количество tests и все CI links записываются в описании draft PR после проверки.
 
