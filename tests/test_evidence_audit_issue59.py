@@ -170,3 +170,59 @@ class EvidenceAuditTests(unittest.TestCase):
         self.assertNotEqual(old["hash"],new["hash"])
         self.assertEqual(old["packets"][0]["data"]["response"][0]["score"]["fulltime"],{"home":2,"away":1})
         self.assertEqual(new["packets"][0]["data"]["response"][0]["score"]["fulltime"],{"home":None,"away":None})
+
+    def test_train_holdout_order_is_checked_without_an_intermediate_calibration(self):
+        self.assertIn("COHORT_TIME_WINDOWS_OVERLAP",
+            cohort_errors([plan("TRAIN","t",4),plan("HOLDOUT","h",2)]))
+        self.assertEqual(cohort_errors([plan("TRAIN","t",1),plan("HOLDOUT","h",2)]),[])
+
+    def test_frozen_fit_ids_are_unique_nonempty_string_list_not_iterable_surrogates(self):
+        for ids in ("train-fixture",{"train-fixture":True},["t","t"],[],None,[True],[42],[" "]):
+            fit={"fit_at":stamp(-48),"fit_ids":ids};fit["hash"]=digest(fit)
+            p=plan("HOLDOUT","h",3);p["calibrator_id"]=fit["hash"];p.pop("id");p["id"]=digest(p)
+            with self.subTest(ids=ids):
+                self.assertIn("MALFORMED_FROZEN_FIT_IDS",cohort_errors([p],[fit]))
+
+    def test_malformed_cohort_shape_is_reported_without_uncaught_parser_errors(self):
+        for member in (None,{}, {"match":[]},{"match":{"id":True,"kickoff":stamp(24)}},
+                       {"match":{"id":" ","kickoff":stamp(24)}}):
+            p=plan("CALIBRATION","c",1);p["members"]=[member];p.pop("id");p["id"]=digest(p)
+            with self.subTest(member=member):
+                self.assertIn("MALFORMED_COHORT",cohort_errors([p]))
+        p=plan("CALIBRATION","c",1);p["at"]=None;p.pop("id");p["id"]=digest(p)
+        self.assertIn("MALFORMED_COHORT",cohort_errors([p]))
+        self.assertIn("MALFORMED_COHORT_COLLECTION",cohort_errors(None))
+        self.assertIn("MALFORMED_FROZEN_FIT_COLLECTION",cohort_errors([],{}))
+
+    def test_malformed_frozen_fit_record_is_reported_not_an_attribute_error(self):
+        self.assertIn("MALFORMED_FROZEN_FIT",cohort_errors([plan("HOLDOUT","h",3)],[None]))
+        fit={"fit_at":None,"fit_ids":["c"]};fit["hash"]=digest(fit)
+        p=plan("HOLDOUT","h",3);p["calibrator_id"]=fit["hash"];p.pop("id");p["id"]=digest(p)
+        self.assertIn("MALFORMED_FROZEN_FIT",cohort_errors([p],[fit]))
+
+    def test_signed_local_ledger_with_bad_fit_ids_is_quarantined_read_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            with closing(Repository(str(root/"seed.sqlite"))) as repo:
+                original=create_plan(Service(repo,clock=lambda:NOW),
+                    packet([row(100,status="NS",hours=3,score=(None,None))]),
+                    {9:"LOWER"},role="CALIBRATION",source_reliability=.95)
+            fit={"fit_at":stamp(-48),"fit_ids":"not-an-original-fixture-list"}
+            fit["hash"]=digest(fit)
+            original.update(role="HOLDOUT",calibrator_id=fit["hash"])
+            original.pop("id");original["id"]=digest(original)
+            p=root/"malformed-original.sqlite"
+            with closing(Repository(str(p))) as repo:
+                with repo.transaction():
+                    repo.insert("calibrators",fit["hash"],fit,at=fit["fit_at"])
+                    repo.record_log("calibrators",fit["hash"],fit["fit_at"],fit)
+                    repo.insert("jobs",original["id"],original,at=original["at"])
+                    repo.record_log("jobs",original["id"],original["at"],original)
+                self.assertTrue(repo.verify())
+            before=p.read_bytes();out=audit_originals(p,at=stamp(24))
+            self.assertEqual(p.read_bytes(),before)
+            self.assertEqual(out["status"],"QUARANTINED")
+            self.assertIn("MALFORMED_FROZEN_FIT_IDS",out["cohort_errors"])
+            self.assertTrue(all(v is None for v in out["metrics"].values()))
+            self.assertFalse(out["holdout_passed"])
+            self.assertFalse(out["statistical_profitability_proven"])
