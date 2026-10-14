@@ -1,3 +1,15 @@
+## Issue #61 session follow-up, 14.10.2026
+
+User authorized continuation after verified #57-61. Reuse existing draft #64
+on exact 0f7132ae664101aff96fb21754dac3ce8c599dc8; no duplicate PR or merge.
+Confirmed actual JS 401 kept private original cards/current filter memory.
+Clear protected views on failed reads/login; ignore stale concurrent responses.
+Synthetic Node event-handler regression only, no providers/actual credentials.
+Keep all src/sefirot/MODEL_MODULES/Policy/old receipts/reports unchanged.
+Full release and exact OS/Python/actual PostgreSQL CI; main/prod/deploy/money/
+LIVE/additional agents forbidden. Hosted runtime/Android/evidence blockers stay.
+Prior scopes below historical.
+
 ## Issue #61: phone read-only prototype, 13.10.2026
 
 Independent base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4;

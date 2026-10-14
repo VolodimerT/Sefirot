@@ -121,3 +121,10 @@ class PhoneOperatorTests(unittest.TestCase):
             cwd=ROOT,capture_output=True,text=True,timeout=30)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertIn("OPERATOR_FRONTEND_CASES=8",result.stdout)
+
+    @unittest.skipUnless(shutil.which("node"),"Node required for actual frontend session regression")
+    def test_actual_frontend_clears_expired_session_and_rejects_late_responses(self):
+        result=subprocess.run(["node",str(ROOT/"scripts/test_operator_session.mjs")],
+            cwd=ROOT,capture_output=True,text=True,timeout=30)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertIn("OPERATOR_SESSION_CASES=12",result.stdout)

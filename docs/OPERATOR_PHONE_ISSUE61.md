@@ -71,3 +71,36 @@ integrity/replay=true. Exact-head OS/Python/actual PG CI — итог в draft P
 побайтно прежние; changes только research operator projection, transport
 subset, frontend/tests/docs. CORE code_hash остаётся #59.
 main/production/paid APIs/secret rotation/money/LIVE не менялись.
+
+## Подтверждённое исправление сессии, 14.10.2026
+
+На исходном #64 `0f7132ae664101aff96fb21754dac3ce8c599dc8` реальный
+JS обработчик после HTTP 401 оставлял прежние карточки/журнал на странице
+и в памяти фильтров. API корректно отказывал: ошибка находилась в интерфейсе.
+Синтетический сценарий воспроизвёл оба случая до исправления.
+
+Теперь 401/403/ошибка сервера, транспорта или JSON очищают карточки,
+research, журнал и состояние фильтров. Повторный login сначала очищает
+прежние данные. Более ранний ответ или чтение JSON не могут вернуть
+карточки после нового отказа; старый 401 не скрывает более новый успешный
+ответ. Повторное разрешённое чтение восстанавливает исходный PASS.
+
+Регрессия выполняет реальные обработчики модуля в Node DOM harness,
+12 сценариев: отказы, неисправный ответ, порядок конкурентных запросов,
+failed login и recovery. Fetch заменён синтетическими ответами, provider
+запросов и реальных ключей нет. Это всё ещё не проверка Android браузера.
+
+```sh
+node scripts/test_operator_session.mjs
+python -m unittest discover -s tests -p test_operator_cockpit_issue61.py -v
+python scripts/verify_release.py
+```
+
+Исходные 8 renderer cases и HTTP permission tests сохранены. Добавлена одна
+Python регрессия, запускающая 12 session cases. Точный итог повторного
+полного release/CI публикуется в существующем draft PR #64. CORE code_hash,
+model_hash/policy_hash, src/sefirot и прежние отчёты/квитанции неизменны.
+
+Повторный изолированный локальный release: 1340 тестов = 1336 успешных
++ 4 PostgreSQL skips без DSN; demo integrity/replay=true. Текущий CI
+проверяется отдельно на точном обновлённом HEAD #64.

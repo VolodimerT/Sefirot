@@ -52,17 +52,25 @@ export function render(data,matchFilter="",marketFilter=""){
   e=section("history","Журнал");e.append(node("p","Audit events: "+v.audit),detail("Исходные ID и решения",v.originalDecisions));
 }
 if(typeof document!=="undefined"){
-  let current=null;const error=document.getElementById("error");
-  async function refresh(){try{const r=await fetch("/api/operator",{credentials:"same-origin",cache:"no-store"});
-      if(r.status===401){error.textContent="Войдите для просмотра.";return;}
-      if(!r.ok){error.textContent=r.status===403?"Разрешён только просмотр.":"Данные недоступны.";return;}
-      const packet=await r.json();current=packet.data;error.textContent="";document.getElementById("connection").textContent="Частный read-only прототип. Cloud runtime не подключён.";
+  let current=null,generation=0;const error=document.getElementById("error");
+  function clear(message){current=null;render(null);error.textContent=message;
+    document.getElementById("connection").textContent="Нет подтверждённого подключения. Данные недоступны.";}
+  async function refresh(){const request=++generation;try{
+      const r=await fetch("/api/operator",{credentials:"same-origin",cache:"no-store"});
+      if(request!==generation)return;
+      if(r.status===401){clear("Войдите для просмотра.");return;}
+      if(!r.ok){clear(r.status===403?"Разрешён только просмотр.":"Данные недоступны.");return;}
+      const packet=await r.json();if(request!==generation)return;
+      if(packet?.ok!==true||!packet.data||typeof packet.data!=="object"||Array.isArray(packet.data))throw Error("OPERATOR_RESPONSE_INVALID");
+      current=packet.data;error.textContent="";document.getElementById("connection").textContent="Частный read-only прототип. Cloud runtime не подключён.";
       render(current,document.getElementById("match").value,document.getElementById("market").value);
-    }catch{error.textContent="Сервер не подключён. Показатели недоступны.";}}
+    }catch{if(request===generation)clear("Сервер не подключён. Показатели недоступны.");}}
   document.getElementById("login").addEventListener("submit",async e=>{e.preventDefault();const input=document.getElementById("access");const token=input.value;input.value="";
+    const request=++generation;clear("");
     try{const r=await fetch("/session",{method:"POST",headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",body:JSON.stringify({token})});if(!r.ok){error.textContent="Не удалось войти.";return;}await refresh();}
-    catch{error.textContent="Сервер не подключён.";}});
+      credentials:"same-origin",body:JSON.stringify({token})});if(request!==generation)return;
+      if(!r.ok){clear("Не удалось войти.");return;}await refresh();}
+    catch{if(request===generation)clear("Сервер не подключён.");}});
   document.getElementById("refresh").addEventListener("click",refresh);
   for(const id of ["match","market"])document.getElementById(id).addEventListener("input",()=>{
     if(current)render(current,document.getElementById("match").value,document.getElementById("market").value);});
