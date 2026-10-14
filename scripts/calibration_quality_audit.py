@@ -293,13 +293,18 @@ def audit(scorecard, *, min_calibration=DEFAULT_BIN_MIN, min_holdout=DEFAULT_HOL
     return output
 
 
-def cohort_errors(plans, calibrators=None):
+def cohort_errors(plans, calibrators=None, *, calibration_cutoff=None):
     """Check every declared fixture/window together; no favorable subset."""
     errors, seen, windows = set(), set(), defaultdict(list)
+    calibration_ends, frozen_fit_cohorts = {}, []
     if not isinstance(plans, list) or len(plans) > MAX_FIXTURES:
         return ["MALFORMED_COHORT_COLLECTION"]
     if calibrators is not None and (not isinstance(calibrators, list) or len(calibrators) > MAX_FIXTURES):
         return ["MALFORMED_FROZEN_FIT_COLLECTION"]
+    try:
+        cutoff = time(calibration_cutoff) if calibration_cutoff is not None else None
+    except ValueError:
+        return ["MALFORMED_CALIBRATION_CUTOFF"]
     fits_by_hash = defaultdict(list)
     for fit in calibrators or []:
         if not isinstance(fit, dict) or not isinstance(fit.get("hash"), str):
@@ -333,6 +338,12 @@ def cohort_errors(plans, calibrators=None):
             errors.add("MALFORMED_COHORT")
             continue
         if not matches: errors.add("EMPTY_COHORT")
+        if role == "CALIBRATION" and matches:
+            end = max(kickoff for _, kickoff in matches)
+            for mid, _ in matches:
+                calibration_ends[mid] = end
+            if cutoff is not None and end >= cutoff:
+                errors.add("CALIBRATION_WINDOW_NOT_CLOSED")
         for mid, kickoff in matches:
             if mid in seen: errors.add("DUPLICATE_OR_CROSS_COHORT_FIXTURE")
             seen.add(mid); windows[role].append(kickoff)
@@ -365,6 +376,13 @@ def cohort_errors(plans, calibrators=None):
                     errors.add("FIT_AFTER_HOLDOUT_REGISTRATION")
                 if {mid for mid, _ in matches} & set(ids):
                     errors.add("HOLDOUT_OVERLAPS_FIT_IDS")
+                frozen_fit_cohorts.append((fitted, ids))
+    # Resolve after every plan has been read: caller order cannot conceal a
+    # fit predating its data. Only CAL plans actually bound by fit_ids count;
+    # a later, unrelated study does not rewrite an older frozen artifact.
+    for fitted, ids in frozen_fit_cohorts:
+        if any(mid in calibration_ends and calibration_ends[mid] >= fitted for mid in ids):
+            errors.add("FIT_NOT_AFTER_DECLARED_CALIBRATION_WINDOW")
     for before, after in (("TRAIN", "CALIBRATION"), ("CALIBRATION", "HOLDOUT"), ("TRAIN", "HOLDOUT")):
         if windows[before] and windows[after] and max(windows[before]) >= min(windows[after]):
             errors.add("COHORT_TIME_WINDOWS_OVERLAP")

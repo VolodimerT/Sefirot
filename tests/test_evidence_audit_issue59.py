@@ -102,6 +102,9 @@ class EvidenceAuditTests(unittest.TestCase):
                 original=create_plan(service,packet([row(100,status="NS",hours=3,score=(None,None))]),
                     {9:"LOWER"},role="CALIBRATION",source_reliability=.95)
             before=p.read_bytes()
+            early=audit_originals(p,at=stamp(1))
+            self.assertEqual(early["status"],"NOT_VERIFIED")
+            self.assertEqual(early["cohort_errors"],[])
             out=audit_originals(p,at=stamp(24))
             self.assertEqual(p.read_bytes(),before)
             self.assertEqual(out["status"],"NOT_VERIFIED")
@@ -147,6 +150,34 @@ class EvidenceAuditTests(unittest.TestCase):
         p["calibrator_id"]=fit["hash"];p.pop("id");p["id"]=digest(p)
         fit["fit_ids"]=["changed"]
         self.assertIn("FROZEN_FIT_CONTENT_MISMATCH",cohort_errors([p],[fit]))
+
+    def test_frozen_fit_must_follow_its_original_calibration_fixture_in_utc(self):
+        cal=plan("CALIBRATION","cal-original",2)
+        for fit_at in (stamp(24), stamp(48).replace("+00:00","Z")):
+            fit={"fit_at":fit_at,"fit_ids":["cal-original"]};fit["hash"]=digest(fit)
+            hold=plan("HOLDOUT","hold-original",4,registered=3)
+            hold["calibrator_id"]=fit["hash"];hold.pop("id");hold["id"]=digest(hold)
+            for plans in ([cal,hold],[hold,cal]):
+                with self.subTest(fit_at=fit_at,hold_first=plans[0]["role"]=="HOLDOUT"):
+                    self.assertIn("FIT_NOT_AFTER_DECLARED_CALIBRATION_WINDOW",
+                                  cohort_errors(plans,[fit]))
+
+    def test_frozen_fit_must_follow_full_used_cal_plan_not_only_selected_fit_ids(self):
+        cal=plan("CALIBRATION","already-scored",1)
+        cal["members"].append({"match":{"id":"remaining-planned","kickoff":stamp(72)}})
+        cal.pop("id");cal["id"]=digest(cal)
+        fit={"fit_at":stamp(48),"fit_ids":["already-scored"]};fit["hash"]=digest(fit)
+        hold=plan("HOLDOUT","hold-original",5,registered=4)
+        hold["calibrator_id"]=fit["hash"];hold.pop("id");hold["id"]=digest(hold)
+        self.assertIn("FIT_NOT_AFTER_DECLARED_CALIBRATION_WINDOW",cohort_errors([cal,hold],[fit]))
+
+    def test_unrelated_cal_plan_does_not_relabel_an_older_frozen_fit(self):
+        used=plan("CALIBRATION","used-original",1)
+        unrelated=plan("CALIBRATION","other-study",2)
+        fit={"fit_at":stamp(36),"fit_ids":["used-original"]};fit["hash"]=digest(fit)
+        hold=plan("HOLDOUT","hold-original",4,registered=3)
+        hold["calibrator_id"]=fit["hash"];hold.pop("id");hold["id"]=digest(hold)
+        self.assertEqual(cohort_errors([unrelated,hold,used],[fit]),[])
 
     def test_void_retains_denominator_but_never_becomes_loss(self):
         s=scorecard(n=2);s["fixtures"][1]["status"]="VOID_NOT_SCORED"

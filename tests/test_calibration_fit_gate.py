@@ -275,6 +275,38 @@ class CalibrationFitGateTests(unittest.TestCase):
         self.assertFalse(report["monetary_permission"])
         self.assertEqual(report["stake"], 0)
 
+    def partially_elapsed_cohort(self):
+        db = fixtures(60)
+        plan = db.tables["jobs"][0]
+        for i in range(15):
+            plan["members"].append({"match": {
+                "id": "not-yet-played-" + str(i), "kickoff": t(days=10, hours=12),
+                "competition_profile": "MEN"}})
+        plan["id"] = digest({k: v for k, v in plan.items() if k != "id"})
+        capture = db.tables["jobs"][1]
+        capture["plan_id"] = plan["id"]
+        capture["id"] = digest({k: v for k, v in capture.items() if k != "id"})
+        return db
+
+    def test_eighty_percent_coverage_cannot_freeze_fit_before_remaining_cal_window(self):
+        db = self.partially_elapsed_cohort()
+        report = assess(db, Policy(), t(days=4))
+        self.assertEqual(report["verified_distinct_matches"], 60)
+        self.assertEqual(report["planned_distinct_matches"], 75)
+        self.assertEqual(report["verified_plan_coverage"], .8)
+        self.assertFalse(report["fit_ready"])
+        self.assertIn("CALIBRATION_WINDOW_NOT_CLOSED", report["cohort_errors"])
+
+    def test_elapsed_cal_window_retains_missing_rows_and_existing_coverage_floor(self):
+        db = self.partially_elapsed_cohort()
+        before = deepcopy(db.tables)
+        report = assess(db, Policy(), t(days=11))
+        self.assertTrue(report["fit_ready"], report["blockers"])
+        self.assertEqual(report["planned_distinct_matches"], 75)
+        self.assertEqual(report["verified_plan_coverage"], .8)
+        self.assertEqual(db.tables, before)
+        self.assertFalse(report["fit_performed"])
+
 
 class CalibrationFitTransactionTests(unittest.TestCase):
     """Two real SQLite connections; only assessment and fitting are synthetic."""

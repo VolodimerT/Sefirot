@@ -1,3 +1,17 @@
+## Calibration temporal boundary follow-up, 14.10.2026
+
+User authorized more code/source/calibration checks after verified unified
+draft #56 head 1eb49eeb2c60bc83e9b15f099d7e19b67eb85cc7; Render stays deferred.
+Confirmed fit_ready at 60/75 coverage while remaining CAL fixtures are future,
+and frozen fit dated before its own declared CAL cohort. Reuse shared cohort
+guard: explicit fit cutoff, whole associated CAL plan window, UTC boundaries,
+order-independent binding through original fit_ids. Keep unrelated fits and
+legitimate prospective inventory intact. Owned synthetic tests, no real fit.
+Only scripts/tests/docs; src/model/Policy/protocol/originals remain immutable.
+Reuse #56, full local release and exact-head OS/Python/actual PostgreSQL CI.
+No main/production/deploy/paid API/secrets/collection/money/LIVE/new agents.
+Missing real API/CAL/HOLDOUT/model edge still PASS/stake 0. Prior scopes historical.
+
 ## Calibration cohort fit follow-up, 14.10.2026
 
 User explicitly deferred Render rollout and authorized further code work.

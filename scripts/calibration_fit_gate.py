@@ -211,6 +211,7 @@ def assess(repository, policy, at):
     cohort_issues = cohort_errors(
         [job for job in jobs if job.get("schema") == "api-forward-plan-v1"],
         repository.all("calibrators", at),
+        calibration_cutoff=at,
     )
     blockers.extend({"reason": issue} for issue in cohort_issues)
     result = {
