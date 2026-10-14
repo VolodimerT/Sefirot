@@ -1,3 +1,16 @@
+## Independent calibration transaction follow-up, 14.10.2026
+
+User authorized continuation of the unified candidate and real-source checks.
+Reuse draft #56 at 5cd6c680b10f742f89aedffcf321beb992b4dc16; no duplicate PR.
+Repair confirmed calibration_fit_gate read/recheck/fit races only, synthetic
+two-connection SQLite regressions. No real fit, provider request or new cohort.
+Keep all src modules, Policy, protocol and original reports/receipts unchanged.
+Render metadata/log reads confirm old deployed code; do not change services,
+deploy or read secrets. A source budget PAUSED is not current provider quota.
+Full release and exact-head OS/Python/actual PG CI. Keep frozen RC #57,
+main and all family drafts unchanged; PASS/0 without API/HOLDOUT/edge proof.
+No additional agents. Previous headers are historical completed scopes.
+
 ## Unified candidate and independent validation, 14.10.2026
 
 User explicitly requests one tested candidate from verified Issues #57–61,

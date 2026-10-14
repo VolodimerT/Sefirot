@@ -9,6 +9,7 @@ import argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 import json
+import sqlite3
 from pathlib import Path
 import sys
 
@@ -228,7 +229,13 @@ def run(db, *, output, fit=False):
     now = datetime.now(timezone.utc).isoformat()
     ro = Repository(path, read_only=True)
     try:
-        report = assess(ro, policy, now)
+        # Journal verification and every subsequent input read must share
+        # one snapshot, including when a WAL writer commits concurrently.
+        ro.db.execute("BEGIN")
+        try:
+            report = assess(ro, policy, now)
+        finally:
+            ro.db.rollback()
     finally:
         ro.close()
     if fit:
@@ -237,10 +244,14 @@ def run(db, *, output, fit=False):
         rw = Repository(path)
         try:
             service = Service(rw, policy)
-            fresh = assess(rw, policy, service.now())
-            if not fresh["fit_ready"] or fresh["fit_model_id"] != report["fit_model_id"]:
-                raise ValueError("calibration preflight changed; fit blocked")
-            artifact = service.calibrate(service.now())
+            # Keep the writer reservation from the last check through the
+            # original Service.calibrate reads and its nested artifact save.
+            with rw.transaction():
+                fresh = assess(rw, policy, service.now())
+                if not fresh["fit_ready"] or fresh["fit_model_id"] != report["fit_model_id"]:
+                    raise ValueError("calibration preflight changed; fit blocked")
+                artifact = service.calibrate(service.now())
+            report = fresh
             report["fit_performed"] = True
             report["created_calibrator_hash"] = artifact["hash"]
             # Service.calibrate only creates a new immutable artifact; it
@@ -273,7 +284,7 @@ def main(argv=None):
             "fit": report["fit_performed"], "monetary_permission": False
         }, ensure_ascii=False))
         return 0
-    except (OSError, ValueError, KeyError, TypeError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error) as exc:
         parser.exit(2, "Calibration fit gate: " + str(exc) + "\n")
 
 

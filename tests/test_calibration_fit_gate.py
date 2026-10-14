@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from contextlib import redirect_stderr
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 import sys
+import sqlite3
+from io import StringIO
 import tempfile
 import unittest
 
@@ -15,7 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sefirot.contracts import Policy, digest
 from sefirot.football_provider import HOST
 from sefirot.identity import model_code_hash
-from scripts.calibration_fit_gate import assess, run
+from sefirot.repository import Repository
+from scripts.calibration_fit_gate import assess, main, run
 
 START = datetime(2030, 1, 1, tzinfo=timezone.utc)
 
@@ -215,6 +219,110 @@ class CalibrationFitGateTests(unittest.TestCase):
         r = assess(db, Policy(), t(days=4))
         self.assertFalse(r["fit_ready"])
         self.assertIn("Policy cannot fit", str(r["blockers"]))
+
+
+class CalibrationFitTransactionTests(unittest.TestCase):
+    """Two real SQLite connections; only assessment and fitting are synthetic."""
+
+    def ready(self, count=60):
+        report = {"fit_ready": True, "fit_model_id": "synthetic-model",
+                  "record_count": count, "verified_distinct_matches": count,
+                  "planned_distinct_matches": count, "fit_performed": False,
+                  "model_activated": False, "monetary_permission": False,
+                  "stake": 0}
+        report["hash"] = digest(report)
+        return report
+
+    def append_job(self, repo):
+        record = {"schema": "synthetic-concurrent-input", "at": t()}
+        identifier = digest(record)
+        record["id"] = identifier
+        with repo.transaction():
+            repo.insert("jobs", identifier, record, at=t())
+            repo.record_log("jobs", identifier, t(), record)
+
+    def test_read_only_preflight_keeps_verified_wal_snapshot_during_valid_append(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "synthetic.sqlite"
+            writer = Repository(db)
+            try:
+                writer.db.execute("PRAGMA journal_mode=WAL")
+                observed = []
+
+                def inspect(repo, policy, at):
+                    self.assertTrue(repo.verify())
+                    self.append_job(writer)
+                    observed.append(len(repo.all("jobs")))
+                    return self.ready()
+
+                with patch("scripts.calibration_fit_gate.assess", side_effect=inspect):
+                    run(db, output=Path(directory) / "preflight.json")
+                self.assertEqual(observed, [0], "assessment mixed verified and newer rows")
+                self.assertEqual(len(writer.all("jobs")), 1)
+                self.assertTrue(writer.verify())
+                self.assertEqual(writer.all("calibrators"), [])
+            finally:
+                writer.close()
+
+    def test_competing_writer_cannot_change_inputs_between_recheck_and_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "synthetic.sqlite"
+            writer = Repository(db)
+            try:
+                writer.db.execute("PRAGMA busy_timeout=0")
+                competed = []
+
+                def fit(service, at):
+                    try:
+                        self.append_job(writer)
+                    except sqlite3.OperationalError as exc:
+                        self.assertIn("locked", str(exc))
+                        competed.append("BLOCKED")
+                    else:
+                        competed.append("APPENDED")
+                    self.assertEqual(service.repo.all("jobs"), [])
+                    artifact = {"synthetic": True, "fit_ids": [], "fit_at": at}
+                    artifact["hash"] = digest(artifact)
+                    with service.repo.transaction():
+                        service.repo.insert("calibrators", artifact["hash"], artifact, at=at)
+                        service.repo.record_log("calibrators", artifact["hash"], at, artifact)
+                    return artifact
+
+                with patch("scripts.calibration_fit_gate.assess", side_effect=[self.ready(), self.ready()]), \
+                        patch("scripts.calibration_fit_gate.Service.calibrate", autospec=True, side_effect=fit):
+                    report = run(db, output=Path(directory) / "fit.json", fit=True)
+                self.assertEqual(competed, ["BLOCKED"])
+                self.assertTrue(report["fit_performed"])
+                self.assertTrue(writer.verify())
+                self.assertEqual(len(writer.all("calibrators")), 1)
+                self.assertFalse(report["monetary_permission"])
+                self.assertEqual(report["stake"], 0)
+            finally:
+                writer.close()
+
+    def test_fit_report_describes_locked_fresh_inputs_instead_of_old_preflight(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = Path(directory) / "synthetic.sqlite"
+            Repository(db).close()
+            artifact = {"hash": "synthetic-fit", "synthetic": True}
+            with patch("scripts.calibration_fit_gate.assess", side_effect=[self.ready(60), self.ready(61)]), \
+                    patch("scripts.calibration_fit_gate.Service.calibrate", return_value=artifact):
+                report = run(db, output=Path(directory) / "fit.json", fit=True)
+            self.assertEqual(report["record_count"], 61)
+            self.assertEqual(report["verified_distinct_matches"], 61)
+            self.assertEqual(report["planned_distinct_matches"], 61)
+            signature = report.pop("hash")
+            self.assertEqual(signature, digest(report))
+
+    def test_cli_reports_sqlite_lock_failure_without_traceback_or_retry(self):
+        error = StringIO()
+        with patch("scripts.calibration_fit_gate.run", side_effect=sqlite3.OperationalError("database is locked")) as call, \
+                redirect_stderr(error), self.assertRaises(SystemExit) as stopped:
+            main(["--db", "synthetic.sqlite", "--output", "synthetic.json"])
+        self.assertEqual(stopped.exception.code, 2)
+        self.assertIn("Calibration fit gate: database is locked", error.getvalue())
+        self.assertNotIn("Traceback", error.getvalue())
+        call.assert_called_once()
 
 
 if __name__ == "__main__":
