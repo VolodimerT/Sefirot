@@ -20,6 +20,7 @@ from sefirot.stake_mapper import normalize_snapshot
 from sefirot.stake_provider import (
     sports_events, exact_event, fixture_groups, research_snapshot,
     FIXTURE_MARKETS_QUERY, _post_graphql,
+    _fixture_identity,
 )
 
 SCHEMA = "stake-market-atlas-v1"
@@ -217,7 +218,7 @@ def make_atlas(snapshots):
     return out
 
 
-def raw_fixture_markets(fixture_slug, groups):
+def raw_fixture_markets(fixture_slug, groups, *, expected_fixture_id=None, before_request=None):
     """Do NOT drop suspended/empty markets or null odds as the legacy mapper does."""
     if not isinstance(fixture_slug, str) or not fixture_slug or len(fixture_slug) > 300:
         raise ValueError("bounded exact fixture slug required")
@@ -226,8 +227,12 @@ def raw_fixture_markets(fixture_slug, groups):
     ):
         raise ValueError("valid unique market groups required")
     markets, receipts, seen_groups, template_caps = [], [], set(), []
+    if expected_fixture_id is not None:
+        expected_fixture_id = _fixture_identity(expected_fixture_id)
     for i in range(0, len(groups), 8):
         chunk = groups[i:i + 8]
+        if before_request is not None:
+            before_request()
         packet = _post_graphql(
             FIXTURE_MARKETS_QUERY,
             {"fixture": fixture_slug, "groups": chunk},
@@ -240,6 +245,10 @@ def raw_fixture_markets(fixture_slug, groups):
             raise ValueError("Stake GraphQL fixture payload changed") from None
         if not isinstance(fixture, dict) or not isinstance(fixture.get("groups"), list):
             raise ValueError("Stake fixture groups malformed")
+        found = _fixture_identity(fixture.get('id'))
+        if expected_fixture_id is not None and found != expected_fixture_id:
+            raise ValueError('Stake fixture identity changed; PASS')
+        expected_fixture_id = found
         for group in fixture["groups"]:
             if not isinstance(group, dict) or group.get("name") not in chunk:
                 raise ValueError("unexpected Stake group")
@@ -297,13 +306,16 @@ def harvest(prediction, *, max_events=200, max_groups=500):
     if event.get("status") in ("live", "ended", "settled"):
         raise ValueError("non-prematch Stake event")
     groups = fixture_groups(event["slug"])
+    if _fixture_identity(groups.get('fixture_id')) != _fixture_identity(event['id']):
+        raise ValueError('Stake fixture identity changed; PASS')
     names = groups["group_names"]
     if len(names) > max_groups:
         raise ValueError("group cap would truncate fixture; raise --max-groups explicitly")
     # A call can span kickoff. Recheck BEFORE requesting markets, not only
     # after the response. Never deliberately fetch in-play quotes.
     require_prematch_seal(prediction, datetime.now(timezone.utc).isoformat())
-    packet_markets = raw_fixture_markets(event["slug"], names)
+    packet_markets = raw_fixture_markets(event["slug"], names, expected_fixture_id=event['id'],
+        before_request=lambda: require_prematch_seal(prediction, datetime.now(timezone.utc).isoformat()))
     received = datetime.now(timezone.utc).isoformat()
     require_prematch_seal(prediction, received)
     snapshot = research_snapshot(

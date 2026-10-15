@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from http.client import HTTPException
 import json
+import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
 
@@ -292,19 +293,37 @@ def fixture_groups(fixture_slug, *, token=None, opener=None):
     }
 
 
-def fixture_markets(fixture_slug, *, groups=None, token=None, opener=None):
+def _fixture_identity(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[A-Za-z0-9:_-]{1,256}', value):
+        raise ValueError('Stake fixture identity missing or invalid; PASS')
+    return value
+
+
+def fixture_markets(fixture_slug, *, groups=None, token=None, opener=None,
+                    expected_fixture_id=None, before_request=None):
+    if expected_fixture_id is not None:
+        expected_fixture_id = _fixture_identity(expected_fixture_id)
+    receipts = []
     if groups is None:
+        if before_request is not None:
+            before_request()
         group_packet = fixture_groups(fixture_slug, token=token, opener=opener)
+        found = _fixture_identity(group_packet['fixture_id'])
+        if expected_fixture_id is not None and found != expected_fixture_id:
+            raise ValueError('Stake fixture identity changed; PASS')
+        expected_fixture_id = found
+        receipts.append(group_packet['receipt'])
         groups = group_packet["group_names"]
     if not isinstance(groups, list) or not all(isinstance(x, str) and x for x in groups):
         raise ValueError("invalid Stake market group list")
     if len(groups) > 500:
         raise ValueError("too many Stake market groups")
     markets = []
-    receipts = []
     # Chunk to keep single-fixture GraphQL responses bounded.
     for offset in range(0, len(groups), 8):
         chunk = groups[offset:offset + 8]
+        if before_request is not None:
+            before_request()
         packet = _post_graphql(
             FIXTURE_MARKETS_QUERY,
             {"fixture": fixture_slug, "groups": chunk},
@@ -319,6 +338,10 @@ def fixture_markets(fixture_slug, *, groups=None, token=None, opener=None):
             raise ValueError("stake fixture market payload shape changed; PASS") from None
         if not isinstance(fixture, dict):
             raise ValueError("stake fixture market payload missing; PASS")
+        found = _fixture_identity(fixture.get('id'))
+        if expected_fixture_id is not None and found != expected_fixture_id:
+            raise ValueError('Stake fixture identity changed; PASS')
+        expected_fixture_id = found
         returned_groups = fixture.get("groups") or []
         if not isinstance(returned_groups, list):
             raise ValueError("stake fixture market groups malformed; PASS")
@@ -384,6 +407,8 @@ def exact_event(events, prediction, received_at):
     for event in events:
         if not isinstance(event, dict):
             continue
+        if event.get('status') in ('live', 'ended', 'settled'):
+            continue
         competitors = event.get("competitors")
         if not isinstance(competitors, list) or len(competitors) != 2:
             continue
@@ -408,6 +433,7 @@ def research_snapshot(event, prediction, received_at, markets, retrieval_receipt
     match = require_prematch_seal(prediction, received_at)
     if not isinstance(event, dict):
         raise ValueError("stake event required")
+    exact_event([event], prediction, received_at)
     competitors = event.get("competitors")
     names = [row.get("name") if isinstance(row, dict) else None for row in competitors or []]
     if names != [match["home"], match["away"]] or time(event.get("startTime")) != time(match["kickoff"]):
@@ -435,9 +461,52 @@ def research_snapshot(event, prediction, received_at, markets, retrieval_receipt
         "execution_enabled": False,
     }
     if retrieval_receipts:
-        report["retrieval_receipts"] = [
-            {k: v for k, v in row.items() if k != "credential"}
-            for row in retrieval_receipts
-        ]
+        report['retrieval_receipts'] = _snapshot_receipts(
+            retrieval_receipts, prediction, received_at)
     report["hash"] = digest(report)
     return report
+
+
+def _snapshot_receipts(receipts, prediction, received_at):
+    if not isinstance(receipts, list) or len(receipts) > 65:
+        raise ValueError('Stake receipt list invalid; PASS')
+    fields = ('provider', 'provider_host', 'endpoint', 'operation_name',
+              'request_started_at', 'received_at', 'payload_hash', 'http_status',
+              'credential_exposed', 'monetary_permission')
+    output = []
+    for row in receipts:
+        if (not isinstance(row, dict) or row.get('provider') != 'STAKE_GRAPHQL_EXPERIMENTAL'
+                or row.get('provider_host') != HOST or row.get('endpoint') != ENDPOINT
+                or type(row.get('http_status')) is not int or row['http_status'] != 200
+                or not isinstance(row.get('payload_hash'), str)
+                or not re.fullmatch('[a-f0-9]{64}', row['payload_hash'])
+                or row.get('operation_name') not in ('SportTournamentFixtureList',
+                    'FixtureIndexGroups', 'FixtureGroupMarkets')
+                or row.get('credential_exposed') is not False
+                or row.get('monetary_permission') is not False):
+            raise ValueError('Stake receipt identity invalid; PASS')
+        try:
+            start, end = time(row['request_started_at']), time(row['received_at'])
+            if not (time(prediction['sealed_at']) <= start <= end <= time(received_at)
+                    < time(prediction['sports']['match']['kickoff'])):
+                raise ValueError('invalid chronology')
+        except (ValueError, TypeError, KeyError):
+            raise ValueError('Stake receipt chronology invalid; PASS') from None
+        output.append({key: row[key] for key in fields})
+    return output
+
+
+def prematch_snapshot(prediction, *, first=50, sport_slug='soccer', clock=None):
+    """Shared bounded research flow; recheck cutoff before every request."""
+    clock = clock or (lambda: datetime.now(timezone.utc).isoformat())
+    def guard():
+        require_prematch_seal(prediction, clock())
+    guard()
+    packet = sports_events(first=first, sport_slug=sport_slug, match_type='upcoming')
+    event = exact_event(packet['events'], prediction, packet['receipt']['received_at'])
+    markets = fixture_markets(event['slug'], expected_fixture_id=event['id'],
+                              before_request=guard)
+    received = clock()
+    guard()
+    return research_snapshot(event, prediction, received, markets['markets'],
+                             [packet['receipt']] + markets['receipts'])

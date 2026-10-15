@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sefirot.contracts import Policy
 from sefirot.repository import Repository
 from sefirot.service import Service
-from sefirot.stake_provider import exact_event, fixture_markets, research_snapshot, sports_events
+from sefirot.stake_provider import prematch_snapshot
 from sefirot.stake_mapper import normalize_snapshot
 
 
@@ -47,12 +47,8 @@ def main(argv=None):
             raise SystemExit("journal integrity failed")
         service = Service(repo, Policy())
         prediction = repo.get("predictions", args.prediction_id)
-        received = service.now()
-        packet = sports_events(first=args.first, sport_slug=args.sport, match_type="active")
-        event = exact_event(packet["events"], prediction, received)
-        market_packet = fixture_markets(event["slug"])
-        receipts = [packet["receipt"]] + market_packet["receipts"]
-        report = research_snapshot(event, prediction, received, market_packet["markets"], receipts)
+        report = prematch_snapshot(prediction, first=args.first, sport_slug=args.sport,
+                                   clock=service.now)
         normalized = normalize_snapshot(report)
     finally:
         repo.close()

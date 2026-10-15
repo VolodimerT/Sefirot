@@ -124,11 +124,15 @@ class StakeMarketAtlasTests(unittest.TestCase):
         event = {"id": "e", "slug": "a-b", "status": "upcoming", "name": "A-B",
                  "competitors": [{"name": "A"}, {"name": "B"}],
                  "startTime": t(140)}
-        group = {"group_names": ["main"], "receipt": {"provider": "STAKE_GRAPHQL_EXPERIMENTAL"}}
+        receipt = {'provider': 'STAKE_GRAPHQL_EXPERIMENTAL', 'provider_host': 'stake.com',
+                   'endpoint': '/_api/graphql', 'operation_name': 'SportTournamentFixtureList',
+                   'request_started_at': t(0), 'received_at': t(0), 'http_status': 200,
+                   'payload_hash': 'a' * 64, 'credential_exposed': False,
+                   'monetary_permission': False}
+        group = {"fixture_id": "e", "group_names": ["main"],
+                 "receipt": {**receipt, 'operation_name': 'FixtureIndexGroups'}}
         with patch.object(atlas, "sports_events", return_value={
-            "events": [event], "receipt": {
-                "received_at": t(0), "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
-            },
+            "events": [event], "receipt": receipt,
         }) as discovery, patch.object(atlas, "fixture_groups", return_value=group), patch.object(
             atlas, "raw_fixture_markets", return_value={"markets": snapshot()["markets"],
                      "receipts": [], "market_count": 4,
@@ -137,6 +141,7 @@ class StakeMarketAtlasTests(unittest.TestCase):
             raw = atlas.harvest(pred)
         self.assertEqual(discovery.call_args.kwargs["match_type"], "upcoming")
         self.assertEqual(market_fetch.call_args.args[1], ["main"])
+        self.assertEqual(market_fetch.call_args.kwargs['expected_fixture_id'], 'e')
         self.assertEqual(raw["requested_groups"], ["main"])
         self.assertEqual(raw["market_count"], 4)
         self.assertEqual(atlas.make_atlas([raw])["raw_market_count"], 4)

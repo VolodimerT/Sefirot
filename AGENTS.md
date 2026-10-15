@@ -1,3 +1,17 @@
+## Master plan P0-A, 15.10.2026
+
+Owner supplied SEFIROT_MASTER_AUDIT_AND_ACTION_PLAN_2026-10-15.md and
+authorized priority execution. Start Issue #68 on exact unified #56 d192d831.
+Repair confirmed experimental Stake fixture/time/receipt boundaries using
+existing provider, CLI and atlas; no second model or invented official API
+contract. Preserve MODEL_MODULES/Policy, original seals/receipts/snapshots.
+Public official docs returned HTTP 403; do not bypass it. Credential metadata
+only; no provider calls, budget activation, secret reads/changes, deployment,
+main merge, bets or additional agents. Reuse #56 and run isolated full release
+and exact-head CI. Official access stays BLOCKED/NOT_VERIFIED until authorized
+key, OpenAPI/terms and genuine quote evidence. PASS/stake 0. Prior scopes below
+are historical; this owner-authorized P0 stage permits transport/CLI fixes.
+
 ## PR #70 diagnostics integration, 15.10.2026
 
 User supplied screenshots and authorized continued API recovery work. Repair

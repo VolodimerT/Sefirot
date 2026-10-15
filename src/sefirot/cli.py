@@ -228,7 +228,7 @@ def main(argv=None):
             if args.text:
                 print(render_session(out));return 2 if out['status']=='COLLECTION_INCOMPLETE' else 0
         elif args.command=='stake-snapshot':
-            from .stake_provider import sports_events,exact_event,fixture_markets,research_snapshot
+            from .stake_provider import prematch_snapshot
             from .stake_mapper import normalize_snapshot
             database=Path(args.db).resolve()
             if not database.is_file():raise ValueError('ledger does not exist')
@@ -238,12 +238,8 @@ def main(argv=None):
             repo=Repository(database,read_only=True)
             if not repo.verify():raise ValueError('journal integrity failed')
             service=Service(repo,policy);prediction=repo.get('predictions',args.prediction_id)
-            received=service.now()
-            packet=sports_events(first=args.first,sport_slug=args.sport,match_type='active')
-            event=exact_event(packet['events'],prediction,received)
-            market_packet=fixture_markets(event['slug'])
-            snapshot=research_snapshot(event,prediction,received,market_packet['markets'],
-                                       [packet['receipt']]+market_packet['receipts'])
+            snapshot=prematch_snapshot(prediction,first=args.first,sport_slug=args.sport,
+                                       clock=service.now)
             normalized=normalize_snapshot(snapshot)
             write_new_json(destination,snapshot);write_new_json(normalized_destination,normalized)
             out={'status':'RESEARCH_ONLY','provider':'STAKE_GRAPHQL_EXPERIMENTAL',
