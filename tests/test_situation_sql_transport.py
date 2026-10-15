@@ -45,6 +45,8 @@ class SQLTransportTests(unittest.TestCase):
         result=json.loads(run.stdout)
         self.assertEqual(result["sql_groups"],18)
         self.assertEqual(result["gateway_groups"],12)
+        self.assertEqual(result["probe_sql_groups"],10)
+        self.assertEqual(result["probe_gateway_groups"],6)
         self.assertEqual(result["source"],"SYNTHETIC_ONLY")
 
     def test_http_worker_receipt_durable_restart_and_original_seals(self):
@@ -111,6 +113,58 @@ class SQLTransportTests(unittest.TestCase):
                 finally:repo.close()
                 control({"command":"close"})
                 process.wait(timeout=10)
+                self.assertEqual(process.returncode,0,process.stderr.read())
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                    try:process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:process.kill();process.wait(timeout=10)
+                for stream in (process.stdin,process.stdout,process.stderr):stream.close()
+
+    def test_probe_lost_commit_ack_replay_and_restart_preserve_original_source(self):
+        import chat_sports_probe as probe
+        from test_guarded_probe_evidence import packet
+        with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
+            root=Path(directory).resolve()
+            process=subprocess.Popen([self.node(),str(ROOT/"scripts/test_chat_situation.mjs"),"--serve",str(root/"pg")],
+                cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                text=True,encoding="utf-8",bufsize=1)
+            try:
+                initial=json.loads(process.stdout.readline());self.assertTrue(initial["ready"])
+                def control(data):
+                    process.stdin.write(json.dumps(data)+"\n");process.stdin.flush()
+                    reply=json.loads(process.stdout.readline());self.assertNotIn("error",reply)
+                    return reply.get("value",reply)
+                stack.enter_context(patch.object(chat_store,"config",return_value=(
+                    f"http://127.0.0.1:{initial['port']}/functions/v1/sefirot-chat-store",STORE_TOKEN)))
+                uid="00000000-0000-0000-0000-000000000099"
+                payload={"queries":[{"endpoint":"fixtures","params":{"id":123}}]}
+                control({"command":"probe-enroll","id":uid,"request":payload})
+                self.assertTrue(control({"command":"drop-probe-ack"})["armed"])
+                original=packet();captured=[]
+                def execute(kind,request):
+                    self.assertEqual(kind,"sports_probe")
+                    result=probe.collect(request);captured.append(canonical(result));return result
+                with patch.object(chat_queue,"execute",side_effect=execute) as runner, \
+                     patch.object(probe,"get_sports",return_value=original) as provider, \
+                     patch.object(probe,"transport_status",return_value={"transport":"SUPABASE_GATEWAY"}):
+                    self.assertTrue(chat_queue.process_one())
+                    runner.assert_called_once();provider.assert_called_once()
+                saved=control({"command":"read","id":uid})
+                self.assertEqual(saved["status"],"DONE");self.assertEqual(saved["attempts"],1)
+                self.assertEqual(canonical(saved["response"]),captured[0])
+                self.assertEqual(control({"command":"calls"}),[
+                    "sefirot_chat_claim","sefirot_probe_complete","sefirot_probe_complete"])
+                self.assertTrue(control({"command":"restart"})["restarted"])
+                restarted=control({"command":"read","id":uid})
+                self.assertEqual(restarted,saved)
+                query=restarted["response"]["queries"][0]
+                self.assertEqual(query["source_packet"]["data"],original["data"])
+                self.assertEqual(probe.verify_evidence(query)["status"],"CANONICAL_PACKET_ARCHIVED")
+                self.assertFalse(probe.verify_evidence(query)["provider_origin_attested"])
+                with patch.object(chat_queue,"execute") as runner:
+                    self.assertFalse(chat_queue.process_one());runner.assert_not_called()
+                control({"command":"close"});process.wait(timeout=10)
                 self.assertEqual(process.returncode,0,process.stderr.read())
             finally:
                 if process.poll() is None:

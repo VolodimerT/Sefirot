@@ -332,12 +332,13 @@ class SituationTests(SituationHarness):
         payload = {"queries": []}
         job = {"id": "00000000-0000-0000-0000-000000000001",
                "kind": "sports_probe", "request": payload, "attempt": 1}
-        with (patch.object(chat_queue, "request", side_effect=[{"job": job}, {"completed": True}]) as rpc,
+        with (patch.object(chat_queue, "request", side_effect=[{"job": job}, {"completed": True,"id":job["id"],"attempts":1}]) as rpc,
               patch.object(chat_queue, "execute", return_value={"sports_only": True}) as run):
             self.assertTrue(chat_queue.process_one())
         run.assert_called_once_with("sports_probe", payload)
         self.assertTrue(rpc.call_args.args[0]["success"])
-        self.assertNotIn("attempt", rpc.call_args.args[0])
+        self.assertEqual(rpc.call_args.args[0]["attempt"],1)
+        self.assertEqual(rpc.call_args.args[0]["action"],"probe_complete")
 
     def test_unleased_queue_job_never_dispatches(self):
         q=self.enroll(source()); job={"id":"00000000-0000-0000-0000-000000000001","kind":"situation","request":q}

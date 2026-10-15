@@ -12,7 +12,8 @@ import json
 import os
 from pathlib import Path
 import tempfile
-from urllib.error import HTTPError
+from http.client import HTTPException
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, build_opener
 from sefirot.provider_transport import NoRedirect
@@ -21,6 +22,13 @@ from sefirot.repository import Repository
 MAX_GZIP_BYTES = 2_100_000
 MAX_SQLITE_BYTES = 8_000_000
 MAX_RESPONSE_BYTES = 4_100_000
+
+
+class DurableStoreError(RuntimeError):
+    """Sanitized transport classification; callers decide whether replay is safe."""
+    def __init__(self, message, *, retryable=False):
+        super().__init__(message)
+        self.retryable = retryable
 
 
 def _verify_snapshot_bytes(raw):
@@ -82,15 +90,21 @@ def request(payload:dict) -> dict:
             raw=response.read(MAX_RESPONSE_BYTES+1)
             if len(raw)>MAX_RESPONSE_BYTES:raise ValueError('store response exceeds safe size')
     except Exception as exc:
-        if isinstance(exc, HTTPError): exc.close()
-        raise RuntimeError("SEFIROT_DURABLE_STORE_UNAVAILABLE") from None
+        retryable = isinstance(exc, (URLError, OSError, HTTPException))
+        if isinstance(exc, HTTPError):
+            retryable = exc.code in (500, 502, 503, 504)
+            try:
+                exc.close()
+            except Exception:
+                pass
+        raise DurableStoreError("SEFIROT_DURABLE_STORE_UNAVAILABLE", retryable=retryable) from None
     try:
         packet=json.loads(raw)
         if not isinstance(packet,dict) or packet.get("ok") is not True or not isinstance(packet.get("data"),dict):
             raise ValueError("missing verified store response")
         return packet["data"]
     except (ValueError,TypeError,KeyError) as exc:
-        raise RuntimeError("SEFIROT_DURABLE_STORE_INVALID_RESPONSE") from None
+        raise DurableStoreError("SEFIROT_DURABLE_STORE_INVALID_RESPONSE", retryable=True) from None
 
 def restore(path:Path) -> int:
     record=request({"action":"pull"})

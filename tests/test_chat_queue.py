@@ -35,7 +35,7 @@ class QueueTests(unittest.TestCase):
             with self.subTest(attempt=attempt):
                 job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
                             'kind':'sports_probe','request':{'queries':[]},'attempt':attempt}}
-                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True}]) as api, \
+                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
                      patch.object(chat_queue,'execute') as engine:
                     self.assertTrue(chat_queue.process_one())
                     engine.assert_not_called()
@@ -47,17 +47,19 @@ class QueueTests(unittest.TestCase):
             with self.subTest(attempt=attempt):
                 job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
                             'kind':'sports_probe','request':{'queries':[]},'attempt':attempt}}
-                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True}]) as api, \
+                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
                      patch.object(chat_queue,'execute') as engine:
-                    self.assertTrue(chat_queue.process_one())
+                    with self.assertRaisesRegex(RuntimeError,'PROVIDER_FETCH_LEASE_REQUIRED'):
+                        chat_queue.process_one()
                     engine.assert_not_called()
-                    self.assertFalse(api.call_args.args[0]['success'])
+                    self.assertEqual(api.call_count,1)
 
     def test_probe_first_attempt_executes_and_preserves_receipt(self):
         job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
                     'kind':'sports_probe','request':{'queries':[]},'attempt':1}}
         original={'queries':[{'receipt':{'payload_hash':'a'*64}}]}
-        with patch.object(chat_queue,'request',side_effect=[job,{'completed':True}]) as api, \
+        attempt=1
+        with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
              patch.object(chat_queue,'execute',return_value=original) as engine:
             self.assertTrue(chat_queue.process_one())
             engine.assert_called_once_with('sports_probe',{'queries':[]})
@@ -68,7 +70,7 @@ class QueueTests(unittest.TestCase):
         item={'id':'6e7dbf7b-8276-438f-a712-922005e19ddb','kind':'sports_probe',
               'request':{'queries':[]},'attempt':1}
         replies=[{'job':item},OSError('SYNTHETIC_UNAVAILABLE'),
-                 {'job':{**item,'attempt':2}},{'completed':True}]
+                 {'job':{**item,'attempt':2}},{'completed':True,'id':item['id'],'attempts':2}]
         with patch.object(chat_queue,'request',side_effect=replies) as api, \
              patch.object(chat_queue,'execute',return_value={'queries':[]}) as engine:
             with self.assertRaises(OSError):chat_queue.process_one()

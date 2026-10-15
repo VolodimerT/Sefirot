@@ -1,3 +1,16 @@
+## Master plan P0-B completion fencing, 15.10.2026
+
+Continue owner-authorized P0 from exact 3414d932. Repair demonstrated stale
+sports_probe completion and acknowledgement loss using the existing private
+queue/relay and candidate SQL package. Fence by claimed attempt; replay only
+the identical completion at most once, never a provider fetch or claim. Test
+SQL permissions and restart against owned local PostgreSQL fixtures. Preserve
+all src, MODEL_MODULES, Policy, protocol and original receipts/snapshots. Reuse
+#56; isolated full release and exact-head CI. No hosted SQL writes/migration,
+production/deploy, main merge, budget activation, provider calls, secret values,
+real fit, money or agents. Coordinated SQL/relay/worker rollout remains deferred.
+Earlier stage headers below are historical.
+
 ## Master plan P0-B/C, 15.10.2026
 
 After P0-A a376823e, fix demonstrated provider refetch on reclaimed sports_probe

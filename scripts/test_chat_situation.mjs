@@ -9,74 +9,11 @@ import {createStoreHandler} from "../server/chat_store_gateway.js";
 
 const TOKEN="synthetic-store-token-for-local-tests-only-000000000000000000";
 const SERVICE="synthetic-service-role";
-const baseSQL=`
-create role anon;create role authenticated;create role service_role;
-create schema sefirot;
-revoke all on schema sefirot from public,anon,authenticated,service_role;
-create table sefirot.chat_bridge_jobs (
- id uuid primary key,kind text not null,request jsonb not null,
- status text not null default 'PENDING',attempts integer not null default 0,
- submitted_at timestamptz not null default now(),claimed_at timestamptz,completed_at timestamptz,
- response jsonb,error text,
- constraint chat_bridge_jobs_kind_check check(kind in ('status','demo','capture','decide','result','report')),
- constraint chat_bridge_jobs_request_check check(jsonb_typeof(request)='object'),
- constraint chat_bridge_jobs_status_check check(status in ('PENDING','RUNNING','DONE','ERROR')),
- constraint chat_bridge_jobs_attempts_check check(attempts between 0 and 5)
-);
-alter table sefirot.chat_bridge_jobs enable row level security;
-revoke all on sefirot.chat_bridge_jobs from public,anon,authenticated,service_role;
-create function public.sefirot_chat_claim() returns jsonb
-language plpgsql security definer set search_path='' as $$
-declare item record;
-begin
- select id,kind,request,attempts into item from sefirot.chat_bridge_jobs
- where (status='PENDING' or (status='RUNNING' and claimed_at<now()-interval '3 minutes'))
-   and attempts<3 order by submitted_at,id for update skip locked limit 1;
- if not found then return pg_catalog.jsonb_build_object('job',null);end if;
- update sefirot.chat_bridge_jobs set status='RUNNING',attempts=attempts+1,claimed_at=now() where id=item.id;
- return pg_catalog.jsonb_build_object('job',pg_catalog.jsonb_build_object(
-   'id',item.id,'kind',item.kind,'request',item.request,'attempt',item.attempts+1));
-end $$;
-revoke all on function public.sefirot_chat_claim() from public,anon,authenticated;
-grant execute on function public.sefirot_chat_claim() to service_role;
-create function public.sefirot_chat_complete(p_id uuid,p_success boolean,p_response jsonb,p_error text) returns jsonb
-language plpgsql security definer set search_path='' as $$
-declare item record;
-begin
- select status,attempts into item from sefirot.chat_bridge_jobs where id=p_id for update;
- if not found or item.status<>'RUNNING' then raise exception 'INVALID_BRIDGE_JOB_STATE' using errcode='22023';end if;
- if (p_response is not null and pg_catalog.octet_length(p_response::text)>900000)
-   or (p_error is not null and pg_catalog.length(p_error)>300) then raise exception 'INVALID_BRIDGE_JOB_RESULT_SIZE';end if;
- update sefirot.chat_bridge_jobs set status=case when p_success then 'DONE' else 'ERROR' end,
-  completed_at=pg_catalog.now(),response=p_response,error=p_error where id=p_id;
- return pg_catalog.jsonb_build_object('completed',true,'id',p_id,'attempts',item.attempts);
-end $$;
-revoke all on function public.sefirot_chat_complete(uuid,boolean,jsonb,text) from public,anon,authenticated;
-grant execute on function public.sefirot_chat_complete(uuid,boolean,jsonb,text) to service_role;
--- Isolated fixture for the existing CAS protocol, not a canonical table.
-create table sefirot.test_bridge_snapshot(revision integer,snapshot text,checksum text);
-insert into sefirot.test_bridge_snapshot values(0,null,null);
-create function public.sefirot_bridge_pull() returns jsonb language sql security definer set search_path='' as $$
- select pg_catalog.jsonb_build_object('revision',revision,'snapshot',snapshot,'checksum',checksum)
- from sefirot.test_bridge_snapshot;
-$$;
-create function public.sefirot_bridge_save(p_revision integer,p_snapshot text,p_checksum text) returns jsonb
-language plpgsql security definer set search_path='' as $$
-begin
- update sefirot.test_bridge_snapshot set revision=revision+1,snapshot=p_snapshot,checksum=p_checksum
- where revision=p_revision;
- if not found then raise exception 'STALE_REVISION';end if;
- return pg_catalog.jsonb_build_object('revision',p_revision+1,'checksum',p_checksum);
-end $$;
-revoke all on function public.sefirot_bridge_pull() from public,anon,authenticated;
-revoke all on function public.sefirot_bridge_save(integer,text,text) from public,anon,authenticated;
-grant execute on function public.sefirot_bridge_pull() to service_role;
-grant execute on function public.sefirot_bridge_save(integer,text,text) to service_role;
-create table sefirot.predictions(id text primary key,payload jsonb);
-insert into sefirot.predictions values('canonical-untouched','{"sealed":true}');
-`;
+const baseSQL=await readFile(new URL("../tests/fixtures/chat_bridge_legacy.sql",import.meta.url),"utf8");
 const extensionSQL=await readFile(new URL("../schema/supabase_chat_situation.sql",import.meta.url),"utf8");
+const probeCases=await readFile(new URL("../tests/fixtures/probe_completion_cases.sql",import.meta.url),"utf8");
 const callSQL={
+ sefirot_probe_complete:["select public.sefirot_probe_complete($1,$2,$3,$4,$5) value",["p_id","p_attempt","p_success","p_response","p_error"]],
  sefirot_chat_claim:["select public.sefirot_chat_claim() value",[]],
  sefirot_bridge_pull:["select public.sefirot_bridge_pull() value",[]],
  sefirot_bridge_save:["select public.sefirot_bridge_save($1,$2,$3) value",["p_revision","p_snapshot","p_checksum"]],
@@ -144,7 +81,8 @@ async function sqlTests() {
   groups++;
   const probe="00000000-0000-0000-0000-000000000002";
   await pg.query("insert into sefirot.chat_bridge_jobs(id,kind,request,status,attempts) values($1,'sports_probe','{}','RUNNING',1)",[probe]);
-  assert.equal((await rpc(pg,"sefirot_chat_complete",{p_id:probe,p_success:true,p_response:{sports_only:true},p_error:null})).completed,true);groups++;
+  await assert.rejects(rpc(pg,"sefirot_chat_complete",{p_id:probe,p_success:true,p_response:{sports_only:true},p_error:null}),/PROBE_LEASE_REQUIRED/);
+  assert.equal((await rpc(pg,"sefirot_probe_complete",{p_id:probe,p_attempt:1,p_success:false,p_response:null,p_error:"INPUT_VALIDATION_OR_PREMATCH_GATE"})).completed,true);groups++;
   job=(await rpc(pg,"sefirot_chat_claim")).job;
   await assert.rejects(rpc(pg,"sefirot_situation_complete",{p_id:job.id,p_attempt:1,p_success:true,p_response:{...result(job.request),monetary_permission:true},p_error:null}));groups++;
   assert.equal((await rpc(pg,"sefirot_situation_source",{p_receipt_id:"a".repeat(64)})).receipt,null);
@@ -207,9 +145,44 @@ async function gatewayTests() {
  return groups;
 }
 
+async function probeSQLTests() {
+ const pg=new PGlite();
+ try {await pg.exec(baseSQL);await pg.exec(extensionSQL);await pg.exec(probeCases);
+  return (await pg.query("select count(*)::int n from public.probe_test_cases")).rows[0].n;
+ } finally {await pg.close();}
+}
+async function probeGatewayTests() {
+ const hashes=[createHash("sha256").update(TOKEN).digest("hex")];
+ const env=n=>({SUPABASE_URL:"https://synthetic.test",SUPABASE_SERVICE_ROLE_KEY:SERVICE})[n];
+ const body={action:"probe_complete",id:"00000000-0000-0000-0000-000000000099",attempt:1,success:false,response:null,error:"RESEARCH_RUNNER_ERROR"};
+ const req=(b,token=TOKEN)=>new Request("https://synthetic.test",{method:"POST",
+  headers:{"x-sefirot-bridge-store-token":token,"content-length":String(Buffer.byteLength(JSON.stringify(b)))},body:JSON.stringify(b)});
+ let calls=0;let reply={completed:true,id:body.id,attempts:1};let status=200;let groups=0;
+ const handler=createStoreHandler({credentialHashes:hashes,env,fetcher:async(url,opts)=>{
+  calls++;assert(url.endsWith("/sefirot_probe_complete"));assert.equal(JSON.parse(opts.body).p_attempt,1);
+  return Response.json(reply,{status});
+ }});
+ assert.equal((await handler(req(body,"invalid"))).status,401);assert.equal(calls,0);groups++;
+ for(const b of [{...body,attempt:null},{...body,attempt:true},{...body,attempt:0},{...body,attempt:4},
+  {...body,id:"wrong"},{...body,extra:1},Object.fromEntries(Object.entries(body).filter(([k])=>k!=="attempt"))])
+  assert.equal((await handler(req(b))).status,422);
+ assert.equal(calls,0);groups++;
+ assert.equal((await handler(req(body))).status,200);groups++;
+ for(const r of [{completed:true},{...reply,id:"foreign"},{...reply,attempts:2},{...reply,attempts:true}]) {
+  reply=r;assert.equal((await handler(req(body))).status,502);
+ } groups++;
+ reply={secret:"SENTINEL"};
+ for(const code of [400,401,403,409,422,429]) {
+  status=code;const response=await handler(req(body));assert.equal(response.status,code===429?429:409);
+  assert(!JSON.stringify(await response.json()).includes("SENTINEL"));
+ } groups++;
+ status=503;assert.equal((await handler(req(body))).status,503);groups++;
+ return groups;
+}
+
 async function serve() {
  let pg=new PGlite(process.argv[3]);await pg.exec(baseSQL);await pg.exec(extensionSQL);
- let port;const calls=[];
+ let port;const calls=[];let dropProbeAck=false;
  const handler=createStoreHandler({credentialHashes:[createHash("sha256").update(TOKEN).digest("hex")],
   env:n=>({SUPABASE_URL:"https://synthetic.test",SUPABASE_SERVICE_ROLE_KEY:SERVICE})[n],
   // Test-only mapping of a validated HTTPS RPC URL onto this owned loopback server.
@@ -220,6 +193,7 @@ async function serve() {
    const raw=Buffer.concat(chunks);let response;
    if(incoming.url==="/functions/v1/sefirot-chat-store") {
     response=await handler(new Request("http://127.0.0.1:"+port+incoming.url,{method:incoming.method,headers:incoming.headers,body:raw}));
+    if(dropProbeAck&&JSON.parse(raw).action==="probe_complete"&&response.status===200){dropProbeAck=false;out.destroy();return;}
    } else if(incoming.url.startsWith("/rest/v1/rpc/")&&incoming.headers.authorization==="Bearer "+SERVICE) {
     const name=incoming.url.split("/").at(-1);calls.push(name);
     try {response=Response.json(await rpc(pg,name,JSON.parse(raw)));}
@@ -234,7 +208,10 @@ async function serve() {
  for await(const line of lines) {
   try {
    const body=JSON.parse(line);let value;
-   if(body.command==="enroll") {
+   if(body.command==="probe-enroll") {
+    await pg.query("insert into sefirot.chat_bridge_jobs(id,kind,request) values($1,'sports_probe',$2)",[body.id,body.request]);value={job_id:body.id};
+   } else if(body.command==="drop-probe-ack") {dropProbeAck=true;value={armed:true};
+   } else if(body.command==="enroll") {
     await pg.query("insert into sefirot.chat_situation_receipts(receipt_id,envelope) values($1,$2)",[body.request.original_provider_receipt_id,body.envelope]);
     value=await rpc(pg,"sefirot_situation_enqueue",{p_request:body.request});
    } else if(body.command==="read") {
@@ -256,7 +233,7 @@ async function serve() {
 
 try {
  if(process.argv[2]==="--serve") await serve();
- else console.log(JSON.stringify({sql_groups:await sqlTests(),gateway_groups:await gatewayTests(),source:"SYNTHETIC_ONLY"}));
+ else console.log(JSON.stringify({sql_groups:await sqlTests(),gateway_groups:await gatewayTests(),probe_sql_groups:await probeSQLTests(),probe_gateway_groups:await probeGatewayTests(),source:"SYNTHETIC_ONLY"}));
 } catch(error) {
  console.error(JSON.stringify({error:error.message,code:error.code,position:error.position,where:error.where}));
  process.exitCode=1;

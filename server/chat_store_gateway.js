@@ -57,7 +57,9 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
       &&typeof body.snapshot==="string"&&body.snapshot.length>20&&body.snapshot.length<=2800000
       &&typeof body.checksum==="string"&&/^[0-9a-f]{64}$/.test(body.checksum);
     const claim=body.action==="claim"&&keys==="action";
-    const complete=body.action==="complete" &&
+    const probeComplete=body.action==="probe_complete"&&keys==="action,attempt,error,id,response,success"
+      &&Number.isInteger(body.attempt)&&body.attempt>=1&&body.attempt<=3;
+    const complete=(body.action==="complete" || probeComplete) &&
       (keys==="action,error,id,response,success" || keys==="action,attempt,error,id,response,success")
       &&typeof body.id==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)
       &&typeof body.success==="boolean"
@@ -82,7 +84,7 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
     const leased=complete&&Object.hasOwn(body,"attempt");
     const endpoint=pull?"sefirot_bridge_pull":save?"sefirot_bridge_save":claim?"sefirot_chat_claim":
       source?"sefirot_situation_source":enqueue?"sefirot_situation_enqueue":
-      leased?"sefirot_situation_complete":"sefirot_chat_complete";
+      probeComplete?"sefirot_probe_complete":leased?"sefirot_situation_complete":"sefirot_chat_complete";
     const params=pull||claim?{}:save?{p_revision:body.revision,p_snapshot:body.snapshot,p_checksum:body.checksum}:
       source?{p_receipt_id:body.receipt_id}:enqueue?{p_request:body.request}:
       {p_id:body.id,p_success:body.success,p_response:body.response,p_error:body.error,
@@ -93,11 +95,17 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
         method:"POST",redirect:"error",signal:controller.signal,
         headers:{apikey:service,authorization:"Bearer "+service,"content-type":"application/json"},
         body:JSON.stringify(params)});
-      if(!response.ok)return json({ok:false,error:response.status===429?"STORE_RATE_LIMITED":"DATABASE_UNAVAILABLE"},503);
+      if(!response.ok) {
+        if(probeComplete&&response.status>=400&&response.status<500)
+          return json({ok:false,error:response.status===429?"STORE_RATE_LIMITED":"PROBE_COMPLETION_REJECTED"},
+            response.status===429?429:409);
+        return json({ok:false,error:response.status===429?"STORE_RATE_LIMITED":"DATABASE_UNAVAILABLE"},503);
+      }
       const value=JSON.parse(await bounded(response,MAX_RESPONSE));
       if(!value||typeof value!=="object"||Array.isArray(value)
         ||((pull||save)&&!Number.isSafeInteger(value.revision))
         ||(claim&&!Object.hasOwn(value,"job"))||(complete&&value.completed!==true)
+        ||(probeComplete&&(value.id!==body.id||value.attempts!==body.attempt))
         ||(source&&(!Object.hasOwn(value,"receipt")||
             value.receipt!==null&&new TextEncoder().encode(JSON.stringify(value.receipt)).length>65536))
         ||(enqueue&&(typeof value.job_id!=="string"||typeof value.request_key!=="string")))
