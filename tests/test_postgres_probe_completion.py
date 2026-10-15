@@ -86,7 +86,8 @@ class NativeProbePostgresTests(unittest.TestCase):
             probe_body=next(row[1] for row in after if row[0]=='sefirot_probe_complete')
             self.assertEqual(hashlib.sha256(probe_body.encode()).hexdigest(),manifest['probe_body_sha256'])
             admin.execute(up);self.assertEqual(self.fn_state(admin),after)
-            for case in cases:rejected(case)
+            for case in cases:
+                if not case.get('before_upgrade_only'):rejected(case)
             admin.execute(self.sql('tests/fixtures/probe_rollout_assertions.sql'))
             admin.execute(self.sql('tests/fixtures/probe_completion_cases.sql'))
             self.assertEqual(admin.execute('select count(*) from public.probe_test_cases').fetchone()[0],10)

@@ -183,6 +183,22 @@ revoke all on function public.sefirot_chat_complete(uuid,boolean,jsonb,text) fro
 revoke all on function public.sefirot_probe_complete(uuid,integer,boolean,jsonb,text) from public,anon,authenticated;
 grant execute on function public.sefirot_chat_complete(uuid,boolean,jsonb,text) to service_role;
 grant execute on function public.sefirot_probe_complete(uuid,integer,boolean,jsonb,text) to service_role;
+-- Default privileges can grant new functions to additional project roles.
+-- Explicit revokes above are insufficient in that case: reject atomically.
+do $$ begin
+  if exists(select 1 from pg_catalog.pg_proc p
+      cross join lateral pg_catalog.aclexplode(coalesce(p.proacl,
+          pg_catalog.acldefault('f',p.proowner))) a
+      where p.oid in (
+        'public.sefirot_chat_complete(uuid,boolean,jsonb,text)'::regprocedure,
+        'public.sefirot_probe_complete(uuid,integer,boolean,jsonb,text)'::regprocedure,
+        'sefirot.chat_complete_before_probe_fence(uuid,boolean,jsonb,text)'::regprocedure)
+      and (a.grantee<>'postgres'::regrole and
+        (p.oid='sefirot.chat_complete_before_probe_fence(uuid,boolean,jsonb,text)'::regprocedure
+         or a.grantee<>'service_role'::regrole))) then
+    raise exception 'PROBE_ROLLOUT_NEW_FUNCTION_ACCESS_DRIFT' using errcode='22023';
+  end if;
+end $$;
 -- Always install parked: no mixed-version worker can claim after this commit.
 revoke execute on function public.sefirot_chat_claim() from service_role;
 do $$ begin

@@ -44,7 +44,7 @@ export async function probeRolloutTests() {
   assert.equal(backup.prosrc,before.find(f=>f.proname==='sefirot_chat_complete').prosrc);
   assert.equal(bodyHash((await fnState(pg)).find(f=>f.proname==='sefirot_probe_complete').prosrc),manifest.probe_body_sha256);groups++;
   const after=await fnState(pg);await pg.exec(inside(up));assert.deepEqual(await fnState(pg),after);groups++;
-  for(const c of checks){await rejectGuard(pg,c);groups++;}
+  for(const c of checks.filter(c=>!c.before_upgrade_only)){await rejectGuard(pg,c);groups++;}
   await pg.exec(assertions);await pg.exec(probeCases);
   assert.equal((await pg.query('select count(*)::int n from public.probe_test_cases')).rows[0].n,10);groups++;
   await pg.exec(inside(park));await pg.exec(inside(park));

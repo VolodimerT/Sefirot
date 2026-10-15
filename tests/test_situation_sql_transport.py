@@ -47,7 +47,7 @@ class SQLTransportTests(unittest.TestCase):
         self.assertEqual(result["gateway_groups"],12)
         self.assertEqual(result["probe_sql_groups"],10)
         self.assertEqual(result["probe_gateway_groups"],6)
-        self.assertEqual(result["rollout_groups"],33)
+        self.assertEqual(result["rollout_groups"],35)
         self.assertEqual(result["source"],"SYNTHETIC_ONLY")
 
     def test_http_worker_receipt_durable_restart_and_original_seals(self):

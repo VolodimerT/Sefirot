@@ -1,16 +1,88 @@
 [
- {"name":"pending job","mutate":"insert into sefirot.chat_bridge_jobs(id,kind,request) values('00000000-0000-0000-0000-000000000071','status','{}')","error":"PROBE_ROLLOUT_QUEUE_NOT_DRAINED"},
- {"name":"running job","mutate":"insert into sefirot.chat_bridge_jobs(id,kind,request,status,attempts) values('00000000-0000-0000-0000-000000000071','status','{}','RUNNING',1)","error":"PROBE_ROLLOUT_QUEUE_NOT_DRAINED"},
- {"name":"enabled budget","mutate":"update sefirot_budget_private.sports_budget set enabled=true","error":"PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"},
- {"name":"provider in flight","mutate":"update sefirot_budget_private.sports_budget set in_flight='00000000-0000-0000-0000-000000000072'","error":"PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"},
- {"name":"missing budget row","mutate":"delete from sefirot_budget_private.sports_budget","error":"PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"},
- {"name":"RLS disabled","mutate":"alter table sefirot.chat_bridge_jobs disable row level security","error":"PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"},
- {"name":"service direct access","mutate":"grant select on sefirot.chat_bridge_jobs to service_role","error":"PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"},
- {"name":"service private schema usage","mutate":"grant usage on schema sefirot to service_role","error":"PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"},
- {"name":"public claim access","mutate":"grant execute on function public.sefirot_chat_claim() to anon","error":"PROBE_ROLLOUT_CLAIM_ACCESS_DRIFT"},
- {"name":"unknown completion body","mutate":"create or replace function public.sefirot_chat_complete(p_id uuid,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$","error":"PROBE_ROLLOUT_COMPLETION_DRIFT"},
- {"name":"backup body drift","mutate":"create or replace function sefirot.chat_complete_before_probe_fence(p_id uuid,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$","error":"PROBE_ROLLOUT_BACKUP_DRIFT","after_upgrade":true},
- {"name":"probe RPC body drift","mutate":"create or replace function public.sefirot_probe_complete(p_id uuid,p_attempt integer,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$","error":"PROBE_ROLLOUT_RPC_DRIFT","after_upgrade":true},
- {"name":"backup grant drift","mutate":"grant execute on function sefirot.chat_complete_before_probe_fence(uuid,boolean,jsonb,text) to service_role","error":"PROBE_ROLLOUT_BACKUP_DRIFT","after_upgrade":true},
- {"name":"probe RPC grant drift","mutate":"grant execute on function public.sefirot_probe_complete(uuid,integer,boolean,jsonb,text) to public","error":"PROBE_ROLLOUT_RPC_DRIFT","after_upgrade":true}
+  {
+    "name": "pending job",
+    "mutate": "insert into sefirot.chat_bridge_jobs(id,kind,request) values('00000000-0000-0000-0000-000000000071','status','{}')",
+    "error": "PROBE_ROLLOUT_QUEUE_NOT_DRAINED"
+  },
+  {
+    "name": "running job",
+    "mutate": "insert into sefirot.chat_bridge_jobs(id,kind,request,status,attempts) values('00000000-0000-0000-0000-000000000071','status','{}','RUNNING',1)",
+    "error": "PROBE_ROLLOUT_QUEUE_NOT_DRAINED"
+  },
+  {
+    "name": "enabled budget",
+    "mutate": "update sefirot_budget_private.sports_budget set enabled=true",
+    "error": "PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"
+  },
+  {
+    "name": "provider in flight",
+    "mutate": "update sefirot_budget_private.sports_budget set in_flight='00000000-0000-0000-0000-000000000072'",
+    "error": "PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"
+  },
+  {
+    "name": "missing budget row",
+    "mutate": "delete from sefirot_budget_private.sports_budget",
+    "error": "PROBE_ROLLOUT_BUDGET_NOT_QUIESCENT"
+  },
+  {
+    "name": "RLS disabled",
+    "mutate": "alter table sefirot.chat_bridge_jobs disable row level security",
+    "error": "PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"
+  },
+  {
+    "name": "service direct access",
+    "mutate": "grant select on sefirot.chat_bridge_jobs to service_role",
+    "error": "PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"
+  },
+  {
+    "name": "service private schema usage",
+    "mutate": "grant usage on schema sefirot to service_role",
+    "error": "PROBE_ROLLOUT_QUEUE_ACCESS_DRIFT"
+  },
+  {
+    "name": "public claim access",
+    "mutate": "grant execute on function public.sefirot_chat_claim() to anon",
+    "error": "PROBE_ROLLOUT_CLAIM_ACCESS_DRIFT"
+  },
+  {
+    "name": "unknown completion body",
+    "mutate": "create or replace function public.sefirot_chat_complete(p_id uuid,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$",
+    "error": "PROBE_ROLLOUT_COMPLETION_DRIFT"
+  },
+  {
+    "name": "backup body drift",
+    "mutate": "create or replace function sefirot.chat_complete_before_probe_fence(p_id uuid,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$",
+    "error": "PROBE_ROLLOUT_BACKUP_DRIFT",
+    "after_upgrade": true
+  },
+  {
+    "name": "probe RPC body drift",
+    "mutate": "create or replace function public.sefirot_probe_complete(p_id uuid,p_attempt integer,p_success boolean,p_response jsonb,p_error text) returns jsonb language plpgsql security definer set search_path='' as $$ begin return '{}'::jsonb;end $$",
+    "error": "PROBE_ROLLOUT_RPC_DRIFT",
+    "after_upgrade": true
+  },
+  {
+    "name": "backup grant drift",
+    "mutate": "grant execute on function sefirot.chat_complete_before_probe_fence(uuid,boolean,jsonb,text) to service_role",
+    "error": "PROBE_ROLLOUT_BACKUP_DRIFT",
+    "after_upgrade": true
+  },
+  {
+    "name": "probe RPC grant drift",
+    "mutate": "grant execute on function public.sefirot_probe_complete(uuid,integer,boolean,jsonb,text) to public",
+    "error": "PROBE_ROLLOUT_RPC_DRIFT",
+    "after_upgrade": true
+  },
+  {
+    "name": "unexpected default function grant in public",
+    "mutate": "create role rollout_unexpected; alter default privileges for role postgres in schema public grant execute on functions to rollout_unexpected",
+    "error": "PROBE_ROLLOUT_NEW_FUNCTION_ACCESS_DRIFT",
+    "before_upgrade_only": true
+  },
+  {
+    "name": "unexpected default function grant in sefirot",
+    "mutate": "create role rollout_unexpected; alter default privileges for role postgres in schema sefirot grant execute on functions to rollout_unexpected",
+    "error": "PROBE_ROLLOUT_NEW_FUNCTION_ACCESS_DRIFT",
+    "before_upgrade_only": true
+  }
 ]
