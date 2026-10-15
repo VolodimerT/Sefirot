@@ -45,7 +45,7 @@ class SportsBudgetResponseTests(unittest.TestCase):
         with patch.dict(gateway.os.environ, {"SEFIROT_SPORTS_GATEWAY_URL": url}), \
              patch.object(gateway, "credential", return_value="SAFE_TEST_TOKEN"):
             try:
-                return gateway.get_sports("status", {}, opener=opener.open)
+                return gateway.get_sports("status", {}, opener=opener)
             finally:
                 self.assertTrue(response.closed)
                 self.assertEqual(opener.calls, 1)
