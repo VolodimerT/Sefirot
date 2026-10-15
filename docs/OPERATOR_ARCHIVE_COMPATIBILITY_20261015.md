@@ -59,3 +59,20 @@ RESEARCH_ONLY / PASS / stake=0.
 Точный опубликованный SHA, полный release и 20 CI jobs фиксируются в итоговом
 отчёте после выполнения. Проверки приложения не заменяют Android smoke в
 реальной разрешённой среде или отдельное разрешение на deployment.
+
+## Подтверждённый сетевой отказ CI
+
+Первый коммит `3fdf440a9b8478087ccbdc0a8ac8aea09e143ce9` получил
+ECONNRESET в PR Ubuntu/Python 3.14.3 на npm ci (run 38804421828,
+job 116661460010, exit 152). Тесты этой задачи не запускались; setup-python
+успешно установил точную 3.14.3. Это отказ загрузки тестовой зависимости,
+не падение приложения. Failed SHA и лог сохраняются, повтор не скрывается.
+
+В workflow добавлены npm cache по package-lock.json, prefer-offline и явные
+fetch-retries=3 / factor=2 / timeout=60000ms с паузами 1000..10000ms;
+весь install step ограничен пятью минутами. Это максимум три повтора
+скачивания публичной pinned тестовой зависимости, не повторы provider API.
+npm ci по-прежнему проверяет lock/integrity; версия PGlite 0.5.8, TLS,
+ignore-scripts/no-audit/no-fund сохранены. Cache хранит npm content cache,
+не node_modules. При исчерпании лимита job остаётся failed; ошибок тестов
+или установки не игнорируем. Новое дерево проходит отдельный полный CI.

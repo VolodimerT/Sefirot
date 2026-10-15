@@ -21,8 +21,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
       - name: Install pinned local PostgreSQL WASM test dependency
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        timeout-minutes: 5
+        run: >-
+          npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
+          --fetch-retries=3 --fetch-retry-factor=2
+          --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=10000
+          --fetch-timeout=60000
       - name: Install optional cloud sync dependency
         run: python -m pip install ".[sync]"
       - name: Unit and integration tests

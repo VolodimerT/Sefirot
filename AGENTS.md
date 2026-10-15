@@ -6,6 +6,11 @@ operator_report discard every decision/readiness row. Repair only read-only
 presentation: explicitly unavailable archive references, keep strict original
 chat verifier/schema unchanged, preserve supported originals and cutoff/selection.
 No ID rewriting, new forecasts, money grants or broad exception suppression.
+Exact 3fdf440a CI then exposed npm ECONNRESET before tests (PR Linux3.14.3).
+Extend this stage to bounded CI dependency-fetch hardening: lock-keyed npm
+cache, explicit finite fetch retry/timeouts and five-minute install step.
+Keep lock/integrity/version/ignore-scripts/TLS unchanged; no provider retry.
+Save failed initial SHA/log and validate a new commit, never hide/rerun it.
 All src/Policy/model, SQL/worker/relay, protocol and original evidence frozen.
 Reuse #56; synthetic red/green, immutable original aggregate-only verification,
 isolated full release and exact-head 20-job CI. No hosted writes, deploy/main
