@@ -51,15 +51,15 @@ def operator_report(database=None, *, at=None, prediction_id=None, include_marke
                     return report
                 service = Service(repo, clock=lambda: now)
                 predictions = repo.all("predictions", stamp)
-                if prediction_id:
+                if prediction_id is not None:
                     predictions = [p for p in predictions if p["id"] == prediction_id]
                     if not predictions:
                         raise ValueError("PREDICTION_NOT_AT_CUTOFF")
                 report["readiness"] = [inspect_readiness(service, p["id"], stamp)
                                        for p in predictions[-100:]]
-                mids = {p["sports"]["match"]["id"] for p in predictions}
+                selected_seals = {p["id"] for p in predictions}
                 for d in repo.all("decisions", stamp):
-                    if d["match_id"] not in mids:
+                    if d["prediction_id"] not in selected_seals:
                         continue
                     answer = build_answer(d["match_id"], [d["match_id"]], at=now, repo=repo,
                                           decision_id=d["id"], archive=True)

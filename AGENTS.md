@@ -1,3 +1,18 @@
+## Operator prediction selection follow-up, 15.10.2026
+
+User authorized available offline code work; Render remains deferred.
+Base unified draft #56 exact 8bed823be7d740f8af8c335687a96de82ac867ff.
+Confirmed operator selection leaks other original revisions of the same
+fixture into decisions/cards; explicit empty selection broadens the query.
+Bind decisions/cards to selected original prediction IDs; only None means
+unfiltered. Keep original verifier, cutoffs, archive and all owned decisions.
+Synthetic regressions only; full isolated release and exact-head OS/Python/
+actual PostgreSQL CI. Reuse #56, no duplicate PR. All src/Policy/models,
+protocol/original fixtures/reports/seals remain immutable. No provider calls,
+real fit, collection, main merge, deploy, production, secrets, money/LIVE or
+additional agents. Unverified real API/HOLDOUT/edge stays PASS/stake 0.
+Prior scopes below are historical completed stages.
+
 ## Calibration temporal boundary follow-up, 14.10.2026
 
 User authorized more code/source/calibration checks after verified unified
