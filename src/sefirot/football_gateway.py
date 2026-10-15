@@ -1,5 +1,6 @@
 """Optional existing private Supabase gateway; provider key stays server-side."""
 from datetime import datetime, timezone
+from http.client import HTTPException
 import json
 import os
 import re
@@ -12,7 +13,7 @@ from .credentials import credential
 from .football_query import (QUERY_ERROR_CODES, FootballQueryError, validate_fixture_query,
                              validate_fixture_query_parameters)
 from .football_provider import HOST, PARAMETERS, FootballRequestError, get, validate_enrichment_request, validate_provider_data
-from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
+from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS, read_response, close_transport
 
 
 def transport_status():
@@ -55,10 +56,10 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
         response = (opener or build_opener(NoRedirect()).open)(request, timeout=15)
     except HTTPError as exc:
         response = exc
-    except OSError:
+    except (OSError, HTTPException):
         raise ValueError('sports gateway network unavailable') from None
     try:
-        raw = response.read(MAX_RESPONSE + 1)
+        raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('sports gateway response exceeds limit')
         try:
@@ -108,5 +109,7 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
                 raise ValueError('sports gateway quota response malformed')
             receipt['quota'] = dict(quota)
         return {'data': data, 'receipt': receipt}
+    except (OSError, HTTPException):
+        raise ValueError('sports gateway network unavailable') from None
     finally:
-        response.close()
+        close_transport(response)

@@ -1,3 +1,20 @@
+## Critical API transport follow-up, 15.10.2026
+
+User explicitly authorized critical API repairs after unified draft #56
+exact df0f6f6ad8d9673be480e373e63772660f7137fd. Confirmed unhandled HTTP
+parser errors, successful receipts for truncated/ambiguous HTTP bodies, and
+cleanup errors exposing arbitrary text. Reuse shared provider_transport body
+reader/cleanup in football, Odds catalogue/events, Stake and gateway. Four
+non-model src changes intentionally update code_hash; MODEL_MODULES/Policy,
+protocol, original seals/receipts/fits/approvals/reports remain immutable.
+Real HTTP parser over owned bytes, no provider calls or credential reads.
+Full isolated release and exact-head OS/Python/actual PostgreSQL CI required.
+Reuse existing #56, no new PR. No production, deployment, main merge, secrets,
+paid APIs, collection, real fit, money/LIVE or additional agents. Render remains
+deferred. Unverified real APIs/CAL/HOLDOUT/model advantage stay PASS/stake 0.
+Prior headers are historical; their src freeze does not prohibit this user-
+authorized transport-only repair. See docs/API_RESPONSE_INTEGRITY_20261015.md.
+
 ## Operator prediction selection follow-up, 15.10.2026
 
 User authorized available offline code work; Render remains deferred.

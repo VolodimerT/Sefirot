@@ -10,7 +10,7 @@ import json
 import re
 from urllib.parse import urlencode
 from .credentials import credential
-from .provider_transport import ProviderConnection, request_json
+from .provider_transport import ProviderConnection, request_json, read_response, close_transport
 
 from .contracts import digest, number, time
 from .markets import complete_overround, validate_quote, market_of
@@ -58,7 +58,7 @@ def _get_json(path, params, connection_factory=ProviderConnection):
         response = connection.getresponse()
         if response.status != 200:
             raise ValueError(f'odds provider HTTP {int(response.status)}; PASS')
-        raw = response.read(MAX_RESPONSE + 1)
+        raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('odds provider response exceeds limit; PASS')
         try:
@@ -70,7 +70,7 @@ def _get_json(path, params, connection_factory=ProviderConnection):
         # Underlying network errors may contain the request URL and API key.
         raise ValueError('odds provider network error; PASS') from None
     finally:
-        connection.close()
+        close_transport(connection)
 
 
 def sports_catalogue(api_key=None, connection_factory=ProviderConnection):

@@ -1,5 +1,6 @@
 """HTTPS through the ordinary runtime proxy; no redirects or credential logs."""
 import json
+from http.client import HTTPException
 import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -19,6 +20,39 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
+def read_response(response, limit):
+    """Bound bytes and reject incomplete or ambiguous HTTP body framing."""
+    getheader = getattr(response, 'getheader', None)
+    if getheader is None and hasattr(response, 'headers'):
+        getheader = response.headers.get
+    declared = None
+    if getheader is not None:
+        length = getheader('Content-Length')
+        encoding = getheader('Transfer-Encoding')
+        if encoding is not None and (length is not None or not isinstance(encoding, str)
+                                     or encoding.strip().lower() != 'chunked'):
+            raise HTTPException('invalid provider response framing')
+        if length is not None:
+            if not isinstance(length, str) or not re.fullmatch(r'[0-9]{1,20}', length.strip()):
+                raise HTTPException('invalid provider response framing')
+            declared = int(length.strip())
+    raw = response.read(limit + 1)
+    # Leave over-limit bytes to each provider's existing public size error.
+    if len(raw) <= limit and declared is not None and len(raw) != declared:
+        raise HTTPException('incomplete provider response')
+    return raw
+
+
+def close_transport(transport):
+    """Cleanup must not replace a primary refusal with private network text."""
+    close = getattr(transport, 'close', None)
+    if close is not None:
+        try:
+            close()
+        except (OSError, HTTPException):
+            pass
+
+
 class ProviderConnection:
     """http.client-compatible subset, preserving injectable offline transports."""
     def __init__(self, host, timeout=15):
@@ -36,7 +70,7 @@ class ProviderConnection:
             self.response = build_opener(NoRedirect()).open(request, timeout=self.timeout)
         except HTTPError as exc:
             self.response = exc
-        except (URLError, OSError, ValueError):
+        except (URLError, OSError, ValueError, HTTPException):
             raise OSError('provider network unavailable') from None
 
     def getresponse(self):
@@ -44,7 +78,7 @@ class ProviderConnection:
 
     def close(self):
         if self.response is not None:
-            self.response.close()
+            close_transport(self.response)
 
 
 def request_json(host, path, params, headers, *, query_credential=None,
@@ -62,7 +96,7 @@ def request_json(host, path, params, headers, *, query_credential=None,
         response = connection.getresponse()
         if response.status != 200:
             raise ValueError(f'provider HTTP {int(response.status)}')
-        raw = response.read(MAX_RESPONSE + 1)
+        raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('provider response exceeds limit')
         try:
@@ -83,7 +117,7 @@ def request_json(host, path, params, headers, *, query_credential=None,
                 raise ValueError('provider quota header malformed')
             receipt['quota'] = quota
         return {'data': value, 'receipt': receipt}
-    except OSError:
+    except (OSError, HTTPException):
         raise ValueError('provider network unavailable') from None
     finally:
-        connection.close()
+        close_transport(connection)

@@ -7,6 +7,7 @@ all output remains research-only and fail-closed.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from http.client import HTTPException
 import json
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
@@ -14,7 +15,7 @@ from urllib.request import Request, build_opener
 from .contracts import digest, number, time
 from .credentials import credential
 from .odds_provider import require_prematch_seal
-from .provider_transport import NoRedirect
+from .provider_transport import NoRedirect, read_response, close_transport
 
 
 HOST = "stake.com"
@@ -136,18 +137,16 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name):
             status = int(getattr(response, "status", 200))
             if status != 200:
                 raise StakeRequestError("HTTP_ERROR", http_status=status)
-            raw = response.read(MAX_RESPONSE + 1)
+            raw = read_response(response, MAX_RESPONSE)
         finally:
-            close = getattr(response, "close", None)
-            if close:
-                close()
+            close_transport(response)
     except HTTPError as exc:
         status = int(exc.code)
-        exc.close()
+        close_transport(exc)
         raise StakeRequestError("HTTP_ERROR", http_status=status) from None
     except StakeRequestError:
         raise
-    except (URLError, OSError, ValueError):
+    except (URLError, OSError, ValueError, HTTPException):
         raise StakeRequestError("NETWORK_ERROR") from None
     if len(raw) > MAX_RESPONSE:
         raise StakeRequestError("RESPONSE_TOO_LARGE")
