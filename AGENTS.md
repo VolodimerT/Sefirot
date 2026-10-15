@@ -1,3 +1,15 @@
+## Python 3.14.3 CI compatibility, 15.10.2026
+
+Owner authorized adding exact Python 3.14.3 to existing draft #56 after
+verified 3448d95c. Preserve Ubuntu/Windows 3.11/3.13 coverage and add Linux
+3.14.3 full release plus separate native PostgreSQL sync/probe matrices on
+3.13 and 3.14.3. This stage changes workflow/docs only. All application,
+worker/relay, SQL, Policy/model/protocol and original evidence stay frozen.
+Run isolated full release and exact-head push/PR CI. No hosted writes, Render
+configuration/deploy/restart, main merge, secrets, budget/provider calls,
+real fit, bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier stage headers below are historical.
+
 ## Master plan P0-B rollout review, 15.10.2026
 
 Owner authorized continuation after verified 4f30dc8b (14/14 CI). Prepare the
