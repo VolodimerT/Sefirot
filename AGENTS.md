@@ -1,3 +1,18 @@
+## Stake response parsing, 15.10.2026
+
+Owner authorized continued critical API repairs after verified c4d9e4d9.
+Confirmed malformed catalogue data raises AttributeError and duplicate JSON
+members receive a receipt. Repair the existing experimental Stake response
+parser and catalogue shape checks only, with bounded JSON depth/finite numbers,
+fixed safe errors and one owned-loopback request. Do not invent official API
+semantics or enable stake_snapshot/SAFE_KINDS. One non-model src file may change
+code_hash; all MODEL_MODULES/Policy, other src, SQL/queue/relay, protocol and
+original evidence frozen. Reuse #56. Red/green actual loopback HTTP, isolated
+full release and exact-head 20-job CI including 3.14.3. No actual Stake/provider
+calls, budget activation, credentials lookup/values, production/deploy/main
+merge, real fit/bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier stage headers below are historical.
+
 ## Original archive presentation, 15.10.2026
 
 Owner authorized continued available engineering after verified 9330e755.

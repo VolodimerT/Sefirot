@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from http.client import HTTPException
 import json
+import math
 import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
@@ -23,6 +24,7 @@ HOST = "stake.com"
 ENDPOINT = "/_api/graphql"
 MAX_RESPONSE = 8_000_000
 MAX_EVENTS = 200
+MAX_JSON_DEPTH = 64
 
 
 class StakeRequestError(ValueError):
@@ -102,6 +104,42 @@ def _token():
     return credential("STAKE_API_TOKEN")
 
 
+def _json_payload(raw):
+    """Do not sign an ambiguous or unbounded parsed representation."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON member")
+            result[key] = value
+        return result
+
+    def reject_constant(_):
+        raise ValueError("nonfinite JSON constant")
+
+    try:
+        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_object,
+                             parse_constant=reject_constant)
+        # Iterator stack bounds extra memory by depth, even for wide arrays.
+        pending = [iter((payload,))]
+        while pending:
+            try:
+                value = next(pending[-1])
+            except StopIteration:
+                pending.pop()
+                continue
+            if isinstance(value, (dict, list)):
+                if len(pending) > MAX_JSON_DEPTH:
+                    raise ValueError("JSON nesting limit")
+                pending.append(iter(value.values() if isinstance(value, dict) else value))
+            elif isinstance(value, float) and not math.isfinite(value):
+                # A valid exponent such as 1e999 can overflow a Python float.
+                raise ValueError("nonfinite JSON number")
+        return payload
+    except (ValueError, RecursionError):
+        raise StakeRequestError("INVALID_JSON") from None
+
+
 def _post_graphql(query, variables, *, token=None, opener=None, operation_name):
     if not isinstance(query, str) or not query.strip():
         raise ValueError("stake GraphQL query required")
@@ -151,10 +189,7 @@ def _post_graphql(query, variables, *, token=None, opener=None, operation_name):
         raise StakeRequestError("NETWORK_ERROR") from None
     if len(raw) > MAX_RESPONSE:
         raise StakeRequestError("RESPONSE_TOO_LARGE")
-    try:
-        payload = json.loads(raw.decode("utf-8"))
-    except (UnicodeError, json.JSONDecodeError):
-        raise StakeRequestError("INVALID_JSON") from None
+    payload = _json_payload(raw)
     if not isinstance(payload, dict):
         raise StakeRequestError("INVALID_RESPONSE")
     if payload.get("errors"):
@@ -209,22 +244,32 @@ def sports_events(*, first=50, sport_slug="soccer", match_type="active", token=N
         root = packet["data"]["data"]["slugSport"]
         tournaments = root["tournamentList"]
     except (KeyError, TypeError):
-        raise ValueError("stake sport fixture payload shape changed; PASS") from None
+        raise StakeRequestError("INVALID_RESPONSE") from None
     if not isinstance(root, dict) or not isinstance(tournaments, list):
-        raise ValueError("stake sport fixture payload malformed; PASS")
+        raise StakeRequestError("INVALID_RESPONSE")
     events = []
     for tournament in tournaments:
         if not isinstance(tournament, dict):
-            continue
+            raise StakeRequestError("INVALID_RESPONSE")
         category = tournament.get("category") or {}
-        fixtures = tournament.get("fixtureList") or []
+        fixtures = tournament.get("fixtureList")
+        if fixtures is None:
+            fixtures = []
         if not isinstance(fixtures, list):
-            raise ValueError("stake fixture list malformed; PASS")
+            raise StakeRequestError("INVALID_RESPONSE")
         for fixture in fixtures:
             if not isinstance(fixture, dict):
-                continue
-            data = fixture.get("data") or {}
-            competitors = data.get("competitors") or []
+                raise StakeRequestError("INVALID_RESPONSE")
+            data = fixture.get("data")
+            if data is None:
+                data = {}
+            if not isinstance(data, dict):
+                raise StakeRequestError("INVALID_RESPONSE")
+            competitors = data.get("competitors")
+            if competitors is None:
+                competitors = []
+            if not isinstance(competitors, list):
+                raise StakeRequestError("INVALID_RESPONSE")
             if len(competitors) != 2:
                 continue
             event = {
