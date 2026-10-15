@@ -1,3 +1,16 @@
+## Master plan P0-B/C, 15.10.2026
+
+After P0-A a376823e, fix demonstrated provider refetch on reclaimed sports_probe
+leases; never reconstruct a lost receipt by spending again. Add an offline
+read-only storage reconciler that reuses cloud_sync snapshot verification,
+compares observed compressed hashes, separates private inventory from public
+aggregates and does not infer remote attestation from caller metadata. Preserve
+all src/Policy/MODEL_MODULES and originals from P0-A. Reuse #56, isolated full
+release and exact-head CI. Hosted metadata reads only: no SQL writes/migrations,
+provider calls, budget activation, production/deploy, main merge, credentials
+values, bets, real fit or agents. STEP-resume/archive and official Stake access
+remain explicit blockers. Prior checkpoints below are historical.
+
 ## Master plan P0-A, 15.10.2026
 
 Owner supplied SEFIROT_MASTER_AUDIT_AND_ACTION_PLAN_2026-10-15.md and

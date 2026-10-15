@@ -331,7 +331,7 @@ class SituationTests(SituationHarness):
     def test_existing_sports_probe_queue_dispatch_and_completion_are_preserved(self):
         payload = {"queries": []}
         job = {"id": "00000000-0000-0000-0000-000000000001",
-               "kind": "sports_probe", "request": payload}
+               "kind": "sports_probe", "request": payload, "attempt": 1}
         with (patch.object(chat_queue, "request", side_effect=[{"job": job}, {"completed": True}]) as rpc,
               patch.object(chat_queue, "execute", return_value={"sports_only": True}) as run):
             self.assertTrue(chat_queue.process_one())

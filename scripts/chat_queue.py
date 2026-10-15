@@ -30,12 +30,21 @@ def process_one() -> bool:
             raise ValueError("INVALID_SITUATION_LEASE")
         if kind in ("status","report","demo") and payload:
             raise ValueError("READ_ONLY_JOB_ARGS_FORBIDDEN")
-        result=run_demo() if kind=="demo" else execute(kind,payload)
-        # Limits private job payload size without altering a canonical decision.
-        serialized=json.dumps(result,ensure_ascii=False,allow_nan=False)
-        if len(serialized.encode("utf-8"))>850000:
-            raise ValueError("RESPONSE_TOO_LARGE")
-        success=True
+        # The durable queue reclaims expired RUNNING leases. A provider fetch
+        # might already have succeeded before its completion acknowledgement
+        # was lost. Never spend quota again to reconstruct that missing receipt.
+        if kind == 'sports_probe' and (type(job.get('attempt')) is not int
+                                       or not 1 <= job['attempt'] <= 3):
+            error='PROVIDER_FETCH_LEASE_REQUIRED'
+        elif kind == 'sports_probe' and job['attempt'] != 1:
+            error='PROVIDER_FETCH_RETRY_REQUIRES_REVIEW'
+        else:
+            result=run_demo() if kind=="demo" else execute(kind,payload)
+            # Limits private job payload size without altering a canonical decision.
+            serialized=json.dumps(result,ensure_ascii=False,allow_nan=False)
+            if len(serialized.encode("utf-8"))>850000:
+                raise ValueError("RESPONSE_TOO_LARGE")
+            success=True
     except (ValueError,TypeError,KeyError) as exc:
         error="INPUT_VALIDATION_OR_PREMATCH_GATE"
     except Exception:
