@@ -24,7 +24,7 @@ class SportsBudgetGateError(ValueError):
     """A safe denial reason; no provider credential or raw response attached."""
 
     def __init__(self, reason: str):
-        if reason not in _BUDGET_REASONS:
+        if type(reason) is not str or reason not in _BUDGET_REASONS:
             raise ValueError("unknown sports budget denial")
         self.code = "SHARED_BUDGET_" + reason
         super().__init__("sports shared budget refused request")
@@ -78,7 +78,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if not isinstance(wrapper, dict):
             raise ValueError('sports gateway response malformed')
         if response.status != 200 or wrapper.get('ok') is not True:
-            if response.status == 429 and wrapper.get('error') == 'SHARED_BUDGET_STOP':
+            if (response.status == 429 and wrapper.get('ok') is False
+                    and wrapper.get('error') == 'SHARED_BUDGET_STOP'):
                 reason = wrapper.get('budget_reason')
                 if type(reason) is str and reason in _BUDGET_REASONS:
                     raise SportsBudgetGateError(reason)
