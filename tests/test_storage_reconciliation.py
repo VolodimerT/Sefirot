@@ -1,6 +1,6 @@
 """Reconcile owned SQLite only; cloud observations are synthetic metadata."""
 import copy
-from contextlib import redirect_stdout
+from contextlib import closing, redirect_stdout
 import gzip
 import hashlib
 import io
@@ -87,7 +87,7 @@ class StorageReconciliationTests(unittest.TestCase):
             finally:side.unlink()
 
     def test_corrupt_journal_is_not_relabelled_as_verified(self):
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('DROP TRIGGER audit_logs_no_update')
             db.execute("UPDATE audit_logs SET previous_hash=? WHERE id=1",('b'*64,))
         raw=self.path.read_bytes()

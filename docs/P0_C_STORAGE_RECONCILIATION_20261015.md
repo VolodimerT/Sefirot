@@ -77,3 +77,14 @@ the existing one-way mirror with its dedicated role, original-row equality,
 atomic rollback and audit verification; do not turn synchronization into new
 predictions or monetary approval. Audit/reconciler stage DONE; hosted mirror
 population is deliberately pending separate authorization. PASS/stake=0.
+
+## Windows regression in the owned corruption test
+
+The initial P0-B/C commit 570ec27a passed the local release and Ubuntu jobs,
+but all four Windows jobs failed with WinError 32 during temporary-directory
+cleanup. The owned corruption fixture used sqlite3.Connection as a transaction
+context manager, which commits/rolls back without closing the handle. It now
+also uses contextlib.closing. The corruption rejection assertion is preserved;
+cleanup errors are not ignored and no test is skipped. Application and original
+ledger code are unchanged by this correction. Failed jobs remain in the audit;
+validation runs again on the corrected commit rather than rerunning that SHA.
