@@ -13,6 +13,23 @@ from .football_provider import HOST, PARAMETERS, FootballRequestError, get
 from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS
 
 
+# The gateway returns only fixed, allowlisted budget reasons. Never expose upstream text.
+_BUDGET_REASONS = frozenset({
+    "PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET",
+    "DAILY_LIMIT", "MINUTE_LIMIT",
+})
+
+
+class SportsBudgetGateError(ValueError):
+    """A safe denial reason; no provider credential or raw response attached."""
+
+    def __init__(self, reason: str):
+        if type(reason) is not str or reason not in _BUDGET_REASONS:
+            raise ValueError("unknown sports budget denial")
+        self.code = "SHARED_BUDGET_" + reason
+        super().__init__("sports shared budget refused request")
+
+
 def transport_status():
     configured = bool(os.environ.get('SEFIROT_SPORTS_GATEWAY_URL'))
     name = 'SEFIROT_SPORTS_GATEWAY_TOKEN' if configured else 'API_FOOTBALL_KEY'
@@ -61,6 +78,12 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         if not isinstance(wrapper, dict):
             raise ValueError('sports gateway response malformed')
         if response.status != 200 or wrapper.get('ok') is not True:
+            if (response.status == 429 and wrapper.get('ok') is False
+                    and wrapper.get('error') == 'SHARED_BUDGET_STOP'):
+                reason = wrapper.get('budget_reason')
+                if type(reason) is str and reason in _BUDGET_REASONS:
+                    raise SportsBudgetGateError(reason)
+                raise ValueError('sports gateway budget response invalid')
             if response.status == 422 and wrapper.get('error') == 'PROVIDER_REJECTED_REQUEST':
                 raise FootballRequestError(wrapper.get('provider_errors', {}))
             if wrapper.get('error') == 'UPSTREAM_HTTP_ERROR':

@@ -1,3 +1,20 @@
+## PR #70 independent repair, 15.10.2026
+
+User supplied screenshots of the API-budget recovery and authorized work.
+Read-only checks confirm PAUSED, no current admission and zero attempts today.
+PR #70 exact 734c15a9c71995f9ac63711b839ef0447f166a82 failed both CI events:
+new tests passed an _Opener object where get_sports requires a callable.
+Reuse #70, fix the test adapter, enforce explicit false ok and fixed typed
+budget reasons; preserve the reason in api-health as well as sports_probe.
+Owned HTTP fixtures only, no provider calls. Full isolated release and all
+exact-head configured CI jobs; do not rerun the failed baseline. Integrate
+verified diagnostics into existing unified #56 while retaining its current
+HTTP completeness and cleanup fixes. Model/Policy/original receipts and
+reports remain immutable. No budget update/reservation/finish RPC, worker
+restart, deployment, production write, secrets, collection, real fit, money,
+main merge or additional agents. Render state is read-only; PASS/stake 0.
+Prior historical headers do not override this user-authorized code repair.
+
 # SEFIROT: актуальная база разработки
 
 ## Локальная ручная очередь, 08.10.2026

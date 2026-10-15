@@ -73,5 +73,19 @@ class ProbeTests(unittest.TestCase):
         self.assertNotIn("TOKEN_SECRET_DO_NOT_PRINT",repr(result))
 
 
+    def test_shared_budget_pause_is_visible_but_not_raw_gateway_text(self):
+        from sefirot.football_gateway import SportsBudgetGateError
+        with patch.object(probe, "get_sports", side_effect=SportsBudgetGateError("PAUSED")) as network, \
+             patch.object(probe, "transport_status", return_value={"transport":"SUPABASE_GATEWAY"}):
+            report=probe.collect({"queries":[
+                {"endpoint":"status","params":{}},
+                {"endpoint":"fixtures","params":{"id":123}},
+            ]})
+        self.assertEqual(network.call_count, 1)
+        self.assertEqual(report["queries"][0]["reason"], "SHARED_BUDGET_PAUSED")
+        self.assertEqual(report["queries"][0]["status"], "ERROR")
+        self.assertFalse(report["monetary_permission"])
+
+
 if __name__=="__main__":
     unittest.main()
