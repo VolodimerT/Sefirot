@@ -24,4 +24,21 @@ render(changed);assert.match(sections.get("decisions").allText(),/Сборка �
 assert.equal(scalar(null),"UNAVAILABLE");assert.equal(scalar(0),"0");assert.equal(scalar(NaN),"UNAVAILABLE");
 assert.equal(view(data).records[0].core_decision,"PASS");
 assert.equal(view(data).monetaryPermission,false);
-console.log("OPERATOR_FRONTEND_CASES=8");
+const partial=structuredClone(data);
+partial.unavailable_original_decisions=[{decision_id:"synthetic-unavailable-decision",
+  forecast_seal_id:"synthetic-unavailable-seal",status:"UNAVAILABLE",
+  reason:"ARCHIVE_FIXTURE_ID_UNSUPPORTED",core_decision:"BET",fixture_id:"PRIVATE_SYNTHETIC_RAW_ID"}];
+render(partial);
+assert.match(sections.get("decisions").allText(),/CORE PASS/);
+assert.match(sections.get("decisions").allText(),/Архивная запись недоступна/);
+assert.match(sections.get("decisions").allText(),/synthetic-unavailable-decision/);
+assert.doesNotMatch(sections.get("decisions").allText(),/CORE BET|PRIVATE_SYNTHETIC_RAW_ID/);
+const blocked=structuredClone(partial);blocked.verified_market_views=[];blocked.original_decisions=[];
+render(blocked);
+assert.match(sections.get("decisions").allText(),/Оригинальные записи сохранены/);
+assert.doesNotMatch(sections.get("decisions").allText(),/CORE PASS|CORE BET|0\.4/);
+assert.equal(view(blocked).monetaryPermission,false);
+render(null);
+assert.doesNotMatch(sections.get("decisions").allText(),/synthetic-unavailable|Архивная запись недоступна/);
+assert.equal(view(null).unavailableOriginalDecisions.length,0);
+console.log("OPERATOR_FRONTEND_CASES=11");

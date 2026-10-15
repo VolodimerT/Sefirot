@@ -9,7 +9,9 @@ export function view(data,matchFilter="",marketFilter=""){
   return {build:data?.build??null,provenance:data?.runtime_provenance??null,sources:data?.sources??{},
     readiness:data?.readiness??[],records,research:records.filter(r=>r.research_candidate),
     audit:data?.ledger_status?.startsWith("VERIFIED")?data.audit_events:unavailable,
-    originalDecisions:data?.original_decisions??[],readOnly:true,monetaryPermission:false};
+    originalDecisions:data?.original_decisions??[],
+    unavailableOriginalDecisions:data?.unavailable_original_decisions??[],
+    readOnly:true,monetaryPermission:false};
 }
 function node(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 function section(id,title){const e=document.getElementById(id);e.replaceChildren(node("h2",title));return e;}
@@ -35,6 +37,8 @@ export function render(data,matchFilter="",marketFilter=""){
     node("p",r.status),node("p",r.next_action),detail("Блокеры",r.markets));e.append(a);}
   e=section("decisions","Исходные решения");
   if(!v.records.length)e.append(node("p","Нет проверенных записей CORE."));
+  if(v.unavailableOriginalDecisions.length)e.append(node("p",
+    "Не все архивные решения можно отобразить. Оригинальные записи сохранены."));
   for(const r of v.records){const a=node("article");a.append(node("h3",r.match.home+" — "+r.match.away),
     node("span","CORE "+r.core_decision+" · "+r.core_class,"badge"),node("p",r.data_origin+" · "+r.at),
     node("p","Архив: свежая цена НЕ ПОДТВЕРЖДЕНА."),
@@ -44,6 +48,11 @@ export function render(data,matchFilter="",marketFilter=""){
         metric("EV (исходный)",scalar(m.ev)),metric("Оценка / stress",m.stress_class));
       b.append(grid,detail("Tactical fit · исходный",m.tactical_fit),detail("Public trap · исходный",m.public_trap),
         detail("Death test · исходный",m.death_test),detail("Исходные блокеры",m.effective_blockers));a.append(b);}
+    e.append(a);}
+  for(const r of v.unavailableOriginalDecisions){const a=node("article");
+    a.append(node("h3","Архивная запись недоступна"),
+      node("p","Формат архивного ID не поддерживается. Решение не отображается."),
+      detail("Ссылки на исходный архив",{decision_id:r.decision_id,forecast_seal_id:r.forecast_seal_id}));
     e.append(a);}
   e=section("research","Исследовательские варианты");
   if(!v.research.length)e.append(node("p",unavailable));

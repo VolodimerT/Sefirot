@@ -1,3 +1,18 @@
+## Original archive presentation, 15.10.2026
+
+Owner authorized continued available engineering after verified 9330e755.
+Confirmed original snapshot integrity but unsupported legacy fixture IDs make
+operator_report discard every decision/readiness row. Repair only read-only
+presentation: explicitly unavailable archive references, keep strict original
+chat verifier/schema unchanged, preserve supported originals and cutoff/selection.
+No ID rewriting, new forecasts, money grants or broad exception suppression.
+All src/Policy/model, SQL/worker/relay, protocol and original evidence frozen.
+Reuse #56; synthetic red/green, immutable original aggregate-only verification,
+isolated full release and exact-head 20-job CI. No hosted writes, deploy/main
+merge, secrets, provider/budget calls, real fit/bets or additional agents.
+stake_snapshot stays denied pending its separate contract/access review.
+Earlier stage headers below are historical.
+
 ## Python 3.14.3 CI compatibility, 15.10.2026
 
 Owner authorized adding exact Python 3.14.3 to existing draft #56 after

@@ -15,6 +15,9 @@ const data={build:{version:"2.4.2"},sources:{API_FOOTBALL:{status:"NOT_VERIFIED"
     markets:[{market:"1X2:HOME",model_probability:.4,ev:-.2,stress_class:"D"}],
     research_candidate:{market:"TOTAL:OVER:2.5",status:"RESEARCH_ONLY"}}],
   original_decisions:[{decision_id:"SYNTHETIC_PRIVATE_DECISION"}],
+  unavailable_original_decisions:[{decision_id:"SYNTHETIC_PRIVATE_UNAVAILABLE",
+    forecast_seal_id:"SYNTHETIC_PRIVATE_SEAL",status:"UNAVAILABLE",
+    reason:"ARCHIVE_FIXTURE_ID_UNSUPPORTED"}],
   ledger_status:"VERIFIED_LOCAL_ORIGIN_NOT_ATTESTED",audit_events:3,readiness:[]};
 const success=()=>({status:200,ok:true,json:async()=>({ok:true,data})});
 let cases=0;

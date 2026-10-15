@@ -9,7 +9,7 @@ from sefirot.identity import code_hash, model_code_hash
 from sefirot.repository import Repository
 from sefirot.service import Service
 from sefirot.readiness import inspect_readiness
-from research.chat_answer_contract import build_answer, validate_answer, _record
+from research.chat_answer_contract import AnswerError, build_answer, validate_answer, _record
 
 
 def source_channels(at):
@@ -32,6 +32,7 @@ def operator_report(database=None, *, at=None, prediction_id=None, include_marke
                         "model_hash": model_code_hash(), "policy_hash": Policy().fingerprint},
               "sources": source_channels(stamp), "ledger_status": "NOT_SUPPLIED",
               "readiness": [], "original_decisions": [], "verified_market_views": [], "audit_events": 0,
+              "unavailable_original_decisions": [], "archive_view_status": "NOT_CHECKED",
               "network_requests": 0, "forecasts_created": 0, "quotes_fetched": False,
               "read_only": True, "monetary_permission": False, "execution_enabled": False,
               "stake": 0.0, "missing_evidence": ["CURRENT_SOURCE_STATUS_AND_QUOTA",
@@ -61,8 +62,22 @@ def operator_report(database=None, *, at=None, prediction_id=None, include_marke
                 for d in repo.all("decisions", stamp):
                     if d["prediction_id"] not in selected_seals:
                         continue
-                    answer = build_answer(d["match_id"], [d["match_id"]], at=now, repo=repo,
-                                          decision_id=d["id"], archive=True)
+                    try:
+                        answer = build_answer(d["match_id"], [d["match_id"]], at=now, repo=repo,
+                                              decision_id=d["id"], archive=True)
+                    except AnswerError as exc:
+                        # Preserve the frozen answer contract. Only its fixture-ID
+                        # presentation limits may leave an individually unavailable
+                        # archive reference; all other verification failures close
+                        # the report. Never rewrite an original ID to make it fit.
+                        if str(exc) not in {"STRING_PATTERN:$.fixture_id",
+                                            "STRING_BOUNDS:$.fixture_id"}:
+                            raise
+                        original, sealed = _record(repo, d["id"])
+                        report["unavailable_original_decisions"].append({
+                            "decision_id": original["id"], "forecast_seal_id": sealed["id"],
+                            "status": "UNAVAILABLE", "reason": "ARCHIVE_FIXTURE_ID_UNSUPPORTED"})
+                        continue
                     verified = validate_answer(answer, expected_fixtures=[d["match_id"]],
                                                at=now, repo=repo, archive=True)
                     report["original_decisions"].append(verified.to_dict())
@@ -87,6 +102,11 @@ def operator_report(database=None, *, at=None, prediction_id=None, include_marke
                                 if card.get("research_candidate") else None})
                 report["original_decisions"] = report["original_decisions"][-100:]
                 report["verified_market_views"] = report["verified_market_views"][-100:]
+                report["unavailable_original_decisions"] = report["unavailable_original_decisions"][-100:]
+                report["archive_view_status"] = "COMPLETE"
+                if report["unavailable_original_decisions"]:
+                    report["archive_view_status"] = "PARTIAL" if report["original_decisions"] else "UNAVAILABLE"
+                    report["missing_evidence"].append("ARCHIVE_FIXTURE_ID_UNSUPPORTED")
                 report["audit_events"] = sum(time(row["at"]) <= now for row in
                     repo.db.execute("SELECT at FROM audit_logs"))
                 report["ledger_status"] = "VERIFIED_LOCAL_ORIGIN_NOT_ATTESTED"
@@ -94,5 +114,6 @@ def operator_report(database=None, *, at=None, prediction_id=None, include_marke
                 repo.db.rollback()
     except (ValueError, KeyError, TypeError, OSError, sqlite3.Error):
         report.update(ledger_status="UNREADABLE_OR_UNVERIFIABLE", readiness=[],
-                      original_decisions=[], verified_market_views=[], audit_events=0)
+                      original_decisions=[], verified_market_views=[], audit_events=0,
+                      unavailable_original_decisions=[], archive_view_status="UNAVAILABLE")
     return report
