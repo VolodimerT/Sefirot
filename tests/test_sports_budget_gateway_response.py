@@ -36,7 +36,7 @@ class SportsBudgetResponseTests(unittest.TestCase):
     def _request(self, status, data):
         response = _Response(status, data)
         url = "https://kxqpwgwihtjmqlcxgfxp.supabase.co/functions/v1/sefirot-sports-gateway"
-        with patch.dict(gateway.os.environ, {"SEFIROT_SPORTS_GATEWAY_URL": url}), \\
+        with patch.dict(gateway.os.environ, {"SEFIROT_SPORTS_GATEWAY_URL": url}), \
              patch.object(gateway, "credential", return_value="SAFE_TEST_TOKEN"):
             return gateway.get_sports("status", {}, opener=_Opener(response))
 
