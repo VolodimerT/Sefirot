@@ -31,7 +31,7 @@ class _Opener:
         self.response = response
         self.calls = 0
 
-    def open(self, _request, timeout):
+    def __call__(self, _request, timeout):
         assert timeout == 15
         self.calls += 1
         return self.response
