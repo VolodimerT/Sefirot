@@ -4,7 +4,7 @@ import re
 
 from .credentials import credential_status
 from .football_provider import FootballRequestError, status_summary
-from .football_gateway import get_sports as get, transport_status
+from .football_gateway import get_sports as get, transport_status, SportsBudgetGateError
 from .odds_provider import sports_catalogue
 
 
@@ -16,7 +16,7 @@ def _missing():
 def _failure(exc):
     result = {'status': 'REQUEST_FAILED', 'request_attempted': True,
               'reason': 'NETWORK_OR_PROVIDER_RESPONSE'}
-    if isinstance(exc, FootballRequestError):
+    if isinstance(exc, (FootballRequestError, SportsBudgetGateError)):
         result['reason'] = exc.code
     else:
         # Only match the providers' fixed public HTTP errors, never echo text.

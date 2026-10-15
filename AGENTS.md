@@ -1,3 +1,21 @@
+## PR #70 diagnostics integration, 15.10.2026
+
+User supplied screenshots and authorized continued API recovery work. Repair
+existing draft #70, then selectively integrate exact e09e4d6f28060e909fb6962fea180820a18db862
+into existing unified #56 at 50197219c6cc1e0b07e5d77e8bff027fc65e8478.
+Use two-parent integration history, preserve the unified tree outside the
+budget class/strict denial branch and api-health reason dispatch, owned
+budget regressions and documentation. Do not import unrelated legacy scripts,
+queue/runtime/model changes from the old production branch. Current HTTP
+completeness/cleanup, shared-budget requirement, query validation, original
+archive protections and all MODEL_MODULES/Policy stay intact. Exact full
+local release and all OS/Python/actual PostgreSQL CI required on this tree.
+Read-only observed PAUSED and zero attempts. No budget write/reserve/finish,
+queue enqueue/claim, restart, deployment, provider/paid API calls, secrets,
+real data collection/fit, money, main merge or additional agents. Render
+stays read-only/deferred. PASS/stake 0 until genuine API/HOLDOUT/edge proof.
+Prior headers below are historical completed checkpoints.
+
 ## Critical API transport follow-up, 15.10.2026
 
 User explicitly authorized critical API repairs after unified draft #56
