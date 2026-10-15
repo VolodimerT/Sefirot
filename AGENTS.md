@@ -1,3 +1,18 @@
+## Master plan P0-B rollout review, 15.10.2026
+
+Owner authorized continuation after verified 4f30dc8b (14/14 CI). Prepare the
+incremental SQL and safe park/rollback for the existing private bridge, using
+CLI-created filenames and the canonical probe function. Preserve production's
+stake_snapshot kind, existing completion logic in an owner-only backup, all
+queue rows/canonical snapshots and budget values. Test populated upgrades,
+version mismatch, drift/active-job/budget guards, repeat application and safe
+rollback on owned PostgreSQL. No hosted migration/write, deploy/restart, main
+merge, budget activation, secret values, provider calls, real fit/money/agents.
+All src/Policy/model/protocol/originals stay frozen. Reuse #56; isolated full
+release and exact-head CI. Runtime coordination remains a separately approved
+operation; safe rollback must not restore an unfenced provider completion.
+Earlier stage headers below are historical.
+
 ## Master plan P0-B completion fencing, 15.10.2026
 
 Continue owner-authorized P0 from exact 3414d932. Repair demonstrated stale

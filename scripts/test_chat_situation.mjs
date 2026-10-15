@@ -5,6 +5,7 @@ import {readFile} from "node:fs/promises";
 import {createServer} from "node:http";
 import {createInterface} from "node:readline";
 import {PGlite} from "@electric-sql/pglite";
+import {probeRolloutTests} from "./test_probe_rollout.mjs";
 import {createStoreHandler} from "../server/chat_store_gateway.js";
 
 const TOKEN="synthetic-store-token-for-local-tests-only-000000000000000000";
@@ -233,7 +234,7 @@ async function serve() {
 
 try {
  if(process.argv[2]==="--serve") await serve();
- else console.log(JSON.stringify({sql_groups:await sqlTests(),gateway_groups:await gatewayTests(),probe_sql_groups:await probeSQLTests(),probe_gateway_groups:await probeGatewayTests(),source:"SYNTHETIC_ONLY"}));
+ else console.log(JSON.stringify({sql_groups:await sqlTests(),gateway_groups:await gatewayTests(),probe_sql_groups:await probeSQLTests(),probe_gateway_groups:await probeGatewayTests(),rollout_groups:await probeRolloutTests(),source:"SYNTHETIC_ONLY"}));
 } catch(error) {
  console.error(JSON.stringify({error:error.message,code:error.code,position:error.position,where:error.where}));
  process.exitCode=1;
