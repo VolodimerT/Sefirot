@@ -14,21 +14,24 @@ from .markets import market_of
 
 
 def _specifiers(value):
-    if not value:
+    if value is None or value == "":
         return {}
     if not isinstance(value, str):
-        return {}
+        raise ValueError("invalid Stake specifiers")
     out = {}
     for part in value.replace("&", "|").split("|"):
-        if "=" in part:
-            key, val = part.split("=", 1)
-            out[key.strip()] = val.strip()
+        if "=" not in part:
+            raise ValueError("invalid Stake specifiers")
+        key, val = (v.strip() for v in part.split("=", 1))
+        if not key or not val or key in out:
+            raise ValueError("ambiguous Stake specifiers")
+        out[key] = val
     return out
 
 
 def _line(value):
     try:
-        return float(value)
+        return number(float(value), "Stake line")
     except (TypeError, ValueError):
         raise ValueError("invalid Stake line") from None
 
@@ -39,6 +42,13 @@ def _supported_contract(contract):
     except ValueError:
         return None
     return contract
+
+
+def _availability(market, outcome):
+    # Preserve observations, not a guessed interpretation of undocumented enums.
+    return {"raw_market_status": market.get("status"),
+            "raw_outcome_active": outcome.get("active"),
+            "availability": "NOT_VERIFIED"}
 
 
 def _main_market_rows(market, home, away):
@@ -69,6 +79,7 @@ def _main_market_rows(market, home, away):
             rejected.append({"reason": "UNSUPPORTED_CORE_LINE", "outcome": outcome.get("name")})
             return
         rows.append({
+            **_availability(market, outcome),
             "market": contract,
             "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
             "stake_market_id": market.get("id"),
@@ -165,6 +176,7 @@ def _small_market_rows(market, home, away):
 
     def add(metric, scope, period, operator, threshold, outcome, *, category="THRESHOLD"):
         rows.append({
+            **_availability(market, outcome),
             "metric": metric,
             "scope": scope,
             "period": period,
@@ -181,21 +193,37 @@ def _small_market_rows(market, home, away):
             "custom_bet_available": outcome.get("customBetAvailable"),
         })
 
+    def require_scope(expected, groups):
+        # Only the existing offline shapes are recognized; period specifiers
+        # have no confirmed provider contract and must never override a name.
+        if set(specs) != expected or market.get("group") not in groups:
+            raise ValueError("unverified Stake small market scope")
+
     shot = re.fullmatch(r"Match (\d+)\+ shots", name, re.I)
-    if shot and len(outcomes) == 1 and outcomes[0].get("name") == "Yes":
+    if shot:
+        require_scope({"count"}, ("specials",))
+        if (_line(specs["count"]) != int(shot.group(1)) or len(outcomes) != 1
+                or outcomes[0].get("name") != "Yes"):
+            raise ValueError("invalid Stake shots partition or line")
         add("SHOTS", "MATCH", "REGULATION_90", "GTE", int(shot.group(1)), outcomes[0])
         return rows
 
     def total_pair(metric, period):
-        try:
-            line = _line(specs.get("total"))
-        except ValueError:
-            return
+        require_scope({"total"}, ("CardsCorners", "Main", "main"))
+        line = _line(specs["total"])
+        if len(outcomes) != 2:
+            raise ValueError("invalid Stake small total partition")
+        mapped = []
         for outcome in outcomes:
-            raw = str(outcome.get("name", ""))
-            side = "OVER" if raw.startswith("Over ") else "UNDER" if raw.startswith("Under ") else None
-            if side:
-                add(metric, "MATCH", period, side, line, outcome)
+            raw = outcome.get("name")
+            match = re.fullmatch(r"(Over|Under) ([+-]?\d+(?:\.\d+)?)", raw) if isinstance(raw, str) else None
+            if match is None or _line(match.group(2)) != line:
+                raise ValueError("Stake small total outcome line mismatch")
+            mapped.append((match.group(1).upper(), outcome))
+        if {side for side, _ in mapped} != {"OVER", "UNDER"}:
+            raise ValueError("invalid Stake small total partition")
+        for side, outcome in mapped:
+            add(metric, "MATCH", period, side, line, outcome)
 
     if template == "Total Corners" and name == "Total Corners":
         total_pair("CORNERS", "REGULATION_90")
@@ -212,8 +240,10 @@ def _small_market_rows(market, home, away):
         if template == "{$competitor1} Corner Range" and scope == "HOME" or \
            template == "{$competitor2} Corner Range" and scope == "AWAY":
             if name == f"{team} Corner Range":
+                require_scope({"variant"}, ("CardsCorners", "Main", "main"))
                 for outcome in outcomes:
                     rows.append({
+                        **_availability(market, outcome),
                         "metric": "CORNERS", "scope": scope, "period": "REGULATION_90",
                         "category": "RANGE", "operator": "RANGE", "threshold": outcome.get("name"),
                         "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
@@ -245,6 +275,10 @@ def normalize_snapshot(snapshot):
     for market in markets:
         if not isinstance(market, dict):
             continue
+        outcomes = market.get("outcomes")
+        if (outcomes is not None and (not isinstance(outcomes, list)
+                or any(not isinstance(outcome, dict) for outcome in outcomes))):
+            raise ValueError("invalid Stake outcomes")
         rows, reasons = _main_market_rows(market, home, away)
         for row in rows:
             key = market_of(row["market"]).key

@@ -1,3 +1,21 @@
+## Stake research normalization integrity, 16.10.2026
+
+Owner explicitly authorized P0 #68 -> #69 -> unified CORE, data and independent
+QA, including a team. Historical narrower scopes below remain as evidence.
+At verified b90933e1, independent owned inputs reproduce duplicate-specifier
+last-wins, wrong small-market line/period, malformed-outcome atlas crash and
+loss of status/active in advisory normalized rows. Repair only stake_mapper.py,
+this header, new regression and stage document. Preserve original raw packets,
+hashes/seals/protocol/MODEL_MODULES/Policy and all other tracked files. No guessed
+official API contract: normalized quotes remain experimental, availability
+NOT_VERIFIED, execution/money false; small models remain SHADOW.
+Use existing draft #56, immutable red/green, isolated release and exact 20-job
+CI. Independent QA/provenance agents are read-only as explicitly authorized.
+Connected metadata reads allowed; no value-bearing credentials, actual provider
+calls, quota activation/reset, hosted writes, deployment/main merge, real fit,
+HOLDOUT registration or bets. RESEARCH_ONLY / PASS / stake=0.
+Earlier headers below describe historical stages.
+
 ## Quote output occupied-name preflight, 16.10.2026
 
 Owner authorized continuing the existing quote path after verified eb17d04c.
