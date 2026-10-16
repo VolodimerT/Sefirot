@@ -28,11 +28,15 @@ def occupied_dangling_entry(path, missing):
             raise
         native=False
     if native:
+        original_stat=path.lstat()
+        original_link=(original_stat.st_dev,original_stat.st_ino,path.readlink())
         print('QUOTE_PREFLIGHT_ENTRY=NATIVE_DANGLING_SYMLINK',file=sys.stderr)
         try:
             yield True
         finally:
-            assert path.is_symlink() and path.readlink()==missing
+            current_stat=path.lstat()
+            assert path.is_symlink()
+            assert (current_stat.st_dev,current_stat.st_ino,path.readlink())==original_link
             path.unlink()
     else:
         print('QUOTE_PREFLIGHT_ENTRY=WINDOWS_MODELED_OCCUPIED_NAME',file=sys.stderr)

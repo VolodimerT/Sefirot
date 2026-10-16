@@ -37,6 +37,15 @@ occupied directory entry; тест не пропускается. Другие O
 WINDOWS_MODELED_OCCUPIED_NAME. Модель preflight не доказывает создание Windows
 symlink при отсутствующем праве. Linux проверяет реальные filesystem entries.
 
+Начальный 5043cc01 прошёл16/20 CI. Четыре Windows jobs показали ошибку нового
+test helper: raw readlink() сравнивался с исходной записью пути. Assertions
+отказа до сети/staging и сохранности ledger прошли; native symlinks созданы.
+Теперь helper сравнивает dev/inode и raw readlink snapshot до/после операции:
+проверяется идентичность самой ссылки и неизменность её значения без догадки
+о Windows представлении пути. Ошибки не подавляются, assertions не удалены,
+новых skips нет. Код приложения/hash прежний; новый commit проходит полный CI.
+Неуспешный SHA/логи сохранены без rerun.
+
 ```sh
 python -m unittest discover -s tests -p test_quote_output_preflight.py -v
 python -m unittest discover -s tests -p test_quote_publication_v5.py -v

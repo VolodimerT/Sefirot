@@ -12,6 +12,10 @@ Use existing draft #56, immutable-baseline red/green, isolated release and exact
 hosted operations, deploy/main merge, real fit/HOLDOUT, money or agents.
 Tests use owned native symlinks; Windows without creation privilege exercises
 an explicit occupied-directory-entry model without adding skipped tests.
+Initial 5043cc01 passed16/20 CI; all four Windows jobs exposed a new-test cleanup
+comparison of readlink() to the caller's input path representation. Retain the
+failure logs; compare link lstat dev/inode and readlink before/after instead.
+No production code/hash change, no skips/assertion removal; new commit and full CI.
 RESEARCH_ONLY / PASS / stake=0. Earlier headers below are historical.
 
 ## Documented odds provider boolean gates, 16.10.2026
