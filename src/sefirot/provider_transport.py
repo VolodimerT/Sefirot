@@ -1,5 +1,6 @@
 """HTTPS through the ordinary runtime proxy; no redirects or credential logs."""
 import json
+import math
 from http.client import HTTPException
 import re
 from urllib.error import HTTPError, URLError
@@ -9,10 +10,47 @@ from datetime import datetime, timezone
 from .contracts import digest
 
 HOSTS = ('api.the-odds-api.com', 'v3.football.api-sports.io')
+MAX_JSON_DEPTH = 64
 MAX_RESPONSE = 4_000_000
 QUOTA_HEADERS = ('x-requests-remaining', 'x-requests-used', 'x-requests-last',
                  'x-ratelimit-requests-remaining', 'x-ratelimit-requests-limit',
                  'x-ratelimit-remaining', 'x-ratelimit-limit')
+
+
+def strict_json_payload(raw):
+    """Do not sign an ambiguous or unbounded parsed representation."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON member")
+            result[key] = value
+        return result
+
+    def reject_constant(_):
+        raise ValueError("nonfinite JSON constant")
+
+    try:
+        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_object,
+                             parse_constant=reject_constant)
+        # Iterator stack bounds extra memory by depth, even for wide arrays.
+        pending = [iter((payload,))]
+        while pending:
+            try:
+                value = next(pending[-1])
+            except StopIteration:
+                pending.pop()
+                continue
+            if isinstance(value, (dict, list)):
+                if len(pending) > MAX_JSON_DEPTH:
+                    raise ValueError("JSON nesting limit")
+                pending.append(iter(value.values() if isinstance(value, dict) else value))
+            elif isinstance(value, float) and not math.isfinite(value):
+                # A valid exponent such as 1e999 can overflow a Python float.
+                raise ValueError("nonfinite JSON number")
+        return payload
+    except (ValueError, RecursionError):
+        raise ValueError("provider returned invalid JSON") from None
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -99,10 +137,7 @@ def request_json(host, path, params, headers, *, query_credential=None,
         raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('provider response exceeds limit')
-        try:
-            value = json.loads(raw.decode('utf-8'))
-        except (UnicodeError, json.JSONDecodeError):
-            raise ValueError('provider returned invalid JSON') from None
+        value = strict_json_payload(raw)
         receipt = {'provider_host': host, 'endpoint': path, 'parameters': dict(params),
                    'request_started_at': started,
                    'received_at': datetime.now(timezone.utc).isoformat(),

@@ -6,11 +6,10 @@ evidence or alter a probability. There is no live or wager endpoint here.
 from __future__ import annotations
 
 import http.client
-import json
 import re
 from urllib.parse import urlencode
 from .credentials import credential
-from .provider_transport import ProviderConnection, request_json, read_response, close_transport
+from .provider_transport import ProviderConnection, request_json, read_response, close_transport, strict_json_payload
 
 from .contracts import digest, number, time
 from .markets import complete_overround, validate_quote, market_of
@@ -62,8 +61,8 @@ def _get_json(path, params, connection_factory=ProviderConnection):
         if len(raw) > MAX_RESPONSE:
             raise ValueError('odds provider response exceeds limit; PASS')
         try:
-            payload = json.loads(raw.decode('utf-8'))
-        except (UnicodeError, json.JSONDecodeError) as exc:
+            payload = strict_json_payload(raw)
+        except ValueError:
             raise ValueError('odds provider returned invalid JSON; PASS') from None
         return payload
     except (OSError, http.client.HTTPException):

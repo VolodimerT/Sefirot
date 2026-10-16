@@ -1,3 +1,17 @@
+## Shared provider JSON integrity, 16.10.2026
+
+Owner authorized continued critical API repairs after verified aa8b23b7.
+Confirmed duplicate JSON members in Football/Odds/gateway and nonfinite JSON
+acceptance in Odds. Extract the proven Stake parser into provider_transport
+and use it for existing shared/direct Odds, Football/gateway and Stake reads.
+Preserve fixed public errors, original valid payload hashes and one request.
+Only these four non-model src files, owned HTTP regressions and docs may
+change. MODEL_MODULES/Policy, other src, SQL/worker/relay/protocol/originals
+stay frozen. Reuse draft #56, isolated full release and exact-head 20-job CI.
+No real provider calls, hosted operations, deploy/main merge, credentials,
+budget activation, real fit/bets or additional agents. PASS / stake=0.
+Earlier stage headers below are historical.
+
 ## Stake response parsing, 15.10.2026
 
 Owner authorized continued critical API repairs after verified c4d9e4d9.

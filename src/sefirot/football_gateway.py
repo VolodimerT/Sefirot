@@ -13,7 +13,7 @@ from .credentials import credential
 from .football_query import (QUERY_ERROR_CODES, FootballQueryError, validate_fixture_query,
                              validate_fixture_query_parameters)
 from .football_provider import HOST, PARAMETERS, FootballRequestError, get, validate_enrichment_request, validate_provider_data
-from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS, read_response, close_transport
+from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS, read_response, close_transport, strict_json_payload
 
 
 _BUDGET_REASONS = frozenset({
@@ -79,8 +79,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
         if len(raw) > MAX_RESPONSE:
             raise ValueError('sports gateway response exceeds limit')
         try:
-            wrapper = json.loads(raw.decode('utf-8'))
-        except (UnicodeError, json.JSONDecodeError):
+            wrapper = strict_json_payload(raw)
+        except ValueError:
             raise ValueError('sports gateway returned invalid JSON') from None
         if not isinstance(wrapper, dict):
             raise ValueError('sports gateway response malformed')

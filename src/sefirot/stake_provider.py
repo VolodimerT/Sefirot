@@ -9,7 +9,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from http.client import HTTPException
 import json
-import math
 import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
@@ -17,14 +16,14 @@ from urllib.request import Request, build_opener
 from .contracts import digest, number, time
 from .credentials import credential
 from .odds_provider import require_prematch_seal
-from .provider_transport import NoRedirect, read_response, close_transport
+from .provider_transport import (MAX_JSON_DEPTH, NoRedirect, read_response, close_transport,
+                                 strict_json_payload)
 
 
 HOST = "stake.com"
 ENDPOINT = "/_api/graphql"
 MAX_RESPONSE = 8_000_000
 MAX_EVENTS = 200
-MAX_JSON_DEPTH = 64
 
 
 class StakeRequestError(ValueError):
@@ -105,38 +104,9 @@ def _token():
 
 
 def _json_payload(raw):
-    """Do not sign an ambiguous or unbounded parsed representation."""
-    def unique_object(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError("duplicate JSON member")
-            result[key] = value
-        return result
-
-    def reject_constant(_):
-        raise ValueError("nonfinite JSON constant")
-
     try:
-        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_object,
-                             parse_constant=reject_constant)
-        # Iterator stack bounds extra memory by depth, even for wide arrays.
-        pending = [iter((payload,))]
-        while pending:
-            try:
-                value = next(pending[-1])
-            except StopIteration:
-                pending.pop()
-                continue
-            if isinstance(value, (dict, list)):
-                if len(pending) > MAX_JSON_DEPTH:
-                    raise ValueError("JSON nesting limit")
-                pending.append(iter(value.values() if isinstance(value, dict) else value))
-            elif isinstance(value, float) and not math.isfinite(value):
-                # A valid exponent such as 1e999 can overflow a Python float.
-                raise ValueError("nonfinite JSON number")
-        return payload
-    except (ValueError, RecursionError):
+        return strict_json_payload(raw)
+    except ValueError:
         raise StakeRequestError("INVALID_JSON") from None
 
 
