@@ -152,6 +152,14 @@ def status_summary(packet):
     if not isinstance(data, dict):
         raise ValueError('API-Football status malformed')
     sub, requests = data.get('subscription', {}), data.get('requests', {})
+    if not isinstance(sub, dict) or not isinstance(requests, dict):
+        raise ValueError('API-Football status malformed')
+    if ((sub.get('active') is not None and type(sub['active']) is not bool)
+            or (sub.get('plan') is not None and not isinstance(sub['plan'], str))
+            or any(requests.get(key) is not None and
+                   (type(requests[key]) is not int or requests[key] < 0)
+                   for key in ('current', 'limit_day'))):
+        raise ValueError('API-Football status malformed')
     return {'subscription_active':sub.get('active'),'plan':sub.get('plan'),
             'requests_current':requests.get('current'),'requests_limit_day':requests.get('limit_day'),
             'receipt':packet['receipt']}
@@ -161,12 +169,20 @@ def _rows(packet):
     receipt = packet['receipt']
     if receipt['provider_host'] != HOST or receipt['endpoint'] != '/fixtures':
         raise ValueError('fixture response required')
+    if not isinstance(packet['data'], dict):
+        raise ValueError('API-Football fixture response malformed')
     if digest(packet['data']) != receipt['payload_hash']:
         raise ValueError('fixture response integrity mismatch')
     time(receipt['received_at'])
-    if packet['data']['errors'] or packet['data'].get('paging', {}).get('total', 1) > 1:
+    paging = packet['data'].get('paging', {})
+    if (packet['data']['errors'] or not isinstance(paging, dict)
+            or type(paging.get('total', 1)) is not int or paging.get('total', 1) not in (0, 1)):
         raise ValueError('invalid or incomplete fixture response')
-    return packet['data']['response']
+    rows = packet['data']['response']
+    if (not isinstance(rows, list) or any(not isinstance(row, dict)
+            or not isinstance(row.get('fixture', {}), dict) for row in rows)):
+        raise ValueError('API-Football fixture response malformed')
+    return rows
 
 
 def fixture_identity(row):
@@ -186,6 +202,8 @@ def fixture_identity(row):
 
 def validate_prematch_state(row):
     """NS cannot coexist with played minutes; optional unknown is not zero."""
+    if not isinstance(row, dict) or not isinstance(row.get('fixture', {}), dict):
+        raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
     status = row.get('fixture', {}).get('status')
     if not isinstance(status, dict) or status.get('short') != 'NS':
         raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
@@ -235,7 +253,9 @@ def normalize_sports(target_packet, fixture_id, history_packets, *, profile, sou
             ident = fixture_identity(row);reason = None
             if ident['id'] == match['id']:reason = 'TARGET_RESULT_EXCLUDED'
             elif ident['league'] != match['league']:reason = 'OTHER_COMPETITION'
-            elif row['fixture']['status']['short'] != 'FT':reason = 'NOT_REGULATION_FT; AET/PEN_NOT_IMPORTED'
+            elif not isinstance(row['fixture'].get('status'), dict):
+                raise ValueError('API-Football fixture status malformed')
+            elif row['fixture']['status'].get('short') != 'FT':reason = 'NOT_REGULATION_FT; AET/PEN_NOT_IMPORTED'
             if reason is None:
                 try:
                     result_chronology(ident['kickoff'],stamp,stamp)
@@ -243,7 +263,10 @@ def normalize_sports(target_packet, fixture_id, history_packets, *, profile, sou
                     reason = 'IMPOSSIBLE_RESULT_CHRONOLOGY'
             if reason:
                 excluded.append({'id':ident['id'],'reason':reason});continue
-            goals = row.get('score', {}).get('fulltime', {})
+            score = row.get('score', {})
+            if not isinstance(score, dict) or not isinstance(score.get('fulltime', {}), dict):
+                raise ValueError('API-Football regulation score malformed')
+            goals = score.get('fulltime', {})
             for side in ('home','away'):integer(goals.get(side), 'regulation goals', 0, 50)
             normalized = {'id':ident['id'],'home':ident['home'],'away':ident['away'],
                           'league':ident['league'],'kickoff':ident['kickoff'],

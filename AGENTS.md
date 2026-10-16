@@ -1,3 +1,19 @@
+## Football response contract completion, 16.10.2026
+
+Owner asked to finish available critical API repairs after verified 5f78745c.
+Confirmed malformed status nested objects/scalars, archived fixture rows and
+paging, direct prematch containers and FT score nulls escape as AttributeError
+or echo composite diagnostic fields. Repair only existing football_provider
+consumed-container checks and status scalar types; preserve missing=None,
+valid zero/false, receipt identity/hash and legacy optional paging.current.
+No normalization/reconstruction of sources, retry/refetch or odds semantics.
+One non-model src, new owned HTTP/archive regressions, this header and docs
+may change. All other src/MODEL_MODULES/Policy, SQL/worker/relay/protocol and
+originals frozen. Reuse draft #56; red/green, isolated full release, exact-head
+20-job CI. No actual API/budget/hosted operations, production/deploy/main merge,
+secrets, fit/bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier headers below are historical.
+
 ## API Unicode and health catalogue boundaries, 16.10.2026
 
 Owner authorized continued critical API repairs after verified ca5b3f12.
