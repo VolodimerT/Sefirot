@@ -462,7 +462,7 @@ def main(argv=None):
             from .backtesting import walk_forward
             out=walk_forward(load(args.file),policy)
         else:
-            read_only=(args.command in ('report','accounting','replay') or
+            read_only=(args.command in ('report','accounting','replay','odds-events','fetch-odds') or
                        args.command=='compare' and not args.apply_rollback)
             path=Path(args.db)
             if read_only and not path.is_file():raise ValueError('ledger does not exist')

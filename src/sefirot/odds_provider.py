@@ -114,7 +114,8 @@ def event_candidates(data, prediction, sport, received_at):
 
 
 def _sealed_match(prediction, received_at):
-    if not isinstance(prediction, dict) or not prediction.get('captured_prematch') or prediction.get('reconstructed'):
+    if (not isinstance(prediction, dict) or prediction.get('captured_prematch') is not True
+            or prediction.get('reconstructed') is not False):
         raise ValueError('only a real prematch sealed prediction can request odds')
     match = prediction['sports']['match']
     if match['sport'] != 'football' or match['format'] != 'REGULATION_90':
@@ -150,7 +151,7 @@ def quotes_from_event(event, prediction, sport, event_id, bookmaker_key, receive
     """
     requested = request_markets(market_keys)
     match = _sealed_match(prediction, received_at)
-    if not rules_confirmed:
+    if rules_confirmed is not True:
         raise ValueError('bookmaker REGULATION_90 settlement must be confirmed; PASS')
     _key(sport, r'soccer_[a-z0-9_]+', 'soccer sport key')
     _key(event_id, r'[A-Za-z0-9_-]{4,100}', 'event id')

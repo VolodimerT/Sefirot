@@ -1,3 +1,21 @@
+## Documented odds provider boolean gates, 16.10.2026
+
+Owner authorized continuing the existing alternative quote path after Stake
+support declined documentation. On exact 701bb943, The Odds API adapter accepts
+truthy non-booleans as settlement confirmation and malformed prospective flags.
+Repair odds_provider exact True/False gate checks; preserve valid receipts,
+provider identity, original source/model/Policy and all money/admission gates.
+The first green check exposed CLI opening both quote-read commands writable,
+changing owned ledger header bytes even on rejection. Include those two existing
+CLI commands in read_only dispatch; refuse absent DB before creating anything.
+Only these two non-model src, new regression file, this header/docs may change.
+Other src/SQL/worker/relay/frozen protocol/originals remain byte-identical.
+Use existing draft #56, baseline red/green, isolated full release and exact-head
+20-job CI. No real provider calls, credential access/use (including exposed
+account token), hosted operations, deploy/main merge, budget activation, real
+fit/HOLDOUT registration, money or additional agents. PASS/stake=0.
+Earlier headers below are historical.
+
 ## Football response contract completion, 16.10.2026
 
 Owner asked to finish available critical API repairs after verified 5f78745c.
