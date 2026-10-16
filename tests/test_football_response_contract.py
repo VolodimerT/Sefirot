@@ -203,7 +203,7 @@ class FootballResponseContractTests(unittest.TestCase):
                     '--profile', 'LOWER', '--source-reliability', '.95', '--output', str(output)]), 2)
                 repo.assert_not_called()
             self.assertFalse(output.exists())
-            self.assertFalse(output.with_suffix('.receipt.json').exists())
+            self.assertEqual(list(Path(folder).iterdir()), [source])
             self.assertEqual(source.read_bytes(), original)
             self.assertEqual(stdout.getvalue(), '')
             self.assertEqual(json.loads(stderr.getvalue())['decision'], 'PASS')
