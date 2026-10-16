@@ -35,7 +35,7 @@ def write_quotes(path, payload):
     bound to this invocation's staged inode.
     """
     destination=Path(path);receipt=Path(str(destination)+'.receipt.json')
-    if destination.exists() or receipt.exists():raise ValueError('odds output already exists; choose a fresh filename')
+    if os.path.lexists(destination) or os.path.lexists(receipt):raise ValueError('odds output already exists; choose a fresh filename')
     result={'quotes_file':str(destination.resolve()),'receipt_file':str(receipt.resolve()),
             'quotes':len(payload['quotes']),'overround':payload['receipt']['overround'],
             'execution_price_verified':False}
@@ -506,7 +506,7 @@ def main(argv=None):
                     else:
                         if not any(c['market']['kind']=='1X2' for c in prediction['candidates']):raise ValueError('1X2 was not in the sealed market pool; PASS')
                         market_keys=('h2h',)
-                    if Path(args.output).exists() or Path(args.output+'.receipt.json').exists():raise ValueError('odds output already exists')
+                    if os.path.lexists(args.output) or os.path.lexists(args.output+'.receipt.json'):raise ValueError('odds output already exists')
                     matched=event_candidates(events(args.sport),prediction,args.sport,service.now())
                     if matched['event_id']!=args.event_id:raise ValueError('selected event id differs from exact fixture; PASS')
                     response=event_odds(args.sport,args.event_id,args.region,market_keys=market_keys,bookmaker_key=args.bookmaker)

@@ -1,3 +1,19 @@
+## Quote output occupied-name preflight, 16.10.2026
+
+Owner authorized continuing the existing quote path after verified eb17d04c.
+Owned actual dangling symlinks demonstrate both output and receipt names pass
+Path.exists preflight: catalogue and price are requested before EEXIST refusal.
+Repair only CLI occupied-name checks with lexists, before networking/staging.
+Keep hardlink no-clobber/rollback, valid output/receipt bytes and error strings.
+Only cli.py, this header and new regression/doc may change. Other src/model/
+Policy/SQL/worker/relay/frozen protocol/originals remain byte-identical.
+Use existing draft #56, immutable-baseline red/green, isolated release and exact
+20-job CI. No real provider calls or exposed-token use, credentials, budget,
+hosted operations, deploy/main merge, real fit/HOLDOUT, money or agents.
+Tests use owned native symlinks; Windows without creation privilege exercises
+an explicit occupied-directory-entry model without adding skipped tests.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers below are historical.
+
 ## Documented odds provider boolean gates, 16.10.2026
 
 Owner authorized continuing the existing alternative quote path after Stake
