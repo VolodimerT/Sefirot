@@ -1,3 +1,20 @@
+## Runnable working-release delivery, 16.10.2026
+
+Owner requests an updated working version and report. At verified5990c6b0,
+actual operator CLI shows traceback for missing/invalid owner access code or
+busy/out-of-range port; a successful port0 startup never announces its address.
+Repair only scripts/operator_cockpit.py startup diagnostics, bounded port and
+actual loopback URL. Preserve authentication/session/read-only/ledger paths.
+New actual CLI/HTTP regressions, README current entry and one working-version
+document may change. All src/MODEL_MODULES/Policy, original data/seals/hashes,
+SQL/worker/relay, protocol and prior reports remain byte-identical.
+Deliver a complete exact-tree source ZIP, not a partial review ZIP or standard
+sdist missing scripts/research/web. Core wheel is separately labeled/tested.
+Use existingdraftPR56 and exact20-jobCI/fullisolatedrelease; independentQA is
+read-only as already explicitly authorized. No automatic demo/data/DB creation,
+provider/API calls, credential values, hosted writes, production/deploy/main
+merge, quotaactivation, realfit/HOLDOUT or bets. PASS/stake0. Historical below.
+
 ## Stake research normalization integrity, 16.10.2026
 
 Owner explicitly authorized P0 #68 -> #69 -> unified CORE, data and independent

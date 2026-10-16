@@ -108,13 +108,26 @@ def make_server(*, database=None, token, at=None, port=0):
 
 
 def main(argv=None):
+    for stream in (sys.stdout,sys.stderr):
+        if hasattr(stream,"reconfigure"):stream.reconfigure(encoding="utf-8")
     p=argparse.ArgumentParser(description="SEFIROT read-only operator: loopback offline review only")
     p.add_argument("--db",type=Path);p.add_argument("--port",type=int,default=8787)
     args=p.parse_args(argv)
+    if not 0<=args.port<=65535:p.error("--port must be in 0..65535")
     # Owner config is only read when explicitly running the application.
     # Agent tests supply a synthetic token directly; no credential lookup.
-    server=make_server(database=args.db,token=configured_token(),port=args.port)
-    try:server.serve_forever()
+    try:token=configured_token()
+    except RuntimeError:
+        print("SEFIROT: настройте SEFIROT_BRIDGE_TOKEN для частного просмотра (32–256 ASCII-символов без пробелов).",file=sys.stderr)
+        return 2
+    try:server=make_server(database=args.db,token=token,port=args.port)
+    except (OSError,ValueError):
+        print("SEFIROT: не удалось открыть локальный порт; выберите свободный --port.",file=sys.stderr)
+        return 2
+    try:
+        print("SEFIROT: http://127.0.0.1:"+str(server.server_port)+" — только просмотр",flush=True)
+        server.serve_forever()
     except KeyboardInterrupt:pass
     finally:server.server_close()
-if __name__=="__main__":main()
+    return 0
+if __name__=="__main__":raise SystemExit(main())

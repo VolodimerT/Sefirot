@@ -1,3 +1,37 @@
+# SEFIROT CORE 2.4.2 — рабочая исследовательская версия, 16.10.2026
+
+Единый кандидат — [draft PR #56](https://github.com/VolodimerT/Sefirot/pull/56).
+Запуск, состав поставки и ограничения описаны в
+[инструкции рабочей версии](docs/WORKING_VERSION_20261016.md).
+Полный source ZIP содержит CLI, research, scripts, web, SQL и тесты.
+Обычный wheel устанавливает только CORE CLI; стандартный sdist не заменяет
+полную поставку приложения. Точный SHA, checksums и CI входят в паспорт пакета.
+
+Без сети, настроек API и создания ledger:
+
+```sh
+python sefirot.py build-info
+python scripts/prematch_readiness.py
+```
+
+Для разработчика: `python scripts/operator_cockpit.py --db /absolute/existing.sqlite --port 8787`.
+Команда требует заранее настроенный владельцем `SEFIROT_BRIDGE_TOKEN`, печатает
+локальный адрес и даёт только просмотр. По умолчанию данные не подставляются.
+Это не публичный Android URL; подключение HTTPS runtime требует отдельного
+разрешения. Владельцу не требуется запускать Python на Android.
+
+Реальный Stake доступ остаётся `BLOCKED_BY_STAKE_ACCESS`; API-Football budget
+выключен. Оригинальные provider packets, независимая калибровка/HOLDOUT и
+модельное преимущество не подтверждены. PASS/stake=0, small markets SHADOW.
+Main и production автоматически не обновляются. `START_SEFIROT.bat` запускает
+**синтетический demo**, результаты которого не являются реальными прогнозами.
+
+---
+
+Ниже сохранена историческая документация и состояния прошлых дат.
+Актуальный вход и ограничения находятся выше; старые branch/API/test counts
+не следует воспринимать как текущий статус.
+
 # SEFIROT CORE 2.4.2 — актуальная рабочая сборка
 
 **Локальная очередь в браузере:**
