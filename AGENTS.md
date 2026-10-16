@@ -1,3 +1,18 @@
+## API Unicode and health catalogue boundaries, 16.10.2026
+
+Owner authorized continued critical API repairs after verified ca5b3f12.
+Confirmed lone JSON surrogates reach digest/return and malformed Odds rows
+crash api-health with AttributeError. Repair only provider_transport Unicode
+scalar validation and api_health checks of consumed catalogue row/key types.
+Do not normalize/replace valid Unicode or change canonical hashing, missing
+key/empty catalogue compatibility, provider schemas, query/auth/byte limits.
+Only these two non-model src, existing owned-loopback regression file, this
+header and a new document may change. All other src/MODEL_MODULES/Policy,
+SQL/worker/relay/protocol/originals frozen. Reuse draft #56, red/green actual
+HTTP, isolated full release and exact-head 20-job CI. No actual API/budget,
+hosted operations, deploy/main merge, secrets, fit/bets or additional agents.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers below are historical.
+
 ## Shared provider JSON integrity, 16.10.2026
 
 Owner authorized continued critical API repairs after verified aa8b23b7.

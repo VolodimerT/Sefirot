@@ -74,9 +74,14 @@ def check(*, odds_provider='the-odds-api'):
     else:
         try:
             odds = sports_catalogue()
+            rows = odds['data']
+            if (not isinstance(rows, list)
+                    or any(not isinstance(row, dict)
+                           or not isinstance(row.get('key', ''), str) for row in rows)):
+                raise ValueError('odds provider sports directory malformed')
             result['providers']['the_odds_api'] = {
-                'status': 'OK', 'request_attempted': True, 'sports': len(odds['data']),
-                'football_sports': sum(s.get('key', '').startswith('soccer_') for s in odds['data']),
+                'status': 'OK', 'request_attempted': True, 'sports': len(rows),
+                'football_sports': sum(s.get('key', '').startswith('soccer_') for s in rows),
                 'receipt': odds['receipt']}
         except (ValueError, OSError, KeyError, TypeError) as exc:
             result['providers']['the_odds_api'] = _failure(exc)

@@ -22,6 +22,8 @@ def strict_json_payload(raw):
     def unique_object(pairs):
         result = {}
         for key, value in pairs:
+            if re.search(r'[\ud800-\udfff]', key):
+                raise ValueError("invalid JSON Unicode key")
             if key in result:
                 raise ValueError("duplicate JSON member")
             result[key] = value
@@ -48,6 +50,8 @@ def strict_json_payload(raw):
             elif isinstance(value, float) and not math.isfinite(value):
                 # A valid exponent such as 1e999 can overflow a Python float.
                 raise ValueError("nonfinite JSON number")
+            elif isinstance(value, str) and re.search(r'[\ud800-\udfff]', value):
+                raise ValueError("invalid JSON Unicode value")
         return payload
     except (ValueError, RecursionError):
         raise ValueError("provider returned invalid JSON") from None
