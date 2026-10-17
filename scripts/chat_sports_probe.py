@@ -79,6 +79,33 @@ def _safe_source(data, endpoint):
     return True
 
 
+
+def _unknown_stat_hints(data):
+    """Return short, non-sensitive statistic *labels*, never their values."""
+    response = data.get("response") if isinstance(data, dict) else None
+    if not isinstance(response, list):
+        return []
+    hints = set()
+    for row in response[:4]:
+        if not isinstance(row, dict):
+            continue
+        stats = row.get("statistics")
+        if not isinstance(stats, list):
+            continue
+        for stat in stats[:64]:
+            if not isinstance(stat, dict):
+                continue
+            label = stat.get("type")
+            if not isinstance(label, str) or label in STAT_TYPES:
+                continue
+            if not 1 <= len(label) <= 40 or not re.fullmatch(r"[A-Za-z][A-Za-z /%_-]{0,39}", label):
+                continue
+            if re.search(r"(?i)(secret|token|key|auth|password|account|user|session|cookie|bearer|credential|access|api)", label):
+                continue
+            hints.add(label)
+    return sorted(hints)[:5]
+
+
 def verify_evidence(query):
     """Read-only content binding, never provider attestation or model promotion."""
     base = {"provider_origin_attested": False, "model_fit_eligible": False,
@@ -113,7 +140,11 @@ def _archive(query, packet, remaining):
                    "monetary_permission": False}
     data = packet.get("data")
     if not _safe_source(data, query["endpoint"]):
-        query["source_evidence"] = {**unavailable, "reason": "SOURCE_SAFETY"}; return 0
+        hints = _unknown_stat_hints(data) if query["endpoint"] == "fixtures/statistics" else []
+        query["source_evidence"] = {**unavailable, "reason": "SOURCE_SAFETY"}
+        if hints:
+            query["source_evidence"]["unsupported_stat_labels"] = hints
+        return 0
     source = {"schema": SOURCE_SCHEMA, "data": data, "receipt": query["receipt"],
               "projection_hash": query["projection_hash"]}
     try:
