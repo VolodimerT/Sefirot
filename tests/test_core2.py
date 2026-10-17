@@ -10,7 +10,7 @@ import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from sefirot import Policy,Repository,Service
 from sefirot.contracts import time,digest,REASONS
-from sefirot.engine import prepare,decide,code_hash
+from sefirot.engine import prepare,decide,code_hash,model_code_hash
 from sefirot.evidence import inspect
 from sefirot.fixtures import example
 from sefirot.markets import market_of,settle,complete_overround,DEFAULT_POOL
@@ -168,7 +168,7 @@ class NumericalTests(unittest.TestCase):
         self.assertAlmostEqual(complete_overround(rows)[0]['overround'],0)
     def test_calibrator_validation(self):
         records=[{'match_id':str(i),'market':'1X2:HOME','kind':'1X2','raw_win':.5,'outcome':'WIN' if i%2 else 'LOSS','received_at':NOW.isoformat(),'synthetic':True} for i in range(40)]
-        a=fit_calibrator(records,'model','policy',NOW.isoformat());c=calibrate('1X2',[.5,0,.5],a,Policy())
+        a=fit_calibrator(records,'model','policy',NOW.isoformat());c=calibrate(market_of({'kind':'1X2','side':'HOME'}),[.5,0,.5],a,Policy())
         self.assertEqual(c['status'],'CALIBRATED_BIN');self.assertAlmostEqual(sum(c['base']),1.)
         self.assertLess(c['low'][0],.5);self.assertGreater(c['high'][0],.5)
         with self.assertRaises(ValueError):fit_calibrator(records+records,'m','p',NOW.isoformat())
@@ -281,11 +281,11 @@ class BacktestAndBoundaryTests(unittest.TestCase):
         self.assertEqual(validate_quote(q,'2026-09-26T20:00:00Z','2026-09-26T18:02:00Z','2026-09-26T18:00:00Z').kind,'1X2')
     def test_empty_history_unknown_and_missing_calibration_bounds(self):
         case=example(NOW);case['sports']['history']=[];p=prepare(case['sports'],DEFAULT_POOL,Policy())
-        self.assertEqual(p['mode'],'UNKNOWN');self.assertEqual(p['candidates'][0]['low'],[0,0,0]);self.assertEqual(p['candidates'][0]['high'],[1,1,1])
+        self.assertEqual(p['mode'],'UNKNOWN');self.assertEqual(p['candidates'][0]['low'],[0,0,0]);self.assertEqual(p['candidates'][0]['high'],[1,0,1])
     def test_calibration_temporal_leakage_and_hash_rejected(self):
         case=example(NOW)
         records=[{'match_id':'seen','market':'1X2:HOME','kind':'1X2','raw_win':.5,'outcome':'WIN','received_at':NOW.isoformat(),'synthetic':True}]
-        a=fit_calibrator(records,code_hash(),Policy().fingerprint,NOW.isoformat())
+        a=fit_calibrator(records,model_code_hash(),Policy().fingerprint,NOW.isoformat())
         with self.assertRaises(ValueError):prepare(case['sports'],DEFAULT_POOL,Policy(),a)
         a['fit_at']=(NOW-timedelta(days=1)).isoformat()
         with self.assertRaises(ValueError):prepare(case['sports'],DEFAULT_POOL,Policy(),a)

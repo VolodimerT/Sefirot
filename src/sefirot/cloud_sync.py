@@ -13,33 +13,9 @@ import sqlite3
 
 from .contracts import canonical, digest, time
 from .repository import TABLES
+from .ledger_integrity import COLUMNS, validate_row, validate_schema
 
 
-# Every name is a constant, never assembled from input. Parents precede children.
-COLUMNS = {
-    'teams': ('id', 'payload'),
-    'markets': ('id', 'payload'),
-    'model_versions': ('id', 'at', 'payload'),
-    'matches': ('id', 'home', 'away', 'kickoff', 'league', 'payload'),
-    'predictions': ('id', 'match_id', 'model_id', 'at', 'payload'),
-    'decisions': ('id', 'prediction_id', 'at', 'payload'),
-    'odds_snapshots': ('id', 'prediction_id', 'market_id', 'at', 'payload'),
-    'bets': ('id', 'decision_id', 'at', 'payload'),
-    'results': ('id', 'at', 'payload'),
-    'closing_odds': ('id', 'match_id', 'market_id', 'at', 'payload'),
-    'calibration_history': ('id', 'prediction_id', 'market_id', 'at', 'payload'),
-    'postmatch_reports': ('id', 'decision_id', 'at', 'payload'),
-    'postmortems': ('id', 'decision_id', 'at', 'payload'),
-    'health_events': ('id', 'at', 'payload'),
-    'calibrators': ('id', 'at', 'payload'),
-    'validation_runs': ('id', 'at', 'payload'),
-    'split_assignments': ('id', 'at', 'payload'),
-    'overrides': ('id', 'at', 'payload'),
-    'model_routes': ('id', 'at', 'payload'),
-    'policy_approvals': ('id', 'at', 'payload'),
-    'jobs': ('id', 'at', 'payload'),
-    'audit_logs': ('id', 'at', 'event', 'payload', 'previous_hash', 'hash'),
-}
 CLOUD_COLUMNS = {**COLUMNS, 'audit_logs':
                  ('id', 'at', 'at_source', 'event', 'payload', 'payload_source', 'previous_hash', 'hash')}
 MAX_ROWS = 100_000  # Bounded snapshot: larger ledgers need a streaming protocol.
@@ -64,6 +40,7 @@ def snapshot(path: str | Path) -> dict[str, list[dict]]:
             raise ValueError('SQLite foreign key check failed')
         if set(COLUMNS) != set(TABLES):
             raise ValueError('SQLite/Postgres table mapping is incomplete')
+        validate_schema(db)
         rows: dict[str, list[dict]] = {}
         count = 0
         for table, columns in COLUMNS.items():
@@ -73,15 +50,7 @@ def snapshot(path: str | Path) -> dict[str, list[dict]]:
             if count > MAX_ROWS:
                 raise ValueError('ledger exceeds bounded sync limit')
             for row in batch:
-                try:
-                    obj = json.loads(row['payload'])
-                    if not isinstance(obj, dict) or canonical(obj) != row['payload']:
-                        raise ValueError('noncanonical or nonobject payload')
-                    for name in ('at', 'kickoff'):
-                        if name in row:
-                            time(row[name])
-                except (TypeError, ValueError) as exc:
-                    raise ValueError(f'invalid {table} ledger row') from exc
+                validate_row(table, row)
             rows[table] = batch
         _verify_chain(rows)
         db.execute('ROLLBACK')

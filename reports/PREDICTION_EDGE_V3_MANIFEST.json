@@ -1,0 +1,25 @@
+{
+  "schema": "edge-v3-manifest-v1",
+  "registered_at": "2026-10-09T20:30:47.844807+00:00",
+  "training_ids": [],
+  "calibration_ids": [],
+  "viewed_test_ids": [],
+  "members": [],
+  "models": [
+    "BASELINE_V1",
+    "DC_DYNAMIC_V1",
+    "SOS_LITE_V1"
+  ],
+  "contracts": [
+    "1X2",
+    "DOUBLE_CHANCE:1X",
+    "DNB:HOME",
+    "HANDICAP:HOME:-1",
+    "TOTAL:OVER:2.5",
+    "BTTS:YES",
+    "TEAM_TOTAL:HOME_OVER:1.5"
+  ],
+  "primary": "1X2:raw:log_loss",
+  "research_hash": "f435680df74557f305ebc94a1677c5409538b8c92f76cc62362e55a21ffbb263",
+  "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9"
+}

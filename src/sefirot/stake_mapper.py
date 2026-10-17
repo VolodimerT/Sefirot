@@ -1,0 +1,316 @@
+"""Conservative normalization for experimental Stake sportsbook snapshots.
+
+Only explicitly recognized, regulation-time-like main markets are mapped to
+SEFIROT canonical contracts. Small markets are normalized descriptively for
+research only; no probability, EV, settlement or monetary permission is
+inferred here.
+"""
+from __future__ import annotations
+
+import re
+
+from .contracts import digest, number
+from .markets import market_of
+
+
+def _specifiers(value):
+    if value is None or value == "":
+        return {}
+    if not isinstance(value, str):
+        raise ValueError("invalid Stake specifiers")
+    out = {}
+    for part in value.replace("&", "|").split("|"):
+        if "=" not in part:
+            raise ValueError("invalid Stake specifiers")
+        key, val = (v.strip() for v in part.split("=", 1))
+        if not key or not val or key in out:
+            raise ValueError("ambiguous Stake specifiers")
+        out[key] = val
+    return out
+
+
+def _line(value):
+    try:
+        return number(float(value), "Stake line")
+    except (TypeError, ValueError):
+        raise ValueError("invalid Stake line") from None
+
+
+def _supported_contract(contract):
+    try:
+        market_of(contract)
+    except ValueError:
+        return None
+    return contract
+
+
+def _availability(market, outcome):
+    # Preserve observations, not a guessed interpretation of undocumented enums.
+    return {"raw_market_status": market.get("status"),
+            "raw_outcome_active": outcome.get("active"),
+            "availability": "NOT_VERIFIED"}
+
+
+def _main_market_rows(market, home, away):
+    template = market.get("template")
+    name = market.get("name")
+    outcomes = market.get("outcomes") or []
+    specs = _specifiers(market.get("specifiers"))
+    rows = []
+    rejected = []
+
+    supported = {"1x2", "Draw No Bet", "Both Teams to Score", "Double Chance",
+                 "Asian Total", "Asian Handicap"}
+    if template in supported and name == template:
+        expected = {"total"} if template == "Asian Total" else {"hcp"} if template == "Asian Handicap" else set()
+        if expected - set(specs):
+            raise ValueError("required Stake line specifier missing")
+        # A generic template does not override a half/extra-time group or
+        # period specifier. Unknown scope remains unmapped research evidence.
+        groups = ("main", "Main", "total") if template == "Asian Total" else ("main", "Main")
+        if market.get("group") not in groups or set(specs) != expected:
+            return [], [{"reason": "MAIN_SCOPE_UNVERIFIED"}]
+        if not isinstance(outcomes, list) or any(not isinstance(o, dict) for o in outcomes):
+            return [], [{"reason": "INVALID_MAIN_OUTCOMES"}]
+
+    def emit(contract, outcome):
+        contract = _supported_contract(contract)
+        if contract is None:
+            rejected.append({"reason": "UNSUPPORTED_CORE_LINE", "outcome": outcome.get("name")})
+            return
+        rows.append({
+            **_availability(market, outcome),
+            "market": contract,
+            "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
+            "stake_market_id": market.get("id"),
+            "stake_outcome_id": outcome.get("id"),
+            "raw_group": market.get("group"),
+            "raw_template": template,
+            "raw_name": name,
+            "raw_specifiers": market.get("specifiers"),
+            "custom_bet_available": outcome.get("customBetAvailable"),
+        })
+
+    if template == "1x2" and name == "1x2":
+        sides = {home: "HOME", "Draw": "DRAW", away: "AWAY"}
+        if len(sides) != 3 or len(outcomes) != 3 or {o.get("name") for o in outcomes} != set(sides):
+            return [], [{"reason": "INVALID_1X2_PARTITION"}]
+        for outcome in outcomes:
+            emit({"kind": "1X2", "side": sides[outcome["name"]]}, outcome)
+    elif template == "Draw No Bet" and name == "Draw No Bet":
+        sides = {home: "HOME", away: "AWAY"}
+        if len(outcomes) != 2 or {o.get("name") for o in outcomes} != set(sides):
+            return [], [{"reason": "INVALID_DNB_PARTITION"}]
+        for outcome in outcomes:
+            emit({"kind": "DNB", "side": sides[outcome["name"]]}, outcome)
+    elif template == "Both Teams to Score" and name == "Both Teams to Score":
+        sides = {"Yes": "YES", "No": "NO"}
+        if len(outcomes) != 2 or {o.get("name") for o in outcomes} != set(sides):
+            return [], [{"reason": "INVALID_BTTS_PARTITION"}]
+        for outcome in outcomes:
+            emit({"kind": "BTTS", "side": sides[outcome["name"]]}, outcome)
+    elif template == "Double Chance" and name == "Double Chance":
+        aliases = {
+            frozenset((home, "Draw")): "1X",
+            frozenset(("Draw", away)): "X2",
+            frozenset((home, away)): "12",
+        }
+        if len(outcomes) != 3:
+            return [], [{"reason": "INVALID_DOUBLE_CHANCE_PARTITION"}]
+        mapped = []
+        for outcome in outcomes:
+            parts = [part.strip() for part in str(outcome.get("name", "")).split(" or ")]
+            side = aliases.get(frozenset(parts)) if len(parts) == 2 else None
+            if side is None:
+                return [], [{"reason": "UNKNOWN_DOUBLE_CHANCE_OUTCOME", "outcome": outcome.get("name")}]
+            mapped.append((side, outcome))
+        if {side for side, _ in mapped} != {"1X", "X2", "12"}:
+            return [], [{"reason": "INVALID_DOUBLE_CHANCE_PARTITION"}]
+        for side, outcome in mapped:
+            emit({"kind": "DOUBLE_CHANCE", "side": side}, outcome)
+    elif template == "Asian Total" and name == "Asian Total":
+        total = _line(specs.get("total"))
+        if len(outcomes) != 2:
+            return [], [{"reason": "INVALID_TOTAL_PARTITION"}]
+        mapped = []
+        for outcome in outcomes:
+            raw = str(outcome.get("name", ""))
+            match = re.fullmatch(r"(Over|Under) ([+-]?\d+(?:\.\d+)?)", raw)
+            if match is None or _line(match.group(2)) != total:
+                return [], [{"reason": "TOTAL_OUTCOME_LINE_MISMATCH", "outcome": raw}]
+            side = match.group(1).upper()
+            mapped.append((side, outcome))
+        if {side for side, _ in mapped} != {"OVER", "UNDER"}:
+            return [], [{"reason": "INVALID_TOTAL_PARTITION"}]
+        for side, outcome in mapped:
+            emit({"kind": "TOTAL", "side": side, "line": total}, outcome)
+    elif template == "Asian Handicap" and name == "Asian Handicap":
+        home_line = _line(specs.get("hcp"))
+        if len(outcomes) != 2:
+            return [], [{"reason": "INVALID_HANDICAP_PARTITION"}]
+        mapped = []
+        for outcome in outcomes:
+            raw = str(outcome.get("name", ""))
+            side = None
+            for team, candidate, line in ((home, "HOME", home_line), (away, "AWAY", -home_line)):
+                match = re.fullmatch(re.escape(team) + r" \(([+-]?\d+(?:\.\d+)?)\)", raw)
+                if match and _line(match.group(1)) == line:
+                    side = candidate
+                    mapped.append((side, line, outcome))
+                    break
+            if side is None:
+                return [], [{"reason": "HANDICAP_OUTCOME_LINE_MISMATCH", "outcome": raw}]
+        if {side for side, _, _ in mapped} != {"HOME", "AWAY"}:
+            return [], [{"reason": "INVALID_HANDICAP_PARTITION"}]
+        for side, line, outcome in mapped:
+            emit({"kind": "HANDICAP", "side": side, "line": line}, outcome)
+    return rows, rejected
+
+
+def _small_market_rows(market, home, away):
+    name = str(market.get("name", ""))
+    template = str(market.get("template", ""))
+    specs = _specifiers(market.get("specifiers"))
+    outcomes = market.get("outcomes") or []
+    rows = []
+
+    def add(metric, scope, period, operator, threshold, outcome, *, category="THRESHOLD"):
+        rows.append({
+            **_availability(market, outcome),
+            "metric": metric,
+            "scope": scope,
+            "period": period,
+            "category": category,
+            "operator": operator,
+            "threshold": threshold,
+            "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
+            "stake_market_id": market.get("id"),
+            "stake_outcome_id": outcome.get("id"),
+            "raw_group": market.get("group"),
+            "raw_template": template,
+            "raw_name": name,
+            "raw_specifiers": market.get("specifiers"),
+            "custom_bet_available": outcome.get("customBetAvailable"),
+        })
+
+    def require_scope(expected, groups):
+        # Only the existing offline shapes are recognized; period specifiers
+        # have no confirmed provider contract and must never override a name.
+        if set(specs) != expected or market.get("group") not in groups:
+            raise ValueError("unverified Stake small market scope")
+
+    shot = re.fullmatch(r"Match (\d+)\+ shots", name, re.I)
+    if shot:
+        require_scope({"count"}, ("specials",))
+        if (_line(specs["count"]) != int(shot.group(1)) or len(outcomes) != 1
+                or outcomes[0].get("name") != "Yes"):
+            raise ValueError("invalid Stake shots partition or line")
+        add("SHOTS", "MATCH", "REGULATION_90", "GTE", int(shot.group(1)), outcomes[0])
+        return rows
+
+    def total_pair(metric, period):
+        require_scope({"total"}, ("CardsCorners", "Main", "main"))
+        line = _line(specs["total"])
+        if len(outcomes) != 2:
+            raise ValueError("invalid Stake small total partition")
+        mapped = []
+        for outcome in outcomes:
+            raw = outcome.get("name")
+            match = re.fullmatch(r"(Over|Under) ([+-]?\d+(?:\.\d+)?)", raw) if isinstance(raw, str) else None
+            if match is None or _line(match.group(2)) != line:
+                raise ValueError("Stake small total outcome line mismatch")
+            mapped.append((match.group(1).upper(), outcome))
+        if {side for side, _ in mapped} != {"OVER", "UNDER"}:
+            raise ValueError("invalid Stake small total partition")
+        for side, outcome in mapped:
+            add(metric, "MATCH", period, side, line, outcome)
+
+    if template == "Total Corners" and name == "Total Corners":
+        total_pair("CORNERS", "REGULATION_90")
+    elif template == "1st Half - Total Corners" and name == "1st Half - Total Corners":
+        total_pair("CORNERS", "FIRST_HALF")
+    elif template == "Total Cards" and name == "Total Cards":
+        total_pair("CARDS", "REGULATION_90")
+    elif template == "1st Half - Total Cards" and name == "1st Half - Total Cards":
+        total_pair("CARDS", "FIRST_HALF")
+
+    # Preserve team corner ranges as categorical research data; do not pretend
+    # the middle buckets are ordinary over/under lines.
+    for team, scope in ((home, "HOME"), (away, "AWAY")):
+        if template == "{$competitor1} Corner Range" and scope == "HOME" or \
+           template == "{$competitor2} Corner Range" and scope == "AWAY":
+            if name == f"{team} Corner Range":
+                require_scope({"variant"}, ("CardsCorners", "Main", "main"))
+                for outcome in outcomes:
+                    rows.append({
+                        **_availability(market, outcome),
+                        "metric": "CORNERS", "scope": scope, "period": "REGULATION_90",
+                        "category": "RANGE", "operator": "RANGE", "threshold": outcome.get("name"),
+                        "odds": number(outcome.get("odds"), "Stake decimal odds", 1.00000001, 10000),
+                        "stake_market_id": market.get("id"), "stake_outcome_id": outcome.get("id"),
+                        "raw_group": market.get("group"), "raw_template": template,
+                        "raw_name": name, "raw_specifiers": market.get("specifiers"),
+                        "custom_bet_available": outcome.get("customBetAvailable"),
+                    })
+                break
+    return rows
+
+
+def normalize_snapshot(snapshot):
+    if not isinstance(snapshot, dict) or snapshot.get("provider") != "STAKE_GRAPHQL_EXPERIMENTAL":
+        raise ValueError("Stake research snapshot required")
+    if snapshot.get("status") != "RESEARCH_ONLY" or snapshot.get("monetary_permission") is not False:
+        raise ValueError("Stake snapshot safety flags missing")
+    home = snapshot.get("home"); away = snapshot.get("away")
+    if not isinstance(home, str) or not isinstance(away, str) or home == away:
+        raise ValueError("invalid Stake fixture teams")
+    markets = snapshot.get("markets")
+    if not isinstance(markets, list) or len(markets) > 5000:
+        raise ValueError("invalid Stake market list")
+
+    main = []
+    small = []
+    rejected = []
+    seen_main = set()
+    for market in markets:
+        if not isinstance(market, dict):
+            continue
+        outcomes = market.get("outcomes")
+        if (outcomes is not None and (not isinstance(outcomes, list)
+                or any(not isinstance(outcome, dict) for outcome in outcomes))):
+            raise ValueError("invalid Stake outcomes")
+        rows, reasons = _main_market_rows(market, home, away)
+        for row in rows:
+            key = market_of(row["market"]).key
+            fingerprint = (key, row["stake_market_id"], row["stake_outcome_id"])
+            if fingerprint in seen_main:
+                rejected.append({"reason": "DUPLICATE_MAIN_OUTCOME", "key": key})
+                continue
+            seen_main.add(fingerprint)
+            row["key"] = key
+            main.append(row)
+        for reason in reasons:
+            rejected.append({**reason, "raw_template": market.get("template"),
+                             "raw_name": market.get("name"),
+                             "raw_specifiers": market.get("specifiers")})
+        small.extend(_small_market_rows(market, home, away))
+
+    report = {
+        "schema": "stake-normalized-research-v1",
+        "provider": "STAKE_GRAPHQL_EXPERIMENTAL",
+        "fixture_id": snapshot.get("fixture_id"),
+        "stake_event_id": snapshot.get("stake_event_id"),
+        "home": home, "away": away, "kickoff": snapshot.get("kickoff"),
+        "received_at": snapshot.get("received_at"),
+        "freshness": "RECEIPT_TIME_ONLY",
+        "settlement_rules": "UNVERIFIED_PROVIDER_WEB_CONTRACT",
+        "main_quotes": main,
+        "small_quotes": small,
+        "rejected": rejected,
+        "main_quote_count": len(main),
+        "small_quote_count": len(small),
+        "monetary_permission": False,
+        "execution_enabled": False,
+    }
+    report["hash"] = digest(report)
+    return report

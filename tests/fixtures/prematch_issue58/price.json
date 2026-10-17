@@ -1,0 +1,45 @@
+{
+  "schema": "prematch-synthetic-price-v1",
+  "synthetic": true,
+  "rules_evidence": "SYNTHETIC_TEST_REGULATION_90_NOT_PROVIDER_ATTESTATION",
+  "event": {
+    "id": "synthetic-stake-900001",
+    "slug": "synthetic-team-a-team-b",
+    "startTime": "2030-01-01T12:00:00+00:00",
+    "competitors": [
+      {
+        "name": "Team A"
+      },
+      {
+        "name": "Team B"
+      }
+    ]
+  },
+  "markets": [
+    {
+      "id": "synthetic-1x2",
+      "group": "main",
+      "template": "1x2",
+      "name": "1x2",
+      "specifiers": "",
+      "outcomes": [
+        {
+          "id": "h",
+          "name": "Team A",
+          "odds": 2.1
+        },
+        {
+          "id": "d",
+          "name": "Draw",
+          "odds": 3.2
+        },
+        {
+          "id": "a",
+          "name": "Team B",
+          "odds": 3.5
+        }
+      ]
+    }
+  ],
+  "hash": "e103af956a1e2ed922d959d2771a4232c24cfeda3efc13be4ea3c2ad85593490"
+}

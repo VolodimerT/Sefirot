@@ -19,12 +19,20 @@ def size_risk(*,win,push,odds,bankroll,peak,quality,exposures,match,model,scenar
     kelly=max(0.,((odds-1)*win-loss)/((odds-1)*(1-push))) if push<1 else 0.
     fraction=policy.max_stake_fraction*quality*(1-drawdown/policy.max_drawdown) if kelly>0 else 0.
     cap=bankroll*fraction
-    day=time(at).date();daily=0.;same_match=0.;related={tag:0. for tag in tags}
+    # The historical risk day is the UTC calendar date, not the caller's local
+    # offset. Do not silently change this accounting rule on sealed decisions.
+    cutoff=time(at);day=cutoff.date();daily=0.;same_match=0.;related={tag:0. for tag in tags}
     for e in exposures:
         stake=number(e['stake'],'exposure stake',0)
-        if time(e['at'])>time(at): raise ValueError('future exposure')
-        if time(e['at']).date()==day: daily+=stake
-        if e.get('settled_at') and time(e['settled_at'])<=time(at): continue
+        placed=time(e['at'])
+        if placed>cutoff: raise ValueError('future exposure')
+        settled=None
+        if e.get('settled_at') is not None:
+            settled=time(e['settled_at'])
+            if settled<placed: raise ValueError('exposure settlement precedes placement')
+            if settled>cutoff: raise ValueError('future exposure settlement receipt')
+        if placed.date()==day: daily+=stake
+        if settled is not None: continue
         if 'match:'+match['id'] in e['groups']: same_match+=stake
         for tag in set(tags)&set(e['groups']): related[tag]+=stake
     caps=[bankroll*policy.max_day_fraction-daily,bankroll*policy.max_match_fraction-same_match]
