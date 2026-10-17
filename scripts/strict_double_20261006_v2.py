@@ -1,4 +1,12 @@
 from __future__ import annotations
+
+# Retain the existing Render start command while selecting the canonical bridge
+# before importing Flask or running any historical scanner code.
+import os as _sefirot_bridge_os
+if _sefirot_bridge_os.environ.get("SEFIROT_BRIDGE_MODE") == "mcp":
+    from chat_mcp import main as _sefirot_bridge_main
+    _sefirot_bridge_main()
+    raise SystemExit(0)
 import json, os, time as _time, urllib.parse, urllib.request, threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path

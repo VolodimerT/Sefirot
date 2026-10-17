@@ -97,7 +97,7 @@ def process_rpc(request):
     if method == "initialize":
         result = {"protocolVersion": PROTOCOL, "capabilities": {"tools": {"listChanged": False}},
                   "serverInfo": {"name": "sefirot-canonical-research", "version": "0.1.0"},
-                  "instructions": "Read-only rollout. Only original status/report reads; no queue, capture, providers or execution. Missing evidence stays PASS."
+                  "instructions": "Read-only CORE: original status/report reads only. An explicitly enabled sports_probe queue uses the protected shared API budget. No capture, decisions or execution. Missing evidence stays PASS."
                   if read_only_mode() else
                   "Research-only. Call capture before decide; no monetary permission, LIVE or execution. Empty history must PASS."}
     elif method == "ping":
@@ -134,6 +134,24 @@ def process_rpc(request):
 
 
 class MCPHandler(Handler):
+    def do_GET(self):
+        if urlsplit(self.path).path == "/health":
+            from chat_queue import sports_only_mode, worker_status
+            if sports_only_mode():
+                running = worker_status()["running"]
+                self.respond(200 if running else 503, {"ok": running,
+                    "service": "sefirot-chat-bridge", "mode": "RESEARCH_ONLY",
+                    "worker_mode": "sports_probe", "worker_running": running,
+                    "core_read_only": True,
+                    "commit": os.environ.get("RENDER_GIT_COMMIT", "NOT_VERIFIED")})
+                return
+        if urlsplit(self.path).path == "/status":
+            if self.authorized():
+                from chat_queue import worker_status
+                self.respond(200, {"ok": True, "data": worker_status()})
+            return
+        return super().do_GET()
+
     def do_POST(self):
         if urlsplit(self.path).path != "/mcp":
             return super().do_POST()
@@ -164,6 +182,11 @@ class MCPHandler(Handler):
 
 def main():
     readonly = read_only_mode()
+    from chat_queue import sports_only_mode, stop as stop_chat_worker
+    sports_worker = sports_only_mode()
+    port = int(os.environ.get("PORT", "10000"))
+    if not 0 < port < 65536: raise ValueError("invalid PORT")
+    start_worker = False
     configured_token()
     smoke = run_demo()
     if not (smoke.get("synthetic") is True and smoke.get("replay_matches") is True
@@ -192,19 +215,39 @@ def main():
         if status.get("persistent_storage") is not True or status.get("store_revision", 0) < 1:
             raise RuntimeError("SEFIROT_DURABLE_STORE_NOT_READY")
         print("SEFIROT_DURABLE_STORE_VERIFIED revision="+str(status["store_revision"]), flush=True)
-        if not readonly:
-            from chat_queue import start as start_chat_worker
-            start_chat_worker()
-            print("SEFIROT_CHAT_JOB_WORKER_STARTED", flush=True)
+        if not readonly or sports_worker:
+            start_worker = True
         else:
             print("SEFIROT_CHAT_JOB_WORKER_DISABLED read_only", flush=True)
     elif readonly:
+        if sports_worker:
+            raise RuntimeError("SPORTS_WORKER_DURABLE_STORE_REQUIRED")
         status = execute("status", {})
         if status.get("ledger_integrity") is not True:
             raise RuntimeError("READ_ONLY_EXISTING_LEDGER_REQUIRED")
-    port = int(os.environ.get("PORT", "10000"))
-    if not 0 < port < 65536: raise ValueError("invalid PORT")
-    ThreadingHTTPServer(("0.0.0.0", port), MCPHandler).serve_forever()
+    server = ThreadingHTTPServer(("0.0.0.0", port), MCPHandler)
+    import signal
+    from threading import Thread, current_thread, main_thread
+    previous = {}
+    def shutdown(signum, frame):
+        # Stop claims immediately; allow a bounded in-flight request/completion
+        # to finish. Uncertain provider attempts are never fetched on reclaim.
+        from chat_queue import _stop
+        _stop.set()
+        Thread(target=server.shutdown, daemon=True).start()
+    if current_thread() is main_thread():
+        for signum in (signal.SIGTERM, signal.SIGINT):
+            previous[signum] = signal.signal(signum, shutdown)
+    try:
+        if start_worker:
+            from chat_queue import start as start_chat_worker
+            start_chat_worker()
+            print("SEFIROT_CHAT_JOB_WORKER_STARTED" + (" sports_probe read_only_core" if sports_worker else ""), flush=True)
+        server.serve_forever()
+    finally:
+        stop_chat_worker()
+        server.server_close()
+        for signum, handler in previous.items():signal.signal(signum, handler)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,20 @@
+## API-Football queue recovery, 17.10.2026
+
+Owner now explicitly authorizes restoring and deploying the existing Render
+sports_probe consumer after configuration checks, including the existing job
+c38eb7dd-822f-4f94-8fba-cc6b0ec44009 (one status query). Latest unified base
+c39d2d2; preserve all src/MODEL/Policy and original rows/snapshot/receipts.
+Recover existing MCP launcher from deployed branch. Integrate that branch
+without force, preserving its inert operator-only budget source. Use existing
+PR56, no extra PR or service. Explicit sports_probe worker mode keeps CORE
+HTTP/MCP read-only; guarded existing collector and leased/idempotent completion
+only. Restore existing claim/probe EXECUTE only after exact CI/deploy/health and
+old instance retirement. Never renew/reset/activate/change the budget, scan,
+read/change secret values, call Stake, merge main, fit or bet. Expired permits
+must produce a truthful denial, not an invented provider status/quota.
+No additional agents. Earlier headers describe superseded stage restrictions.
+RESEARCH_ONLY / PASS / stake=0.
+
 ## Final integration and source recovery, 16.10.2026
 
 Owner explicitly requests the autonomous engineering team and independent QA,

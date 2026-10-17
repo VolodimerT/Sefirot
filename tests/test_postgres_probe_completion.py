@@ -52,6 +52,31 @@ class NativeProbePostgresTests(unittest.TestCase):
         with self.isolated() as admin:
             run_native_situation_upgrade(self,admin)
 
+    def test_resume_existing_queue_keeps_budget_and_leased_completion(self):
+        with self.isolated() as admin:
+            for name in ('tests/fixtures/chat_bridge_legacy.sql',
+                         'tests/fixtures/probe_rollout_legacy.sql',
+                         'supabase/migrations/20261015161027_probe_completion_fence.sql',
+                         'supabase/review_only/20261015161311_park_probe_queue.sql'):
+                admin.execute(self.sql(name))
+            before = admin.execute('select * from sefirot_budget_private.sports_budget').fetchall()
+            functions = [(name, body) for name, body, acl in self.fn_state(admin)]
+            resume = self.sql('supabase/migrations/20261017114454_resume_probe_worker.sql')
+            admin.execute(resume); admin.execute(resume)
+            self.assertEqual(before, admin.execute('select * from sefirot_budget_private.sports_budget').fetchall())
+            self.assertEqual(functions, [(name, body) for name, body, acl in self.fn_state(admin)])
+            admin.execute("insert into sefirot.chat_bridge_jobs(id,kind,request) values('00000000-0000-0000-0000-000000000093','sports_probe','{\"queries\":[{\"endpoint\":\"status\",\"params\":{}}]}')")
+            admin.execute('set local role service_role')
+            job = admin.execute('select public.sefirot_chat_claim()').fetchone()[0]['job']
+            self.assertEqual(job['attempt'], 1)
+            args=(job['id'], 1, False, None, 'RESEARCH_RUNNER_ERROR')
+            query='select public.sefirot_probe_complete(%s,%s,%s,%s,%s)'
+            ack=admin.execute(query,args).fetchone()[0]
+            self.assertEqual(admin.execute(query,args).fetchone()[0], ack)
+            self.assertTrue(ack['completed'])
+            self.assertIsNone(admin.execute('select public.sefirot_chat_claim()').fetchone()[0]['job'])
+            admin.execute('reset role')
+
     def test_same_cases_native_sql_permissions_idempotency_and_fencing(self):
         with self.isolated() as admin:
             for filename in ('tests/fixtures/chat_bridge_legacy.sql',
