@@ -107,6 +107,23 @@ class GuardedProbeEvidenceTests(unittest.TestCase):
                 probe.collect({'queries':[{'endpoint':'fixtures','params':{'date':'2026-02-30','league':7,'season':2026}}]})
         network.assert_not_called()
 
+    def test_real_snake_case_xg_statistics_are_archived_with_original_hash(self):
+        p=packet('fixtures/statistics',{'fixture':123})
+        p['data']['response'][0]['statistics'].extend([
+            {'type':'expected_goals','value':'1.45'},
+            {'type':'goals_prevented','value':None},
+        ])
+        p['receipt']['payload_hash']=digest(p['data'])
+        result=collect([p],[{'endpoint':'fixtures/statistics','params':{'fixture':123}}])
+        q=result['queries'][0]
+        self.assertEqual(q['status'],'DONE')
+        self.assertEqual(q['source_evidence']['status'],'CANONICAL_PACKET_ARCHIVED')
+        self.assertEqual(q['rows'][0]['statistics']['expected_goals'],'1.45')
+        self.assertIsNone(q['rows'][0]['statistics']['goals_prevented'])
+        self.assertEqual(q['source_packet']['data'],p['data'])
+        self.assertEqual(digest(q['source_packet']['data']),q['receipt']['payload_hash'])
+        self.assertFalse(q['source_evidence']['model_fit_eligible'])
+
     def test_sensitive_or_unknown_statistics_are_never_raw_archived(self):
         p=packet('fixtures/statistics',{'fixture':123})
         p['data']['response'][0]['statistics'].append({'type':'Secret Extra','value':'TOKEN_SENTINEL'})
