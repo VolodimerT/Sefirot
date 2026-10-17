@@ -1,0 +1,75 @@
+{
+  "schema": "small-observation-v2-engineering-evidence-v1",
+  "base_sha": "9024889b1269ca846dfa1adfcaf5339990c14023",
+  "local": {
+    "tests": 829,
+    "test_exit": 0,
+    "elapsed_seconds": 53.526,
+    "code_hash": "5bde1cbf96efab4bfd3890c4802f86a14f193564bdd047e4db78e1fc4f6fe95f",
+    "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
+    "python": "3.12.14",
+    "platform": "Linux"
+  },
+  "new_tests": 50,
+  "demo_integrity": true,
+  "demo_replay": true,
+  "src_sefirot_changed": false,
+  "old_tracked_reports_changed": false,
+  "statistical_gain_proven": false,
+  "real_raw_sample_audited": false,
+  "source_attested": false,
+  "TRAIN": 0,
+  "CALIBRATION": 0,
+  "HOLDOUT": 0,
+  "score_metrics": {
+    "brier": null,
+    "log_loss": null,
+    "ece": null
+  },
+  "latency": {
+    "schema": "small-qc-latency-v1",
+    "synthetic": true,
+    "iterations": 100,
+    "fixtures": 2,
+    "p50_ms": 0.4262,
+    "p95_ms": 0.5792,
+    "network_included": false,
+    "core_execution_included": false,
+    "production_slo": false
+  },
+  "branch_topology": [
+    {
+      "branch": "chat-answer-contract-v4-20261011",
+      "sha": "9024889b1269ca846dfa1adfcaf5339990c14023",
+      "merge_base_with_p0": "9024889b1269ca846dfa1adfcaf5339990c14023"
+    },
+    {
+      "branch": "chat-sefirot-bridge-20261010",
+      "sha": "9b88d130e69e3be5ee69723469913b36c28bb3e8",
+      "merge_base_with_p0": "9b88d130e69e3be5ee69723469913b36c28bb3e8"
+    },
+    {
+      "branch": "corners-shadow-v0-20261011",
+      "sha": "eb4f8f1c1ee24cd55499b794c60d429e12a4e089",
+      "merge_base_with_p0": "053ad5a07c4732c5062ac6a445fc1d61b1c2a119"
+    },
+    {
+      "branch": "arena1-diagnostic-registry-20261011",
+      "sha": "c99351ca79024f87fefd641f88f7985c676aba40",
+      "merge_base_with_p0": "053ad5a07c4732c5062ac6a445fc1d61b1c2a119"
+    },
+    {
+      "branch": "situation-bridge-v33-20261011",
+      "sha": "e291b6c039746c914ca621263aee6a04ec771242",
+      "merge_base_with_p0": "9b88d130e69e3be5ee69723469913b36c28bb3e8"
+    },
+    {
+      "branch": "private-daily-cloud-archive-20261011",
+      "sha": "649629c9a8520c50f112f5a63d0a5afb003a87c0",
+      "merge_base_with_p0": "9b88d130e69e3be5ee69723469913b36c28bb3e8"
+    }
+  ],
+  "production_changed": false,
+  "money_authorized": false,
+  "ci_result_at_commit": "PENDING_NEW_HEAD"
+}

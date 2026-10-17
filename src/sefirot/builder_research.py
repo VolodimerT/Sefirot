@@ -3,6 +3,7 @@ from functools import lru_cache
 from math import prod
 
 from .contracts import digest, integer, number, time
+from .engine import market_constraint_issues
 from .goal_robustness import create_robustness
 from .market_grid import compare_grid, universe
 from .markets import market_of, settle
@@ -105,7 +106,11 @@ def create_builder_grid(grid, prediction, policy, at):
                          for name, probes in masses.items() for m in probes[:1]]
         floor = min(p for row in sensitivities for p in
                     [row['joint_probability_raw'], *row['rate_stress_probabilities_raw']])
+        selection_issues = [issue for market in markets for issue in
+                            market_constraint_issues(market, grid['selection_constraints'])]
         rows.append({'key': ' AND '.join(sorted(m.key for m in markets)), 'legs': legs, **base,
+                     'selection_issues': selection_issues,
+                     'selection_status': 'BLOCKED_BY_SCENARIO' if selection_issues else 'NO_EXPLICIT_CONFLICT',
                      'history_sensitivity': sensitivities, 'sensitivity_probability_min': floor,
                      'sensitivity_break_even_odds_raw': 1 / floor if floor else None,
                      'confidence_interval': False, 'builder_odds': None, 'builder_ev': None,
@@ -144,7 +149,7 @@ def compare_builder_singles(report, prediction, quotes, policy, at, receipt=None
     if any(time(q['received_at']) < time(report['sealed_at']) for q in quotes):
         raise ValueError('single price received before builder freeze')
     singles = compare_grid(report['grid'], prediction, quotes, policy, at, receipt)
-    eligible = [(r, p) for r in singles['candidates'] for p in r['prices']]
+    eligible = [(r, p) for r in singles['candidates'] if not r['selection_issues'] for p in r['prices']]
     ranked = sorted(eligible, key=lambda item: (-item[1]['raw_stress_ev_min'], -item[1]['ev_raw'],
                                              item[0]['key'], item[1]['bookmaker']))
     best = ({'key': ranked[0][0]['key'], 'market': ranked[0][0]['market'], **ranked[0][1],

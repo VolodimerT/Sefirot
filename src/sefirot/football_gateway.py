@@ -1,5 +1,6 @@
 """Optional existing private Supabase gateway; provider key stays server-side."""
 from datetime import datetime, timezone
+from http.client import HTTPException
 import json
 import os
 import re
@@ -9,8 +10,26 @@ from urllib.request import Request, build_opener
 
 from .contracts import digest, time
 from .credentials import credential
-from .football_provider import HOST, PARAMETERS, FootballRequestError, get
-from .provider_transport import MAX_RESPONSE, NoRedirect
+from .football_query import (QUERY_ERROR_CODES, FootballQueryError, validate_fixture_query,
+                             validate_fixture_query_parameters)
+from .football_provider import HOST, PARAMETERS, FootballRequestError, get, validate_enrichment_request, validate_provider_data
+from .provider_transport import MAX_RESPONSE, NoRedirect, QUOTA_HEADERS, read_response, close_transport, strict_json_payload
+
+
+_BUDGET_REASONS = frozenset({
+    "PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET",
+    "DAILY_LIMIT", "MINUTE_LIMIT",
+})
+
+
+class SportsBudgetGateError(ValueError):
+    """Fixed budget denials without provider credentials or raw response text."""
+
+    def __init__(self, reason):
+        if type(reason) is not str or reason not in _BUDGET_REASONS:
+            raise ValueError("unknown sports budget denial")
+        self.code = "SHARED_BUDGET_" + reason
+        super().__init__("sports shared budget refused request")
 
 
 def transport_status():
@@ -26,9 +45,11 @@ def transport_status():
             'credential_configured': ready, 'credential_name': name}
 
 
-def get_sports(endpoint, params=None, *, opener=None, clock=None):
+def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared_budget=False):
     url = os.environ.get('SEFIROT_SPORTS_GATEWAY_URL')
     if not url:
+        if require_shared_budget:
+            raise ValueError('shared-budget sports gateway required')
         return get(endpoint, params)
     parts = urlsplit(url)
     if (parts.scheme != 'https' or not re.fullmatch(r'[a-z0-9]{20}\.supabase\.co', parts.netloc)
@@ -38,6 +59,9 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
     if (endpoint not in PARAMETERS or set(params) - PARAMETERS[endpoint]
             or any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in params.values())):
         raise ValueError('unsupported sports endpoint/parameters')
+    validate_enrichment_request(endpoint, params)
+    if endpoint == 'fixtures':
+        validate_fixture_query_parameters(params)
     token = credential('SEFIROT_SPORTS_GATEWAY_TOKEN')
     clock = clock or (lambda: datetime.now(timezone.utc))
     started = clock().isoformat()
@@ -48,21 +72,35 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
         response = (opener or build_opener(NoRedirect()).open)(request, timeout=15)
     except HTTPError as exc:
         response = exc
-    except OSError:
+    except (OSError, HTTPException):
         raise ValueError('sports gateway network unavailable') from None
     try:
-        raw = response.read(MAX_RESPONSE + 1)
+        raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('sports gateway response exceeds limit')
         try:
-            wrapper = json.loads(raw.decode('utf-8'))
-        except (UnicodeError, json.JSONDecodeError):
+            wrapper = strict_json_payload(raw)
+        except ValueError:
             raise ValueError('sports gateway returned invalid JSON') from None
         if not isinstance(wrapper, dict):
             raise ValueError('sports gateway response malformed')
         if response.status != 200 or wrapper.get('ok') is not True:
+            if (response.status == 429 and wrapper.get('ok') is False
+                    and wrapper.get('error') == 'SHARED_BUDGET_STOP'):
+                reason = wrapper.get('budget_reason')
+                if type(reason) is str and reason in _BUDGET_REASONS:
+                    raise SportsBudgetGateError(reason)
+                raise ValueError('sports gateway budget response invalid')
+            if isinstance(wrapper.get('error'), str) and wrapper['error'] in QUERY_ERROR_CODES:
+                raise FootballQueryError(wrapper['error'])
             if response.status == 422 and wrapper.get('error') == 'PROVIDER_REJECTED_REQUEST':
                 raise FootballRequestError(wrapper.get('provider_errors', {}))
+            if wrapper.get('error') == 'UPSTREAM_HTTP_ERROR':
+                status = wrapper.get('upstream_http_status')
+                if type(status) is int and 100 <= status <= 599:
+                    raise ValueError('sports gateway upstream HTTP ' + str(status))
+            if wrapper.get('error') in ('UPSTREAM_TIMEOUT', 'UPSTREAM_UNAVAILABLE'):
+                raise ValueError('sports gateway network unavailable')
             raise ValueError('sports gateway HTTP ' + str(int(response.status)))
         received = clock().isoformat()
         if (wrapper.get('provider') != 'API_FOOTBALL_V3' or wrapper.get('provider_host') != HOST
@@ -70,18 +108,30 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None):
                 or wrapper.get('sports_only') is not True or wrapper.get('monetary_permission') is not False
                 or wrapper.get('execution_enabled') is not False):
             raise ValueError('sports gateway response identity mismatch')
+        if require_shared_budget and wrapper.get('shared_budget_guard') != 'POSTGRES_RESERVATION_V1':
+            raise ValueError('shared-budget sports gateway required')
         observed = time(wrapper['received_at'])
         if not time(started) <= observed <= time(received):
             raise ValueError('sports gateway receipt chronology mismatch')
         data = wrapper['data']
         if not isinstance(data, dict) or data.get('errors') not in ({}, []):
             raise ValueError('sports gateway provider response malformed')
-        if endpoint != 'status' and (not isinstance(data.get('response'), list)
-                or data.get('results') != len(data['response']) or data.get('paging', {}).get('total', 1) > 1):
-            raise ValueError('sports gateway incomplete provider response')
-        return {'data': data, 'receipt': {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
+        validate_provider_data(endpoint, data)
+        if endpoint == 'fixtures':
+            validate_fixture_query(data, params)
+        receipt = {'provider': 'API_FOOTBALL_V3', 'provider_host': HOST,
             'endpoint': '/' + endpoint, 'parameters': params, 'request_started_at': started,
             'received_at': received, 'payload_hash': digest(data), 'http_status': 200, 'sports_only': True,
-            'transport': 'SUPABASE_GATEWAY', 'upstream_received_at': wrapper['received_at']}}
+            'transport': 'SUPABASE_GATEWAY', 'upstream_received_at': wrapper['received_at']}
+        if 'quota' in wrapper:
+            quota = wrapper['quota']
+            if (not isinstance(quota, dict) or set(quota) - set(QUOTA_HEADERS)
+                    or any(not isinstance(v, str) or not re.fullmatch(r'[0-9]{1,12}', v)
+                           for v in quota.values())):
+                raise ValueError('sports gateway quota response malformed')
+            receipt['quota'] = dict(quota)
+        return {'data': data, 'receipt': receipt}
+    except (OSError, HTTPException):
+        raise ValueError('sports gateway network unavailable') from None
     finally:
-        response.close()
+        close_transport(response)

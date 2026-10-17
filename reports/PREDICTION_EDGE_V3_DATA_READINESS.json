@@ -1,0 +1,38 @@
+{
+  "schema": "edge-v3-data-readiness-v1",
+  "generated_at": "2026-10-09T20:30:47.844807+00:00",
+  "status": "INSUFFICIENT_REAL_DATA",
+  "provider_status": "NOT_PROBED",
+  "credential_presence": {
+    "SEFIROT_ODDS_API_KEY": "MISSING_OR_INVALID",
+    "API_FOOTBALL_KEY": "MISSING_OR_INVALID",
+    "STAKE_API_TOKEN": "MISSING_OR_INVALID"
+  },
+  "network_requests": 0,
+  "verified_archive_packets": 0,
+  "verified_training_matches": 0,
+  "externally_verified_holdout_matches": 0,
+  "submitted_cohort_matches": 0,
+  "verified_quote_partitions": 0,
+  "combined_quotes": 0,
+  "history_coverage": null,
+  "missing_seasons": "UNKNOWN_NO_ARCHIVE_SUPPLIED",
+  "lineup_coverage": null,
+  "xg_coverage": null,
+  "receipt_age": null,
+  "achieved_calibration_bins": 0,
+  "receipt_authentication": "NO_ORIGINAL_ARCHIVE_OR_LEDGER_SUPPLIED",
+  "historical_context": {
+    "viewed_test_matches": 380,
+    "previous_calibration_assigned": 17,
+    "previous_calibration_scored": 0,
+    "source": "docs/FORWARD_SCORECARD.md; reports/FROZEN_EFFECTIVENESS_AUDIT_20261006.json; not a new run"
+  },
+  "blockers": [
+    "Original timestamped training archive missing",
+    "New predeclared HOLDOUT not registered",
+    "Research-to-original-ledger adapter not implemented",
+    "Verified prematch/closing/combined quotes missing"
+  ],
+  "monetary_permission": false
+}

@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from hashlib import sha256
 from .contracts import canonical,digest,time,text
+from .ledger_integrity import validate_row, validate_schema
 
 TABLES=('teams','matches','markets','odds_snapshots','predictions','bets','results','closing_odds',
         'calibration_history','model_versions','audit_logs','decisions','postmortems','health_events',
@@ -52,9 +53,14 @@ class Repository:
         self.db=sqlite3.connect(target,timeout=10,isolation_level=None,uri=read_only)
         self.db.row_factory=sqlite3.Row
         self._record_digests={}
-        if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
+        self._row_validations={}
+        self._transaction_sequence=0
+        try:
+            if self.db.execute('PRAGMA user_version').fetchone()[0] not in ((2,) if read_only else (0,2)):
+                raise ValueError('unsupported database version')
+        except Exception:
             self.db.close()
-            raise ValueError('unsupported database version')
+            raise
         if read_only: return
         # Set foreign keys before BEGIN (SQLite ignores this PRAGMA in a
         # transaction). Bootstrap all tables/triggers in one durable commit.
@@ -67,7 +73,7 @@ class Repository:
             self.db.rollback();self.db.close();raise
 
     def close(self):
-        self.db.close();self._record_digests.clear()
+        self.db.close();self._record_digests.clear();self._row_validations.clear()
 
     def transaction(self): return Transaction(self)
 
@@ -113,19 +119,71 @@ class Repository:
         self.db.execute('INSERT INTO audit_logs(at,event,payload,previous_hash,hash) VALUES(?,?,?,?,?)',(at,event,data,prev,hash_))
 
     def verify(self):
-        prev='0'*64; referenced=set()
-        for row in self.db.execute('SELECT * FROM audit_logs ORDER BY id'):
-            if row['previous_hash']!=prev or row['hash']!=digest([prev,row['at'],row['event'],row['payload']]): return False
-            prev=row['hash'];payload=json.loads(row['payload'])
+        try:
+            if self.db.in_transaction:
+                return self._verify_current_rows()
+            # Audit and records must come from one read snapshot. Separate
+            # autocommit reads can straddle another runner's valid commit.
+            self.db.execute('BEGIN')
+            try:
+                return self._verify_current_rows()
+            finally:
+                self.db.rollback()
+        except (ValueError,KeyError,TypeError,OverflowError,sqlite3.Error):
+            return False
+
+    def _verify_current_rows(self):
+        # Read the current audit chain and current record bytes on EVERY call.
+        # Batch record reads by table, rather than issuing one SELECT per event.
+        # Only content canonicalization is cached; never cache journal_ok.
+        if self.db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':return False
+        if self.db.execute('PRAGMA foreign_key_check').fetchone():return False
+        validate_schema(self.db)
+        prev='0'*64; referenced=set();expected={}
+        for sequence,row in enumerate(self.db.execute('SELECT * FROM audit_logs ORDER BY id'),1):
+            payload=validate_row('audit_logs',row,require_canonical=False)
+            if row['id']!=sequence or row['previous_hash']!=prev or row['hash']!=digest([prev,row['at'],row['event'],row['payload']]):return False
+            prev=row['hash']
             if 'record_table' in payload:
-                try: record_hash=self._record_digest(payload['record_table'],payload['record_id'])
-                except ValueError: return False
-                if record_hash!=payload['record_hash']: return False
-                referenced.add((payload['record_table'],payload['record_id']))
+                table=payload['record_table'];identifier=payload.get('record_id')
+                if table not in TABLES or table=='audit_logs' or not isinstance(identifier,str):return False
+                expected.setdefault(table,{}).setdefault(identifier,[]).append(payload['record_hash'])
+                referenced.add((table,identifier))
         # Every probability and decision must have a content-bound audit event.
-        for table in ('predictions','decisions','results','calibrators','validation_runs','bets'):
-            if any((table,r['id']) not in referenced for r in self.db.execute(f'SELECT id FROM {table}')): return False
+        guarded={'predictions','decisions','results','calibrators','validation_runs','bets'}
+        for table in TABLES:
+            if table=='audit_logs':continue
+            pending=set(expected.get(table,{}))
+            for row in self.db.execute(f'SELECT * FROM {table}'):
+                # Local audit binds canonical content; the cloud exporter also
+                # requires canonical stored bytes. Keep legacy JSON formatting.
+                raw_hash=self._validate_current_row(table,row)
+                identifier=row['id']
+                if table in guarded and (table,identifier) not in referenced:return False
+                if identifier not in pending:continue
+                record_hash=self._payload_digest(table,identifier,row['payload'],raw_hash=raw_hash)
+                if any(record_hash!=value for value in expected[table][identifier]):return False
+                pending.remove(identifier)
+            if pending:return False
         return True
+
+    def _validate_current_row(self,table,row):
+        """Cache only row validation, bound to EVERY freshly read SQL field.
+
+        Do not retain payloads or journal/approval status. Every verification
+        still scans the current chain, records, references and orphan coverage.
+        Payload or metadata changes (also after rollback) force revalidation.
+        """
+        blob=row['payload']
+        raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
+        key=(table,row['id'])
+        signature=(raw_hash,tuple((name,row[name]) for name in row.keys() if name.lower()!='payload'))
+        saved=self._row_validations.get(key)
+        if saved!=signature:
+            validate_row(table,row,require_canonical=False)
+            if saved is not None or len(self._row_validations)<4096:
+                self._row_validations[key]=signature
+        return raw_hash
 
     def _record_digest(self,table,identifier):
         """Read current bytes every time; cache only canonicalization by content.
@@ -138,7 +196,11 @@ class Repository:
         if table not in TABLES or table=='audit_logs':raise ValueError('invalid ledger table')
         row=self.db.execute(f'SELECT payload FROM {table} WHERE id=?',(identifier,)).fetchone()
         if row is None:raise ValueError('record not found')
-        blob=row['payload'];raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
+        return self._payload_digest(table,identifier,row['payload'])
+
+    def _payload_digest(self,table,identifier,blob,*,raw_hash=None):
+        """Canonicalize freshly read bytes, with the existing bounded cache."""
+        if raw_hash is None:raw_hash=sha256(blob.encode('utf-8') if isinstance(blob,str) else blob).digest()
         key=(table,identifier);saved=self._record_digests.get(key)
         if saved is not None and saved[0]==raw_hash:return saved[1]
         record_hash=digest(json.loads(blob))
@@ -151,6 +213,22 @@ class Repository:
 
 
 class Transaction:
-    def __init__(self,repo): self.repo=repo
-    def __enter__(self): self.repo.db.execute('BEGIN IMMEDIATE');return self.repo
-    def __exit__(self,typ,value,tb): self.repo.db.execute('ROLLBACK' if typ else 'COMMIT')
+    def __init__(self,repo): self.repo=repo;self.savepoint=None
+    def __enter__(self):
+        if self.repo.db.in_transaction:
+            self.repo._transaction_sequence+=1
+            self.savepoint='sefirot_'+str(self.repo._transaction_sequence)
+            self.repo.db.execute('SAVEPOINT '+self.savepoint)
+        else:self.repo.db.execute('BEGIN IMMEDIATE')
+        return self.repo
+    def __exit__(self,typ,value,tb):
+        if self.savepoint:
+            if typ:self.repo.db.execute('ROLLBACK TO SAVEPOINT '+self.savepoint)
+            self.repo.db.execute('RELEASE SAVEPOINT '+self.savepoint)
+        elif typ:self.repo.db.execute('ROLLBACK')
+        else:
+            try:self.repo.db.execute('COMMIT')
+            except sqlite3.Error:
+                # A busy COMMIT keeps SQLite's transaction open. Roll it back
+                # so the next job cannot mistake pending rows for durable ones.
+                self.repo.db.rollback();raise

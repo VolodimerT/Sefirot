@@ -1,0 +1,14 @@
+{
+  "up": "supabase/migrations/20261015161027_probe_completion_fence.sql",
+  "park": "supabase/review_only/20261015161311_park_probe_queue.sql",
+  "known_legacy_body_sha256": [
+    "ea4ffb3167bea44c83d5af1c088699debb92e0a4ab1570828e153f81bc4663f0",
+    "6d88b7f710d90b9f4cb7852fd57b1b02044b0f8fb52b6a75bc664801a43bc68b",
+    "02b68217bddbe0cb3bf54069f063c6e2ae6f2693cdf4b581e184ef0b30b29ad6",
+    "4df3982c504c8eafc7f1c95b615e02e3d907043325ca97939f9f95d9845b9d12"
+  ],
+  "probe_body_sha256": "6e938616a18fec26c8e6ccefdb6f4abfa34f5c44deaf89a66dd40b02478c14c4",
+  "wrapper_body_sha256": "9e377e91bf3cedd04f2a3f65924041fe0a8b7752f363d3d0d50167d278186fab",
+  "cli_version": "2.81.3",
+  "cli_archive_sha256": "2938de97c4ee1d15de4affe9bfdac3dd665bc57d264f69101482133798f40e0a"
+}

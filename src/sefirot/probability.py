@@ -1,6 +1,6 @@
 """Price-blind goals distribution and frozen multiclass reliability calibration."""
 from __future__ import annotations
-from math import exp, sqrt, log
+from math import exp, sqrt, log, fsum
 from .contracts import number,integer,time,digest,MODEL,PROFILES
 from .evidence import eligible_history,profile_of
 from .markets import Market,market_from_key
@@ -19,9 +19,9 @@ def poisson(rate,cap=35):
     number(rate,'goal rate',.01,12)
     out=[exp(-rate)]
     for i in range(1,cap+1): out.append(out[-1]*rate/i)
-    tail=max(0.,1-sum(out))
+    total=fsum(out)
+    tail=max(0.,1-total)
     # Explicit residual bound, never silently fold extreme scores into a normal outcome.
-    total=sum(out)
     return [p/total for p in out],tail
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from datetime import datetime,timezone,timedelta
 from math import sqrt
-from .contracts import Policy,REASONS,SEPHIROT,digest,time,iso,number,integer,text,strict
+from .contracts import Policy,REASONS,SEPHIROT,digest,time,iso,number,integer,text,strict,result_chronology
 from .engine import prepare,decide,code_hash,model_code_hash
 from .repository import Repository
 from .markets import market_of,settle,validate_quote
@@ -11,6 +11,7 @@ from .evaluation import log_loss
 from .evidence import profile_of
 from .probability import fit_calibrator,worst_case_probabilities
 from .feedback import brier,summary,context_key,competence,ratings,compare_versions
+from .probability_review import closing_quote
 
 
 class Service:
@@ -156,7 +157,8 @@ class Service:
         strict(result,('match_id','status','home_goals','away_goals','finished_at','received_at','source'))
         match=self.repo.get('matches',result['match_id']);self._time(result['received_at']);text(result['source'],'result source')
         if result['status'] not in ('FINISHED','VOID'):raise ValueError('unsupported result status')
-        if time(result['finished_at'])<=time(match['kickoff']) or time(result['received_at'])<time(result['finished_at']):raise ValueError('result chronology')
+        result_chronology(match['kickoff'],result['finished_at'],result['received_at'],
+                          status=result['status'],match_format=match.get('format','REGULATION_90'))
         if result['status']=='FINISHED':
             integer(result['home_goals'],'home score',0,50);integer(result['away_goals'],'away score',0,50)
         elif result['home_goals'] is not None or result['away_goals'] is not None:raise ValueError('VOID result has no score')
@@ -166,11 +168,18 @@ class Service:
             if not inserted:return {'idempotent':True,'records':0}
             self.repo.record_log('results',result['match_id'],at,result)
             predictions=self.repo.all('predictions',match_id=match['id'])
-            # Latest prematch revision per model; all other sealed predictions stay stored.
+            # Prefer the latest original prematch revision for each model. A
+            # later replay is research and must not replace prospective scoring.
+            # Reconstructed-only models retain their existing research records;
+            # their captured_prematch flag remains false. No seal is rewritten.
+            prospective=lambda p:(p.get('captured_prematch') is True and
+                                  p.get('reconstructed') is False and
+                                  time(p['sealed_at'])<time(match['kickoff']))
+            order=lambda p:(prospective(p),time(p['sealed_at']),p['revision'],p['id'])
             latest={}
             for p in predictions:
                 key=p['model_id']
-                if key not in latest or time(p['sealed_at'])>time(latest[key]['sealed_at']):latest[key]=p
+                if key not in latest or order(p)>order(latest[key]):latest[key]=p
             for p in latest.values():
                 for c in p['candidates']:
                     if result['status']=='VOID':continue
@@ -183,7 +192,7 @@ class Service:
                             'prediction_error':[v-int(i==('WIN','PUSH','LOSS').index(outcome)) for i,v in enumerate(c['base'])],
                             'outcome':outcome,'brier':brier(c['base'],outcome),'baseline_brier':brier(baseline,outcome),
                             'baseline_log_loss':log_loss(baseline,('WIN','PUSH','LOSS').index(outcome)),
-                            'received_at':at,'synthetic':p['synthetic'],'captured_prematch':p['captured_prematch'],
+                            'received_at':at,'synthetic':p['synthetic'],'captured_prematch':prospective(p),
                             'goal_model_hash':p.get('goal_model',{}).get('hash') if p.get('goal_model') else None,
                             'calibration_status':c['calibration'],'sealed_at':p['sealed_at'],'kickoff':match['kickoff'],
                             'calibrator_id':p['calibrator']['hash'] if p['calibrator'] else None}
@@ -375,18 +384,18 @@ class Service:
         records=self._records(at);grouped={}
         for r in records:grouped.setdefault((r['league'],r['market'],r['scenario'],r['model_id'],r.get('competition_profile','UNKNOWN')),[]).append(r)
         performance=[{'league':k[0],'market':k[1],'scenario':k[2],'model_id':k[3],'competition_profile':k[4],**summary(v)} for k,v in sorted(grouped.items())]
-        closes=self.repo.all('closing_odds',at);clv=[]
+        closes=self.repo.all('closing_odds',at);clv=[];quoted=0
         for d in self.repo.all('decisions',at):
             for c in d['candidates']:
                 if not c.get('quote'):continue
-                q=c['quote'];matching=[x for x in closes if x['match_id']==d['match_id'] and market_of(x['market']).key==c['key'] and x['bookmaker']==q['bookmaker'] and time(x['observed_at'])>=time(q['observed_at'])]
-                if matching:
-                    close=max(matching,key=lambda x:time(x['observed_at']))
+                quoted+=1;q=c['quote']
+                close=closing_quote(closes,d['match_id'],c['key'],q['bookmaker'],q['observed_at'])
+                if close:
                     clv.append({'decision_id':d['id'],'market':c['key'],'entry':q['odds'],'closing':close['odds'],'clv':q['odds']/close['odds']-1,'kind':'DECISION_QUOTE_NOT_EXECUTION'})
-        for bet in self.repo.all('bets',at):
-            matching=[x for x in closes if x['match_id']==bet['match_id'] and market_of(x['market']).key==bet['market'] and x['bookmaker']==bet['bookmaker'] and time(x['observed_at'])>=time(bet['at'])]
-            if matching:
-                close=max(matching,key=lambda x:time(x['observed_at']))
+        bets=self.repo.all('bets',at)
+        for bet in bets:
+            close=closing_quote(closes,bet['match_id'],bet['market'],bet['bookmaker'],bet['at'])
+            if close:
                 clv.append({'bet_id':bet['id'],'decision_id':bet['decision_id'],'market':bet['market'],'entry':bet['odds'],
                             'closing':close['odds'],'clv':bet['odds']/close['odds']-1,'kind':'RECORDED_EXECUTION',
                             'origin':bet['origin'],'policy_flags':bet['flags']})
@@ -413,7 +422,14 @@ class Service:
                             'expected_ev':sum(r['ev'] for r in rows)/len(rows),'realized_unit_return':sum(r['unit_return'] for r in rows)/len(rows),
                             'positive_ev_pass_n':len(positives),'positive_ev_pass_win_rate':sum(r['outcome']=='WIN' for r in positives)/len(positives) if positives else None,
                             'kind_of_record':'LATEST_DECISION_QUOTE_DIAGNOSTIC; not execution P/L or a causal false-negative rate'})
-        return {'integrity':self.repo.verify(),'performance':performance,'clv':clv,'health':self.repo.all('health_events',at),'validation':self.repo.all('validation_runs',at),
+        clv_coverage={}
+        for kind,total in [('DECISION_QUOTE_NOT_EXECUTION',quoted),('RECORDED_EXECUTION',len(bets))]:
+            matched=sum(r['kind']==kind for r in clv)
+            clv_coverage[kind]={'recorded':total,'with_matching_close':matched,'missing_close':total-matched,
+                                'coverage':matched/total if total else None}
+        return {'integrity':self.repo.verify(),'performance':performance,'clv':clv,'clv_coverage':clv_coverage,
+                'clv_basis':'RAW_ODDS_RATIO_SAME_BOOK_CONTRACT; not devigged sharp EV or proof of profitability',
+                'health':self.repo.all('health_events',at),'validation':self.repo.all('validation_runs',at),
                 'risk_cohorts':cohorts,
                 'postmatch_audits':self.settlement_audits(at),'ratings':{str(k):ratings(self.repo.all('postmortems',at),k[0],market_of({'kind':k[1].split(':')[0],'side':k[1].split(':')[1],**({'line':float(k[1].split(':')[2])} if len(k[1].split(':'))>2 else {})}).kind,k[2],self.policy,k[3],k[4]) for k in grouped}}
 
@@ -429,13 +445,9 @@ class Service:
         for saved in self.repo.all('postmatch_reports',at):
             d=self.repo.get('decisions',saved['decision_id']);p=self.repo.get('predictions',d['prediction_id'])
             result=results[d['match_id']];candidates=[]
-            def closing(market,book,observed):
-                matching=[q for q in closes if q['match_id']==d['match_id'] and market_of(q['market']).key==market
-                          and q['bookmaker']==book and time(q['observed_at'])>=time(observed)]
-                return max(matching,key=lambda q:(time(q['observed_at']),time(q['received_at']),digest(q))) if matching else None
             for stored in saved['candidates']:
                 c=next(c for c in d['candidates'] if c['key']==stored['market'])
-                q=c.get('quote');close=closing(c['key'],q['bookmaker'],q['observed_at']) if q else None
+                q=c.get('quote');close=closing_quote(closes,d['match_id'],c['key'],q['bookmaker'],q['observed_at']) if q else None
                 review=next((r for r in reviews if r['decision_id']==d['id'] and r['market']==c['key']),None)
                 observations={o['premise_id']:o for o in (review or {}).get('premise_observations',[])}
                 premises=[]
@@ -444,7 +456,7 @@ class Service:
                 executions=[]
                 for b in bets:
                     if b['decision_id']!=d['id'] or b['market']!=c['key']:continue
-                    bc=closing(c['key'],b['bookmaker'],b['at'])
+                    bc=closing_quote(closes,d['match_id'],c['key'],b['bookmaker'],b['at'])
                     outcome=stored['outcome']
                     payout=b['stake']*b['odds'] if outcome=='WIN' else b['stake'] if outcome in ('PUSH','VOID') else 0.
                     executions.append({'id':b['id'],'entry_odds':b['odds'],'bookmaker':b['bookmaker'],'stake':b['stake'],
