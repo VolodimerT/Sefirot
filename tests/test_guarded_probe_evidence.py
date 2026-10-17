@@ -124,6 +124,23 @@ class GuardedProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(digest(q['source_packet']['data']),q['receipt']['payload_hash'])
         self.assertFalse(q['source_evidence']['model_fit_eligible'])
 
+    def test_unknown_statistic_hint_never_exposes_values_or_secret_labels(self):
+        p=packet('fixtures/statistics',{'fixture':123})
+        p['data']['response'][0]['statistics'].extend([
+            {'type':'Expected Threat','value':'PRIVATE_VALUE_SENTINEL'},
+            {'type':'Secret Extra','value':'TOKEN_SENTINEL'},
+            {'type':'API Token 2345','value':'MORE_PRIVATE'},
+        ])
+        p['receipt']['payload_hash']=digest(p['data'])
+        r=collect([p],[{'endpoint':'fixtures/statistics','params':{'fixture':123}}])
+        q=r['queries'][0]
+        self.assertEqual(q['source_evidence']['reason'],'SOURCE_SAFETY')
+        self.assertEqual(q['source_evidence']['unsupported_stat_labels'],['Expected Threat'])
+        self.assertNotIn('source_packet',q)
+        for secret in ('PRIVATE_VALUE_SENTINEL','TOKEN_SENTINEL','MORE_PRIVATE','Secret Extra','API Token'):
+            self.assertNotIn(secret,json.dumps(r))
+        self.assertFalse(r['monetary_permission'])
+
     def test_sensitive_or_unknown_statistics_are_never_raw_archived(self):
         p=packet('fixtures/statistics',{'fixture':123})
         p['data']['response'][0]['statistics'].append({'type':'Secret Extra','value':'TOKEN_SENTINEL'})
