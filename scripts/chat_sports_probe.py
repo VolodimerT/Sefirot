@@ -27,6 +27,9 @@ STAT_TYPES = {
     "Shots insidebox", "Shots outsidebox", "Corner Kicks", "Yellow Cards",
     "Red Cards", "Fouls", "Offsides", "Ball Possession", "Expected Goals",
     "Total passes", "Passes accurate", "Passes %", "Goalkeeper Saves",
+    # Real API-Football /fixtures/statistics uses snake_case for these metrics.
+    # Their inclusion permits archive integrity; it does not establish xG calibration.
+    "expected_goals", "goals_prevented",
 }
 ENDPOINTS = {"status", "fixtures", "fixtures/statistics", "fixtures/lineups"}
 IDENTIFIER = re.compile(r"^[1-9][0-9]{0,9}$")
