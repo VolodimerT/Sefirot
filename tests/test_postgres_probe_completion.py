@@ -47,6 +47,11 @@ class NativeProbePostgresTests(unittest.TestCase):
     def fn_state(self,admin):
         return admin.execute("select p.proname,p.prosrc,p.proacl::text from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','sefirot') and p.proname in ('sefirot_chat_complete','sefirot_chat_claim','sefirot_probe_complete','chat_complete_before_probe_fence') order by p.proname").fetchall()
 
+    def test_populated_situation_baseline_guards_and_park(self):
+        from test_situation_populated_upgrade import run_native_situation_upgrade
+        with self.isolated() as admin:
+            run_native_situation_upgrade(self,admin)
+
     def test_same_cases_native_sql_permissions_idempotency_and_fencing(self):
         with self.isolated() as admin:
             for filename in ('tests/fixtures/chat_bridge_legacy.sql',

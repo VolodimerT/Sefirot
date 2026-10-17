@@ -1,3 +1,25 @@
+## Final integration and source recovery, 16.10.2026
+
+Owner explicitly requests the autonomous engineering team and independent QA,
+starting #68, then #69 and CORE integration on existing draft PR56. Current
+baseline8c75f6e5. Public official Stake OpenAPI is now available; record exact
+X-API-KEY/fixture-slug contract and access gaps, never invent quote timestamps
+or use account token as official Sports Data key. Official access still blocked.
+Confirmed actual CLI loss: a later budget refusal discards previously fetched
+fixture/enrichment packets. Repair existing collector with per-packet exclusive
+source persistence and guarded one-per-minute CLI pacing; no automatic retry.
+Prepare populated-safe parked situation delta preserving stake_snapshot kind,
+installed probe fence/delegate/claim/ACL, documented NOLOGIN ingestion schema
+usage, original rows/snapshots and budget.
+Use owned red/green, isolated full release/native PostgreSQL and exact-head CI.
+Deliver full tracked source bundle and concrete rollout/rollback, not deployment.
+Existing scopes below are historical. This request withholds new production
+deploy/migration/main merge permission; no hosted writes, secrets/credential
+values, provider or paid calls, budget activation, real fit/HOLDOUT or bets.
+Model/Policy/source originals and historical hashes stay unchanged. Independent
+QA remains read-only; backend SQL and root collector edits are disjoint.
+RESEARCH_ONLY / PASS / stake=0.
+
 ## Runnable working-release delivery, 16.10.2026
 
 Owner requests an updated working version and report. At verified5990c6b0,
