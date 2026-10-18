@@ -147,7 +147,7 @@ class FootballPipelineTests(unittest.TestCase):
             packet_sink(p);return {'queries':[{'status':'DONE'}]}
         out=pipe.collect_day(self.repo,execute=True,collector=collect,clock=clock,wait=wait)
         self.assertEqual([q['endpoint'] for q in calls],['fixtures','fixtures/statistics'])
-        self.assertTrue(all(n>=61 for n in waits));self.assertEqual(out['plan']['queries'],[])
+        self.assertTrue(all(n>=2 for n in waits));self.assertEqual(out['plan']['queries'],[])
         pipe.collect_day(self.repo,execute=True,collector=collect,clock=clock,wait=wait)
         self.assertEqual(len(calls),2);self.assertEqual(len(pipe._records(self.repo,pipe.SOURCE)),2)
 
@@ -172,15 +172,15 @@ class FootballPipelineTests(unittest.TestCase):
         self.assertEqual(len(pipe._records(self.repo,pipe.SOURCE)),3)
         self.assertNotIn({'endpoint':'fixtures/statistics','params':{'fixture':10}},pipe.plan_day(self.repo,at=NOW)['queries'])
 
-    def test_dry_plan_no_provider_calls_and_five_requests_global_cap(self):
+    def test_dry_plan_no_provider_calls_with_pro_7500_global_cap(self):
         with patch('scripts.chat_sports_probe.get_sports') as network:
             p=pipe.collect_day(self.repo,clock=lambda:NOW)
             network.assert_not_called()
-        self.assertEqual(p['daily_limit'],5);self.assertEqual(p['queries'][0]['params'],{'league':39,'season':2026})
+        self.assertEqual(p['daily_limit'],7500);self.assertEqual(p['queries'][0]['params'],{'league':39,'season':2026})
         for n in range(5):
             r={'schema':pipe.ATTEMPT,'id':'attempt:'+str(n),'at':NOW,'query':{'endpoint':'fixtures','params':{'id':n+1}}}
             with self.repo.transaction():pipe._append(self.repo,r)
-        self.assertEqual(pipe.plan_day(self.repo,40,2026,at=NOW)['queries'],[])
+        self.assertEqual(pipe.plan_day(self.repo,40,2026,at=NOW)['queries'][0]['params'],{'league':40,'season':2026})
 
     def test_uncertain_dispatch_intent_survives_next_day_without_retry(self):
         def crash(*a,**kw):raise OSError('SYNTHETIC_LOST_RESPONSE')
