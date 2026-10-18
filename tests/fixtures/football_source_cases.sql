@@ -13,6 +13,11 @@ begin
  if public.sefirot_source_export('')->>'raw_source' is distinct from r then raise exception 'ORIGINAL_BYTES_CHANGED';end if;
  begin perform public.sefirot_source_append(r,h,uid,2);raise exception 'ACCEPTED_WRONG_ATTEMPT';
  exception when others then if sqlerrm<>'SOURCE_JOB_BINDING_REQUIRED' then raise;end if;end;
+ begin
+  r=jsonb_set(p,'{receipt,quota}','{"A P I K E Y":"SYNTHETIC_PRIVATE"}')::text;
+  perform public.sefirot_source_append(r,encode(sha256(convert_to(r,'UTF8')),'hex'),uid,1);
+  raise exception 'UNSAFE_LABEL_ACCEPTED';
+ exception when others then if sqlerrm<>'SOURCE_UNSAFE_JSON_KEY' then raise;end if;end;
  begin delete from sefirot.sports_archive;raise exception 'ACCEPTED_DELETE';
  exception when others then if sqlerrm<>'SOURCE_ARCHIVE_IMMUTABLE' then raise;end if;end;
  if has_table_privilege('service_role','sefirot.sports_archive','SELECT')

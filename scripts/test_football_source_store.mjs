@@ -32,6 +32,7 @@ try {
  await assert.rejects(append(raw.replace('"data":','"data":{},"data":')),/SOURCE_DUPLICATE_JSON_KEY/);
  await assert.rejects(append(JSON.stringify({...packet,token:'SYNTHETIC'})),/SOURCE_PACKET_REJECTED/);
  await assert.rejects(append(JSON.stringify({...packet,receipt:{...packet.receipt,quota:{token:'SYNTHETIC'}}})),/SOURCE_PACKET_REJECTED/);groups++;
+ await assert.rejects(append(JSON.stringify({...packet,receipt:{...packet.receipt,quota:{'A P I K E Y':'SYNTHETIC_PRIVATE'}}})),/SOURCE_UNSAFE_JSON_KEY/);
  await assert.rejects(pg.exec('delete from sefirot.sports_archive'),/SOURCE_ARCHIVE_IMMUTABLE/);
  await pg.exec('grant execute on function public.sefirot_source_begin(uuid,integer,text,jsonb),public.sefirot_source_append(text,text,uuid,integer),public.sefirot_source_export(text) to service_role');
  await pg.query("update sefirot.chat_bridge_jobs set status='RUNNING' where id=$1",[id]);

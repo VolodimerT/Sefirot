@@ -90,7 +90,8 @@ function sourceSafe(data,endpoint) {
   const todo=[[data,0]];
   while(todo.length){const [v,d]=todo.pop();if(d>24)return false;
     if(v&&typeof v==='object')for(const [k,x] of Object.entries(v)){
-      if(/^(authorization|headers|password|api[_-]?key)$|secret|token/i.test(k))return false;
+      const label=k.toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(['apikey','authorization','password','headers'].includes(label)||label.includes('secret')||label.includes('token'))return false;
       todo.push([x,d+1]);}}
   return true;
 }

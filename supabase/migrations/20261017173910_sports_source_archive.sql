@@ -118,6 +118,20 @@ begin
    and (select count(*)<>count(distinct key) from json_each(v))) then
    raise exception 'SOURCE_DUPLICATE_JSON_KEY';
  end if;
+ -- Match Python's normalized key policy, including spaced/punctuated labels.
+ if exists(with recursive nodes(v) as (
+   select p_raw::json union all
+   select child.value from nodes n cross join lateral (
+     select value from json_each(case when json_typeof(n.v)='object' then n.v else '{}'::json end)
+     union all select value from json_array_elements(case when json_typeof(n.v)='array' then n.v else '[]'::json end)
+   ) child
+ ) select 1 from nodes n cross join lateral json_object_keys(
+     case when json_typeof(n.v)='object' then n.v else '{}'::json end) k
+   where regexp_replace(lower(k),'[^a-z0-9]','','g') in ('apikey','authorization','password','headers')
+     or regexp_replace(lower(k),'[^a-z0-9]','','g') like '%secret%'
+     or regexp_replace(lower(k),'[^a-z0-9]','','g') like '%token%') then
+   raise exception 'SOURCE_UNSAFE_JSON_KEY';
+ end if;
  select kind,attempts,submitted_at,request into item from sefirot.chat_bridge_jobs where id=p_job for share;
  if not found or item.kind<>'sports_probe' or p_attempt is null or p_attempt not between 1 and 3
      or p_attempt>item.attempts or (r->>'request_started_at')::timestamptz<item.submitted_at

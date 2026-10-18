@@ -37,7 +37,7 @@ function setup({upstream = Response.json(fixtures), authRows = auth, env = true,
       return upstream;
     }};
   vm.runInNewContext(source.replace(marker, "const DEPLOYED_AUTH = " + JSON.stringify(authRows) + ";"), sandbox);
-  return {canonical:sandbox.sourceCanonical,calls, call: async ({body = {endpoint: "fixtures", params: {}},
+  return {canonical:sandbox.sourceCanonical,safe:sandbox.sourceSafe,calls, call: async ({body = {endpoint: "fixtures", params: {}},
       credential = token, method = "POST", queryToken = false, headers = {}} = {}) => {
     const req = new Request("https://gateway.test/" + (queryToken ? "?t=" + token : ""), {
       method, headers: credential === null ? {} : {"x-sefirot-runner-token": credential,...headers},
@@ -47,6 +47,8 @@ function setup({upstream = Response.json(fixtures), authRows = auth, env = true,
   }};
 }
 
+for(const label of ['A P I K E Y','api.key','a.u.t.h.o.r.i.z.a.t.i.o.n','S E C R E T','t-o-k-e-n'])
+ assert.equal(setup().safe({response:[{[label]:'SYNTHETIC_PRIVATE'}]},'fixtures'),false);
 const sourceHeaders={'x-sefirot-source-job-id':'00000000-0000-0000-0000-000000000088','x-sefirot-source-attempt':'1'};
 {
  const s=setup();const out=await s.call({headers:sourceHeaders});assert.equal(out.status,200);
