@@ -35,7 +35,7 @@ class ShadowModelTests(unittest.TestCase):
              patch.object(shadow, "prepare", side_effect=prepared) as engine:
             result = shadow.preview(object(), as_of=AT, ids=[9001])
         source_only.assert_called_once()
-        self.assertEqual(views.call_count, 3)
+        self.assertEqual(views.call_count, 4)
         inputs.assert_called_once()
         engine.assert_called_once()
         self.assertIsNone(engine.call_args.kwargs["calibrator"])
