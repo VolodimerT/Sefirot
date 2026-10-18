@@ -14,7 +14,7 @@ const fixtures = {get: "fixtures", parameters: {}, errors: [], results: 0,
 const status = {errors: [], response: {account: {email: "PRIVATE_ACCOUNT_VALUE"},
   subscription: {active: true}, requests: {current: 1, limit_day: 100}}};
 
-function setup({upstream = Response.json(fixtures), authRows = auth, env = true, rpc = null, budget = null, finish = null} = {}) {
+function setup({upstream = Response.json(fixtures), authRows = auth, env = true, rpc = null, budget = null, finish = null, sourceReady=true, sourceAck=true} = {}) {
   const calls = [];
   let handler;
   const sandbox = {Request, Response, TextEncoder, TextDecoder, AbortController, URLSearchParams,
@@ -29,21 +29,44 @@ function setup({upstream = Response.json(fixtures), authRows = auth, env = true,
       if (url.endsWith("/sefirot_sports_budget_reserve")) return budget ?? Response.json({allowed: true,
         permit: "00000000-0000-0000-0000-000000000001"});
       if (url.endsWith("/sefirot_sports_budget_finish")) return finish ?? Response.json({ok: true});
+      if(url.endsWith('/sefirot_source_status'))return Response.json({schema:'football-source-store-v1',ready:sourceReady});
+      if(url.endsWith('/sefirot_source_begin'))return Response.json({authorized:true});
+      if(url.endsWith('/sefirot_source_append'))return Response.json({stored:sourceAck,raw_sha256:JSON.parse(options.body).p_hash});
       if (url.includes("/rpc/")) return rpc ?? Response.json("PRIVATE_API_KEY");
       if (upstream instanceof Error) throw upstream;
       return upstream;
     }};
   vm.runInNewContext(source.replace(marker, "const DEPLOYED_AUTH = " + JSON.stringify(authRows) + ";"), sandbox);
-  return {calls, call: async ({body = {endpoint: "fixtures", params: {}},
-      credential = token, method = "POST", queryToken = false} = {}) => {
+  return {canonical:sandbox.sourceCanonical,calls, call: async ({body = {endpoint: "fixtures", params: {}},
+      credential = token, method = "POST", queryToken = false, headers = {}} = {}) => {
     const req = new Request("https://gateway.test/" + (queryToken ? "?t=" + token : ""), {
-      method, headers: credential === null ? {} : {"x-sefirot-runner-token": credential},
+      method, headers: credential === null ? {} : {"x-sefirot-runner-token": credential,...headers},
       ...(method === "POST" ? {body: typeof body === "string" ? body : JSON.stringify(body)} : {})});
     const response = await handler(req);
     return {status: response.status, body: await response.json()};
   }};
 }
 
+const sourceHeaders={'x-sefirot-source-job-id':'00000000-0000-0000-0000-000000000088','x-sefirot-source-attempt':'1'};
+{
+ const s=setup();const out=await s.call({headers:sourceHeaders});assert.equal(out.status,200);
+ const saved=s.calls.find(c=>c.url.endsWith('/sefirot_source_append'));
+ const args=JSON.parse(saved.options.body),packet=JSON.parse(args.p_raw);
+ assert.equal(hash(args.p_raw),args.p_hash);assert.deepEqual(packet.receipt,out.body.source_archive_receipt);
+ assert.equal(args.p_job,sourceHeaders['x-sefirot-source-job-id']);
+ assert.match(packet.receipt.payload_hash,/^[0-9a-f]{64}$/);
+ assert.ok(s.calls.findIndex(c=>c===saved)<s.calls.findIndex(c=>c.url.endsWith('/sefirot_sports_budget_finish')));
+}
+for(const attempt of ['0','4','12','01','1.0']){
+ const s=setup();assert.equal((await s.call({headers:{...sourceHeaders,'x-sefirot-source-attempt':attempt}})).body.error,'SOURCE_CONTEXT_INVALID');assert.equal(s.calls.length,0);
+}
+{
+ const s=setup({sourceReady:false});assert.equal((await s.call({headers:sourceHeaders})).body.error,'SOURCE_STORE_NOT_READY');assert.equal(s.calls.length,1);
+ const f=setup({sourceAck:false});assert.equal((await f.call({headers:sourceHeaders})).body.error,'SOURCE_APPEND_NOT_ACKNOWLEDGED');
+ const done=f.calls.find(c=>c.url.endsWith('/sefirot_sports_budget_finish'));assert.equal(JSON.parse(done.options.body).outcome,'FAILURE');
+}
+const vectors=[{tiny:0.000001,a:1e-7,b:1e21,c:1e20,d:-0.0000001}, {'😀':'кириллица','\uE000':[0,null,true,'\n'] }];
+console.log('SOURCE_CANONICAL_VECTORS='+JSON.stringify(vectors.map(v=>({wire:JSON.stringify(v),canonical:setup().canonical(v)}))));
 let tests = 0;
 async function test(name, fn) {
   await fn(); tests += 1;

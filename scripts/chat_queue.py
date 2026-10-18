@@ -38,7 +38,10 @@ def worker_status():
     return {**state, "mode": "sports_probe" if sports else "canonical",
             "running": bool(_thread and _thread.is_alive()),
             "stopping": _stop.is_set(), "shared_budget_required": True,
-            "provider_quota": "NOT_VERIFIED", "monetary_permission": False,
+            "provider_quota": "NOT_VERIFIED",
+            "source_archive_configured": os.environ.get("SEFIROT_SOURCE_ARCHIVE","0")=="1",
+            "source_archive_ready": "CHECKED_BEFORE_CLAIM" if os.environ.get("SEFIROT_SOURCE_ARCHIVE","0")=="1" else "NOT_CONFIGURED",
+            "monetary_permission": False,
             "execution_enabled": False}
 
 
@@ -69,6 +72,13 @@ def process_one() -> bool:
     # SKIP LOCKED + the shared gateway reservation serialize cross-process work.
     if not _process_lock.acquire(blocking=False):return False
     try:
+        archive_mode=os.environ.get('SEFIROT_SOURCE_ARCHIVE','0')
+        if archive_mode not in ('0','1'):raise RuntimeError('INVALID_SOURCE_ARCHIVE_MODE')
+        if archive_mode=='1' and not sports:raise RuntimeError('SOURCE_ARCHIVE_REQUIRES_SPORTS_WORKER')
+        if archive_mode=='1':
+            ready=request({'action':'source_status'})
+            if ready.get('schema')!='football-source-store-v1' or ready.get('ready') is not True:
+                raise RuntimeError('SOURCE_ARCHIVE_NOT_READY')
         with _state_lock:
             _state["last_poll_at"] = _now()
         return _process_one(sports)
@@ -109,7 +119,15 @@ def _process_one(sports):
                 # Reuse the guarded collector. Never restore/write the CORE
                 # ledger or enable capture/decision/result HTTP operations.
                 from chat_sports_probe import collect
-                result=collect(payload)
+                if os.environ.get('SEFIROT_SOURCE_ARCHIVE','0')=='1':
+                    def persist(packet):
+                        from chat_sports_probe import _safe_source
+                        if not _safe_source(packet['data'],packet['receipt']['endpoint'].removeprefix('/')):
+                            raise ValueError('UNSAFE_SOURCE_NOT_STORED')
+                    from sefirot.football_gateway import source_job_context
+                    with source_job_context(uid,job['attempt']):
+                        result=collect(payload,packet_sink=persist)
+                else:result=collect(payload)
             else:
                 result=run_demo() if kind=="demo" else execute(kind,payload)
             # Limits private job payload size without altering a canonical decision.
@@ -149,7 +167,7 @@ def run():
         try:
             worked=process_one()
             idle=0 if worked else min(idle+1,3)
-            _stop.wait(4 if worked else [12,20,35,60][idle])
+            _stop.wait((61 if sports else 4) if worked else [12,20,35,60][idle])
         except Exception:
             with _state_lock:
                 _state["last_error"] = "QUEUE_UNAVAILABLE"

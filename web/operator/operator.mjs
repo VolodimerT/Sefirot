@@ -61,6 +61,21 @@ export function render(data,matchFilter="",marketFilter=""){
   e=section("history","Журнал");e.append(node("p","Audit events: "+v.audit),detail("Исходные ID и решения",v.originalDecisions));
 }
 if(typeof document!=="undefined"){
+  document.getElementById('manual-quote')?.addEventListener('submit',async event=>{
+    event.preventDefault();const form=new FormData(event.target),result=document.getElementById('manual-result');
+    try{
+      const market={kind:form.get('kind'),side:form.get('side')};
+      if(form.get('line')!=='')market.line=Number(form.get('line'));
+      const payload={prediction_id:form.get('prediction_id'),fixture_id:form.get('fixture_id'),market,
+        period:form.get('period'),bookmaker:form.get('bookmaker'),odds:Number(form.get('odds')),
+        observed_at:new Date(form.get('observed_at')).toISOString(),rules_confirmed:form.get('rules_confirmed')==='on'};
+      const response=await fetch('/api/manual-quote',{method:'POST',credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const packet=await response.json();
+      result.textContent=response.ok&&packet.ok===true?JSON.stringify(packet.data,null,2):
+        'PASS — цена отклонена или ручная проверка не включена владельцем.';
+    }catch{result.textContent='PASS — не удалось проверить цену.';}
+  });
   let current=null,generation=0;const error=document.getElementById("error");
   function clear(message){current=null;render(null);error.textContent=message;
     document.getElementById("connection").textContent="Нет подтверждённого подключения. Данные недоступны.";}

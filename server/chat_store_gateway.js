@@ -57,6 +57,9 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
       &&typeof body.snapshot==="string"&&body.snapshot.length>20&&body.snapshot.length<=2800000
       &&typeof body.checksum==="string"&&/^[0-9a-f]{64}$/.test(body.checksum);
     const claim=body.action==="claim"&&keys==="action";
+    const sourceStatus=body.action==="source_status"&&keys==="action";
+    const sourceExport=body.action==="source_export"&&keys==="action,after"
+      &&typeof body.after==="string"&&/^(?:[0-9a-f]{64})?$/.test(body.after);
     const probeComplete=body.action==="probe_complete"&&keys==="action,attempt,error,id,response,success"
       &&Number.isInteger(body.attempt)&&body.attempt>=1&&body.attempt<=3;
     const complete=(body.action==="complete" || probeComplete) &&
@@ -71,7 +74,7 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
     const enqueue=body.action==="situation_enqueue"&&keys==="action,request"
       &&body.request&&typeof body.request==="object"&&!Array.isArray(body.request)
       &&new TextEncoder().encode(JSON.stringify(body.request)).length<=16384;
-    if(!pull&&!save&&!claim&&!complete&&!source&&!enqueue)return json({ok:false,error:"INVALID_ACTION"},422);
+    if(!pull&&!save&&!claim&&!complete&&!source&&!enqueue&&!sourceStatus&&!sourceExport)return json({ok:false,error:"INVALID_ACTION"},422);
     const url=env("SUPABASE_URL"), service=env("SUPABASE_SERVICE_ROLE_KEY");
     if(!url||!service)return json({ok:false,error:"SERVER_CONFIGURATION"},503);
     let origin;
@@ -82,10 +85,12 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
          origin.port && origin.port!=="443") throw new Error("URL");
     } catch {return json({ok:false,error:"SERVER_CONFIGURATION"},503);}
     const leased=complete&&Object.hasOwn(body,"attempt");
-    const endpoint=pull?"sefirot_bridge_pull":save?"sefirot_bridge_save":claim?"sefirot_chat_claim":
+    const endpoint=sourceStatus?"sefirot_source_status":sourceExport?"sefirot_source_export":
+      pull?"sefirot_bridge_pull":save?"sefirot_bridge_save":claim?"sefirot_chat_claim":
       source?"sefirot_situation_source":enqueue?"sefirot_situation_enqueue":
       probeComplete?"sefirot_probe_complete":leased?"sefirot_situation_complete":"sefirot_chat_complete";
-    const params=pull||claim?{}:save?{p_revision:body.revision,p_snapshot:body.snapshot,p_checksum:body.checksum}:
+    const params=sourceStatus?{}:sourceExport?{p_after:body.after}:
+      pull||claim?{}:save?{p_revision:body.revision,p_snapshot:body.snapshot,p_checksum:body.checksum}:
       source?{p_receipt_id:body.receipt_id}:enqueue?{p_request:body.request}:
       {p_id:body.id,p_success:body.success,p_response:body.response,p_error:body.error,
        ...(leased?{p_attempt:body.attempt}:{})};
@@ -103,6 +108,8 @@ export function createStoreHandler({credentialHashes=DEPLOYED_AUTH,
       }
       const value=JSON.parse(await bounded(response,MAX_RESPONSE));
       if(!value||typeof value!=="object"||Array.isArray(value)
+        ||(sourceStatus&&(value.schema!=="football-source-store-v1"||typeof value.ready!=="boolean"))
+        ||(sourceExport&&!(value.next===null||typeof value.next==="string"&&/^[0-9a-f]{64}$/.test(value.next)))
         ||((pull||save)&&!Number.isSafeInteger(value.revision))
         ||(claim&&!Object.hasOwn(value,"job"))||(complete&&value.completed!==true)
         ||(probeComplete&&(value.id!==body.id||value.attempts!==body.attempt))

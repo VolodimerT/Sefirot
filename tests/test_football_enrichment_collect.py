@@ -82,11 +82,11 @@ class OneFixtureCollectorTests(unittest.TestCase):
         return collect_one(50001, 39, 2026, getter=self.getter,
                            clock=lambda: self.now, **kwargs)
 
-    def test_exact_eight_requests_including_status_and_two_base_calls(self):
+    def test_exact_five_requests_including_status_and_two_base_calls(self):
         out = self.run_one()
-        self.assertEqual(len(self.calls), 8)
-        self.assertEqual(out['requests_consumed_at_most'], 8)
-        self.assertEqual(len(out['observations']), 5)
+        self.assertEqual(len(self.calls), 5)
+        self.assertEqual(out['requests_consumed_at_most'], 5)
+        self.assertEqual(len(out['observations']), 2)
         self.assertEqual([x[0] for x in self.calls[:4]],
                          ['status', 'fixtures', 'leagues', 'standings'])
         self.assertEqual(out['status'], 'COMPLETE_BOUNDED_RESEARCH_OBSERVATIONS')
@@ -129,7 +129,7 @@ class OneFixtureCollectorTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 4)
 
     def test_reject_more_than_eleventotal_and_low_reserve_before_network(self):
-        for config in ({'max_requests': 12}, {'reserve': 0}):
+        for config in ({'max_requests': 6}, {'max_requests': 8}, {'max_requests': 12}, {'reserve': 0}):
             with self.subTest(config=config), self.assertRaises(ValueError):
                 self.run_one(**config)
         self.assertEqual(self.calls, [])
@@ -149,8 +149,8 @@ class OneFixtureCollectorTests(unittest.TestCase):
                 self.getter(endpoint, params) if kwargs == {'require_shared_budget': True}
                 else self.fail('collector did not require the shared budget'))
             out = collect_one(50001, 39, 2026, clock=lambda: self.now)
-        self.assertEqual(out['requests_consumed_at_most'], 8)
-        self.assertEqual(fetch.call_count, 8)
+        self.assertEqual(out['requests_consumed_at_most'], 5)
+        self.assertEqual(fetch.call_count, 5)
 
     def test_shared_guard_prevents_default_direct_provider_before_network(self):
         with patch.dict('os.environ', {'SEFIROT_SPORTS_GATEWAY_URL': ''}), patch('sefirot.football_gateway.get') as direct:

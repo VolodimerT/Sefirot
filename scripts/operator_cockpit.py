@@ -31,7 +31,7 @@ def snapshot(database=None, *, at=None):
     return report
 
 
-def make_server(*, database=None, token, at=None, port=0):
+def make_server(*, database=None, token, at=None, port=0, manual_quotes=False):
     if not isinstance(token,str) or not 32<=len(token)<=256 or any(not 33<=ord(c)<=126 for c in token):
         raise ValueError("OPERATOR_TEST_OR_OWNER_TOKEN_REQUIRED")
     class ReadOnlyHandler(Handler):
@@ -69,6 +69,28 @@ def make_server(*, database=None, token, at=None, port=0):
             except Exception:self.respond(503,{"ok":False,"error":"UNAVAILABLE","message":"Данные временно недоступны."})
 
         def do_POST(self):
+            if self.path=='/api/manual-quote' and manual_quotes:
+                if not self.authenticated():return
+                origin='http://127.0.0.1:'+str(self.server.server_port)
+                if self.headers.get_all('Host')!=[origin.removeprefix('http://')] or self.headers.get_all('Origin')!=[origin]:
+                    self.respond(403,{'ok':False,'error':'ORIGIN_REJECTED'});return
+                try:
+                    size=int(self.headers.get('Content-Length','0'))
+                    if (not 1<=size<=16384 or self.headers.get('Content-Type')!='application/json'
+                            or self.headers.get('Transfer-Encoding') or len(self.headers.get_all('Content-Length',[]))!=1):
+                        raise ValueError('BOUNDED_JSON_REQUIRED')
+                    payload=strict_json(self.rfile.read(size))
+                    from sefirot.repository import Repository
+                    from research.manual_quote import preview
+                    from datetime import datetime,timezone
+                    if database is None or not Path(database).is_file():raise ValueError('ORIGINAL_DB_REQUIRED')
+                    repo=Repository(database,read_only=True)
+                    try:out=preview(repo,payload,datetime.now(timezone.utc).isoformat())
+                    finally:repo.close()
+                    self.respond(200,{'ok':True,'data':out})
+                except (ValueError,KeyError,TypeError,OSError):
+                    self.respond(422,{'ok':False,'error':'MANUAL_QUOTE_REJECTED','decision':'PASS'})
+                return
             if self.path!="/session":
                 if not self.authenticated():return
                 self.respond(403,{"ok":False,"error":"READ_ONLY_SCOPE","message":"Запись и LIVE недоступны."});return
@@ -112,6 +134,7 @@ def main(argv=None):
         if hasattr(stream,"reconfigure"):stream.reconfigure(encoding="utf-8")
     p=argparse.ArgumentParser(description="SEFIROT read-only operator: loopback offline review only")
     p.add_argument("--db",type=Path);p.add_argument("--port",type=int,default=8787)
+    p.add_argument("--manual-quotes",action="store_true",help="Enable authenticated read-only manual quote preview; never creates a decision")
     args=p.parse_args(argv)
     if not 0<=args.port<=65535:p.error("--port must be in 0..65535")
     # Owner config is only read when explicitly running the application.
@@ -120,7 +143,7 @@ def main(argv=None):
     except RuntimeError:
         print("SEFIROT: настройте SEFIROT_BRIDGE_TOKEN для частного просмотра (32–256 ASCII-символов без пробелов).",file=sys.stderr)
         return 2
-    try:server=make_server(database=args.db,token=token,port=args.port)
+    try:server=make_server(database=args.db,token=token,port=args.port,manual_quotes=args.manual_quotes)
     except (OSError,ValueError):
         print("SEFIROT: не удалось открыть локальный порт; выберите свободный --port.",file=sys.stderr)
         return 2

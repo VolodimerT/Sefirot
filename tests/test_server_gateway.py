@@ -1,5 +1,6 @@
 """Run the actual server handler's offline auth/transport counterexamples."""
 from pathlib import Path
+import json
 import shutil
 import subprocess
 import unittest
@@ -14,6 +15,10 @@ class ServerGatewayTests(unittest.TestCase):
                                 cwd=ROOT, capture_output=True, encoding='utf-8', timeout=30)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn('GATEWAY_CONTRACTS_PASSED=41', result.stdout)
+        from sefirot.contracts import canonical
+        line=next(v for v in result.stdout.splitlines() if v.startswith('SOURCE_CANONICAL_VECTORS='))
+        for vector in json.loads(line.split('=',1)[1]):
+            self.assertEqual(vector['canonical'],canonical(json.loads(vector['wire'])))
 
 
 if __name__ == '__main__':

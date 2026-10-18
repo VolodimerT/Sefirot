@@ -16,7 +16,7 @@ from sefirot.provider_transport import QUOTA_HEADERS
 from sefirot.football_gateway import get_sports, transport_status
 from sefirot.football_provider import FootballRequestError, status_summary
 
-MAX_QUERIES = 8
+MAX_QUERIES = 5
 MAX_ARCHIVE_BYTES = 128 * 1024  # Per job, inside the existing 850 KB queue cap.
 SOURCE_SCHEMA = "guarded-probe-evidence-v2"
 RECEIPT_FIELDS = ("provider", "provider_host", "endpoint", "parameters",
@@ -247,7 +247,7 @@ def _compact_lineup(row):
     }
 
 
-def collect(payload):
+def collect(payload, *, packet_sink=None):
     if not isinstance(payload, dict) or set(payload) != {"queries"}:
         raise ValueError("PROBE_REQUEST_SHAPE")
     queries = payload["queries"]
@@ -259,6 +259,10 @@ def collect(payload):
     for endpoint, params in validated:
         try:
             packet = get_sports(endpoint, params, require_shared_budget=True)
+            # A durable sink commits original packets before compact mapping.
+            # Its failure stops the batch; never fetch another packet or retry.
+            if packet_sink is not None:
+                packet_sink(packet)
             receipt = packet["receipt"]
             if endpoint == "status":
                 rows = status_summary(packet)
@@ -266,7 +270,8 @@ def collect(payload):
                 count = 1
             else:
                 response = packet["data"]["response"]
-                if not isinstance(response, list) or len(response) > 100:
+                maximum = 10000 if packet_sink is not None and endpoint == 'fixtures' and set(params) == {'league', 'season'} else 100
+                if not isinstance(response, list) or len(response) > maximum:
                     raise ProbeError("PROBE_RESPONSE_TOO_LARGE")
                 mapper = {"fixtures": _compact_row, "fixtures/statistics": _compact_stats,
                           "fixtures/lineups": _compact_lineup}[endpoint]

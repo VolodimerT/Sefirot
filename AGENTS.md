@@ -1,3 +1,17 @@
+## Autocollector to existing model inputs, 17.10.2026
+
+Owner supersedes prior deployment scope: skip Stake completely; use existing
+PR56 based on c558486, original Repository/Service/Policy and protected gateway.
+Implement append-only private source archive, QC/import/coverage/model inputs,
+bounded daily planning and manual quote preview. Pilot league39 season2026.
+No source/model/prediction reconstruction, real fit or cohort registration.
+Preserve original snapshot/seals and MODEL_MODULES/Policy bytes. Test isolated
+SQL, recovery/concurrency/chronology, exact Python3.14.3 and full exact-head CI.
+No hosted writes/migrations, deploy/main merge, budget activation/reset or new
+provider/paid calls. New SQL, relay/gateway/worker opt-in remain parked until
+separate owner approval. 5/day,1/min,reserve5. No additional agents.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers are historical.
+
 ## API-Football queue recovery, 17.10.2026
 
 Owner now explicitly authorizes restoring and deploying the existing Render

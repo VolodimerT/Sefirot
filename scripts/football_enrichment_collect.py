@@ -41,12 +41,12 @@ def _require_next_call(allowance, reserve, needed=1):
         raise ValueError('insufficient quota for next bounded request')
 
 
-def collect_one(fixture_id, league_id, season, *, max_requests=8, reserve=5,
+def collect_one(fixture_id, league_id, season, *, max_requests=5, reserve=5,
                 getter=None, clock=None, packet_sink=None, pace_requests=False):
     integer(fixture_id, 'fixture id', 1)
     integer(league_id, 'league id', 1)
     integer(season, 'season', 1990, 2200)
-    integer(max_requests, 'max requests', 4, 10)
+    integer(max_requests, 'max requests', 4, 5)
     integer(reserve, 'daily reserve', 5, 1000000)
     if type(pace_requests) is not bool:
         raise ValueError('explicit pacing mode required')
@@ -157,7 +157,7 @@ def main(argv=None):
     p.add_argument('--fixture-id', type=int, required=True)
     p.add_argument('--league-id', type=int, required=True)
     p.add_argument('--season', type=int, required=True)
-    p.add_argument('--max-requests', type=int, default=8)
+    p.add_argument('--max-requests', type=int, default=5)
     p.add_argument('--reserve', type=int, default=5)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--execute-single-fixture', action='store_true')

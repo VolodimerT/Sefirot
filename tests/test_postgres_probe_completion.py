@@ -77,6 +77,14 @@ class NativeProbePostgresTests(unittest.TestCase):
             self.assertIsNone(admin.execute('select public.sefirot_chat_claim()').fetchone()[0]['job'])
             admin.execute('reset role')
 
+    def test_source_archive_preserves_originals_and_daily_cap(self):
+        with self.isolated() as admin:
+            for name in ('tests/fixtures/chat_bridge_legacy.sql','tests/fixtures/probe_rollout_legacy.sql'):
+                admin.execute(self.sql(name))
+            admin.execute('create table sefirot_budget_private.sports_attempt(started_at timestamptz)')
+            admin.execute(self.sql('supabase/migrations/20261017173910_sports_source_archive.sql'))
+            admin.execute(self.sql('tests/fixtures/football_source_cases.sql'))
+
     def test_same_cases_native_sql_permissions_idempotency_and_fencing(self):
         with self.isolated() as admin:
             for filename in ('tests/fixtures/chat_bridge_legacy.sql',

@@ -108,15 +108,15 @@ class CaptureRecoveryTests(unittest.TestCase):
         self.getter = observe
         result, public = self.run_cli()
         self.assertEqual(result, 0)
-        self.assertEqual(len(self.request_times), 8)
+        self.assertEqual(len(self.request_times), 5)
         self.assertTrue(all(b - a >= 61 for a, b in zip(self.request_times, self.request_times[1:])))
-        self.assertEqual(len(self.waits), 7)
+        self.assertEqual(len(self.waits), 4)
         self.assert_packets_preserved()
         capture = json.loads(self.output.read_text(encoding='utf-8'))
         self.assertEqual(capture['source_archive']['format'], 'CANONICAL_GATEWAY_JSON')
         self.assertFalse(capture['source_archive']['original_http_bytes_available'])
         self.assertEqual(set(capture['source_archive']['packet_hashes']), {digest(x) for x in self.originals})
-        self.assertEqual(public['archived_source_packets'], 7)
+        self.assertEqual(public['archived_source_packets'], 4)
 
     def test_occupied_archive_refuses_before_any_network(self):
         self.archive.mkdir()

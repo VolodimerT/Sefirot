@@ -1,5 +1,7 @@
 """Optional existing private Supabase gateway; provider key stays server-side."""
 from datetime import datetime, timezone
+from contextlib import contextmanager
+from contextvars import ContextVar
 from http.client import HTTPException
 import json
 import os
@@ -20,6 +22,17 @@ _BUDGET_REASONS = frozenset({
     "PAUSED", "BUSY", "UNFINISHED_ATTEMPT", "STALE_BUDGET",
     "DAILY_LIMIT", "MINUTE_LIMIT",
 })
+_SOURCE_JOB = ContextVar('sefirot_source_job',default=None)
+
+
+@contextmanager
+def source_job_context(job_id,attempt):
+    if (not isinstance(job_id,str) or not re.fullmatch(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}',job_id)
+            or type(attempt) is not int or not 1<=attempt<=3):
+        raise ValueError('source job lease required')
+    token=_SOURCE_JOB.set((job_id,attempt))
+    try:yield
+    finally:_SOURCE_JOB.reset(token)
 
 
 class SportsBudgetGateError(ValueError):
@@ -48,7 +61,7 @@ def transport_status():
 def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared_budget=False):
     url = os.environ.get('SEFIROT_SPORTS_GATEWAY_URL')
     if not url:
-        if require_shared_budget:
+        if require_shared_budget or _SOURCE_JOB.get():
             raise ValueError('shared-budget sports gateway required')
         return get(endpoint, params)
     parts = urlsplit(url)
@@ -68,6 +81,10 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
     request = Request(url, method='POST', data=json.dumps({'endpoint': endpoint, 'params': params}).encode(),
                       headers={'Content-Type': 'application/json', 'Accept': 'application/json',
                                'x-sefirot-runner-token': token})
+    context=_SOURCE_JOB.get()
+    if context:
+        request.add_header('x-sefirot-source-job-id',context[0])
+        request.add_header('x-sefirot-source-attempt',str(context[1]))
     try:
         response = (opener or build_opener(NoRedirect()).open)(request, timeout=15)
     except HTTPError as exc:
@@ -130,6 +147,17 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
                            for v in quota.values())):
                 raise ValueError('sports gateway quota response malformed')
             receipt['quota'] = dict(quota)
+        if context:
+            original=wrapper.get('source_archive_receipt')
+            proof=wrapper.get('source_archive')
+            if (not isinstance(original,dict) or set(original)!=set(receipt)
+                    or not isinstance(proof,dict) or proof.get('stored') is not True
+                    or any(original[k]!=v for k,v in receipt.items() if k not in ('request_started_at','received_at'))
+                    or not time(started)<=time(original['request_started_at'])<=time(original['received_at'])<=time(received)
+                    or original['received_at']!=receipt['upstream_received_at']
+                    or proof.get('raw_sha256')!=digest({'data':data,'receipt':original})):
+                raise ValueError('durable source archive acknowledgement required')
+            receipt=original
         return {'data': data, 'receipt': receipt}
     except (OSError, HTTPException):
         raise ValueError('sports gateway network unavailable') from None

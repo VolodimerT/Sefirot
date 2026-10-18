@@ -66,6 +66,35 @@ const QUOTA_HEADERS = ["x-requests-remaining", "x-requests-used", "x-requests-la
   "x-ratelimit-requests-remaining", "x-ratelimit-requests-limit",
   "x-ratelimit-remaining", "x-ratelimit-limit"];
 
+// Python canonical JSON of the values carried over the JSON wire: integers
+// stay integers; small fractional exponents use the same two-digit exponent.
+function sourceCanonical(v) {
+  if(v===null||typeof v==='boolean'||typeof v==='string')return JSON.stringify(v);
+  if(typeof v==='number') {
+    if(!Number.isFinite(v))throw new GatewayError('SOURCE_UNSAFE');
+    const s=!Number.isInteger(v)&&Math.abs(v)<1e-4?v.toExponential():JSON.stringify(v);
+    return s.replace(/e([+-])(\d)$/,(_,sign,n)=>'e'+sign+'0'+n);
+  }
+  if(Array.isArray(v))return '['+v.map(sourceCanonical).join(',')+']';
+  const cmp=(a,b)=>{const x=Array.from(a),y=Array.from(b);for(let i=0;i<Math.min(x.length,y.length);i++){
+    const d=x[i].codePointAt(0)-y[i].codePointAt(0);if(d)return d;}return x.length-y.length;};
+  return '{'+Object.keys(v).sort(cmp).map(k=>JSON.stringify(k)+':'+sourceCanonical(v[k])).join(',')+'}';
+}
+function sourceSafe(data,endpoint) {
+  const labels=new Set(['Total Shots','Shots on Goal','Shots off Goal','Blocked Shots','Shots insidebox',
+    'Shots outsidebox','Corner Kicks','Yellow Cards','Red Cards','Fouls','Offsides','Ball Possession',
+    'Expected Goals','expected_goals','Goals Prevented','goals_prevented','Total passes','Passes accurate',
+    'Passes %','Goalkeeper Saves']);
+  if(endpoint==='fixtures/statistics'&&(!Array.isArray(data.response)||data.response.some(r=>
+    !Array.isArray(r.statistics)||r.statistics.some(s=>!labels.has(s.type)))))return false;
+  const todo=[[data,0]];
+  while(todo.length){const [v,d]=todo.pop();if(d>24)return false;
+    if(v&&typeof v==='object')for(const [k,x] of Object.entries(v)){
+      if(/^(authorization|headers|password|api[_-]?key)$|secret|token/i.test(k))return false;
+      todo.push([x,d+1]);}}
+  return true;
+}
+
 class GatewayError extends Error {
   constructor(code) { super(code); this.code = code; }
 }
@@ -228,6 +257,13 @@ Deno.serve(async req => {
     return json({ok: false, error: "UNAUTHORIZED"}, 401);
   }
   try {
+    const job=req.headers.get('x-sefirot-source-job-id');
+    const attempt=req.headers.get('x-sefirot-source-attempt');
+    if((job!==null||attempt!==null)&&(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(job??'')
+        ||!/^[1-3]$/.test(attempt??'')||String(Number(attempt))!==attempt))
+      throw new GatewayError('SOURCE_CONTEXT_INVALID');
+    if(job!==null){const status=await serverRpc('sefirot_source_status',{});
+      if(status.schema!=='football-source-store-v1'||status.ready!==true)throw new GatewayError('SOURCE_STORE_NOT_READY');}
     const body = parse(await readBounded(req, MAX_BODY));
     const endpoint = body?.endpoint;
     const params = body?.params ?? {};
@@ -245,12 +281,17 @@ Deno.serve(async req => {
       }
     }
     if (!validNewParams(endpoint, params)) return json({ok: false, error: "INVALID_PARAMS"}, 400);
+    if(job!==null) {
+      const intent=await serverRpc('sefirot_source_begin',{p_job:job,p_attempt:Number(attempt),p_endpoint:endpoint,p_params:params});
+      if(intent.authorized!==true)throw new GatewayError('SOURCE_DISPATCH_NOT_AUTHORIZED');
+    }
     const secret = await apiKey();
     const budget = await reserveBudget();
     if (!budget.allowed) return json({ok: false, error: "SHARED_BUDGET_STOP",
       budget_reason: budget.reason}, 429);
     const observation = {outcome: "FAILURE", remaining_day: null, remaining_minute: null, observed_minute_limit: null};
     try {
+    const startedAt=new Date().toISOString();
     const query = new URLSearchParams();
     for (const [name, value] of Object.entries(params)) query.set(name, String(value));
     const url = "https://" + HOST + "/" + endpoint + (query.size ? "?" + query : "");
@@ -305,10 +346,24 @@ Deno.serve(async req => {
       observation.remaining_minute = Number(minute);
       observation.observed_minute_limit = Number(minuteLimit);
     }
+    let sourceArchive=null,sourceReceipt=null;
+    if(job!==null) {
+      if(!sourceSafe(data,endpoint))throw new GatewayError('SOURCE_UNSAFE');
+      sourceReceipt={provider:'API_FOOTBALL_V3',provider_host:HOST,endpoint:'/'+endpoint,parameters:params,
+        request_started_at:startedAt,received_at:receivedAt,upstream_received_at:receivedAt,
+        payload_hash:await sha256(sourceCanonical(data)),http_status:200,sports_only:true,
+        transport:'SUPABASE_GATEWAY',quota};
+      const raw=sourceCanonical({data,receipt:sourceReceipt}),key=await sha256(raw);
+      const stored=await serverRpc('sefirot_source_append',{p_raw:raw,p_hash:key,p_job:job,p_attempt:Number(attempt)});
+      if(stored.stored!==true||stored.raw_sha256!==key)throw new GatewayError('SOURCE_APPEND_NOT_ACKNOWLEDGED');
+      sourceArchive=stored;
+    }
     return json({ok: true, provider: "API_FOOTBALL_V3", provider_host: HOST,
       endpoint: "/" + endpoint, params, received_at: receivedAt, data, quota,
+      ...(sourceArchive?{source_archive:sourceArchive,source_archive_receipt:sourceReceipt}:{}),
       shared_budget_guard: "POSTGRES_RESERVATION_V1",
       sports_only: true, monetary_permission: false, execution_enabled: false});
+    } catch(error) { observation.outcome='FAILURE'; throw error;
     } finally { await finishBudget(budget.permit, observation); }
   } catch (error) {
     return json({ok: false, error: error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE"}, 502);
