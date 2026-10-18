@@ -13,7 +13,7 @@ from sefirot.engine import prepare
 from sefirot.markets import DEFAULT_POOL
 from research.football_pipeline import league_view, model_inputs, source_only, utcnow
 
-LEAGUES = (39, 135, 140)
+LEAGUES = (39, 61, 135, 140)
 SEASON = 2026
 MAX_SHADOW_TARGETS = 4
 
