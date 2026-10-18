@@ -1,3 +1,13 @@
+## Completion of permitted recovery preparation, 18.10.2026
+
+Continue on existing PR56 from d64af6c2; repair confirmed private source sync
+pagination truncation and SQLite CLI error handling. Preserve first source
+availability, original bytes, receipts, model/Policy and all deployment gates.
+The authorized 18Oct live window is exhausted:5 calls,QUOTA_STOP,reserve5.
+No more provider calls/rearm, hosted schema writes, deploy, new services,
+main merge, force push, credentials, Stake, bets or additional agents.
+Full exact-tree Python3.14.3 release and exact-head CI are required.
+
 ## Recovery & Research Pipeline v1.0, 18.10.2026
 
 Owner now requests live recovery, a bounded EPL39/2026 pilot through the existing

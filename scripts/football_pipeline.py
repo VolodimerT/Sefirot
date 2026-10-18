@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import sqlite3
 from pathlib import Path
 import sys
 
@@ -21,7 +22,9 @@ def main(argv=None):
     p.add_argument('--source-db',required=True,type=Path,help='Dedicated private source Repository, never original prediction DB')
     p.add_argument('--output',required=True,type=Path)
     sub=p.add_subparsers(dest='action',required=True)
-    sub.add_parser('sync-archive')
+    sync=sub.add_parser('sync-archive')
+    sync.add_argument('--after',default='',help='next_after from an incomplete sync report; new scans start empty')
+    sync.add_argument('--limit',type=int,default=1000,help='Bounded private archive reads, 1..1000; no provider calls')
     imp=sub.add_parser('import');imp.add_argument('packets',nargs='+',type=Path)
     probe=sub.add_parser('import-probes');probe.add_argument('file',type=Path)
     for action in ('coverage','daily'):
@@ -63,7 +66,7 @@ def main(argv=None):
             out={'imports':[]}
             for row in rows:
                 out['imports']+=ingest_probe(repo,row['response'],origin='CHAT_JOB:'+row['source_job_id'])
-        elif a.action=='sync-archive':out=sync_archive(repo)
+        elif a.action=='sync-archive':out=sync_archive(repo,after=a.after,limit=a.limit)
         elif a.action=='coverage':out=league_view(repo,a.league,a.season)
         elif a.action=='daily':out=collect_day(repo,a.league,a.season,execute=a.execute_permitted_window)
         elif a.action=='inputs':out=model_inputs(repo,a.fixture,profile=a.profile,source_reliability=a.source_reliability)
@@ -75,7 +78,7 @@ def main(argv=None):
         with os.fdopen(fd,'w',encoding='utf-8') as f:f.write(canonical(out)+'\n')
         print(json.dumps({'status':'RESEARCH_ONLY','action':a.action,'provider_requests':0 if a.action!='daily' or not a.execute_permitted_window else 'SEE_GATEWAY_RECEIPTS','private_archive_reads':a.action=='sync-archive','monetary_permission':False}))
         return 0
-    except (ValueError,OSError,KeyError,TypeError,AttributeError,DurableStoreError):
+    except (ValueError,OSError,KeyError,TypeError,AttributeError,DurableStoreError,sqlite3.Error):
         print('PIPELINE_STOPPED: SOURCE_STORAGE_OR_VALIDATION_GATE',file=sys.stderr);return 2
     finally:
         if repo is not None:repo.close()

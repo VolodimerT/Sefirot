@@ -365,20 +365,30 @@ def calibration_report(source_repo, prediction_repo, *, at=None):
             'decision':'PASS','small_markets':'SHADOW','stake':0}
 
 
-def sync_archive(repo, *, request=None, limit=1000):
+def sync_archive(repo, *, request=None, limit=1000, after=''):
     """Read existing private cloud archives only; never calls sports/provider API.
 
-    Every run scans from the beginning: hash ordering is not chronological, so
-    remembering the last hash would silently miss subsequently inserted packets.
-    Existing raw hashes make re-import safe and leave first availability intact.
+    Start each new scan from ''. A bounded page returns next_after so an archive
+    larger than the page limit can be finished across invocations. Completion
+    resets that cursor to '': hashes are not chronological and retaining a
+    high-water mark forever would miss later inserts with smaller hashes.
+    Existing raw hashes make replay safe and leave first availability intact.
     """
-    integer(limit,'sync limit',1,1000);source_only(repo)
+    integer(limit,'sync limit',1,1000)
+    if not isinstance(after,str) or after and not re.fullmatch('[0-9a-f]{64}',after):
+        raise ValueError('SOURCE_EXPORT_CURSOR_INVALID')
+    source_only(repo)
+    if after:
+        try:repo.get('jobs','football-source:'+after)
+        except ValueError:raise ValueError('SOURCE_EXPORT_CURSOR_NOT_IMPORTED') from None
     if request is None:
         from scripts.chat_store import request
-    after='';added=0
+    start=after;added=0
     for _ in range(limit):
         row=request({'action':'source_export','after':after})
-        if row.get('next') is None:return {'complete':True,'added_sources':added,'provider_requests':0}
+        if row.get('next') is None:
+            return {'complete':True,'added_sources':added,'provider_requests':0,
+                    'scan_started_after':start,'next_after':''}
         key=row.get('next');raw=row.get('raw_source')
         if (not isinstance(key,str) or not re.fullmatch('[0-9a-f]{64}',key) or key<=after
                 or row.get('raw_sha256')!=key or not isinstance(raw,str)
@@ -386,4 +396,5 @@ def sync_archive(repo, *, request=None, limit=1000):
             raise ValueError('SOURCE_EXPORT_BINDING_FAILED')
         result=ingest(repo,raw.encode())
         added+=int(result['added_source']);after=key
-    return {'complete':False,'added_sources':added,'provider_requests':0,'reason':'SYNC_PAGE_LIMIT_RESCAN_REQUIRED'}
+    return {'complete':False,'added_sources':added,'provider_requests':0,
+            'scan_started_after':start,'next_after':after,'reason':'SYNC_PAGE_LIMIT_CONTINUE_REQUIRED'}
