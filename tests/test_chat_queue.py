@@ -77,4 +77,16 @@ class QueueTests(unittest.TestCase):
             self.assertTrue(chat_queue.process_one())
             self.assertEqual(engine.call_count,1)
             self.assertEqual(api.call_args.args[0]['error'],'PROVIDER_FETCH_RETRY_REQUIRES_REVIEW')
+    def test_sports_probe_pace_keeps_lower_bound_and_is_configurable(self):
+        import os
+        with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': '2'}):
+            self.assertEqual(chat_queue.sports_probe_pace_seconds(),2)
+        with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': '61'}):
+            self.assertEqual(chat_queue.sports_probe_pace_seconds(),61)
+        for invalid in ('0','1','62','3.0','-1','+2',' ','٢','999999999'):
+            with self.subTest(invalid=invalid):
+                with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': invalid}):
+                    with self.assertRaisesRegex(ValueError,'SPORTS_PROBE_PACE_OUT_OF_RANGE'):
+                        chat_queue.sports_probe_pace_seconds()
+
 if __name__=="__main__":unittest.main()
