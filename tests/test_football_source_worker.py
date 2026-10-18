@@ -42,6 +42,24 @@ class SourceWorkerTests(unittest.TestCase):
             w=deepcopy(wrapper);mutate(w)
             with self.assertRaises(ValueError):run(w)
         self.assertIsNone(gateway._SOURCE_JOB.get())
+    def test_bounded_queue_copy_does_not_hide_verified_private_archive(self):
+        import chat_sports_probe as probe
+        p=packet()
+        p['private_source_archive_hash']=digest({'data':p['data'],'receipt':p['receipt']})
+        request={'queries':[{'endpoint':'fixtures','params':{'league':39,'season':2026}}]}
+        with patch.object(probe,'get_sports',return_value=p),patch.object(probe,'MAX_ARCHIVE_BYTES',1):
+            result=probe.collect(request,packet_sink=lambda source: None)
+        evidence=result['queries'][0]['source_evidence']
+        self.assertEqual(evidence['status'],'PRIVATE_SOURCE_ARCHIVED')
+        self.assertEqual(evidence['private_raw_sha256'],p['private_source_archive_hash'])
+        self.assertFalse(evidence['queue_copy_present'])
+        self.assertNotIn('source_packet',result['queries'][0])
+        self.assertFalse(evidence['monetary_permission'])
+        not_verified=deepcopy(p);not_verified.pop('private_source_archive_hash')
+        with patch.object(probe,'get_sports',return_value=not_verified),patch.object(probe,'MAX_ARCHIVE_BYTES',1):
+            result=probe.collect(request,packet_sink=lambda source: None)
+        self.assertEqual(result['queries'][0]['source_evidence']['status'],'SOURCE_NOT_ARCHIVED')
+
     def test_archive_unavailable_blocks_before_claim_or_provider(self):
         env={'SEFIROT_CHAT_JOB_WORKER_MODE':'sports_probe','SEFIROT_SOURCE_ARCHIVE':'1'}
         with patch.dict(os.environ,env),patch.object(chat_queue,'read_only_mode',return_value=True),patch.object(chat_queue,'request',return_value={'schema':'football-source-store-v1','ready':False}) as request,patch('chat_sports_probe.collect') as collect:
