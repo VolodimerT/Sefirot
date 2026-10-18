@@ -83,10 +83,10 @@ function sourceCanonical(v) {
 function sourceSafe(data,endpoint) {
   const labels=new Set(['Total Shots','Shots on Goal','Shots off Goal','Blocked Shots','Shots insidebox',
     'Shots outsidebox','Corner Kicks','Yellow Cards','Red Cards','Fouls','Offsides','Ball Possession',
-    'Expected Goals','expected_goals','Goals Prevented','goals_prevented','Total passes','Passes accurate',
+    'Expected Goals','expected_goals','goals_prevented','Total passes','Passes accurate',
     'Passes %','Goalkeeper Saves']);
   if(endpoint==='fixtures/statistics'&&(!Array.isArray(data.response)||data.response.some(r=>
-    !Array.isArray(r.statistics)||r.statistics.some(s=>!labels.has(s.type)))))return false;
+    !Array.isArray(r?.statistics)||r.statistics.some(s=>!s||!labels.has(s.type)))))return false;
   const todo=[[data,0]];
   while(todo.length){const [v,d]=todo.pop();if(d>24)return false;
     if(v&&typeof v==='object')for(const [k,x] of Object.entries(v)){
@@ -94,6 +94,22 @@ function sourceSafe(data,endpoint) {
       if(['apikey','authorization','password','headers'].includes(label)||label.includes('secret')||label.includes('token'))return false;
       todo.push([x,d+1]);}}
   return true;
+}
+
+function sourceHints(data,endpoint) {
+  if(endpoint!=='fixtures/statistics'||!Array.isArray(data?.response))return [];
+  const hints=new Set();
+  for(const row of data.response.slice(0,4)) {
+    if(!Array.isArray(row?.statistics))continue;
+    for(const stat of row.statistics.slice(0,64)) {
+      const label=stat?.type;
+      if(typeof label!=='string'||!/[A-Za-z]/.test(label)||label.length>40||
+        !/^[A-Za-z][A-Za-z /%_-]{0,39}$/.test(label)||
+        /(secret|token|key|auth|password|account|user|session|cookie|bearer|credential|access|api)/i.test(label.toLowerCase().replace(/[^a-z0-9]/g,'')))continue;
+      if(!sourceSafe({response:[{statistics:[{type:label}]}]},endpoint))hints.add(label);
+    }
+  }
+  return [...hints].sort().slice(0,5);
 }
 
 class GatewayError extends Error {
@@ -349,7 +365,8 @@ Deno.serve(async req => {
     }
     let sourceArchive=null,sourceReceipt=null;
     if(job!==null) {
-      if(!sourceSafe(data,endpoint))throw new GatewayError('SOURCE_UNSAFE');
+      if(!sourceSafe(data,endpoint)){const error=new GatewayError('SOURCE_SAFETY');
+        error.unsupported_stat_labels=sourceHints(data,endpoint);throw error;}
       sourceReceipt={provider:'API_FOOTBALL_V3',provider_host:HOST,endpoint:'/'+endpoint,parameters:params,
         request_started_at:startedAt,received_at:receivedAt,upstream_received_at:receivedAt,
         payload_hash:await sha256(sourceCanonical(data)),http_status:200,sports_only:true,
@@ -367,6 +384,7 @@ Deno.serve(async req => {
     } catch(error) { observation.outcome='FAILURE'; throw error;
     } finally { await finishBudget(budget.permit, observation); }
   } catch (error) {
-    return json({ok: false, error: error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE"}, 502);
+    return json({ok: false, error: error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE",
+      ...(error instanceof GatewayError&&error.code==='SOURCE_SAFETY'?{unsupported_stat_labels:error.unsupported_stat_labels??[]}: {})}, 502);
   }
 });

@@ -13,7 +13,7 @@ from hashlib import sha256
 from pathlib import Path
 from sefirot.contracts import canonical, digest, time
 from sefirot.provider_transport import QUOTA_HEADERS
-from sefirot.football_gateway import get_sports, transport_status
+from sefirot.football_gateway import get_sports, transport_status, safe_stat_labels
 from sefirot.football_provider import FootballRequestError, status_summary
 
 MAX_QUERIES = 5
@@ -103,7 +103,7 @@ def _unknown_stat_hints(data):
             if re.search(r"(?i)(secret|token|key|auth|password|account|user|session|cookie|bearer|credential|access|api)", label):
                 continue
             hints.add(label)
-    return sorted(hints)[:5]
+    return safe_stat_labels(list(hints))
 
 
 def verify_evidence(query):
@@ -247,6 +247,21 @@ def _compact_lineup(row):
     }
 
 
+def _source_safety_item(endpoint,params,packet=None,labels=None):
+    if packet is not None:
+        labels=_unknown_stat_hints(packet.get('data')) if endpoint=='fixtures/statistics' else []
+    hints=safe_stat_labels(labels)
+    evidence={'status':'SOURCE_NOT_ARCHIVED','reason':'SOURCE_SAFETY',
+              'provider_origin_attested':False,'model_fit_eligible':False,
+              'original_http_bytes_available':False,'monetary_permission':False}
+    if hints:evidence['unsupported_stat_labels']=hints
+    result={'endpoint':endpoint,'params':copy.deepcopy(params),'status':'ERROR',
+            'reason':'SOURCE_SAFETY','source_evidence':evidence}
+    if packet is not None and isinstance(packet.get('receipt'),dict):
+        result['receipt']=_safe_receipt(packet['receipt'])
+    return result
+
+
 def collect(payload, *, packet_sink=None):
     if not isinstance(payload, dict) or set(payload) != {"queries"}:
         raise ValueError("PROBE_REQUEST_SHAPE")
@@ -257,11 +272,13 @@ def collect(payload, *, packet_sink=None):
     output = []
     remaining = MAX_ARCHIVE_BYTES
     for endpoint, params in validated:
+        packet=None
         try:
             packet = get_sports(endpoint, params, require_shared_budget=True)
             # A durable sink commits original packets before compact mapping.
             # Its failure stops the batch; never fetch another packet or retry.
             if packet_sink is not None:
+                if not _safe_source(packet.get('data'),endpoint):raise ProbeError('SOURCE_SAFETY')
                 packet_sink(packet)
             receipt = packet["receipt"]
             if endpoint == "status":
@@ -281,7 +298,10 @@ def collect(payload, *, packet_sink=None):
                     raise ProbeError("PROBE_FIXTURE_IDENTITY_MISMATCH")
         except (ValueError, OSError, FootballRequestError, TypeError, KeyError, AttributeError) as exc:
             reason = getattr(exc, "code", "PROVIDER_TRANSPORT_OR_AUTH_UNAVAILABLE")
-            output.append({"endpoint": endpoint, "params": params,
+            if reason=='SOURCE_SAFETY':
+                output.append(_source_safety_item(endpoint,params,packet,
+                    getattr(exc,'unsupported_stat_labels',None)))
+            else:output.append({"endpoint": endpoint, "params": params,
                            "status": "ERROR", "reason": reason})
             # Do not waste daily API quota or repeatedly hit rejected auth.
             break
@@ -292,6 +312,8 @@ def collect(payload, *, packet_sink=None):
             "projection_hash": digest(rows),
         }
         remaining -= _archive(item, packet, remaining)
+        if item['source_evidence'].get('reason')=='SOURCE_SAFETY':
+            output.append(_source_safety_item(endpoint,params,packet));break
         output.append(item)
     return {
         "stage": "SPORTS_API_PROBE", "provider": "API_FOOTBALL_V3",

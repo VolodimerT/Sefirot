@@ -151,6 +151,27 @@ class FootballPipelineTests(unittest.TestCase):
         pipe.collect_day(self.repo,execute=True,collector=collect,clock=clock,wait=wait)
         self.assertEqual(len(calls),2);self.assertEqual(len(pipe._records(self.repo,pipe.SOURCE)),2)
 
+    def test_temporal_source_views_separate_actual_prematch_ft_and_late_import(self):
+        self.put(packet());v=pipe.league_view(self.repo,as_of=NOW)
+        self.assertEqual([r['fixture_id'] for r in v['temporal_source_views']['PREMATCH']],[20])
+        self.assertEqual([r['fixture_id'] for r in v['temporal_source_views']['POST_FT']],[10])
+        p=packet(rows=[fixture(30,'NS')]);p['data']['response'][0]['fixture']['date']='2026-10-17T11:00:00Z'
+        p['receipt']['payload_hash']=digest(p['data']);self.put(p)
+        v=pipe.league_view(self.repo,as_of=NOW)
+        self.assertEqual([r['fixture_id'] for r in v['temporal_source_views']['HISTORICAL_NS']],[30])
+        self.assertNotIn(30,[r['fixture_id'] for r in v['temporal_source_views']['PREMATCH']])
+        self.assertEqual(self.repo.all('predictions'),[])
+
+    def test_old_unbound_stat_does_not_poison_new_verified_post_ft_packet(self):
+        self.put(packet());self.put(stats(at='2026-10-16T11:00:00+00:00'))
+        self.assertEqual(pipe.league_view(self.repo,as_of=NOW)['statistics_qc_matches'],0)
+        self.put(stats());v=pipe.league_view(self.repo,as_of=NOW)
+        self.assertEqual(v['statistics_qc_matches'],1)
+        self.assertEqual(v['statistics_complete_counts']['CORNERS'],1)
+        self.assertEqual(v['reasons']['STATISTICS_BEFORE_FT_KNOWLEDGE'],1)
+        self.assertEqual(len(pipe._records(self.repo,pipe.SOURCE)),3)
+        self.assertNotIn({'endpoint':'fixtures/statistics','params':{'fixture':10}},pipe.plan_day(self.repo,at=NOW)['queries'])
+
     def test_dry_plan_no_provider_calls_and_five_requests_global_cap(self):
         with patch('scripts.chat_sports_probe.get_sports') as network:
             p=pipe.collect_day(self.repo,clock=lambda:NOW)

@@ -45,6 +45,21 @@ class SportsBudgetGateError(ValueError):
         super().__init__("sports shared budget refused request")
 
 
+def safe_stat_labels(labels):
+    """Bounded schema hints only: never arbitrary provider strings/values."""
+    if not isinstance(labels,list):return []
+    return sorted({v for v in labels[:256] if isinstance(v,str) and 1<=len(v)<=40
+        and re.fullmatch(r'[A-Za-z][A-Za-z /%_-]{0,39}',v)
+        and not re.search(r'(?i)(secret|token|key|auth|password|account|user|session|cookie|bearer|credential|access|api)',re.sub(r'[^a-z0-9]','',v.lower()))})[:5]
+
+
+class SportsSourceSafetyError(ValueError):
+    code='SOURCE_SAFETY'
+    def __init__(self,labels=None):
+        self.unsupported_stat_labels=safe_stat_labels(labels)
+        super().__init__('sports source rejected by safety guard')
+
+
 def transport_status():
     configured = bool(os.environ.get('SEFIROT_SPORTS_GATEWAY_URL'))
     name = 'SEFIROT_SPORTS_GATEWAY_TOKEN' if configured else 'API_FOOTBALL_KEY'
@@ -108,6 +123,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
                 if type(reason) is str and reason in _BUDGET_REASONS:
                     raise SportsBudgetGateError(reason)
                 raise ValueError('sports gateway budget response invalid')
+            if response.status==502 and wrapper.get('ok') is False and wrapper.get('error')=='SOURCE_SAFETY':
+                raise SportsSourceSafetyError(wrapper.get('unsupported_stat_labels'))
             if isinstance(wrapper.get('error'), str) and wrapper['error'] in QUERY_ERROR_CODES:
                 raise FootballQueryError(wrapper['error'])
             if response.status == 422 and wrapper.get('error') == 'PROVIDER_REJECTED_REQUEST':

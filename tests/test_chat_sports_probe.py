@@ -45,8 +45,9 @@ class ProbeTests(unittest.TestCase):
              patch.object(probe,"transport_status",return_value={"transport":"SUPABASE_GATEWAY","credential_configured":True}):
             result=probe.collect({"queries":[{"endpoint":"fixtures/statistics","params":{"fixture":123}}]})
         network.assert_called_once_with("fixtures/statistics",{"fixture":123},require_shared_budget=True)
-        self.assertEqual(result["queries"][0]["count"],2)
-        self.assertEqual(result["queries"][0]["rows"][0]["statistics"]["Corner Kicks"],7)
+        self.assertEqual(result["queries"][0]["status"],"ERROR")
+        self.assertEqual(result["queries"][0]["reason"],"SOURCE_SAFETY")
+        self.assertNotIn("rows",result["queries"][0])
         self.assertNotIn("Secret Extra",repr(result))
         self.assertFalse(result["monetary_permission"])
         self.assertFalse(result["execution_enabled"])

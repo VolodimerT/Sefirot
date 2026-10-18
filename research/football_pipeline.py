@@ -6,7 +6,7 @@ No networking on import/coverage/export. No cohort assignment, fit or bets.
 """
 from collections import Counter, defaultdict
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from hashlib import sha256
 from pathlib import Path
 import tempfile
@@ -173,7 +173,7 @@ def packets(repo, as_of):
 def league_view(repo, league=39, season=2026, *, as_of=None):
     integer(league, 'league', 1);integer(season, 'season', 1990, 2200)
     at = as_of or utcnow(); observations = defaultdict(list); statistics = defaultdict(list)
-    full = []; bound = []; contexts = []
+    full = []; bound = []; contexts = []; temporal={"PREMATCH":[],"POST_FT":[],"HISTORICAL_NS":[],"OTHER":[]}
     for rec, p in packets(repo, at):
         r = p['receipt']; endpoint = r['endpoint']
         if endpoint == '/fixtures':
@@ -181,7 +181,17 @@ def league_view(repo, league=39, season=2026, *, as_of=None):
             rows = [v for v in p['data']['response'] if v['league']['id'] == league and v['league']['season'] == season]
             if set(params) == {'league', 'season'} and str(params['league']) == str(league) and str(params['season']) == str(season):
                 full.append((time(r['received_at']), rec['id'], {v['fixture']['id'] for v in rows}))
-            for row in rows:observations[row['fixture']['id']].append((rec, p, row))
+            for row in rows:
+                observations[row['fixture']['id']].append((rec,p,row))
+                received=time(r['received_at']);kickoff=time(row['fixture']['date'])
+                state=row['fixture']['status']['short']
+                if state=='NS' and received<kickoff:
+                    phase='PREMATCH' if time(rec['available_at'])<kickoff else 'HISTORICAL_NS'
+                elif state=='FT' and received>=kickoff+timedelta(minutes=90):phase='POST_FT'
+                else:phase='OTHER'
+                temporal[phase].append({'fixture_id':row['fixture']['id'],'league_id':league,'season':season,
+                    'source_id':rec['id'],'received_at':r['received_at'],'available_at':rec['available_at'],
+                    'kickoff':row['fixture']['date'],'provider_status':state})
             if rows:bound.append(rec['id'])
         elif endpoint == '/fixtures/statistics':
             statistics[int(r['parameters']['fixture'])].append((rec, p))
@@ -208,10 +218,11 @@ def league_view(repo, league=39, season=2026, *, as_of=None):
         if f['fixture']['status']['short'] != 'FT':rejected['STATISTICS_NOT_CONFIRMED_FT'] += 1;continue
         first_ft = min(time(p['receipt']['received_at']) for _,p,v in observations[fid] if v['fixture']['status']['short']=='FT')
         teams = {f['teams'][s]['id'] for s in ('home', 'away')}
-        values = defaultdict(set); valid = True
+        values = defaultdict(set); valid = True; post_ft_packets=0
         for rec, p in versions:
             if time(p['receipt']['request_started_at']) < first_ft:
-                valid = False;rejected['STATISTICS_BEFORE_FT_KNOWLEDGE'] += 1;continue
+                rejected['STATISTICS_BEFORE_FT_KNOWLEDGE'] += 1;continue
+            post_ft_packets+=1
             if {v['team']['id'] for v in p['data']['response']} != teams:
                 valid = False;rejected['STATISTICS_TEAM_MISMATCH'] += 1;continue
             for row in p['data']['response']:
@@ -219,7 +230,7 @@ def league_view(repo, league=39, season=2026, *, as_of=None):
                     if v['type'] in LABELS.values():values[(row['team']['id'],v['type'])].add(v['value'])
         if any(len(v)>1 for v in values.values()):
             valid=False;rejected['STATISTICS_REVISION_CONFLICT'] += 1
-        if not valid:continue
+        if not valid or not post_ft_packets:continue
         stat_ok.add(fid)
         for metric,label in LABELS.items():
             if all(len(values[(t,label)])==1 and None not in values[(t,label)] for t in teams):counts[metric] += 1
@@ -230,6 +241,7 @@ def league_view(repo, league=39, season=2026, *, as_of=None):
     return {'schema': 'football-pipeline-coverage-v1', 'league': league, 'season': season,
             'as_of': at, 'expected_matches': len(expected[2]) if expected else None,
             'calendar_complete': expected is not None, 'calendar_attested': False,
+            'temporal_source_views':temporal,
             'observed_matches': len(observations), 'qc_matches': len(fixtures),
             'rejected_matches': len(observations)-len(fixtures), 'reasons': dict(rejected),
             'confirmed_ft': sum(v['fixture']['status']['short']=='FT' for v in fixtures.values()),

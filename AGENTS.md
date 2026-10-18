@@ -1,3 +1,18 @@
+## Recovery & Research Pipeline v1.0, 18.10.2026
+
+Owner now requests live recovery, a bounded EPL39/2026 pilot through the existing
+protected gateway/arm_research_budget, <=5 calls/day, <=12min,1/min,reserve5.
+Verify the first provider status and stop on any unknown quota/error/safety.
+No direct budget UPDATE, resets, refetches, credentials or production migrations.
+Deploy is authorized ONLY if PR56 HEAD=c558486 and Render branch=42e25ccc,
+all four workflows success, FF/rights proven. Actual b6650b27 fails this rule:
+PASS/NO DEPLOY, including after further reviewed repairs; do not rewind HEAD.
+Repair confirmed SOURCE_SAFETY continuation/misclassification on existing PR56,
+retain earlier diagnostics/originals/Policy/model bytes; isolated SQL/recovery
+regressions and full exact-head CI. No Stake, bets, money, new Render service,
+force push, main merge or additional agents. Older headers are historical.
+RESEARCH_ONLY / PASS / stake=0.
+
 ## Autocollector to existing model inputs, 17.10.2026
 
 Owner supersedes prior deployment scope: skip Stake completely; use existing

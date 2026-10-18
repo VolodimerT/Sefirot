@@ -204,4 +204,15 @@ def lowered_minute_limit():
 
 
 check('observed minute limit lowers cap and inconsistent counters stop collection', lowered_minute_limit)
+def operator_contract():
+    # Disposable local DB only, validated by local_probe DSN above. The production
+    # operator function itself is unchanged; run its real SQL without provider IO.
+    sql('delete from sefirot_budget_private.sports_attempt; '
+        "update sefirot_budget_private.sports_budget set enabled=false,in_flight=null,reserved_at=null,"
+        "remaining_day=0,reserve_day=5,minute_limit=1,minute_ready_at=clock_timestamp(),"
+        "last_started_at=null,valid_until=null,utc_day=null,reason='TEST_ONLY';")
+    sql((ROOT/'supabase/migrations/20261015_research_api_budget_operator.sql').read_text())
+    sql((ROOT/'tests/fixtures/research_operator_budget_cases.sql').read_text())
+
+check('operator arm enforces five/day twelve minutes one/minute reserve5 without resetting history',operator_contract)
 print('SHARED_BUDGET_POSTGRES_PASSED=' + str(checks))

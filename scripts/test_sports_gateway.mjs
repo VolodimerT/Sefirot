@@ -67,6 +67,20 @@ for(const attempt of ['0','4','12','01','1.0']){
  const f=setup({sourceAck:false});assert.equal((await f.call({headers:sourceHeaders})).body.error,'SOURCE_APPEND_NOT_ACKNOWLEDGED');
  const done=f.calls.find(c=>c.url.endsWith('/sefirot_sports_budget_finish'));assert.equal(JSON.parse(done.options.body).outcome,'FAILURE');
 }
+{
+ const data={get:'fixtures/statistics',parameters:{fixture:'123'},errors:[],results:1,
+   paging:{current:1,total:1},response:[{team:{id:1},statistics:[
+    {type:'Expected Threat',value:'OWNED_PRIVATE_SENTINEL'},
+    {type:'S E C R E T',value:'ANOTHER_PRIVATE_SENTINEL'}]}]};
+ const s=setup({upstream:Response.json(data)});
+ const out=await s.call({headers:sourceHeaders,body:{endpoint:'fixtures/statistics',params:{fixture:123}}});
+ assert.equal(out.body.error,'SOURCE_SAFETY');assert.deepEqual(out.body.unsupported_stat_labels,['Expected Threat']);
+ assert.equal(out.status,502);assert.ok(!JSON.stringify(out).includes('SENTINEL'));
+ assert.ok(!s.calls.some(c=>c.url.endsWith('/sefirot_source_append')));
+ const finalized=s.calls.find(c=>c.url.endsWith('/sefirot_sports_budget_finish'));
+ assert.equal(JSON.parse(finalized.options.body).outcome,'FAILURE');
+ assert.equal(s.calls.filter(c=>c.url.includes('v3.football.api-sports.io')).length,1);
+}
 const vectors=[{tiny:0.000001,a:1e-7,b:1e21,c:1e20,d:-0.0000001}, {'😀':'кириллица','\uE000':[0,null,true,'\n'] }];
 console.log('SOURCE_CANONICAL_VECTORS='+JSON.stringify(vectors.map(v=>({wire:JSON.stringify(v),canonical:setup().canonical(v)}))));
 let tests = 0;
