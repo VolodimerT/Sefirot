@@ -159,6 +159,20 @@ def _process_one(sports):
           " id="+str(uid),flush=True)
     return True
 
+def sports_probe_pace_seconds():
+    """Minimum pause between completed research jobs; provider RPC is the hard rate gate.
+
+    This cannot accelerate canonical jobs and never retries a provider attempt.
+    """
+    raw = os.environ.get("SEFIROT_SPORTS_PROBE_PACE_SECONDS", "2")
+    if not raw.isascii() or not raw.isdecimal() or len(raw) > 2:
+        raise ValueError("SPORTS_PROBE_PACE_OUT_OF_RANGE")
+    value = int(raw)
+    if not 2 <= value <= 61:
+        raise ValueError("SPORTS_PROBE_PACE_OUT_OF_RANGE")
+    return value
+
+
 def run():
     sports = sports_only_mode()
     if read_only_mode() and not sports:return
@@ -167,7 +181,7 @@ def run():
         try:
             worked=process_one()
             idle=0 if worked else min(idle+1,3)
-            _stop.wait((61 if sports else 4) if worked else [12,20,35,60][idle])
+            _stop.wait((sports_probe_pace_seconds() if sports else 4) if worked else [12,20,35,60][idle])
         except Exception:
             with _state_lock:
                 _state["last_error"] = "QUEUE_UNAVAILABLE"
