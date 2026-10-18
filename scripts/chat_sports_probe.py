@@ -312,6 +312,22 @@ def collect(payload, *, packet_sink=None):
             "projection_hash": digest(rows),
         }
         remaining -= _archive(item, packet, remaining)
+        # The bounded chat-job response need not duplicate a large source.
+        # Only a proof already authenticated/verified by get_sports inside
+        # the leased source context can certify the separate private archive.
+        if (packet_sink is not None
+                and item['source_evidence'].get('reason') == 'SOURCE_BYTE_BUDGET'):
+            private_hash = packet.get('private_source_archive_hash')
+            if isinstance(private_hash, str) and re.fullmatch(r'[0-9a-f]{64}', private_hash):
+                item['source_evidence'] = {
+                    'status': 'PRIVATE_SOURCE_ARCHIVED',
+                    'private_raw_sha256': private_hash,
+                    'queue_copy_present': False,
+                    'provider_origin_attested': False,
+                    'model_fit_eligible': False,
+                    'original_http_bytes_available': False,
+                    'monetary_permission': False,
+                }
         if item['source_evidence'].get('reason')=='SOURCE_SAFETY':
             output.append(_source_safety_item(endpoint,params,packet));break
         output.append(item)
