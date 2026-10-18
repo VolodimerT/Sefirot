@@ -243,6 +243,9 @@ def main():
             from chat_queue import start as start_chat_worker
             start_chat_worker()
             print("SEFIROT_CHAT_JOB_WORKER_STARTED" + (" sports_probe read_only_core" if sports_worker else ""), flush=True)
+        if sports_worker and os.environ.get("SEFIROT_SOURCE_RESEARCH_SYNC", "0") == "1":
+            from chat_source_sync import start as start_research_source_qc
+            start_research_source_qc()
         server.serve_forever()
     finally:
         stop_chat_worker()
