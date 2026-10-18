@@ -175,7 +175,8 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
                     or proof.get('raw_sha256')!=digest({'data':data,'receipt':original})):
                 raise ValueError('durable source archive acknowledgement required')
             receipt=original
-        return {'data': data, 'receipt': receipt}
+        return {'data': data, 'receipt': receipt,
+                **({'private_source_archive_hash': proof['raw_sha256']} if context else {})}
     except (OSError, HTTPException):
         raise ValueError('sports gateway network unavailable') from None
     finally:
