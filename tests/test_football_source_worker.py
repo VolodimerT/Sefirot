@@ -35,7 +35,9 @@ class SourceWorkerTests(unittest.TestCase):
                 out=gateway.get_sports('fixtures',{'league':39,'season':2026},opener=opener,clock=lambda:next(clock),require_shared_budget=True)
             self.assertTrue(response.closed);self.assertEqual(seen[0].get_header('X-sefirot-source-job-id'),UID)
             return out
-        self.assertEqual(run(wrapper),p)
+        confirmed = run(wrapper)
+        self.assertEqual({k:confirmed[k] for k in ('data','receipt')},p)
+        self.assertEqual(confirmed['private_source_archive_hash'],digest(p))
         for mutate in (lambda w:w.pop('source_archive'),lambda w:w['source_archive'].update(raw_sha256='b'*64)):
             w=deepcopy(wrapper);mutate(w)
             with self.assertRaises(ValueError):run(w)
