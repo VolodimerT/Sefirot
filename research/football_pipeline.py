@@ -311,8 +311,8 @@ def plan_day(repo, league=39, season=2026, *, at=None):
     q=[v for v in q if digest(v) not in unresolved]
     if view['pending_qc_packets'] or view['qc_rejected_packets']:q=[]
     return {'schema':'football-daily-plan-v1','day':day,'league':league,'season':season,
-            'queries':q[:max(0,5-used)],'attempts_today':used,'daily_limit':5,
-            'minute_limit':1,'reserve':5,'unresolved_attempts':len(unresolved),
+            'queries':q[:max(0,min(20,7500-used))],'attempts_today':used,'daily_limit':7500,
+            'minute_limit':60,'reserve':0,'unresolved_attempts':len(unresolved),
             'pending_qc_packets':view['pending_qc_packets'],'rejected_qc_packets':view['qc_rejected_packets'],
             'budget_action':'NONE','automatic_retry':False,'execution_enabled':False}
 
@@ -331,8 +331,8 @@ def collect_day(repo, league=39, season=2026, *, execute=False, clock=None, coll
     from scripts.chat_sports_probe import collect
     from time import sleep
     collector=collector or collect;wait=wait or sleep;results=[]
-    for index in range(5):
-        if index:wait(61)
+    for index in range(20):
+        if index:wait(2)
         now=clock()
         with repo.transaction():
             plan=plan_day(repo,league,season,at=now)
