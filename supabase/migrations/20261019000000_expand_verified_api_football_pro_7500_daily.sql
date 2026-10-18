@@ -59,7 +59,7 @@ BEGIN
  THEN RAISE EXCEPTION 'RESEARCH_OPERATOR_200_BASELINE_DRIFT';END IF;
  edits:=jsonb_build_array(
   jsonb_build_object('old','p_max_requests NOT BETWEEN 1 AND 200','new','p_max_requests NOT BETWEEN 1 AND 7500'),
-  jsonb_build_object('old','p_minutes NOT BETWEEN 1 AND 12','new','p_minutes NOT BETWEEN 1 AND 180'),
+  jsonb_build_object('old','p_minutes NOT BETWEEN 1 AND 12','new','p_minutes NOT BETWEEN 1 AND 360'),
   jsonb_build_object('old','200 - calls_today','new','7500 - calls_today'),
   jsonb_build_object('old','5 * p_minutes','new','60 * p_minutes'),
   jsonb_build_object('old','protected_reserve := GREATEST(b.reserve_day, 100);','new','protected_reserve := 0;'),
@@ -86,7 +86,7 @@ BEGIN
  END IF;
  edits:=jsonb_build_array(
   jsonb_build_object('old','count_day >= 200','new','count_day >= 7500'),
-  jsonb_build_object('old','b.valid_until > t + INTERVAL ''15 minutes''','new','b.valid_until > t + INTERVAL ''185 minutes''')
+  jsonb_build_object('old','b.valid_until > t + INTERVAL ''15 minutes''','new','b.valid_until > t + INTERVAL ''365 minutes''')
  );
  FOR edit IN SELECT value FROM jsonb_array_elements(edits) LOOP
    needle:=edit->>'old';replacement:=edit->>'new';
@@ -132,7 +132,7 @@ END
 $upgrade$;
 
 COMMENT ON FUNCTION sefirot_budget_private.arm_research_budget(integer,integer)
- IS 'Owner-only opt-in API-Football Pro 7500/UTC-day HARD global limit, bounded <=180-minute window, <=60/min below provider 300/min; no bets';
+ IS 'Owner-only opt-in API-Football Pro 7500/UTC-day HARD global limit, bounded <=360-minute window, <=60/min below provider 300/min; no bets';
 COMMENT ON FUNCTION public.sefirot_sports_budget_reserve()
  IS 'Global provider single-flight budget: max 7500/UTC-day successful or attempted, real provider header clamp and minute pacer; no money';
 COMMENT ON FUNCTION public.sefirot_source_begin(uuid,integer,text,jsonb)
