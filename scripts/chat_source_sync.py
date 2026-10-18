@@ -64,7 +64,14 @@ def bootstrap(source_path: Path = LOCAL_SOURCE) -> dict:
                     "qc_rejected_packets": v["qc_rejected_packets"],
                     "pending_qc_packets": v["pending_qc_packets"],
                 }
+        shadow = None
+        if complete and os.environ.get("SEFIROT_SOURCE_SHADOW_MODEL", "0") == "1":
+            from research.shadow_model import preview
+            selector = os.environ.get("SEFIROT_SHADOW_TARGET_IDS", "")
+            ids = [int(s) for s in selector.split(",")] if selector else None
+            shadow = preview(repo, ids=ids)
         return {
+            "shadow_preview": shadow,
             "status": "SOURCE_QC_COMPLETE" if complete else "SOURCE_SYNC_PAGE_CAP",
             "new_local_sources": added,
             "complete": complete,
