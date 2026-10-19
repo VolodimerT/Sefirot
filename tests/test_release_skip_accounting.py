@@ -3,7 +3,7 @@ from contextlib import redirect_stdout
 import io,json,tempfile,unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock,patch
 from scripts import verify_release as release
 
 
@@ -21,15 +21,15 @@ class ReleaseSkipAccountingTests(unittest.TestCase):
                      SimpleNamespace(returncode=0,stderr='',stdout=json.dumps({'integrity':True,'replay_matches':True}))]
             backtest={'fixtures':12,'metrics':{'n':84}}
             audit={'cases':0,'outcomes':{},'dataset_hash':'0'*64,'holdout_eligible':False}
-            with patch.object(release,'ROOT',root),patch.object(release.subprocess,'run',side_effect=results), \
+            with patch.object(release,'ROOT',root),patch.object(release,'subprocess',SimpleNamespace(run=Mock(side_effect=results))), \
                  patch.object(release,'walk_forward',return_value=backtest), \
                  patch.object(release,'audit_cases',return_value=audit),redirect_stdout(CapturedOutput()):
                 self.assertEqual(release.main(),0)
-            record=json.loads((root/'reports/RELEASE_CHECK.json').read_text())
+            record=json.loads((root/'reports/RELEASE_CHECK.json').read_text(encoding='utf-8'))
             self.assertEqual(record['tests'],1632)
             self.assertEqual(record['tests_passed'],1623)
             self.assertEqual(record['tests_skipped'],9)
-            text=(root/'reports/TEST_REPORT.md').read_text()
+            text=(root/'reports/TEST_REPORT.md').read_text(encoding='utf-8')
             self.assertIn('1623',text);self.assertIn('пропущено **9**',text)
             self.assertNotIn('1632/1632',text)
 
