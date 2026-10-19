@@ -57,7 +57,7 @@ class SportsArchiveTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / 'archive'
-        self.target = packet([row(100, status='NS', hours=3)])
+        self.target = packet([row(100, status='NS', hours=3, score=(None, None))])
 
     def exported(self, packets, at=None, reliability=.95):
         archive_packets([self.target, *packets], self.root, stamp(10))
@@ -272,7 +272,8 @@ class TicketAuditTests(unittest.TestCase):
             repo.insert('matches', match['id'], match, home=match['home'], away=match['away'],
                         kickoff=match['kickoff'], league=match['league'])
             model = {'id': p['model_id'], 'code_hash': p['code_hash'], 'model_hash': p['model_hash'],
-                     'policy_hash': p['policy_hash'], 'calibrator_id': None, 'goal_model': None}
+                     'policy_hash': p['policy_hash'], 'calibrator_id': None, 'goal_model': None,
+                     'registered_at': p['sealed_at']}
             repo.insert('model_versions', p['model_id'], model, at=p['sealed_at'])
             repo.insert('predictions', p['id'], p, at=p['sealed_at'], match_id=decision['match_id'], model_id=p['model_id'])
             repo.record_log('predictions', p['id'], p['sealed_at'], p)
@@ -374,7 +375,7 @@ class SessionAndCliTests(unittest.TestCase):
     def test_cli_archive_and_export_require_no_credentials_and_do_not_overwrite(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp);source = path / 'packet.json';archive = path / 'archive';out = path / 'sports.json'
-            target = row(100, status='NS', hours=3)
+            target = row(100, status='NS', hours=3, score=(None, None))
             # Use an actual past cutoff; the synthetic target still lies ahead.
             source.write_text(json.dumps(packet([target])))
             with patch('sefirot.cli.datetime') as clock:

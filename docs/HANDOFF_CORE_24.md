@@ -1,5 +1,32 @@
 # SEFIROT — продолжение разработки
 
+## Явный запрет результата, 05.10.2026
+
+В той же feature/stability-reset-20261005 после STABILITY RESET добавлен
+общий deny-only контракт selection_constraint для sports inference:
+SCENARIO_CONSTRAINT_20261005.md. Explicit avoid_result=true до цены
+блокирует 1X2/DC/DNB/HANDICAP и Builder с такой ногой. В readiness/карточке
+и research outputs запрет виден; цена не снимает его. Recheck изменения
+запрета или FACT premises требует новой sports revision. Natural-language
+выводы чата и losing score branches автоматически не превращаются в veto.
+MODEL_MODULES/Policy сохранены; новая code identity в RELEASE_CHECK.json.
+Draft PR #11: https://github.com/VolodimerT/Sefirot/pull/11, base точная
+feature/api-data-session-20261005. Main merge и monetary approval не делать.
+
+## Текущий этап: STABILITY RESET, 05.10.2026
+
+Рабочая ветка feature/stability-reset-20261005 от 8e6a3ab; VERSION остаётся
+2.4.2, точное поведение сверять через `sefirot.py build-info`.
+Карта всех 55 исходных модулей, матрица 52 старых команд, migration и
+предложенный будущий baseline/DC protocol: STABILITY_RESET_20261005.md.
+Default data-session не создаёт 50-contract/Builder grids; прежний путь
+включается `--research-grids`. В справке 10 основных команд, полный
+compatibility/LABS список `--labs --help`. Оба старых launcher-а по
+умолчанию запускают canonical CLI; исторические интерфейсы требуют
+первый флаг --legacy. Legacy-код не удалён. Ниже — исторические этапы.
+Новая модель, реальная API-выборка, прибыльность и monetary approval этим
+шагом не подтверждены. Main merge не выполнять.
+
 ## Единый API-сбор, 05.10.2026
 
 Изолированная feature/api-data-session-20261005 включает Stake snapshot

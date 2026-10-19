@@ -1,8 +1,8 @@
 {
   "version": "2.4.2",
   "synthetic": true,
-  "prediction_id": "13c69643eacb84e122d4becf20e40bba49fa618c10076661d8eee14bbfcc0d7a",
-  "decision_id": "4249b7322915016c51497fd6a71002b2e069290440a317a3bc1eee9b781812a8",
+  "prediction_id": "3a9b4d3e470cffd9bab05b5c4165c1659ba5353b86cc7ac96008d218bc89c0b7",
+  "decision_id": "4bb075353557aee1504d2d73bd5c5a624b8d774dc2920b7b6e6a7accad357dd6",
   "decision": "PASS",
   "verdict": "skip",
   "class": "D",
@@ -32,13 +32,13 @@
     "decision": "PASS",
     "passport": {
       "version": "2.4.2",
-      "prediction_id": "13c69643eacb84e122d4becf20e40bba49fa618c10076661d8eee14bbfcc0d7a",
-      "code_hash": "415d924a4ab684df65dbdd829201dd5e5c0e83bdf5b55ad830998acabcfb04b6",
+      "prediction_id": "3a9b4d3e470cffd9bab05b5c4165c1659ba5353b86cc7ac96008d218bc89c0b7",
+      "code_hash": "321d7b37ab04380e374170b170e015ce5bd5623e93ecba80d12fe1c8dfe0e331",
       "model_hash": "46f1c991a2ee93a2d68a0ae9c1b091b866660501980f52c2456a83bf96ba6617",
       "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
       "policy_version": "research-policy-v3",
-      "data_hash": "c0e10f15b5b06ef2c9e78e071e8c25e561151944d47e20b3f1f8f038af52ba20",
-      "sports_as_of": "2026-10-05T12:27:53+00:00",
+      "data_hash": "e09bb23219078e403de0140ee52919470c4b25578384caf4d5f860d708deb175",
+      "sports_as_of": "2026-10-08T06:40:39+00:00",
       "source_ids": [
         "official",
         "statistics"
@@ -72,7 +72,7 @@
         "priority": 10,
         "action": "Получить недостающие спортивные сведения через API; проверить ID, профиль, источники и время. Изменение фактов требует нового seal.",
         "source": "API спортивных данных; подтверждённые предматчевые факты",
-        "deadline": "2026-10-05T14:28:53+00:00",
+        "deadline": "2026-10-08T08:41:39+00:00",
         "price_can_resolve": false,
         "deferred": false,
         "requires_new_sports_seal": true
@@ -115,7 +115,7 @@
         "priority": 50,
         "action": "Отложить запрос цены: сначала закрыть остальные блокировки; коэффициент их не устраняет.",
         "source": "API котировок, точная БК и правила расчёта",
-        "deadline": "2026-10-05T14:28:53+00:00",
+        "deadline": "2026-10-08T08:41:39+00:00",
         "price_can_resolve": false,
         "deferred": true,
         "requires_new_sports_seal": false
@@ -126,14 +126,14 @@
     "verdict_ru": "пропуск",
     "class": "D",
     "status": "RECALCULATE",
-    "at": "2026-10-05T12:30:53+00:00",
+    "at": "2026-10-08T06:43:39+00:00",
     "match": {
       "away": "B",
       "competition_profile": "MEN",
       "format": "REGULATION_90",
       "home": "A",
       "id": "synthetic-001",
-      "kickoff": "2026-10-05T14:28:53+00:00",
+      "kickoff": "2026-10-08T08:41:39+00:00",
       "league": "SYNTHETIC",
       "sport": "football"
     },
@@ -167,6 +167,110 @@
         "conditional_on_no_push": false,
         "overround": null,
         "sharp_consensus": false
+      },
+      "probability_trust": {
+        "schema": "probability-trust-v1",
+        "status": "BLOCKED",
+        "score": null,
+        "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+        "blockers": [
+          "CALIBRATION_INSUFFICIENT",
+          "CONTEXT_UNKNOWN",
+          "DIVERGENCE_NEEDS_CORROBORATION",
+          "HOLDOUT_UNVALIDATED",
+          "MODEL_MARKET_DIVERGENCE",
+          "PROBABILITY_RECALCULATION_REQUIRED",
+          "SEPHIRA_HISTORY_INSUFFICIENT",
+          "SYNTHETIC_DATA_RESEARCH_ONLY",
+          "UNCERTAINTY_TOO_WIDE"
+        ],
+        "components": {
+          "history": {
+            "team_games": [
+              40,
+              40
+            ],
+            "effective_games": [
+              39.9211496087267,
+              39.9211496087267
+            ],
+            "used_history_n": 40,
+            "status": "POLICY_MINIMUM_CHECKED"
+          },
+          "calibration": {
+            "status": "UNCALIBRATED",
+            "n": 0,
+            "artifact_hash": null
+          },
+          "holdout": {
+            "status": "UNVALIDATED",
+            "validation_id": null,
+            "n": null
+          },
+          "context": {
+            "competition_profile": "MEN",
+            "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT",
+            "n": 0
+          },
+          "sources": {
+            "source_ids": [
+              "official",
+              "statistics"
+            ],
+            "independence_groups": [
+              "club"
+            ],
+            "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+            "status": "INPUT_GATES_CHECKED"
+          },
+          "lineup": {
+            "status": "INPUT_GATES_CHECKED"
+          },
+          "model_stability": {
+            "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+            "stress_calibration_statuses": [
+              "UNCALIBRATED",
+              "UNCALIBRATED",
+              "UNCALIBRATED",
+              "UNCALIBRATED"
+            ]
+          },
+          "opponent_history": {
+            "observations": 80,
+            "missing_history_observations": 2,
+            "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+          }
+        },
+        "true_probability_accuracy": null,
+        "monetary_permission": false,
+        "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+      },
+      "divergence_review": {
+        "status": "EXTREME_RECALCULATE",
+        "difference": 0.3830584705149849,
+        "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+        "reference_probability": 0.47619047619047616,
+        "conditional_on_no_push": false,
+        "corroboration": {
+          "status": "INSUFFICIENT",
+          "independence_groups": {
+            "lineup": [
+              "club"
+            ],
+            "injuries": [
+              "club"
+            ],
+            "tactics": [
+              "club"
+            ]
+          }
+        },
+        "review_threshold": 0.1,
+        "extreme_threshold": 0.2,
+        "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+        "monetary_permission": false
       },
       "stress_ev_min": 0.6975567759275112,
       "stress_class": "ROBUST_VALUE",
@@ -215,15 +319,143 @@
       "public_trap": {
         "status": "CHECKED",
         "rule": "no popularity or market movement may replace sports evidence",
-        "unexplained_movement": false
+        "unexplained_movement": false,
+        "narrative_dependence": "NOT_QUANTIFIED",
+        "popularity_data": "NOT_SUPPLIED"
       },
       "death_test": {
         "loss_branches": [],
-        "stress_ev_min": 0.6975567759275112
+        "stress_ev_min": 0.6975567759275112,
+        "under_ceiling": null,
+        "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
       },
       "admission_permission": false
     },
     "stake": 0.0,
+    "probability_trust": {
+      "schema": "probability-trust-v1",
+      "status": "BLOCKED",
+      "score": null,
+      "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+      "blockers": [
+        "CALIBRATION_INSUFFICIENT",
+        "CONTEXT_UNKNOWN",
+        "DIVERGENCE_NEEDS_CORROBORATION",
+        "HOLDOUT_UNVALIDATED",
+        "MODEL_MARKET_DIVERGENCE",
+        "PROBABILITY_RECALCULATION_REQUIRED",
+        "SEPHIRA_HISTORY_INSUFFICIENT",
+        "SYNTHETIC_DATA_RESEARCH_ONLY",
+        "UNCERTAINTY_TOO_WIDE"
+      ],
+      "components": {
+        "history": {
+          "team_games": [
+            40,
+            40
+          ],
+          "effective_games": [
+            39.9211496087267,
+            39.9211496087267
+          ],
+          "used_history_n": 40,
+          "status": "POLICY_MINIMUM_CHECKED"
+        },
+        "calibration": {
+          "status": "UNCALIBRATED",
+          "n": 0,
+          "artifact_hash": null
+        },
+        "holdout": {
+          "status": "UNVALIDATED",
+          "validation_id": null,
+          "n": null
+        },
+        "context": {
+          "competition_profile": "MEN",
+          "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+          "state": "UNKNOWN",
+          "trust": "INSUFFICIENT",
+          "n": 0
+        },
+        "sources": {
+          "source_ids": [
+            "official",
+            "statistics"
+          ],
+          "independence_groups": [
+            "club"
+          ],
+          "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+          "status": "INPUT_GATES_CHECKED"
+        },
+        "lineup": {
+          "status": "INPUT_GATES_CHECKED"
+        },
+        "model_stability": {
+          "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+          "stress_calibration_statuses": [
+            "UNCALIBRATED",
+            "UNCALIBRATED",
+            "UNCALIBRATED",
+            "UNCALIBRATED"
+          ]
+        },
+        "opponent_history": {
+          "observations": 80,
+          "missing_history_observations": 2,
+          "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+        }
+      },
+      "true_probability_accuracy": null,
+      "monetary_permission": false,
+      "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+    },
+    "search_review": {
+      "schema": "sealed-search-review-v1",
+      "scope": "ONE_LOCAL_SEALED_FIXTURE",
+      "match_id": "synthetic-001",
+      "sealed_markets": [
+        "1X2:HOME",
+        "DOUBLE_CHANCE:1X",
+        "DNB:HOME",
+        "HANDICAP:HOME:-1",
+        "TOTAL:OVER:2.5",
+        "BTTS:YES",
+        "TEAM_TOTAL:HOME_OVER:1.5"
+      ],
+      "sealed_market_count": 7,
+      "evaluated_market_count": 7,
+      "priced_market_count": 7,
+      "quoted_contract_count": 7,
+      "reference_only_contract_count": 0,
+      "eligible_before_global_gates": 0,
+      "focus_market": "DOUBLE_CHANCE:1X",
+      "focus_sealed_ordinal": 2,
+      "other_screened_fixtures": null,
+      "global_search_status": "NOT_RECORDED_BY_THIS_DECISION",
+      "search_bias_penalty": null,
+      "penalty_status": "NO_VALIDATED_MULTIPLE_TESTING_PENALTY",
+      "rule": "The fixed pool is auditable; external searches are unknown, not zero.",
+      "monetary_permission": false
+    },
+    "scoring_ceiling": {
+      "automatic_veto": false,
+      "basis": "ORIGINAL_RAW_SCORE_MASS",
+      "calibration": "NOT_A_CALIBRATED_CEILING_FORECAST",
+      "monetary_permission": false,
+      "schema": "raw-scoring-ceiling-v1",
+      "teams": {
+        "away": {
+          "p3_plus": 0.018935591739333592,
+          "p4_plus": 0.0025526538849139605
+        },
+        "home": {
+          "p3_plus": 0.18037746565109386,
+          "p4_plus": 0.06033207925557339
+        }
+      }
+    },
     "reasons": [
       {
         "code": "CALIBRATION_INSUFFICIENT",
@@ -271,7 +503,7 @@
       }
     ],
     "next_action": "Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.",
-    "deadline": "2026-10-05T14:28:53+00:00",
+    "deadline": "2026-10-08T08:41:39+00:00",
     "alternatives": [
       {
         "market": "1X2:HOME",
@@ -301,6 +533,109 @@
           "conditional_on_no_push": false,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "CORROBORATION_REQUIRED",
+          "difference": 0.11723348426553004,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": false,
+          "corroboration": {
+            "status": "INSUFFICIENT",
+            "independence_groups": {
+              "lineup": [
+                "club"
+              ],
+              "injuries": [
+                "club"
+              ],
+              "tactics": [
+                "club"
+              ]
+            }
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": 0.06703131617341118,
         "stress_class": "ROBUST_VALUE",
@@ -347,7 +682,9 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [
@@ -362,7 +699,9 @@
               "probability": 0.10817152605672048
             }
           ],
-          "stress_ev_min": 0.06703131617341118
+          "stress_ev_min": 0.06703131617341118,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -394,6 +733,110 @@
           "conditional_on_no_push": false,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "MODEL_MARKET_DIVERGENCE",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "EXTREME_RECALCULATE",
+          "difference": 0.3830584705149849,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": false,
+          "corroboration": {
+            "status": "INSUFFICIENT",
+            "independence_groups": {
+              "lineup": [
+                "club"
+              ],
+              "injuries": [
+                "club"
+              ],
+              "tactics": [
+                "club"
+              ]
+            }
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": 0.6975567759275112,
         "stress_class": "ROBUST_VALUE",
@@ -442,11 +885,15 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [],
-          "stress_ev_min": 0.6975567759275112
+          "stress_ev_min": 0.6975567759275112,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -478,6 +925,110 @@
           "conditional_on_no_push": true,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "MODEL_MARKET_DIVERGENCE",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "EXTREME_RECALCULATE",
+          "difference": 0.33209630739875295,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": true,
+          "corroboration": {
+            "status": "INSUFFICIENT",
+            "independence_groups": {
+              "lineup": [
+                "club"
+              ],
+              "injuries": [
+                "club"
+              ],
+              "tactics": [
+                "club"
+              ]
+            }
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": 0.3672815351039352,
         "stress_class": "ROBUST_VALUE",
@@ -526,11 +1077,15 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [],
-          "stress_ev_min": 0.3672815351039352
+          "stress_ev_min": 0.3672815351039352,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -562,6 +1117,98 @@
           "conditional_on_no_push": true,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "HOLDOUT_UNVALIDATED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "WITHIN_POLICY_REVIEW_THRESHOLD",
+          "difference": -0.044776546055051825,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": true,
+          "corroboration": {
+            "status": "NOT_REQUIRED",
+            "independence_groups": null
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": -0.23549602674994408,
         "stress_class": "NO_VALUE",
@@ -608,7 +1255,9 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [
@@ -623,7 +1272,9 @@
               "probability": 0.10817152605672048
             }
           ],
-          "stress_ev_min": -0.23549602674994408
+          "stress_ev_min": -0.23549602674994408,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -655,6 +1306,109 @@
           "conditional_on_no_push": false,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "CORROBORATION_REQUIRED",
+          "difference": -0.14958775672326202,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": false,
+          "corroboration": {
+            "status": "INSUFFICIENT",
+            "independence_groups": {
+              "lineup": [
+                "club"
+              ],
+              "injuries": [
+                "club"
+              ],
+              "tactics": [
+                "club"
+              ]
+            }
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": -0.48445502151621783,
         "stress_class": "NO_VALUE",
@@ -703,7 +1457,9 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [
@@ -728,7 +1484,9 @@
               "probability": 0.10817152605672048
             }
           ],
-          "stress_ev_min": -0.48445502151621783
+          "stress_ev_min": -0.48445502151621783,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -760,6 +1518,109 @@
           "conditional_on_no_push": false,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "CORROBORATION_REQUIRED",
+          "difference": -0.14934001544800118,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": false,
+          "corroboration": {
+            "status": "INSUFFICIENT",
+            "independence_groups": {
+              "lineup": [
+                "club"
+              ],
+              "injuries": [
+                "club"
+              ],
+              "tactics": [
+                "club"
+              ]
+            }
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": -0.4388774179839011,
         "stress_class": "NO_VALUE",
@@ -808,7 +1669,9 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [
@@ -828,7 +1691,9 @@
               "probability": 0.13370558723986517
             }
           ],
-          "stress_ev_min": -0.4388774179839011
+          "stress_ev_min": -0.4388774179839011,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       },
@@ -860,6 +1725,98 @@
           "conditional_on_no_push": false,
           "overround": null,
           "sharp_consensus": false
+        },
+        "probability_trust": {
+          "schema": "probability-trust-v1",
+          "status": "BLOCKED",
+          "score": null,
+          "score_status": "NO_VALIDATED_NUMERIC_TRUST_SCORE",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "HOLDOUT_UNVALIDATED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE"
+          ],
+          "components": {
+            "history": {
+              "team_games": [
+                40,
+                40
+              ],
+              "effective_games": [
+                39.9211496087267,
+                39.9211496087267
+              ],
+              "used_history_n": 40,
+              "status": "POLICY_MINIMUM_CHECKED"
+            },
+            "calibration": {
+              "status": "UNCALIBRATED",
+              "n": 0,
+              "artifact_hash": null
+            },
+            "holdout": {
+              "status": "UNVALIDATED",
+              "validation_id": null,
+              "n": null
+            },
+            "context": {
+              "competition_profile": "MEN",
+              "model_id": "f6e5739a55facd4c0fc4c6420b0e9d828f1d6722336d97421b8153b663dc21d9",
+              "state": "UNKNOWN",
+              "trust": "INSUFFICIENT",
+              "n": 0
+            },
+            "sources": {
+              "source_ids": [
+                "official",
+                "statistics"
+              ],
+              "independence_groups": [
+                "club"
+              ],
+              "reliability_basis": "DECLARED_INPUT_NOT_EXTERNAL_CERTIFICATION",
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "lineup": {
+              "status": "INPUT_GATES_CHECKED"
+            },
+            "model_stability": {
+              "status": "SENSITIVITY_IS_NOT_FORECAST_ACCURACY",
+              "stress_calibration_statuses": [
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED",
+                "UNCALIBRATED"
+              ]
+            },
+            "opponent_history": {
+              "observations": 80,
+              "missing_history_observations": 2,
+              "status": "DESCRIPTIVE_NOT_VALIDATED_COMPETENCE"
+            }
+          },
+          "true_probability_accuracy": null,
+          "monetary_permission": false,
+          "rule": "EV and stress EV do not substitute for calibration, holdout or evidence."
+        },
+        "divergence_review": {
+          "status": "WITHIN_POLICY_REVIEW_THRESHOLD",
+          "difference": -0.04859414038745552,
+          "reference_method": "SINGLE_PRICE_BREAK_EVEN_PROXY",
+          "reference_probability": 0.47619047619047616,
+          "conditional_on_no_push": false,
+          "corroboration": {
+            "status": "NOT_REQUIRED",
+            "independence_groups": null
+          },
+          "review_threshold": 0.1,
+          "extreme_threshold": 0.2,
+          "threshold_basis": "EXISTING_RESEARCH_POLICY_NOT_NEW_EMPIRICAL_VALIDATION",
+          "monetary_permission": false
         },
         "stress_ev_min": -0.2625915489688893,
         "stress_class": "NO_VALUE",
@@ -906,7 +1863,9 @@
         "public_trap": {
           "status": "CHECKED",
           "rule": "no popularity or market movement may replace sports evidence",
-          "unexplained_movement": false
+          "unexplained_movement": false,
+          "narrative_dependence": "NOT_QUANTIFIED",
+          "popularity_data": "NOT_SUPPLIED"
         },
         "death_test": {
           "loss_branches": [
@@ -926,7 +1885,9 @@
               "probability": 0.10817152605672048
             }
           ],
-          "stress_ev_min": -0.2625915489688893
+          "stress_ev_min": -0.2625915489688893,
+          "under_ceiling": null,
+          "causal_status": "NOT_INFERRED_FROM_SCORE_BRANCHES"
         },
         "admission_permission": false
       }

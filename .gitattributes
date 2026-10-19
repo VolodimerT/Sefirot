@@ -1,0 +1,2 @@
+# SQL function bodies are pinned byte identities in the rollout manifest.
+*.sql text eol=lf

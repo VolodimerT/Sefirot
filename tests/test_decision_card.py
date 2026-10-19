@@ -135,7 +135,9 @@ class FinalDecisionTests(unittest.TestCase):
 
     def test_exact_ev_tie_prefers_less_loss_with_push_protection(self):
         p,case,quotes,context=controlled([{'kind':'1X2','side':'HOME'},{'kind':'DNB','side':'HOME'}])
-        for c,q,base,odd in zip(p['candidates'],quotes,([.5,0,.5],[.25,.5,.25]),(2.5,3.)):
+        # One joint result distribution: HOME=.5, DRAW=.25, AWAY=.25.
+        # DNB has the same HOME win probability; prices give equal EV=.25.
+        for c,q,base,odd in zip(p['candidates'],quotes,([.5,0,.5],[.5,.25,.25]),(2.5,2.)):
             c.update(base=base,low=base,high=base,stress_probabilities=[base]);q['odds']=odd
         out=decision(p,case,quotes,context)
         self.assertEqual(out['decision'],'BET');self.assertEqual(out['selected_market'],'DNB:HOME')

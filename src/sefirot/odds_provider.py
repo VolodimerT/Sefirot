@@ -6,11 +6,10 @@ evidence or alter a probability. There is no live or wager endpoint here.
 from __future__ import annotations
 
 import http.client
-import json
 import re
 from urllib.parse import urlencode
 from .credentials import credential
-from .provider_transport import ProviderConnection, request_json
+from .provider_transport import ProviderConnection, request_json, read_response, close_transport, strict_json_payload
 
 from .contracts import digest, number, time
 from .markets import complete_overround, validate_quote, market_of
@@ -58,19 +57,19 @@ def _get_json(path, params, connection_factory=ProviderConnection):
         response = connection.getresponse()
         if response.status != 200:
             raise ValueError(f'odds provider HTTP {int(response.status)}; PASS')
-        raw = response.read(MAX_RESPONSE + 1)
+        raw = read_response(response, MAX_RESPONSE)
         if len(raw) > MAX_RESPONSE:
             raise ValueError('odds provider response exceeds limit; PASS')
         try:
-            payload = json.loads(raw.decode('utf-8'))
-        except (UnicodeError, json.JSONDecodeError) as exc:
+            payload = strict_json_payload(raw)
+        except ValueError:
             raise ValueError('odds provider returned invalid JSON; PASS') from None
         return payload
     except (OSError, http.client.HTTPException):
         # Underlying network errors may contain the request URL and API key.
         raise ValueError('odds provider network error; PASS') from None
     finally:
-        connection.close()
+        close_transport(connection)
 
 
 def sports_catalogue(api_key=None, connection_factory=ProviderConnection):
@@ -115,7 +114,8 @@ def event_candidates(data, prediction, sport, received_at):
 
 
 def _sealed_match(prediction, received_at):
-    if not isinstance(prediction, dict) or not prediction.get('captured_prematch') or prediction.get('reconstructed'):
+    if (not isinstance(prediction, dict) or prediction.get('captured_prematch') is not True
+            or prediction.get('reconstructed') is not False):
         raise ValueError('only a real prematch sealed prediction can request odds')
     match = prediction['sports']['match']
     if match['sport'] != 'football' or match['format'] != 'REGULATION_90':
@@ -151,7 +151,7 @@ def quotes_from_event(event, prediction, sport, event_id, bookmaker_key, receive
     """
     requested = request_markets(market_keys)
     match = _sealed_match(prediction, received_at)
-    if not rules_confirmed:
+    if rules_confirmed is not True:
         raise ValueError('bookmaker REGULATION_90 settlement must be confirmed; PASS')
     _key(sport, r'soccer_[a-z0-9_]+', 'soccer sport key')
     _key(event_id, r'[A-Za-z0-9_-]{4,100}', 'event id')

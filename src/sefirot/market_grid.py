@@ -1,6 +1,6 @@
 """Frozen, price-blind main-market research; no monetary admission or journal writes."""
 from .contracts import digest, time
-from .engine import prepare
+from .engine import prepare, market_constraint_issues
 from .identity import code_hash, model_code_hash
 from .markets import market_of, probabilities, settle, validate_quote, payoff_ev, implied, market_reference
 from .odds_provider import require_prematch_seal
@@ -38,6 +38,7 @@ def create_grid(prediction, policy, at):
     rows = []
     for contract in universe():
         market = market_of(contract); raw = probabilities(market, mass)
+        selection_issues = market_constraint_issues(market, original['scenario']['selection_constraints'])
         calibration = calibrate(market, raw, prediction['calibrator'], policy, model['competition_profile'])
         stresses = [probabilities(market, variant) for variant in variants]
         # The grid exposes sporting sensitivity and calibration separately.
@@ -47,6 +48,8 @@ def create_grid(prediction, policy, at):
                      'calibration_n': calibration['n'], 'calibration_low': calibration['low'],
                      'calibration_high': calibration['high'],
                      'stress_probabilities': [list(p) for p in stresses],
+                     'selection_issues': selection_issues,
+                     'selection_status': 'BLOCKED_BY_SCENARIO' if selection_issues else 'NO_EXPLICIT_CONFLICT',
                      'death_test': {'loss_probability_raw': raw[2],
                          'top_score_losses': [s for s in model['score_scenarios']
                                               if settle(market, s['home'], s['away']) == 'LOSS']},
@@ -56,6 +59,7 @@ def create_grid(prediction, policy, at):
             'code_hash': prediction['code_hash'], 'model_hash': prediction['model_hash'],
             'policy_hash': prediction['policy_hash'], 'universe_hash': digest(universe()),
             'candidates': rows, 'source_issues': prediction['issues'],
+            'selection_constraints': original['scenario']['selection_constraints'],
             'synthetic': prediction['synthetic'], 'quotes_read': False,
             'monetary_permission': False, 'execution_enabled': False,
             'selection_validation': 'UNVALIDATED_EXPANDED_UNIVERSE',
