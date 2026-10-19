@@ -82,7 +82,7 @@ function sourceCanonical(v) {
 }
 function sourceSafe(data,endpoint) {
   const labels=new Set(['Total Shots','Shots on Goal','Shots off Goal','Blocked Shots','Shots insidebox',
-    'Shots outsidebox','Corner Kicks','Yellow Cards','Red Cards','Fouls','Offsides','Ball Possession',
+    'Shots outsidebox','Corner Kicks','Yellow Cards','Red Cards','Fouls','Free Kicks','Offsides','Ball Possession',
     'Expected Goals','expected_goals','goals_prevented','Total passes','Passes accurate',
     'Passes %','Goalkeeper Saves']);
   if(endpoint==='fixtures/statistics'&&(!Array.isArray(data.response)||data.response.some(r=>
