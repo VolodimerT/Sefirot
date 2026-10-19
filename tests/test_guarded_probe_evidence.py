@@ -124,6 +124,23 @@ class GuardedProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(digest(q['source_packet']['data']),q['receipt']['payload_hash'])
         self.assertFalse(q['source_evidence']['model_fit_eligible'])
 
+    def test_provider_free_kicks_are_archived_without_fitting_or_remapping(self):
+        # An observed API-Football statistic label is valid original sports data.
+        # This does not create a free-kicks betting market or monetary permission.
+        p=packet('fixtures/statistics',{'fixture':123})
+        p['data']['response'][0]['statistics'].append({'type':'Free Kicks','value':11})
+        p['receipt']['payload_hash']=digest(p['data'])
+        original=copy.deepcopy(p)
+        q=collect([p],[{'endpoint':'fixtures/statistics','params':{'fixture':123}}])['queries'][0]
+        self.assertEqual(q['status'],'DONE')
+        self.assertEqual(q['rows'][0]['statistics']['Free Kicks'],11)
+        self.assertEqual(q['source_evidence']['status'],'CANONICAL_PACKET_ARCHIVED')
+        self.assertEqual(q['source_packet']['data'],original['data'])
+        self.assertEqual(digest(q['source_packet']['data']),q['receipt']['payload_hash'])
+        self.assertFalse(q['source_evidence']['model_fit_eligible'])
+        self.assertFalse(q['source_evidence']['monetary_permission'])
+        self.assertEqual(p,original)
+
     def test_unknown_statistic_hint_never_exposes_values_or_secret_labels(self):
         p=packet('fixtures/statistics',{'fixture':123})
         p['data']['response'][0]['statistics'].extend([
