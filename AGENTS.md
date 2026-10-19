@@ -1,3 +1,30 @@
+## Global recovery integration, 19.10.2026
+
+Integrate the independently reviewed paired-fixture evaluation and explicit
+SHADOW target-calendar fixes into the existing PR #56. Correct release-test
+accounting so skipped tests are never reported as passed. Validate the combined
+tree on production's Python 3.14.3 and exact-head CI; keep generated/private
+evidence outside the source tree. Preserve MODEL_MODULES, Policy, historical
+seals and receipts, hosted QC admissions and production contracts. No deployment,
+main merge, hosted migration, secret change, provider call or paid operation is
+authorized by this mission. Release preparation is not release authorization.
+
+## Independent paired-evaluation repair, 19.10.2026
+
+Owner explicitly requests the autonomous recovery team and coding delegation.
+On exact integration baseline 2bef3110, compare_versions counts correlated
+markets as independent HOLDOUT observations and can trigger a route rollback
+from only nine fixtures. Repair this evaluator in an isolated branch with
+owned red/green tests and independent review. Preserve public row counters,
+add distinct-fixture and UTC-date-block provenance, reuse the existing
+calibration audit's exploratory clustered interval, and retain Policy's
+fixture minimum. Missing kickoff/insufficient clusters must keep SHADOW.
+No new model fitting/certification, historical data/seal/receipt changes,
+provider/paid calls, secrets, hosted writes, deployment, main merge or route
+activation. MODEL_MODULES and Policy stay byte-identical. Exact-build CI is
+required before release; this isolated commit does not authorize deployment.
+Earlier scopes below describe historical stages.
+
 ## Completion of permitted recovery preparation, 18.10.2026
 
 Continue on existing PR56 from d64af6c2; repair confirmed private source sync

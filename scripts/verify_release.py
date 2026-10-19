@@ -14,6 +14,17 @@ from sefirot.contracts import VERSION,Policy
 from sefirot.identity import code_hash,model_code_hash
 from sefirot.retrospective import audit_cases
 
+def test_counts(stderr):
+    """Keep unittest run/skip counts distinct; absent evidence is not success."""
+    runs=re.findall(r'^Ran (\d+) tests? in .+$',stderr,re.MULTILINE)
+    success=re.findall(r'^OK(?: \(skipped=(\d+)\))?$',stderr,re.MULTILINE)
+    if len(runs)!=1 or len(success)!=1:
+        raise ValueError('UNVERIFIED_TEST_SUMMARY')
+    total=int(runs[0]);skipped=int(success[0] or 0)
+    if total<1 or not 0<=skipped<=total:
+        raise ValueError('INCONSISTENT_TEST_SUMMARY')
+    return {'tests':total,'tests_passed':total-skipped,'tests_skipped':skipped}
+
 def main():
     sys.stdout.reconfigure(encoding='utf-8',errors='strict')
     report_dir=ROOT/'reports';report_dir.mkdir(exist_ok=True)
@@ -33,16 +44,16 @@ def main():
     (report_dir/'BACKTEST.json').write_text(json.dumps(backtest,indent=2,ensure_ascii=False),encoding='utf-8')
     audit=audit_cases(json.loads((ROOT/'examples/audit_cases_20260927_30.json').read_text(encoding='utf-8')),Policy())
     (report_dir/'AUDIT_REGRESSION_REPORT.json').write_text(json.dumps(audit,indent=2,ensure_ascii=False),encoding='utf-8')
-    count=re.search(r'Ran (\d+) tests?',test.stderr)
+    counts=test_counts(test.stderr)
     result={'version':VERSION,'code_hash':code_hash(),'model_hash':model_code_hash(),'python':platform.python_version(),'platform':platform.system(),'elapsed_seconds':round(time.monotonic()-started,3),
-            'test_exit':test.returncode,'tests':int(count.group(1)) if count else None,'demo':demo_result,'backtest_fixtures':backtest['fixtures'],'backtest_scored_markets':backtest['metrics']['n'],
+            'test_exit':test.returncode,**counts,'demo':demo_result,'backtest_fixtures':backtest['fixtures'],'backtest_scored_markets':backtest['metrics']['n'],
             'audit_cases':audit['cases'],'audit_outcomes':audit['outcomes'],'audit_dataset_hash':audit['dataset_hash'],'audit_holdout_eligible':audit['holdout_eligible'],
             'statistical_profitability_proven':False,'generated_at':datetime.now(timezone.utc).isoformat()}
     (report_dir/'RELEASE_CHECK.json').write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding='utf-8')
     (report_dir/'TEST_REPORT.md').write_text(f'''# SEFIROT CORE {VERSION}: проверка сборки
 
 - Среда: Python {result['python']}, {result['platform']}.
-- Автоматические тесты: **{result['tests']}/{result['tests']}**, код завершения **0**, полный список в TEST_OUTPUT.txt.
+- Автоматические тесты: успешно **{result['tests_passed']}**, пропущено **{result['tests_skipped']}**, всего **{result['tests']}**; код завершения **0**, полный список и причины пропусков в TEST_OUTPUT.txt.
 - Сквозной demo: захват → решение → replay → результат → семь рынков feedback; целостность и replay подтверждены.
 - Хронологический backtest: **{backtest['fixtures']} синтетических матчей / {backtest['metrics']['n']} оценённых рынков**. Все решения и отказы учтены; результат не сертифицирует модель.
 - Ретроспективные случаи: **{audit['cases']}** из четырёх аудитных документов; {audit['outcomes']}. Неподдерживаемые рынки отмечены явно; исходные предматчевые прогнозы не восстановлены. Данные unverified/holdout=false, это не проверка эффективности новой модели.
