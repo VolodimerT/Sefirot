@@ -1,6 +1,9 @@
 """Chronicler metrics and contextual Competence; results never rewrite decisions."""
 from __future__ import annotations
-from math import sqrt
+from collections import defaultdict
+from datetime import timezone
+from math import fsum, sqrt
+from random import Random
 from .contracts import number,integer,time,digest,SEPHIROT
 from .probability import wilson
 from .evaluation import metrics
@@ -69,14 +72,114 @@ def ratings(postmortems,league,kind,scenario,policy,model_id=None,profile=None):
 
 
 def compare_versions(old,new,policy):
+    """Exploratory paired comparison; event-market rows are not independent games.
+
+    Keep legacy row counters, but average common markets within each fixture and
+    resample whole UTC kickoff days. This reuses the read-only calibration audit's
+    2,000 draws/minimum eight days; it never certifies a new holdout or model.
+    """
     key=lambda r:(r['match_id'],r['market'])
     a={key(r):r for r in old};b={key(r):r for r in new};common=sorted(set(a)&set(b))
     if len(a)!=len(old) or len(b)!=len(new):raise ValueError('duplicate paired records')
     if any(a[k]['outcome']!=b[k]['outcome'] for k in common):raise ValueError('paired outcomes disagree')
     if any(a[k].get('competition_profile','UNKNOWN')!=b[k].get('competition_profile','UNKNOWN') for k in common):raise ValueError('paired competition profiles disagree')
-    delta=[a[k]['brier']-b[k]['brier'] for k in common]
-    n=len(delta);mean=sum(delta)/n if n else 0.
-    se=sqrt(sum((d-mean)**2 for d in delta)/(n-1)/n) if n>1 else 1.
-    return {'n':n,'unpaired_old':len(a)-n,'unpaired_new':len(b)-n,'improvement':mean,'interval':[mean-1.96*se,mean+1.96*se],
-            'recommendation':'ROLLBACK' if n>=policy.min_holdout and mean+1.96*se<0 else
-                             'REVIEW_PROMOTION' if n>=policy.min_holdout and mean-1.96*se>0 else 'KEEP_SHADOW'}
+    per_fixture=defaultdict(list);kickoffs={};missing_dates=set()
+    for k in common:
+        mid=k[0]
+        per_fixture[mid].append(number(a[k]['brier'],'old Brier',0,1)-number(b[k]['brier'],'new Brier',0,1))
+        stamps=[time(row['kickoff']) if row.get('kickoff') is not None else None for row in (a[k],b[k])]
+        if None in stamps:missing_dates.add(mid)
+        if all(stamp is not None for stamp in stamps) and stamps[0]!=stamps[1]:
+            raise ValueError('paired kickoffs disagree')
+        for stamp in stamps:
+            if stamp is not None:
+                if mid in kickoffs and kickoffs[mid]!=stamp:raise ValueError('fixture kickoffs disagree')
+                kickoffs[mid]=stamp
+    means={mid:fsum(values)/len(values) for mid,values in sorted(per_fixture.items())}
+    fixtures=len(means);n=len(common);mean=fsum(means.values())/fixtures if fixtures else 0.
+    clusters=defaultdict(list)
+    for mid,value in means.items():
+        if mid not in missing_dates:
+            clusters[kickoffs[mid].astimezone(timezone.utc).date().isoformat()].append(value)
+    interval=None;limitations=[]
+    if fixtures<policy.min_holdout:limitations.append('HOLDOUT_FIXTURES_TOO_SMALL')
+    if missing_dates:limitations.append('KICKOFF_DATE_UNAVAILABLE')
+    if len(clusters)<8:limitations.append('UTC_DATE_BLOCKS_TOO_SMALL')
+    # The existing audit only reports this interval from >=30 fixtures/8 days.
+    # Policy.min_holdout is an additional independent FIXTURE threshold below.
+    if fixtures>=30 and len(clusters)>=8 and not missing_dates:
+        groups=[clusters[k] for k in sorted(clusters)];rng=Random(20261008);samples=[]
+        for _ in range(2000):
+            drawn=[groups[rng.randrange(len(groups))] for _ in groups]
+            samples.append(fsum(fsum(group) for group in drawn)/sum(map(len,drawn)))
+        samples.sort();interval=[samples[49],samples[1949]]
+    recommendation='KEEP_SHADOW'
+    if fixtures>=policy.min_holdout and interval is not None:
+        if interval[1]<0:recommendation='ROLLBACK'
+        elif interval[0]>0:recommendation='REVIEW_PROMOTION'
+    return {'n':n,'paired_market_rows':n,'unpaired_old':len(a)-n,'unpaired_new':len(b)-n,
+            'distinct_fixtures':fixtures,'date_blocks':len(clusters),'fixtures_missing_kickoff':len(missing_dates),
+            'improvement':mean,'interval':interval,'recommendation':recommendation,
+            'interval_method':'exploratory paired UTC-day cluster bootstrap',
+            'interval_replicates':2000 if interval is not None else 0,
+            'unit':'per-fixture average delta Brier across common markets',
+            'minimum_holdout_fixtures':policy.min_holdout,'minimum_interval_fixtures':30,
+            'minimum_interval_date_blocks':8,'limitations':limitations,
+            'certifies_model':False,'independent_holdout_verified':False}
+
+
+def validate_stress_classes(records, policy):
+    """Independent monetary gate for each grade; includes previously refused quotes.
+
+    Quote returns are diagnostic payoffs, not executed profit. A favourable base
+    EV or winning PASS cannot waive chronology, calibration or sample checks.
+    """
+    output = {}
+    for label in ('ROBUST_VALUE', 'FRAGILE_VALUE', 'AGGRESSIVE_VALUE'):
+        rows = sorted([r for r in records if r['stress_class'] == label],
+                      key=lambda r: (time(r['kickoff']), r['match_id']))
+        reasons = []
+        n = len(rows)
+        if n < policy.min_holdout:
+            reasons.append('CLASS_HOLDOUT_TOO_SMALL')
+        report = summary(rows)
+        returns = [r['unit_return'] for r in rows]
+        delta = [r['brier']-r['baseline_brier'] for r in rows]
+        interval = lambda values: _mean_interval(values)
+        profit_interval = interval(returns)
+        score_interval = interval(delta)
+        if not rows or profit_interval[0] <= 0:
+            reasons.append('CLASS_POSITIVE_RETURN_UNPROVEN')
+        if not rows or score_interval[1] >= 0:
+            reasons.append('CLASS_BASELINE_IMPROVEMENT_UNPROVEN')
+        halves = (rows[:n//2], rows[n//2:])
+        if not all(half and sum(r['unit_return'] for r in half)>0
+                   and sum(r['brier']-r['baseline_brier'] for r in half)<0 for half in halves):
+            reasons.append('CLASS_PERIOD_STABILITY_FAILED')
+        if rows and max(report['calibration_error'], report['multiclass']['ece_macro']) > policy.max_calibration_error:
+            reasons.append('CLASS_CALIBRATION_ERROR_HIGH')
+        if rows and report['multiclass']['log_loss'] >= sum(r['baseline_log_loss'] for r in rows)/n:
+            reasons.append('CLASS_LOGLOSS_BASELINE_NOT_BEATEN')
+        if any(r['synthetic'] or not r['captured_prematch'] for r in rows):
+            reasons.append('CLASS_RECONSTRUCTED_OR_SYNTHETIC')
+        if any(r['calibration_status'] != 'CALIBRATED_BIN' for r in rows):
+            reasons.append('CLASS_UNCALIBRATED')
+        if any(not r['sports_gates_passed'] for r in rows):
+            reasons.append('CLASS_SPORTS_GATES_FAILED')
+        if any(r['ev_low'] < policy.min_low_ev for r in rows):
+            reasons.append('CLASS_EPISTEMIC_VALUE_FAILED')
+        output[label] = {'n': n, 'passed': not reasons, 'reasons': reasons,
+                         'ids': [r['match_id'] for r in rows],
+                         'return_interval': profit_interval, 'brier_delta_interval': score_interval,
+                         'mean_ev': sum(r['ev'] for r in rows)/n if n else None,
+                         'metrics': report, 'return_kind': 'PREDECLARED_QUOTE_UNIT_PAYOFF_NOT_EXECUTION'}
+    return output
+
+
+def _mean_interval(values):
+    if not values:
+        return [None, None]
+    n = len(values)
+    mean = sum(values)/n
+    se = sqrt(sum((v-mean)**2 for v in values)/(n-1)/n) if n>1 else 1.
+    return [mean-1.96*se, mean+1.96*se]

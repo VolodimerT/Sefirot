@@ -1,0 +1,1176 @@
+## Global recovery integration, 19.10.2026
+
+Integrate the independently reviewed paired-fixture evaluation and explicit
+SHADOW target-calendar fixes into the existing PR #56. Correct release-test
+accounting so skipped tests are never reported as passed. Validate the combined
+tree on production's Python 3.14.3 and exact-head CI; keep generated/private
+evidence outside the source tree. Preserve MODEL_MODULES, Policy, historical
+seals and receipts, hosted QC admissions and production contracts. No deployment,
+main merge, hosted migration, secret change, provider call or paid operation is
+authorized by this mission. Release preparation is not release authorization.
+
+## Independent paired-evaluation repair, 19.10.2026
+
+Owner explicitly requests the autonomous recovery team and coding delegation.
+On exact integration baseline 2bef3110, compare_versions counts correlated
+markets as independent HOLDOUT observations and can trigger a route rollback
+from only nine fixtures. Repair this evaluator in an isolated branch with
+owned red/green tests and independent review. Preserve public row counters,
+add distinct-fixture and UTC-date-block provenance, reuse the existing
+calibration audit's exploratory clustered interval, and retain Policy's
+fixture minimum. Missing kickoff/insufficient clusters must keep SHADOW.
+No new model fitting/certification, historical data/seal/receipt changes,
+provider/paid calls, secrets, hosted writes, deployment, main merge or route
+activation. MODEL_MODULES and Policy stay byte-identical. Exact-build CI is
+required before release; this isolated commit does not authorize deployment.
+Earlier scopes below describe historical stages.
+
+## Completion of permitted recovery preparation, 18.10.2026
+
+Continue on existing PR56 from d64af6c2; repair confirmed private source sync
+pagination truncation and SQLite CLI error handling. Preserve first source
+availability, original bytes, receipts, model/Policy and all deployment gates.
+The authorized 18Oct live window is exhausted:5 calls,QUOTA_STOP,reserve5.
+No more provider calls/rearm, hosted schema writes, deploy, new services,
+main merge, force push, credentials, Stake, bets or additional agents.
+Full exact-tree Python3.14.3 release and exact-head CI are required.
+
+## Recovery & Research Pipeline v1.0, 18.10.2026
+
+Owner now requests live recovery, a bounded EPL39/2026 pilot through the existing
+protected gateway/arm_research_budget, <=5 calls/day, <=12min,1/min,reserve5.
+Verify the first provider status and stop on any unknown quota/error/safety.
+No direct budget UPDATE, resets, refetches, credentials or production migrations.
+Deploy is authorized ONLY if PR56 HEAD=c558486 and Render branch=42e25ccc,
+all four workflows success, FF/rights proven. Actual b6650b27 fails this rule:
+PASS/NO DEPLOY, including after further reviewed repairs; do not rewind HEAD.
+Repair confirmed SOURCE_SAFETY continuation/misclassification on existing PR56,
+retain earlier diagnostics/originals/Policy/model bytes; isolated SQL/recovery
+regressions and full exact-head CI. No Stake, bets, money, new Render service,
+force push, main merge or additional agents. Older headers are historical.
+RESEARCH_ONLY / PASS / stake=0.
+
+## Autocollector to existing model inputs, 17.10.2026
+
+Owner supersedes prior deployment scope: skip Stake completely; use existing
+PR56 based on c558486, original Repository/Service/Policy and protected gateway.
+Implement append-only private source archive, QC/import/coverage/model inputs,
+bounded daily planning and manual quote preview. Pilot league39 season2026.
+No source/model/prediction reconstruction, real fit or cohort registration.
+Preserve original snapshot/seals and MODEL_MODULES/Policy bytes. Test isolated
+SQL, recovery/concurrency/chronology, exact Python3.14.3 and full exact-head CI.
+No hosted writes/migrations, deploy/main merge, budget activation/reset or new
+provider/paid calls. New SQL, relay/gateway/worker opt-in remain parked until
+separate owner approval. 5/day,1/min,reserve5. No additional agents.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers are historical.
+
+## API-Football queue recovery, 17.10.2026
+
+Owner now explicitly authorizes restoring and deploying the existing Render
+sports_probe consumer after configuration checks, including the existing job
+c38eb7dd-822f-4f94-8fba-cc6b0ec44009 (one status query). Latest unified base
+c39d2d2; preserve all src/MODEL/Policy and original rows/snapshot/receipts.
+Recover existing MCP launcher from deployed branch. Integrate that branch
+without force, preserving its inert operator-only budget source. Use existing
+PR56, no extra PR or service. Explicit sports_probe worker mode keeps CORE
+HTTP/MCP read-only; guarded existing collector and leased/idempotent completion
+only. Restore existing claim/probe EXECUTE only after exact CI/deploy/health and
+old instance retirement. Never renew/reset/activate/change the budget, scan,
+read/change secret values, call Stake, merge main, fit or bet. Expired permits
+must produce a truthful denial, not an invented provider status/quota.
+No additional agents. Earlier headers describe superseded stage restrictions.
+RESEARCH_ONLY / PASS / stake=0.
+
+## Final integration and source recovery, 16.10.2026
+
+Owner explicitly requests the autonomous engineering team and independent QA,
+starting #68, then #69 and CORE integration on existing draft PR56. Current
+baseline8c75f6e5. Public official Stake OpenAPI is now available; record exact
+X-API-KEY/fixture-slug contract and access gaps, never invent quote timestamps
+or use account token as official Sports Data key. Official access still blocked.
+Confirmed actual CLI loss: a later budget refusal discards previously fetched
+fixture/enrichment packets. Repair existing collector with per-packet exclusive
+source persistence and guarded one-per-minute CLI pacing; no automatic retry.
+Prepare populated-safe parked situation delta preserving stake_snapshot kind,
+installed probe fence/delegate/claim/ACL, documented NOLOGIN ingestion schema
+usage, original rows/snapshots and budget.
+Use owned red/green, isolated full release/native PostgreSQL and exact-head CI.
+Deliver full tracked source bundle and concrete rollout/rollback, not deployment.
+Existing scopes below are historical. This request withholds new production
+deploy/migration/main merge permission; no hosted writes, secrets/credential
+values, provider or paid calls, budget activation, real fit/HOLDOUT or bets.
+Model/Policy/source originals and historical hashes stay unchanged. Independent
+QA remains read-only; backend SQL and root collector edits are disjoint.
+RESEARCH_ONLY / PASS / stake=0.
+
+## Runnable working-release delivery, 16.10.2026
+
+Owner requests an updated working version and report. At verified5990c6b0,
+actual operator CLI shows traceback for missing/invalid owner access code or
+busy/out-of-range port; a successful port0 startup never announces its address.
+Repair only scripts/operator_cockpit.py startup diagnostics, bounded port and
+actual loopback URL. Preserve authentication/session/read-only/ledger paths.
+New actual CLI/HTTP regressions, README current entry and one working-version
+document may change. All src/MODEL_MODULES/Policy, original data/seals/hashes,
+SQL/worker/relay, protocol and prior reports remain byte-identical.
+Deliver a complete exact-tree source ZIP, not a partial review ZIP or standard
+sdist missing scripts/research/web. Core wheel is separately labeled/tested.
+Use existingdraftPR56 and exact20-jobCI/fullisolatedrelease; independentQA is
+read-only as already explicitly authorized. No automatic demo/data/DB creation,
+provider/API calls, credential values, hosted writes, production/deploy/main
+merge, quotaactivation, realfit/HOLDOUT or bets. PASS/stake0. Historical below.
+
+## Stake research normalization integrity, 16.10.2026
+
+Owner explicitly authorized P0 #68 -> #69 -> unified CORE, data and independent
+QA, including a team. Historical narrower scopes below remain as evidence.
+At verified b90933e1, independent owned inputs reproduce duplicate-specifier
+last-wins, wrong small-market line/period, malformed-outcome atlas crash and
+loss of status/active in advisory normalized rows. Repair only stake_mapper.py,
+this header, new regression and stage document. Preserve original raw packets,
+hashes/seals/protocol/MODEL_MODULES/Policy and all other tracked files. No guessed
+official API contract: normalized quotes remain experimental, availability
+NOT_VERIFIED, execution/money false; small models remain SHADOW.
+Use existing draft #56, immutable red/green, isolated release and exact 20-job
+CI. Independent QA/provenance agents are read-only as explicitly authorized.
+Connected metadata reads allowed; no value-bearing credentials, actual provider
+calls, quota activation/reset, hosted writes, deployment/main merge, real fit,
+HOLDOUT registration or bets. RESEARCH_ONLY / PASS / stake=0.
+Earlier headers below describe historical stages.
+
+## Quote output occupied-name preflight, 16.10.2026
+
+Owner authorized continuing the existing quote path after verified eb17d04c.
+Owned actual dangling symlinks demonstrate both output and receipt names pass
+Path.exists preflight: catalogue and price are requested before EEXIST refusal.
+Repair only CLI occupied-name checks with lexists, before networking/staging.
+Keep hardlink no-clobber/rollback, valid output/receipt bytes and error strings.
+Only cli.py, this header and new regression/doc may change. Other src/model/
+Policy/SQL/worker/relay/frozen protocol/originals remain byte-identical.
+Use existing draft #56, immutable-baseline red/green, isolated release and exact
+20-job CI. No real provider calls or exposed-token use, credentials, budget,
+hosted operations, deploy/main merge, real fit/HOLDOUT, money or agents.
+Tests use owned native symlinks; Windows without creation privilege exercises
+an explicit occupied-directory-entry model without adding skipped tests.
+Initial 5043cc01 passed16/20 CI; all four Windows jobs exposed a new-test cleanup
+comparison of readlink() to the caller's input path representation. Retain the
+failure logs; compare link lstat dev/inode and readlink before/after instead.
+No production code/hash change, no skips/assertion removal; new commit and full CI.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers below are historical.
+
+## Documented odds provider boolean gates, 16.10.2026
+
+Owner authorized continuing the existing alternative quote path after Stake
+support declined documentation. On exact 701bb943, The Odds API adapter accepts
+truthy non-booleans as settlement confirmation and malformed prospective flags.
+Repair odds_provider exact True/False gate checks; preserve valid receipts,
+provider identity, original source/model/Policy and all money/admission gates.
+The first green check exposed CLI opening both quote-read commands writable,
+changing owned ledger header bytes even on rejection. Include those two existing
+CLI commands in read_only dispatch; refuse absent DB before creating anything.
+Only these two non-model src, new regression file, this header/docs may change.
+Other src/SQL/worker/relay/frozen protocol/originals remain byte-identical.
+Use existing draft #56, baseline red/green, isolated full release and exact-head
+20-job CI. No real provider calls, credential access/use (including exposed
+account token), hosted operations, deploy/main merge, budget activation, real
+fit/HOLDOUT registration, money or additional agents. PASS/stake=0.
+Earlier headers below are historical.
+
+## Football response contract completion, 16.10.2026
+
+Owner asked to finish available critical API repairs after verified 5f78745c.
+Confirmed malformed status nested objects/scalars, archived fixture rows and
+paging, direct prematch containers and FT score nulls escape as AttributeError
+or echo composite diagnostic fields. Repair only existing football_provider
+consumed-container checks and status scalar types; preserve missing=None,
+valid zero/false, receipt identity/hash and legacy optional paging.current.
+No normalization/reconstruction of sources, retry/refetch or odds semantics.
+One non-model src, new owned HTTP/archive regressions, this header and docs
+may change. All other src/MODEL_MODULES/Policy, SQL/worker/relay/protocol and
+originals frozen. Reuse draft #56; red/green, isolated full release, exact-head
+20-job CI. No actual API/budget/hosted operations, production/deploy/main merge,
+secrets, fit/bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier headers below are historical.
+
+## API Unicode and health catalogue boundaries, 16.10.2026
+
+Owner authorized continued critical API repairs after verified ca5b3f12.
+Confirmed lone JSON surrogates reach digest/return and malformed Odds rows
+crash api-health with AttributeError. Repair only provider_transport Unicode
+scalar validation and api_health checks of consumed catalogue row/key types.
+Do not normalize/replace valid Unicode or change canonical hashing, missing
+key/empty catalogue compatibility, provider schemas, query/auth/byte limits.
+Only these two non-model src, existing owned-loopback regression file, this
+header and a new document may change. All other src/MODEL_MODULES/Policy,
+SQL/worker/relay/protocol/originals frozen. Reuse draft #56, red/green actual
+HTTP, isolated full release and exact-head 20-job CI. No actual API/budget,
+hosted operations, deploy/main merge, secrets, fit/bets or additional agents.
+RESEARCH_ONLY / PASS / stake=0. Earlier headers below are historical.
+
+## Shared provider JSON integrity, 16.10.2026
+
+Owner authorized continued critical API repairs after verified aa8b23b7.
+Confirmed duplicate JSON members in Football/Odds/gateway and nonfinite JSON
+acceptance in Odds. Extract the proven Stake parser into provider_transport
+and use it for existing shared/direct Odds, Football/gateway and Stake reads.
+Preserve fixed public errors, original valid payload hashes and one request.
+Only these four non-model src files, owned HTTP regressions and docs may
+change. MODEL_MODULES/Policy, other src, SQL/worker/relay/protocol/originals
+stay frozen. Reuse draft #56, isolated full release and exact-head 20-job CI.
+No real provider calls, hosted operations, deploy/main merge, credentials,
+budget activation, real fit/bets or additional agents. PASS / stake=0.
+Earlier stage headers below are historical.
+
+## Stake response parsing, 15.10.2026
+
+Owner authorized continued critical API repairs after verified c4d9e4d9.
+Confirmed malformed catalogue data raises AttributeError and duplicate JSON
+members receive a receipt. Repair the existing experimental Stake response
+parser and catalogue shape checks only, with bounded JSON depth/finite numbers,
+fixed safe errors and one owned-loopback request. Do not invent official API
+semantics or enable stake_snapshot/SAFE_KINDS. One non-model src file may change
+code_hash; all MODEL_MODULES/Policy, other src, SQL/queue/relay, protocol and
+original evidence frozen. Reuse #56. Red/green actual loopback HTTP, isolated
+full release and exact-head 20-job CI including 3.14.3. No actual Stake/provider
+calls, budget activation, credentials lookup/values, production/deploy/main
+merge, real fit/bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier stage headers below are historical.
+
+## Original archive presentation, 15.10.2026
+
+Owner authorized continued available engineering after verified 9330e755.
+Confirmed original snapshot integrity but unsupported legacy fixture IDs make
+operator_report discard every decision/readiness row. Repair only read-only
+presentation: explicitly unavailable archive references, keep strict original
+chat verifier/schema unchanged, preserve supported originals and cutoff/selection.
+No ID rewriting, new forecasts, money grants or broad exception suppression.
+Exact 3fdf440a CI then exposed npm ECONNRESET before tests (PR Linux3.14.3).
+Extend this stage to bounded CI dependency-fetch hardening: lock-keyed npm
+cache, explicit finite fetch retry/timeouts and five-minute install step.
+Keep lock/integrity/version/ignore-scripts/TLS unchanged; no provider retry.
+Save failed initial SHA/log and validate a new commit, never hide/rerun it.
+All src/Policy/model, SQL/worker/relay, protocol and original evidence frozen.
+Reuse #56; synthetic red/green, immutable original aggregate-only verification,
+isolated full release and exact-head 20-job CI. No hosted writes, deploy/main
+merge, secrets, provider/budget calls, real fit/bets or additional agents.
+stake_snapshot stays denied pending its separate contract/access review.
+Earlier stage headers below are historical.
+
+## Python 3.14.3 CI compatibility, 15.10.2026
+
+Owner authorized adding exact Python 3.14.3 to existing draft #56 after
+verified 3448d95c. Preserve Ubuntu/Windows 3.11/3.13 coverage and add Linux
+3.14.3 full release plus separate native PostgreSQL sync/probe matrices on
+3.13 and 3.14.3. This stage changes workflow/docs only. All application,
+worker/relay, SQL, Policy/model/protocol and original evidence stay frozen.
+Run isolated full release and exact-head push/PR CI. No hosted writes, Render
+configuration/deploy/restart, main merge, secrets, budget/provider calls,
+real fit, bets or additional agents. RESEARCH_ONLY / PASS / stake=0.
+Earlier stage headers below are historical.
+
+## Master plan P0-B rollout review, 15.10.2026
+
+Owner authorized continuation after verified 4f30dc8b (14/14 CI). Prepare the
+incremental SQL and safe park/rollback for the existing private bridge, using
+CLI-created filenames and the canonical probe function. Preserve production's
+stake_snapshot kind, existing completion logic in an owner-only backup, all
+queue rows/canonical snapshots and budget values. Test populated upgrades,
+version mismatch, drift/active-job/budget guards, repeat application and safe
+rollback on owned PostgreSQL. No hosted migration/write, deploy/restart, main
+merge, budget activation, secret values, provider calls, real fit/money/agents.
+All src/Policy/model/protocol/originals stay frozen. Reuse #56; isolated full
+release and exact-head CI. Runtime coordination remains a separately approved
+operation; safe rollback must not restore an unfenced provider completion.
+Earlier stage headers below are historical.
+
+## Master plan P0-B completion fencing, 15.10.2026
+
+Continue owner-authorized P0 from exact 3414d932. Repair demonstrated stale
+sports_probe completion and acknowledgement loss using the existing private
+queue/relay and candidate SQL package. Fence by claimed attempt; replay only
+the identical completion at most once, never a provider fetch or claim. Test
+SQL permissions and restart against owned local PostgreSQL fixtures. Preserve
+all src, MODEL_MODULES, Policy, protocol and original receipts/snapshots. Reuse
+#56; isolated full release and exact-head CI. No hosted SQL writes/migration,
+production/deploy, main merge, budget activation, provider calls, secret values,
+real fit, money or agents. Coordinated SQL/relay/worker rollout remains deferred.
+Earlier stage headers below are historical.
+
+## Master plan P0-B/C, 15.10.2026
+
+After P0-A a376823e, fix demonstrated provider refetch on reclaimed sports_probe
+leases; never reconstruct a lost receipt by spending again. Add an offline
+read-only storage reconciler that reuses cloud_sync snapshot verification,
+compares observed compressed hashes, separates private inventory from public
+aggregates and does not infer remote attestation from caller metadata. Preserve
+all src/Policy/MODEL_MODULES and originals from P0-A. Reuse #56, isolated full
+release and exact-head CI. Hosted metadata reads only: no SQL writes/migrations,
+provider calls, budget activation, production/deploy, main merge, credentials
+values, bets, real fit or agents. STEP-resume/archive and official Stake access
+remain explicit blockers. Prior checkpoints below are historical.
+
+## Master plan P0-A, 15.10.2026
+
+Owner supplied SEFIROT_MASTER_AUDIT_AND_ACTION_PLAN_2026-10-15.md and
+authorized priority execution. Start Issue #68 on exact unified #56 d192d831.
+Repair confirmed experimental Stake fixture/time/receipt boundaries using
+existing provider, CLI and atlas; no second model or invented official API
+contract. Preserve MODEL_MODULES/Policy, original seals/receipts/snapshots.
+Public official docs returned HTTP 403; do not bypass it. Credential metadata
+only; no provider calls, budget activation, secret reads/changes, deployment,
+main merge, bets or additional agents. Reuse #56 and run isolated full release
+and exact-head CI. Official access stays BLOCKED/NOT_VERIFIED until authorized
+key, OpenAPI/terms and genuine quote evidence. PASS/stake 0. Prior scopes below
+are historical; this owner-authorized P0 stage permits transport/CLI fixes.
+
+## PR #70 diagnostics integration, 15.10.2026
+
+User supplied screenshots and authorized continued API recovery work. Repair
+existing draft #70, then selectively integrate exact e09e4d6f28060e909fb6962fea180820a18db862
+into existing unified #56 at 50197219c6cc1e0b07e5d77e8bff027fc65e8478.
+Use two-parent integration history, preserve the unified tree outside the
+budget class/strict denial branch and api-health reason dispatch, owned
+budget regressions and documentation. Do not import unrelated legacy scripts,
+queue/runtime/model changes from the old production branch. Current HTTP
+completeness/cleanup, shared-budget requirement, query validation, original
+archive protections and all MODEL_MODULES/Policy stay intact. Exact full
+local release and all OS/Python/actual PostgreSQL CI required on this tree.
+Read-only observed PAUSED and zero attempts. No budget write/reserve/finish,
+queue enqueue/claim, restart, deployment, provider/paid API calls, secrets,
+real data collection/fit, money, main merge or additional agents. Render
+stays read-only/deferred. PASS/stake 0 until genuine API/HOLDOUT/edge proof.
+Prior headers below are historical completed checkpoints.
+
+## Critical API transport follow-up, 15.10.2026
+
+User explicitly authorized critical API repairs after unified draft #56
+exact df0f6f6ad8d9673be480e373e63772660f7137fd. Confirmed unhandled HTTP
+parser errors, successful receipts for truncated/ambiguous HTTP bodies, and
+cleanup errors exposing arbitrary text. Reuse shared provider_transport body
+reader/cleanup in football, Odds catalogue/events, Stake and gateway. Four
+non-model src changes intentionally update code_hash; MODEL_MODULES/Policy,
+protocol, original seals/receipts/fits/approvals/reports remain immutable.
+Real HTTP parser over owned bytes, no provider calls or credential reads.
+Full isolated release and exact-head OS/Python/actual PostgreSQL CI required.
+Reuse existing #56, no new PR. No production, deployment, main merge, secrets,
+paid APIs, collection, real fit, money/LIVE or additional agents. Render remains
+deferred. Unverified real APIs/CAL/HOLDOUT/model advantage stay PASS/stake 0.
+Prior headers are historical; their src freeze does not prohibit this user-
+authorized transport-only repair. See docs/API_RESPONSE_INTEGRITY_20261015.md.
+
+## Operator prediction selection follow-up, 15.10.2026
+
+User authorized available offline code work; Render remains deferred.
+Base unified draft #56 exact 8bed823be7d740f8af8c335687a96de82ac867ff.
+Confirmed operator selection leaks other original revisions of the same
+fixture into decisions/cards; explicit empty selection broadens the query.
+Bind decisions/cards to selected original prediction IDs; only None means
+unfiltered. Keep original verifier, cutoffs, archive and all owned decisions.
+Synthetic regressions only; full isolated release and exact-head OS/Python/
+actual PostgreSQL CI. Reuse #56, no duplicate PR. All src/Policy/models,
+protocol/original fixtures/reports/seals remain immutable. No provider calls,
+real fit, collection, main merge, deploy, production, secrets, money/LIVE or
+additional agents. Unverified real API/HOLDOUT/edge stays PASS/stake 0.
+Prior scopes below are historical completed stages.
+
+## Calibration temporal boundary follow-up, 14.10.2026
+
+User authorized more code/source/calibration checks after verified unified
+draft #56 head 1eb49eeb2c60bc83e9b15f099d7e19b67eb85cc7; Render stays deferred.
+Confirmed fit_ready at 60/75 coverage while remaining CAL fixtures are future,
+and frozen fit dated before its own declared CAL cohort. Reuse shared cohort
+guard: explicit fit cutoff, whole associated CAL plan window, UTC boundaries,
+order-independent binding through original fit_ids. Keep unrelated fits and
+legitimate prospective inventory intact. Owned synthetic tests, no real fit.
+Only scripts/tests/docs; src/model/Policy/protocol/originals remain immutable.
+Reuse #56, full local release and exact-head OS/Python/actual PostgreSQL CI.
+No main/production/deploy/paid API/secrets/collection/money/LIVE/new agents.
+Missing real API/CAL/HOLDOUT/model edge still PASS/stake 0. Prior scopes historical.
+
+## Calibration cohort fit follow-up, 14.10.2026
+
+User explicitly deferred Render rollout and authorized further code work.
+Base exact verified unified draft #56 head 538e62505b0d9f1c9dde5a66fc891b211ef208fa.
+Repair confirmed fit preflight accepting cross-cohort fixture reuse, inverted
+TRAIN/CAL windows and invalid HOLDOUT fit identity despite the existing audit
+rejecting them. Reuse shared cohort_errors in both transactional assessments;
+no new parallel subsystem. Owned synthetic regressions, full local release and
+exact-head OS/Python/actual PostgreSQL CI. Reuse #56, no duplicate PR.
+Keep src/Policy/models/protocol/original seals/receipts/reports immutable.
+No real fit, collection, provider requests, secrets, main merge or deployment.
+Earlier production consent applies only to deferred exact head 538e625;
+it does not authorize rollout of this new candidate. PASS/stake 0 persists.
+No additional agents. Prior headers describe completed historical stages.
+
+## Denied HTTP completion follow-up, 14.10.2026
+
+Initial read-only head e99411268425bd05cdcb1918b8e7e51313753f2c had one
+Windows3.11 PR release error: operator forbidden /session method, WinError10053.
+No rerun. Confirmed common Handler closes before receiving a declared denied
+body; two controlled split-body socket cases reproduce early EOF. Flush denial
+first, discard only bounded known remaining bytes with <=1s transport timeout,
+no parsing/dispatch, no reread of consumed body. Keep all auth/status assertions.
+Exact WinError10053 root remains unconfirmed; preserve failed head/job evidence.
+Scripts/tests/docs only; no src/model/Policy/original data change. Reuse #56,
+full release and fresh exact-head OS/Python/PG CI. No production/env/deploy/API/
+secrets/main/money/fit/new agents. Previous headers are historical.
+
+## Read-only runtime rollout preparation, 14.10.2026
+
+User authorized continuation after the engineering handoff. Reuse draft #56
+at 79c7c5b4c9c5e8b0a10471e38956f83bf046d145; do not create a duplicate PR.
+Prepare an explicit read-only bridge mode: existing original reads only,
+no provider operation, mutation, queue claim/start or first cloud checkpoint.
+Status/report must preserve original SQLite bytes and one read snapshot.
+Only scripts, owned synthetic regression tests and documentation change.
+All src/Policy/models, protocol, reports and original source bytes preserved.
+Full release and exact-head OS/Python/actual PostgreSQL CI. Source/league/season
+inputs still require genuine originals, no cohort registration or real fit.
+No Render configuration/deploy/production SQL, secrets, paid APIs, main merge,
+money/LIVE/additional agents. Operational changes require explicit owner scope.
+Previous headers are historical completed stages.
+
+## Independent calibration transaction follow-up, 14.10.2026
+
+User authorized continuation of the unified candidate and real-source checks.
+Reuse draft #56 at 5cd6c680b10f742f89aedffcf321beb992b4dc16; no duplicate PR.
+Repair confirmed calibration_fit_gate read/recheck/fit races only, synthetic
+two-connection SQLite regressions. No real fit, provider request or new cohort.
+Keep all src modules, Policy, protocol and original reports/receipts unchanged.
+Render metadata/log reads confirm old deployed code; do not change services,
+deploy or read secrets. A source budget PAUSED is not current provider quota.
+Full release and exact-head OS/Python/actual PG CI. Keep frozen RC #57,
+main and all family drafts unchanged; PASS/0 without API/HOLDOUT/edge proof.
+No additional agents. Previous headers are historical completed scopes.
+
+## Unified candidate and independent validation, 14.10.2026
+
+User explicitly requests one tested candidate from verified Issues #57–61,
+current real-source checks and preparation for independent calibration.
+Reuse existing draft integration PR #56; do not create a duplicate PR.
+Combine exact verified #67 9b363914d9fcab8b0b4a7566d644b80bd7412826
+and #64 ee168f8f6284179fc94c96ee5c30e0f9d8b291e3 with both-parent history.
+Preserve frozen RC #57 branch 22ac74911301d65e831a757222502781842c3bd9.
+Preserve all seven MODEL_MODULES, Policy and original seals/receipts/reports.
+Real-source work uses read-only connected metadata and original evidence;
+no production SQL writes, deploy, secrets access/change or paid provider calls.
+Do not perform real fit or register future fixtures without verified originals.
+No main merge, production changes, monetary permission, LIVE or new agents.
+Full release and exact-head OS/Python/PostgreSQL CI on the unified tree.
+Keep original PASS unchanged; absent verified API/HOLDOUT/edge means PASS/0.
+Prior scopes below are historical; preserve both family and phone work.
+
+## Issue #60 referee YC: final family after verified FOULS, 13.10.2026
+
+Base #66 1675092228ffaa13e270b9439c13144b82b3519b, 12/12 exact-head CI.
+Reuse original source/observation/referee QC and family matrix/CLI. Strict
+fixture/prematch referee/rates/risk 0-1/rules/cleaner-market/calibration/EV
+shape checks; absent independent source authority always HOLD/PASS/D/0,
+no caller source_verified or checksum promotion. Own YC count lab never foul
+or goal surrogate. Public parameters/P/EV null, no real fit/providers.
+All src/MODEL_MODULES/Policy/historical sources/seals/reports byte-identical
+to #66. Full release/exact OS/Python/actual PG CI, one small family draft.
+Then final verified report for #57-61; empirical/data and #61 remote/device
+blockers explicit. No main/prod/deploy/paid API/secrets/refit/money/LIVE or
+additional agents. Prior scopes historical.
+
+## Issue #60 FOULS: third family after verified SHOTS/SOT, 13.10.2026
+
+Base #65 1e60cc0d0cfc4b1c04c257abdab89af36090e483, 12/12 exact-head CI.
+Direct committed/suffered count math lab, no YC/goal/opponent surrogate.
+Reuse original QC/matrix/CLI. Observation-v2 has no suffered field: preserve
+old schema/source, show explicit missing in matrix, not fabricated zeros.
+Unknown source/style/history/calibration/rules -> null parameters/P/EV;
+SHADOW/zero stake/no real fit. All src/core MODEL_MODULES/Policy and old
+reports/seals/receipts byte-identical to #65. Full release/exact OS/PG CI,
+small separate draft PR, then strict referee YC. #61 prototype verified
+independently #64, no hosted/Android connection claimed. Main/prod/deploy/
+paid APIs/secrets/real refit/money/LIVE/additional agents forbidden.
+Prior scopes historical.
+
+## Issue #60 SHOTS/SOT: second independent family, 13.10.2026
+
+After verified corners #25 94a932af3de08714b02ee3ca690c423ae6c7a12d, all six
+required OS/Python/actual PG CI jobs success. Reuse shared observation/source
+QC and family matrix/CLI. Own paired shot/SOT count math lab, SOT<=shots,
+no goal/corner-rate substitution. Public unknown source/history/calibration/
+settlement -> null parameters/P/EV, SHADOW/zero stake; no real fit/API calls.
+All src/sefirot/MODEL_MODULES/Policy/old reports/seals remain byte-identical
+to verified corners; this is research module/matrix/tests/docs only. Full
+release + exact four OS/Python and actual mirror/budget CI. Separate draft PR,
+then FOULS then referee YC. #61 on independent verified #59 branch is permitted
+after its #57/#58 dependencies, no hosted endpoint. No main/prod/deploy/paid
+API/secrets/refit/money/LIVE/additional agents. Prior scopes historical.
+
+## Issue #60 corners: reuse #25 after verified #58/#59, 13.10.2026
+
+Base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4 (#63, 12/12 CI).
+Reuse existing draft #25 and its pure corner modules/tests/docs from exact
+eb4f8f1c1ee24cd55499b794c60d429e12a4e089; selective integration with genuine
+both-parent history, preserve #59 tree except research files/minimal fixes.
+Retarget #25 to evidence branch, no duplicate PR. Correct confirmed 1H DC
+walk-forward FT-outcome bug; add 2H same typed FT-minus-1H count model, never
+goal lambda. Public family matrix reuses #37/#38 QC; real unknown counts/
+source/coverage/calibration/rules -> null P/EV/parameters, SHADOW/stake=0.
+Legacy numeric functions mathematical lab only, no real fit/API invocation.
+MODEL_MODULES/Policy and old source/seals/reports unchanged. Non-model exact
+code_hash changes due added research src modules. Full release/exact OS/PG CI.
+After corners, SHOTS/SOT -> FOULS -> referee YC, each small draft increment.
+Phone read-only #61 dependencies #57/#58 satisfied; no deploy/main/paid APIs/
+credentials/real refit/money/LIVE/additional agents. Prior scopes historical.
+
+## Issue #61 session follow-up, 14.10.2026
+
+User authorized continuation after verified #57-61. Reuse existing draft #64
+on exact 0f7132ae664101aff96fb21754dac3ce8c599dc8; no duplicate PR or merge.
+Confirmed actual JS 401 kept private original cards/current filter memory.
+Clear protected views on failed reads/login; ignore stale concurrent responses.
+Synthetic Node event-handler regression only, no providers/actual credentials.
+Keep all src/sefirot/MODEL_MODULES/Policy/old receipts/reports unchanged.
+Full release and exact OS/Python/actual PostgreSQL CI; main/prod/deploy/money/
+LIVE/additional agents forbidden. Hosted runtime/Android/evidence blockers stay.
+Prior scopes below historical.
+
+## Issue #61: phone read-only prototype, 13.10.2026
+
+Independent base verified #59 b1961710bcb0634e40e013260a4c38d963bad1a4;
+#57/#58 dependencies satisfied, #60 family branches separate. Reuse existing
+chat Handler/readiness/original verifier, authenticated read-only operator
+subset; never call execute/status/demo/worker/providers. Actual source/CI
+runtime states unknown; no artificial forecasts/KPIs. Original PASS/BET and
+card data only from verified originals, research separate, missing null.
+Loopback prototype/session only; no cloud hosting, no Android localhost promise.
+Tests synthetic owner token, no actual credential read/rotation. All src/core
+MODEL_MODULES/Policy and historical source/seals/reports byte-identical to #59.
+No main/prod/deploy/paid API/real refit/money/LIVE/additional agents. Full release
+and exact OS/Python/PG CI required. Remaining #60 SHOTS/SOT->FOULS->YC proceeds
+through its own audited family chain. Prior scopes below historical.
+
+## Issue #59: honest original evidence and prospective audit, 13.10.2026
+
+After verified #58 exact e32fd7e7a4876005f337314822354bbbabfee2c3 (#62,
+12/12 CI). Extend existing calibration_quality_audit/forward scorecard and
+read-only Repository; no duplicate auditor. Repair confirmed boolean counters,
+duplicate groups, float HTTP status and NS target result before normalization.
+Non-model source code_hash change explicit. All MODEL_MODULES/Policy, historical
+reports/seals/fit/approvals and old issue58 frozen files byte-identical; new
+synthetic fixture version separate. Missing real source/independent HOLDOUT:
+metrics null, draft prospective plan, money/holdout/profit proof false. No
+source attestation by local hashes. Full release and exact OS/Python/PG CI.
+After reviewed stage continue #60 families and #61 read-only phone cockpit.
+No main merge/production/deploy/API providers/paid calls/secret access or
+rotation/real refit/monetary promotion/LIVE/additional agents. Prior scopes
+below historical; original PASS never promoted without actual proof.
+
+## Issue #58: audited offline PREMATCH, 13.10.2026
+
+Base exact verified Issue #57 RC 22ac74911301d65e831a757222502781842c3bd9,
+draft #56, all 18 exact-head CI jobs success. New small branch/PR for #58,
+reuse gateway/probe/archive/adapter/Service/worker/Stake/chat, no duplicate stack.
+Frozen synthetic scenario only in owned temp directory; no real source/quote
+attestation. Readiness only reads existing ledger in one read-only snapshot,
+never reads credentials or fetches. Repair confirmed Stake scope/partition/
+line mapping; explicit non-model code_hash change, MODEL_MODULES/Policy and
+old reports/seals unchanged. Full release, OS/Python matrix, PG mirror/budget.
+After verified #58 proceed #59 then #60/#61 by dependencies. Main/production/
+deploy/paid providers/secret access or rotation/money/LIVE/additional agents
+forbidden. Unknown facts remain unavailable or original PASS/D/stake=0.
+Prior scopes below are historical.
+
+## Issues #57–61, user-authorized sequential work, 13.10.2026
+
+Start #57 on a separate RC branch from exact #56
+fbab85d0d0666ec593cb739d3a81f357279c59ea. Recheck current #53–#56 ancestry,
+review the final code independently of earlier reports, repair confirmed
+defects minimally and rerun full release/CLI/adversarial and exact-head CI.
+Reuse existing draft integration PR #56 for the unified candidate; no duplicate
+implementation PR. Keep MODEL_MODULES/Policy and old seals/approvals/reports.
+Any non-model code_hash change must be explicit; never relabel old artifacts.
+After verified #57 proceed to #58 audited offline PREMATCH, then #59 honest
+calibration/holdout audit. #60 small families and #61 phone read-only cockpit
+follow their stated dependencies. Reuse existing components, each stage has
+exact SHA/tests/fixes/blockers. No main merge, production deploy/SQL, real
+provider calls, paid APIs, secret access/rotation, monetary promotion, live or
+additional agents. Unknown evidence stays PASS/D/stake=0 or unavailable.
+Prior headers are historical completed scopes.
+
+## Situation bridge integration, 13.10.2026
+
+User-authorized continuation: selectively integrate the research-only situation
+bridge from exact #32 e291b6c039746c914ca621263aee6a04ec771242 onto exact #55
+5b11061acc9b22fce59eaea313f3c45fde4f2808. Separate branch/draft PR.
+Retain current query/IANA, gateway sports_probe, receipt, budget, MCP parameter
+validation and ledger/cache checks. Keep all src/sefirot, Policy, V3 model
+modules and tracked historical reports byte-identical to #55. No new training,
+source attestations, monetary permissions, provider calls, secrets, production
+SQL/deployment/main changes or additional agents. Real unattested status HOLD.
+Port only status contracts/router/bridge, reviewable relay/SQL templates,
+tests, pinned local test dependency and docs. Repair confirmed regressions
+before publishing. Full local release, original Node/PostgreSQL WASM groups,
+isolated PostgreSQL mirror/shared budget and four exact-head OS/Python CI jobs
+are required. Prior scopes below are historical.
+
+## Source adapter integration, 13.10.2026
+
+User-authorized continuation: selectively integrate the read-only source adapter
+from #23, with the query/IANA refinements of exact #24
+3707cbf2f2fcafaa773cd82015e2f8537becf74b, onto exact #54
+9744ba23953b2db101f8af38d5a6cfd8abfbac6c. Separate branch/draft PR.
+Port only adapter, CLI, tests and documentation; retain all current query,
+gateway, receipt, budget, chronology and ledger/cache checks. Compatible
+SQLite snapshots must remain immutable and read-only. Keep every src/sefirot
+module, Policy, V3 model module and tracked report byte-identical to #54.
+No provider requests, credentials, production/cloud/deploy/main changes, real
+fit, money, new data attestations or additional agents. training_rows stays
+empty, external origin unverified and the decision KEEP_SHADOW.
+Required: full local release, four exact-head OS/Python CI jobs and disposable
+local PostgreSQL mirror/shared-budget checks. Prior scopes are historical.
+
+## PR53 review repairs, 13.10.2026
+
+User explicitly authorized fixes after the read-only review of exact PR #53
+1e3936ca9f48bd5a0568568a6a7e51014cd5db6c. Separate branch/draft PR.
+Repair store redirects, malformed MCP parameters, and upstream fixture echo/
+IANA/calendar validation with a selective port of #24. Preserve the current
+shared budget, enrichment endpoints, all chronology and metadata checks.
+Then optimize only bounded row-binding validation, keyed by fresh payload
+bytes AND fresh SQL metadata; never cache journal_ok, permissions or full rows.
+Keep all seven MODEL_MODULES and Policy byte-identical to #53. Old forecasts,
+fits, approvals and tracked reports stay original; new code_hash is explicit.
+No provider calls, cloud/deploy/keys/main changes, refit, money or new agents.
+Required: full local release, four exact-head OS/Python CI jobs, isolated
+PostgreSQL mirror and shared-budget checks, plus paired integrity timing.
+The older headers below are historical scopes.
+
+## CORE 2.4.2 integration candidate, 13.10.2026
+
+User-authorized continuation: integrate exact main d09a8af22 plus PR #52
+c1ae595f642fd6a484a3f1df1084e674d85303e3 and PR #51
+ac26712940fdae17de1af32a6507db3627549f51 in a separate branch/draft PR.
+Keep the seven MODEL_MODULES, Policy and runtime/source/risk behavior from
+#51. Preserve metadata verification and cloud mirror regressions from #52,
+the batched fresh-byte audit cache, read-only repository, atomic jobs and
+all chronology entrypoints. Existing archived reports/seals stay original.
+Do not deploy, call provider APIs, change cloud/keys/main, refit, approve money
+or spawn additional agents. Required: full local release, four exact-head
+OS/Python CI jobs, real isolated PostgreSQL mirror and shared-budget CI.
+The prior candidate headers below record historical scopes.
+
+## V5.2 gateway statistics receipt compatibility candidate, 13.10.2026
+
+Continuation of the authorized global diagnostic repair on exact PR #50
+head 5efcfa8ea4561393eb5a5f3a6eea54e6e2040a96. Separate stacked feature/PR.
+Fix the real SDK-to-statistics/archive incompatibility: retain sports_only,
+accept and validate paired gateway transport/upstream chronology, require
+integer HTTP status and safe numeric quota. Probe evidence v2 requires the
+complete original receipt; no guessing/filling old metadata or relabelling v1.
+small_market.py changes exact code_hash intentionally. MODEL_MODULES/Policy,
+old source records, approvals, seals and tracked reports stay unchanged.
+No fit, API calls, production/cloud/main changes, secrets, money or new agents.
+SDK integration uses mocked HTTP only. Full release and four exact-head
+OS/Python jobs plus isolated PostgreSQL CI are required. Previous scope
+headers below are historical checkpoints, not a prohibition on this repair.
+The first Windows 3.11 CI failed an existing panel client five-second timeout
+after real local processing. Correct only bounded test-client waiting to 30s;
+retain every auth/303/ledger assertion and no retry or production change.
+Controlled delayed-action reproduction is recorded in the delivery evidence.
+
+## V5.2 guarded probe/source evidence candidate, 13.10.2026
+
+Base exact PR #49 head 7a4d644e820e2b26767200d8f1320af2d25cb438.
+Selectively port only the sports_probe route from exact #48 b5e61f5,
+not its unrelated old runtime/model stack. No production worker deploy.
+Probe requires shared-budget gateway (no DIRECT), bounded safe canonical
+source evidence + projection binding, typed statistics, exact requested
+fixture binding and real calendar dates. Existing ledger is read-only;
+missing/corrupt ledger refuses before I/O, no checkpoint for research.
+Archives never attest origin/license/coverage/HTTP wire bytes or allow fit.
+Old compact jobs stay original/unverifiable; private observations not Git.
+CORE/Policy/MODEL_MODULES and archived reports remain byte-identical to #49;
+probe script has explicit version/hash. Full release + exact-head four
+OS/Python jobs and isolated PostgreSQL CI required. API calls/deploy/main/
+fit/money/new agents are prohibited in this candidate scope. Approved
+gateway v15 rollout is a separate completed operational stage; Render
+legacy pause still requires owner browser sign-in. Older checkpoints follow.
+
+## V5.1 stable probability summation candidate, 13.10.2026
+
+Continue from exact PR #47 head 955c409462044877421a6a8181debc6753b1200d.
+The authorized numerical repair uses fsum for Poisson normalization/tail and
+WIN/PUSH/LOSS aggregation. Only aggregate overshoot within four ULP at one
+is bounded; input cells >1/material excess fail, small opposing mass survives.
+This intentionally changes _payoffs.py/probability.py and model_hash; old
+calibrators/approvals/seals are not relabelled or refitted. Policy/rate equations,
+settlement rules and archived reports remain unchanged. The old cache parity
+oracle now uses independent Decimal(80) sums with exact assertions, not +=.
+See docs/PROBABILITY_SUMMATION_V51_20261013.md. Full release and exact-head
+four OS/Python jobs plus PostgreSQL CI required. No production/API/fit/main,
+keys/money, private journals or new agents. Older scope checkpoints follow.
+
+## V5.1 calibration coherence admission candidate, 13.10.2026
+
+Continue from exact PR #46 head 6fb99cef655b6208f05e72e7b11f891532f5637a.
+Price-blind necessary settlement constraints check base and aligned stress
+vectors at prepare and again at decide. Conflicts/unverified scope -> PASS/D,
+all candidates ineligible, stake=0; never normalize/rewrite probabilities.
+This is an admission safeguard, not a fitted joint calibration or full LP
+feasibility proof. MODEL_MODULES/Policy/payoffs stay byte-identical to #46;
+code_hash changes, exact old money approvals are not inherited. One existing
+ranking test had incompatible HOME probabilities; its inputs now share one
+joint result distribution while the original assertions remain unchanged.
+See docs/CALIBRATION_COHERENCE_GATE_V51_20261013.md. Full release and exact-head
+OS/Python + PostgreSQL CI required. No production/API/fit/main/keys/money,
+private journals or new agents. Older scope checkpoints follow.
+
+## V5.1 regulation result chronology candidate, 13.10.2026
+
+Continuation from exact PR #45 head 975b69458888652ece5f75a2b6fcc91db234fa77.
+The authorized global repair now fixes premature REGULATION_90 FINISHED
+across service, history, backtest and offline provider/archive adapters.
+contracts.py/evidence.py change intentionally changes model_hash: historical
+fit compatibility must fail closed, not inherit validation. Policy/payoffs,
+archived seals/results, source packets and historical reports stay unchanged.
+VOID keeps existing post-kickoff chronology and is not calibration feedback.
+See docs/REGULATION_FINISHED_GATE_V51_20261013.md. Full release + exact-head
+four OS/Python jobs and PostgreSQL concurrency are required. No production,
+API, keys, main merge, refit, money or additional agents. Below are historical
+checkpoints, not a prohibition on this authorized repair.
+
+## Shared provider budget candidate, 12.10.2026
+
+feature/shared-provider-budget-20261012 от exact #42
+6c7b6d1525b8538cbca6e208aa5777fb08a81b0c. См.
+docs/SHARED_PROVIDER_BUDGET_20261012.md, issue #29.
+Один PostgreSQL row lock, reservation до provider I/O, daily reserve,
+rolling minute + spacing после completion; single in-flight, no retry/refund.
+Failure/unknown quota/stale lease latch circuit; approval max15min/UTC day,
+paused default. Миграция только candidate, cloud/deploy/API не выполнялись.
+Полный test/release, 4 OS/Python CI + isolated PostgreSQL concurrency job
+на exact head обязательны. Все src/sefirot/Policy/MODEL_MODULES и old reports
+сохранить побайтно относительно #42. Vault/RPC secret/auth не менять;
+main не сливать, дополнительные агенты запрещены. Приватные данные не Git.
+Guard охватывает только этот gateway/project; legacy direct Render calls
+не защищены. Следующий operational этап требует остановки bypass runners,
+согласованной миграции/deploy и independently verified original receipts;
+не заменять их ещё одним synthetic fit или повторным data-blocker audit.
+Ниже исторические checkpoints.
+
+## V4.4 evidence/integration candidate, 12.10.2026
+
+Новая feature/gateway-evidence-v44-20261012: exact #41
+5a4b1d9a4ae95a1ab11f50f63a834a6d11a82991 + exact #38
+f547cc4f98d00313892322559e56b65d8082302e; общий предок #37.
+См. docs/V44_GATEWAY_EVIDENCE_INTEGRATION_20261012.md.
+Явный offline whitelist-only status/single-fixture receipt archiver;
+headers запрещены, import time текущий, source=OFFLINE_CALLER_SUPPLIED,
+fit/money=false, P/EV=null. Подтверждение HTTP 200 или пересказ ответа
+в чате не заменяет сохранённые исходные response/receipt bytes.
+Private checkpoint revision57 исследован original calibration preflight:
+0 ready observations/plans; fit не выполнен. Приватные данные/отчёты
+не публиковать. Это один интеграционный кандидат, не production runtime.
+Все src/sefirot/Policy/MODEL_MODULES сохранить побайтно относительно #41.
+Main/deploy/cloud/keys не менять; API не вызывать для снятия data-blocker;
+дополнительных агентов не создавать. Полный test/release + exact-head
+CI 4/4 обязательны; generated historical reports восстановить.
+Далее independently verified original source receipts, затем заранее
+назначенная реальная TRAIN/CAL/HOLDOUT выборка. KEEP_SHADOW до evidence.
+Ниже исторические checkpoint, не повторять выполненные #38/#41.
+
+## B1 saved-source adapter, 12.10.2026
+
+Пользователь разрешил продолжение после #37. Отдельная ветка
+feature/small-source-adapter-20261012 от exact #37
+c4d2495086acf5f125d7f7ba8d8294ce90bdf84c. См.
+docs/SMALL_SOURCE_ADAPTER_20261012.md. Явный offline saved API-Football
+FT packet importer переиспользует original validators и #37 QC.
+Связь байтов/ID/JSON pointers проверяется механически; source/license/whole
+league completeness остаются NOT_ATTESTED. available_at=local import,
+не старый receipt/kickoff. Старые raw snapshots только provenance;
+normalized output latest revision0, не выдуманный исторический revision chain.
+FT corners/shots/SOT/YC/RC; таймы/foul direction/referee/second yellow/points
+остаются null. Данные не предоставлены, fit/money/holdout=false. Все
+src/sefirot и старые reports/seals сохранить побайтно. Main/deploy/cloud/keys
+не менять; дополнительных агентов не создавать. Проверки test_sefirot.py,
+verify_release.py и exact-head CI 4/4. Generated historical reports восстановить.
+Следующий этап — independently verified permitted whole-league saved archive,
+затем explicit import + coverage audit; API не запрашивать для снятия блокера.
+Ниже исторические контрольные точки.
+
+## Продолжение P0 source contracts, 12.10.2026
+
+Пользователь разрешил продолжение после поставленного #35. Новая отдельная
+feature/small-observation-v2-20261012 от exact #35 9024889b1269ca846dfa1adfcaf5339990c14023.
+См. docs/SMALL_OBSERVATION_V2_20261012.md. Offline observation/market contracts,
+league manifest denominator, nullable counts, revision cutoff and quarantine;
+никакой source attestation/fit/verified odds/money. CLI вызывается явно,
+не подключён к worker. Реальный raw sample не предоставлен; readiness matrix
+INSUFFICIENT_REAL_DATA, denominators null, scores null. SOURCE hashes не доказательство
+origin. Все src/sefirot и old reports сохранить побайтно. Main/cloud/keys не менять,
+дополнительных агентов не создавать. Проверки test_sefirot.py и verify_release.py;
+CI на exact финальном head, 4 OS/Python jobs. Архивные tracked reports после
+release восстановить. Следующая задача — один лицензированный offline raw
+source adapter с full-league manifest; suspended API не запрашивать.
+Ниже исторические контрольные точки, уже выполненный первый P0 не повторять.
+
+## Текущий этап V4.0: первый P0, 11.10.2026
+
+Issue #33 + три прикреплённых документа V4.0 прочитаны целиком. Рабочая ветка
+feature/chat-answer-contract-v4-20261011 от exact PR #22 HEAD
+9b88d130e69e3be5ee69723469913b36c28bb3e8. Нормативный стандарт:
+docs/SEFIROT_CHAT_STANDARD_V1_20261011.md; copy/paste Project Instructions рядом.
+Verifier read-only, сохраняет original PASS/BET; не вызывает CORE и не даёт
+денежного допуска. src/sefirot, MODEL_MODULES, Policy и old seals не менять.
+Small readiness — preview, не observation-v2/full-league QC или fit.
+После первого рабочего draft PR + exact four-platform CI + отчёта остановиться
+на этом checkpoint. Следующий отдельный P0: full-league/source QC. Не создавать
+дополнительных агентов, не сливать main, не вызывать оплаченные/suspended API,
+не менять production. Настройки ChatGPT Project не считать автоматически
+обновлёнными. Три независимых чата и новый независимый HOLDOUT не проведены.
+Проверки: python test_sefirot.py, python scripts/verify_release.py; generated
+legacy report outputs сохранить вне Git и восстановить архивные tracked bytes.
+Личные ledger/receipt/coupon/API secrets в публичный Git не помещать.
+Нижние разделы — история, не замена текущей области работы.
+
+# SEFIROT: актуальная база разработки
+
+## Локальная ручная очередь, 08.10.2026
+
+Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
+дополнительных агентов не создавать. API/keys/cloud по-прежнему на паузе.
+См. docs/OFFLINE_QUEUE.md; `work inbox --web` запускает существующий worker
+по кнопке на 127.0.0.1. GET только читает проверенный журнал и имена JSON,
+не открывает pending quotes и не создаёт БД. POST требует exact Host/Origin
+и session token; action/receipt/audit остаются одной transaction ядра.
+Повторное нажатие не дублирует прогноз/receipt. Ошибка журнала блокирует
+обработку. Сохранённая карточка — архивное решение, для нового входа нужна
+новая перепроверка. Все timestamps отображаются в Киеве; last_run живёт
+только в процессе. JSON — прежний вход, просмотр ограничен 30 receipts.
+Обычных команд 10; `work --text`/`--watch` сохранены, с `--web` несовместимы.
+Семь MODEL_MODULES/BASELINE_V1/STRICT и Policy побайтно прежние. Web UI
+не новый runtime/модель, денежный допуск или executor. Новых текстовых
+аудитов после поставки 07.10 не обнаружено; UI закрывает оставшуюся задачу.
+Локальный полный release: 596/596, 18 новых проверок, ни одного skipped;
+replay/integrity=true. CI проверять на exact final head, во всех 4 jobs.
+Test fixture использует canonical temp root, как Panel: short-name/junction
+aliases не должны отключать перехват quote read на Windows. Сам факт
+перехвата проверяется явно, а не только через итоговый статус задания.
+code_hash: 321d7b37ab04380e374170b170e015ce5bd5623e93ecba80d12fe1c8dfe0e331.
+Реальные HTTP-запросы проверены; browser click/layout не проверены:
+в среде нет Chromium. examples/offline_queue_preview.html — отключённый
+синтетический образец, не рабочая страница. Доступ с телефона и публичный
+hosting не реализованы; большой journal при каждом GET проверяется целиком.
+Нижние разделы — исторические срезы; отсутствие web UI ниже относится к 07.10.
+
+## Новый аудит: вероятность и registry, 07.10.2026
+
+Та же feature/stability-reset-20261005 / draft PR #11; main не сливать,
+дополнительных агентов не создавать. API всё ещё на паузе, keys/cloud
+не менять. См. docs/AUDIT_FOLLOWUP_20261007.md и десять задач в матрице.
+Исправлен corroboration на ровно .10 и extreme на .20 с машинным roundoff;
+существующие Policy thresholds сохранены. Trust disclosure — existing
+gate proof, score=null, не эмпирическая accuracy/новый денежный допуск.
+Search review — один original sealed pool; внешние просмотры неизвестны.
+Raw P(home/away>=3/4)/under loss — projection того же score mass, не новый
+ceiling model или veto. Narrative/causality не выводить из score branches.
+Forward scorecard хранит все original prematch decisions, missing ≠ PASS,
+flat reliability exact profile/contract/line/bin. CLV selection единый
+observed/received/digest; missing close в coverage, same-book raw ratio
+не считать sharp no-vig edge. Archived records/seals не переписывать.
+Семь MODEL_MODULES/BASELINE_V1/STRICT и Policy побайтно прежние; обычных
+команд 10, `work inbox --text` остаётся простым file workflow, web UI нет.
+Полный локальный release 578/578, 30 новых контрпримеров, replay/integrity
+true; Node aggregate исполняет все 19 групп. CI сверять на exact final
+head. code_hash: c6301d4f8dbaedb62baf1827283d9e72850fed27e72514edffe614a010e29513.
+Numeric trust weights, .15 veto, search penalty, causal engine, Dixon–Coles
+и независимый prospective model holdout ещё не проверены/не внедрены.
+Новые программные тесты не повышают оценку качества футбольной модели.
+Нижние разделы — исторические срезы.
+
+## Продолжение системы без API, 06.10.2026
+
+API по указанию пользователя отложен. Cloud/keys не трогать в этом этапе.
+Та же ветка / PR #11, main не сливать, дополнительных агентов не создавать.
+См. docs/OFFLINE_WORKFLOW.md и docs/SYSTEM_REVIEW_20261006.md.
+`work inbox --text` — существующий canonical file workflow: русский status/
+карточка, named prediction_job_id → CAPTURE, прежний default main pool.
+Файл quotes открывать после seal; timestamps не переписывать. Action +
+jobs receipt + audit коммитятся одной transaction с nested savepoints.
+Busy COMMIT -> rollback всей pending transaction, затем безопасный retry.
+ERROR job -> exit 2; PASS решения остаётся нормальным результатом обработки.
+Новые jobs receipts имеют RECORD binding; старые не переписывать.
+report/accounting/replay/compare без rollback — только существующая ro БД;
+backtest standalone. Обычных команд всё ещё 10: work вместо api-health,
+последняя сохранена для явного вызова/--labs. Новый runtime не добавлен.
+Модель/Policy прежние; math tests не доказывают forecast superiority.
+Frozen effectiveness audit воспроизвёл 380 просмотренных historical TEST:
+SoS кандидат 3/7 лучше, 4/7 хуже; KEEP_SHADOW. Не refit по этому TEST.
+Локальный полный release 548/548; replay_matches/integrity=true. Проверки
+Node handler не skipped. code_hash:
+70aea1f55fbed4be9ef7bf10cbe3dbc627fa82debedea0787db3e2542d384b69.
+CI сверять на конечном опубликованном head; API-срезы ниже
+исторические. Новый server key проверен 06.10 23:08 Киев, по-прежнему
+ACCOUNT_SUSPENDED; последнее server v11. Повторять API в этом этапе не надо.
+
+## Уточнение доступа и минутной квоты, 06.10.2026 16:18 UTC
+
+Та же ветка / PR #11, main не сливать; дополнительных агентов не создавать.
+См. docs/API_ACCESS_RECOVERY_20261006.md. Свежий единственный provider status
+подтвердил PROVIDER_ACCOUNT_SUSPENDED; исторические runner logs согласуются.
+Это сообщение поставщика, а не установленная причина приостановки.
+Обход/смену ключа/подписки не выполнять. Следующий sporting collection —
+после восстановления доступа владельцем, новая bounded заранее назначенная
+сессия. Старые REPORT/manifests/seals не переписывать под новый code hash.
+camel-case errors.rateLimit теперь quota failure; отдельный числовой
+x-ratelimit-remaining ограничивает минутные вызовы без auto retry/ожидания.
+Дневной reserve сохранён; quota не резервируется глобально между процессами.
+Server v9 побайтно сверён, временный auth удалён, исходный auth сохранён.
+Полный локальный release 527/527; Python aggregate исполняет 19 Node groups.
+Семь MODEL_MODULES и Policy неизменны. code_hash:
+01d895ab7e2a09143c0dc11262fa52313c98e88462301436e6014067221597c9.
+Server template SHA-256:
+5f019b238bf8423879002f2040c617aef5fe4de3e86f9e5447e1795f7397b8f1.
+Нижележащие 517/18, v6 и неустановленный account state — прошлые срезы.
+
+## Проверенный шлюз и фактический отказ API, 06.10.2026
+
+Та же feature/stability-reset-20261005/PR #11, main не сливать.
+См. docs/GATEWAY_COMPLETION_20261006.md. server/sports_gateway.js —
+канонический source template с пустой DEPLOYED_AUTH: fail closed.
+При deployment приватно вставляются hashes прежнего runner credential;
+compiled auth config и provider key в Git не помещать. API key остаётся
+в существующем Vault/RPC, schema/подписка не менялись. Шлюз обновлён,
+старый sefirot-debug-football заменён на HTTP 410 без I/O. Временный
+credential проверки отозван, его файл удалён; исходный credential сохранён.
+16 KB input/RPC, 2 MB upstream, 3/9 s timeouts, без redirects; exact
+endpoint/params/count/paging, account redaction, numeric quota whitelist.
+HTTP 200 + errors.access -> PROVIDER_ACCESS_DENIED; collector прекращает
+последующие запросы. Не путать с неверным token/Free/expired: эти причины
+не подтверждены. 06.10 15:31 UTC: final data-session одной заранее
+объявленной cohort, 1 status attempt, 0 packets/fixtures/seals/forecasts.
+api-health отдельно подтвердил отказ. Stake/Odds в этой среде не настроены;
+исторический Stake 403 за 05.10 не считать свежей проверкой 06.10.
+Локальный release: 517/517, demo/replay/integrity; один Python aggregate
+исполняет 18 Node handler contract groups. CI явно ставит Node 22 во всех
+4 Windows/Ubuntu × Python 3.11/3.13 jobs; CI сверять на exact final head.
+Семь MODEL_MODULES/Policy прежние. Клиентский code_hash не включает JS
+server: его SHA-256 отдельно указан в completion doc. HOLDOUT не пройден.
+Нижележащие заявления «cloud не менялся» относятся к предыдущим срезам.
+
+## Явная диагностика API, 06.10.2026
+
+Та же feature/stability-reset-20261005: см. docs/API_HEALTH_20261006.md.
+api-health --odds-provider stake выполняет один upcoming soccer catalogue
+request, до пяти events в output helper, без UserIdentity/рынков/цен.
+Наличие токена отдельно от HTTP 401/403/429 и fixed provider reasons.
+Missing credentials: 0 requests. RESEARCH_API_READY не admission;
+admission_ready/monetary_permission/execution_enabled=false. Default
+The Odds API сохранён. Import-time Stake probe и raw debug errors удалены;
+старые env flags не выполняют I/O и не открывают private messages.
+19 новых offline контрпримеров; полный локальный release 510 тестов,
+demo/replay/integrity успешны. MODEL_MODULES/Policy прежние, code_hash новый.
+Настроенный облачный CLI этим изменением ещё не запускался; исторический
+05.10 22:24 UTC Stake HTTP 403 не считать свежим статусом. Deployments
+и секреты не менять молча. Current CI проверять на новом exact head.
+
+## Ограничение сценария по DAILY AUDIT, 05.10.2026
+
+Текущий head той же feature/stability-reset-20261005 продолжает STABILITY
+RESET. См. docs/SCENARIO_CONSTRAINT_20261005.md: explicit sports-only
+matchup_signal.value.selection_constraint.avoid_result=true, reliable/fresh
+active FACT support. Запрет блокирует 1X2/DC/DNB/HANDICAP до ranking и
+результатные Builder legs, сохраняется в research outputs. Добавление,
+снятие или изменение содержания premises на recheck требует нового seal.
+Нельзя превращать каждый проигрышный score branch в veto или выводить
+restriction из коэффициента/прошедшего результата. Текст чата не parser.
+Семь MODEL_MODULES и Policy неизменны; code_hash изменён. Старые seals
+воспроизводить на архивной сборке. Draft PR #11 направлен в точную
+feature/api-data-session-20261005, main не сливать. Дополнительных агентов
+не создавать. Финансовые записи/исходные аудиты и личные receipts не
+публиковать; external tip + filter не считать чистой модельной выборкой.
+
+## Первый шаг STABILITY RESET, 05.10.2026
+
+Текущая ветка: feature/stability-reset-20261005, поверх точного 8e6a3ab.
+Карта зависимостей до изменений: reports/ARCHITECTURE_BASELINE_20261005.json.
+Матрица всех modules/CLI, migration и предложенный accuracy protocol:
+docs/STABILITY_RESET_20261005.md. Это не готовая 2.5-RC1 и не новая модель.
+Один runtime sefirot.cli:main; launchers run_sefirot.py/SEFIROT_CORE.py
+по умолчанию wrappers текущего CLI, прежние interfaces только --legacy.
+В обычной справке 10 основных команд; --labs --help показывает все.
+Старые явно вызванные команды сохраняются: help не является permission gate.
+data-session по умолчанию cohort+baseline seals, без market/Builder grids;
+они доступны только с --research-grids и lazy imports. build-info не
+открывает БД/сеть и показывает code/model/policy identities. Model hash,
+BASELINE_V1/STRICT, денежные caps и historical seals не менять.
+Нижележащие разделы описывают исторические этапы; их старые hashes и
+названия branch не заменяют текущую ветку. Main не сливать; секреты,
+SQLite и личные receipts не публиковать. Дополнительных агентов не создавать.
+Проверки: python test_sefirot.py и python scripts/verify_release.py.
+
+## Единый API-сбор data-session, 05.10.2026
+
+Продолжение в отдельной feature/api-data-session-20261005 поверх точного
+Stake snapshot 2f9aa2a (tree c1290e7e1ebb4bec44cdfd9a3c2947477eca07ed),
+включая CLI stake-snapshot. Активную feature/data-session-audit-20261004
+меняет параллельная разработка: интеграция только fast-forward при
+проверенном актуальном head; force/перезапись запрещены. data-session: status/quota → date fixtures →
+reserve whole CALIBRATION cohort → one FT history request per league/season
+→ capture → 50 main contracts + 14 goal builders. Sports gateway также
+поддержан api-health/football-fetch; provider key остаётся серверным.
+См. docs/DATA_SESSION.md. 26 новых offline контрпримеров; полный локальный release: 465 тестов,
+demo/replay/integrity прошли; CI сверять на опубликованном head. code_hash:
+415d924a4ab684df65dbdd829201dd5e5c0e83bdf5b55ad830998acabcfb04b6.
+model_hash прежний. Реальный CLI упёрся в отсутствующий local/gateway
+credential; подтверждённых API packets и новых реальных прогнозов нет.
+Cloud gateway/Vault не изменены. Prices/approval/HOLDOUT/main merge не
+выполнялись. Secrets/SQLite/личные packets в Git не помещать.
+
+## Stake research odds bridge, 05.10.2026
+
+Текущий рабочий контракт Stake подтверждён живым запросом. Старый draft
+`sportsEvents` удалён из схемы; используется двухэтапный web GraphQL:
+`SportTournamentFixtureList` -> exact fixture -> `FixtureIndexGroups` ->
+`FixtureGroupMarkets`. Render smoke-test: token authenticated, 200 soccer
+events, Nations League fixtures найдены; Cyprus-Latvia дал 14 groups / 292
+markets. Добавлены `src/sefirot/stake_provider.py`,
+`src/sefirot/stake_mapper.py`, `scripts/stake_snapshot.py` и CLI
+`stake-snapshot`.
+
+Mapper консервативно нормализует 1X2, Double Chance, DNB, BTTS, Asian Total и
+Asian Handicap только на integer/half линиях CORE; quarter lines остаются raw и
+отбрасываются из canonical main mapping. Small research mapping уже умеет
+Match N+ shots, FT/1H total corners, FT/1H total cards (когда exact template
+есть), team corner ranges. 8/8 dedicated provider+mapper tests прошли на
+Render. Источник пока строго RESEARCH_ONLY:
+freshness=RECEIPT_TIME_ONLY, settlement rules unverified,
+monetary_permission=false, execution_enabled=false. Stake token хранить только
+в STAKE_API_TOKEN и перед production использованием перевыпустить токен,
+который когда-либо публиковался в чате. Main не сливать.
+
+## Сравнительный обзор и forward-scorecard, 05.10.2026
+
+Первый шаг после обзора: read-only forward-scorecard всей заранее
+назначенной API-выборки. Original raw/base, reliability bins и слабые
+neutral/frozen-history ориентиры, пропуски в знаменателе; рынок БК
+не подменяется baseline. Старые CLI-only builds можно читать при
+совместимом model_hash, но нельзя пересчитывать/переподписывать seals.
+См. docs/DEVELOPMENT_REVIEW_20261005.md и docs/FORWARD_SCORECARD.md.
+22 новых теста; всего 431, точный release/CI сверять на текущем head.
+code_hash: eb9031299936744cf2b3faa809949bce42c584a466fac4da4c0ea4f71bdf18de.
+model_hash прежний. Реальная сохранённая выборка: 0/17 scored,
+17 последних INSUFFICIENT_HISTORY. Никакой новый holdout/approval,
+main merge или вероятность малых/Builder markets не заявлены.
+
+
+## Новый аудит Builder, 05.10.2026
+
+Добавлены builder-grid/compare-builder: 14 заранее фиксированных
+push-free голевых сочетаний, совместная raw вероятность по клеткам
+BASELINE_V1, history/rate sensitivity; совместная API-цена не
+подменяется произведением цен одиночек. small-market-review проверяет
+full-time API статистику, непересекающиеся long/recent, shrink,
+venue/outlier и allowed baseline следующего соперника.
+Все новые режимы D/stake=0, вероятность малых линий пока не моделируется.
+ticket-audit добавляет категории MAIN/SMALL/BUILDER/UNMAPPED.
+См. docs/BUILDER_AUDIT_20261005.md. Локально 409 тестов и release gate.
+code_hash: e8af27bcbe6d5d1e4508f0529a41623282bcd1da88780f6eb906749731d46499;
+model_hash прежний. Старые seals/планы не переподписывать. Main не сливать.
+Личные билеты/API-пакеты в Git не помещать. CI сверять на новом head.
+
+
+## Сбор будущей API-выборки, 05.10.2026
+
+Добавлены forward-plan/capture/settle/status. Документация:
+`docs/FORWARD_COLLECTION.md`. 382 локальных теста и release gate прошли;
+CI сверять на новом head. code_hash:
+`28d99e80359ff84329e918ba76a96357384c0b8f138b4be7572f6edf9941dd03`.
+model_hash прежний. Коллектор BASELINE_V1, фиксированные семь DEFAULT_POOL
+контрактов, research ledger без production routes. HOLDOUT только после
+frozen nonsynthetic calibrator, без fit_ids overlap; план не сертификат.
+Реальный API на 5 октября: 99 NS, 17 заранее зарезервированных CALIBRATION,
+17 INSUFFICIENT_HISTORY, 0 seals/results. Свежая история 2026 отклонена Free;
+Odds API key отсутствует в проверенных конфигурациях. Никаких новых approvals,
+LIVE или main merge. Частные API packets/SQLite не добавлять в Git.
+
+## Продолжение по аудитам 02–03 октября, 04.10.2026
+
+Добавлены `goal-robustness` и `compare-robustness`: фиксированные raw-пробы
+удаления крупнейшего target-выброса и ограничения недавних всплесков,
+сравнение всех 50 контрактов с API-квитанцией, D/stake=0. Карточка,
+readiness и session показывают паспорт сборки, стадии и очередь действий.
+Документация: `docs/AUDIT_FOLLOWUP_20261004.md`. 361 локальный тест и
+release gate прошли; удалённый CI сверять на новом head.
+code_hash: `95188a425b59470f8aef3030e977aa994361a8722705c4dfb1fd436d002e40ac`;
+model_hash прежний. BASELINE_V1/STRICT и денежные caps не изменены.
+Контрфактические пробы не переписывают спортивные факты или исходный seal,
+не являются обученной моделью, доверительным интервалом или денежным допуском.
+
+## Рабочее обновление 04.10.2026: данные, сессия, билеты
+
+Продолжение от `d665237` находится в `feature/data-session-audit-20261004`.
+Архив уже полученных API-пакетов, coverage по командам, read-only `session`
+и `ticket-audit` описаны в `docs/OPERATIONS_UPGRADE.md`. Локально 343 теста,
+release gate, три реальных research seals из сохранённого API-снимка и
+price-blind сетка 50 контрактов проверены; monetary_permission=false.
+code_hash: `718c88f2e6073aca9a532f90a436af5bf884a6e002e25c59438c4fa00fd4a007`;
+model_hash прежний. Старые seals/approvals не переподписывать.
+Обновление опубликовано в этой feature-ветке; черновик PR #9 направлен
+в `core242-version-audit`. На коммите `c4d5fcf` все 343 теста и полный demo
+прошли в GitHub Actions на Windows/Ubuntu с Python 3.11/3.13.
+Ошибка записи 403 устранена 04.10.2026 установкой ChatGPT Codex Connector
+на аккаунт владельца только для `Sefirot`; запись через connector проверена
+публикацией этого обновления документации. Первоначальная публикация была
+через GitHub UI. Для продолжения выбирать feature-ветку и сверять build hash;
+CI проверять на последнем коммите. `core242-version-audit` сохраняет прежний срез.
+API-Football реально отвечает, однако свежая история нужного сезона
+ограничена тарифом и коэффициенты не подключены. Накопление доступных
+наблюдений не заменяет недоступный прошлый сезон или текущую форму.
+Личные входы/выходы ticket-audit и SQLite проверок в Git не помещать.
+
+## Локальный кандидат 04.10.2026: расширение основных рынков
+
+В feature-ветке `feature/main-market-expansion-20261004` подготовлен пакет
+поверх `cb07ebb`: импорт шести семейств котировок и price-blind research
+сетка из 50 контрактов. См. `docs/MAIN_MARKET_EXPANSION.md`.
+code_hash кандидата: `0aa60458958310628f3fbbd6e0523c03e90e16bb97f984a3d134a4320a93f290`;
+model_hash сохранён. Локально 314 тестов, release gate успешен.
+Этот промежуточный срез включён в `feature/data-session-audit-20261004`;
+отдельная исходная ветка остаётся локальной. Расширенную сетку не передавать
+в денежный admission: она RESEARCH_ONLY, stake=0. Получение реальных
+коэффициентов не подтверждено; sports API проверен в следующем срезе выше.
+
+## Опубликованная база
+
+Архивная база обновления — CORE 2.4.2 в ветке `core242-version-audit` репозитория
+`VolodimerT/Sefirot`. `main` пока содержит CORE 2.3; ветка
+`core24-decision-finalizer` и её PR #7 содержат старую CORE 2.4.0.
+Не выбирать их молча как основу нового расчёта или исправления.
+
+В рабочую 2.4.2 добавлена оптимизация 03.10.2026: см.
+`docs/RUNTIME_OPTIMIZATION.md`. Тег `v2.4.2` сохраняет исходный архивный
+срез. Для новых расчётов выбирать текущую ветку; сверять build hash,
+а не только одинаковый номер версии. Актуальный code_hash:
+`49fbf90cc34c53dfaddf052f7fe1000095913d45a9963ed9b3758355ad04905d`.
+До просьбы обновить коэффициенты проверить `readiness` сохранённого прогноза.
+
+Перед работой проверить ветку, `VERSION` в `src/sefirot/contracts.py`,
+`pyproject.toml` и `docs/HANDOFF_CORE_24.md`. Воспроизведение старого решения
+выполнять на его архивной версии; seals, approvals и fitted-артефакты
+не переподписывать новой сборкой.
+
+Сохранить Конституцию, девять сефир в одном процессе, прематчевый режим
+и стандарт BASELINE_V1/STRICT. LIVE, догон, автоматическое размещение
+ставок и Tavily не добавлять. Не создавать дополнительных агентов.
+Ключи и личные журналы в Git не помещать.
+
+Независимый prospective holdout новой модели ещё не пройден. В `main`
+не сливать до выполнения ранее согласованной проверки или нового явного
+решения владельца. Исторический просмотренный TEST не использовать
+для подбора порогов. Успешные программные тесты не доказывают доходность.
+
+Текущие проверки: `python test_sefirot.py` и
+`python scripts/verify_release.py`. Сохранённый итог оптимизации: 297 тестов,
+demo/replay/целостность; подробности в `reports/RELEASE_CHECK.json`.
+Замеры до/после — `reports/RUNTIME_BEFORE.json` и `RUNTIME_AFTER.json`.
+Кеш целостности привязан к свежим байтам каждой записи; не заменять его
+кешем полного journal_ok или разрешений. Подмена извне обязана обнаруживаться.

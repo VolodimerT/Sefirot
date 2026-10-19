@@ -1,0 +1,316 @@
+{
+  "schema": "runtime-benchmark-v1",
+  "synthetic": true,
+  "python": "3.12.14",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "source_root": "/workspace/scratch/414a745b01d1/sefirot_optimization_base",
+  "code_hash": "cff8f1021dd1f308e70cfced313ba37b461758a4b02142ad2c21321819968b50",
+  "benchmark_source_sha256": "482e854fe1d6ee3b2c3b38ebc89f7b852431952f2f8932ced33344d49587cf77",
+  "fixture_hash": "719e56892b567ac39beb00a1b72c1e5b1b481710b92144d6606be66f8084969a",
+  "model_hash": "c3e1f67045919c9370ebc904ddb4590fdc1d1de485ddf4e01f3a5c7e381e6114",
+  "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+  "repeats": 5,
+  "prepare_seven_markets": {
+    "median_seconds": 0.04510403100039184,
+    "samples_seconds": [
+      0.05070787400018162,
+      0.043582597999829886,
+      0.04163619499968263,
+      0.048614830000133225,
+      0.04510403100039184
+    ]
+  },
+  "initialize_empty_ledger": {
+    "median_seconds": 0.007141573999888351,
+    "samples_seconds": [
+      0.011799657000210573,
+      0.019146544999784965,
+      0.007141573999888351,
+      0.006559821999871929,
+      0.006501282000044739
+    ]
+  },
+  "probabilities_hash": "8db25c895b23c687572c9bfe972b1241836545c88c3e6d4f7455c68322101c37",
+  "journals": [
+    {
+      "unrelated_fixtures": 0,
+      "feedback_rows": 7,
+      "recapture": {
+        "median_seconds": 0.04854445399996621,
+        "samples_seconds": [
+          0.04854445399996621,
+          0.04999539799973718,
+          0.047483105000083015,
+          0.04970183099976566,
+          0.04790185300043959
+        ]
+      },
+      "verify": {
+        "median_seconds": 0.002694685000278696,
+        "samples_seconds": [
+          0.0028845649999311718,
+          0.0038102929997876345,
+          0.002694685000278696,
+          0.0025515870001981966,
+          0.0025481120001131785
+        ]
+      },
+      "context": {
+        "median_seconds": 0.004980704999979935,
+        "samples_seconds": [
+          0.004980704999979935,
+          0.010489296999821818,
+          0.005484959000114031,
+          0.0033437189999858674,
+          0.0032791559997349395
+        ]
+      },
+      "cold_context_seconds": 0.004452111000318837,
+      "settle": {
+        "median_seconds": 0.00675820600008592,
+        "samples_seconds": [
+          0.00675820600008592,
+          0.006407728999874962,
+          0.006582176999927469,
+          0.00808360500013805,
+          0.012425036999957229
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "4b2ee2d7b6d1f5e2de895e100389db0390658e1964b6e67d50dc9181cd624e27",
+        "health": {
+          "1X2:HOME": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "DNB:HOME": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 1,
+            "state": "UNKNOWN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "95d442ecbe00c00eba622922e7d0f1b73ff018248be20b2562af2534d78b8b8c"
+      }
+    },
+    {
+      "unrelated_fixtures": 200,
+      "feedback_rows": 1407,
+      "recapture": {
+        "median_seconds": 0.1951010640000277,
+        "samples_seconds": [
+          0.1951010640000277,
+          0.20462879200022144,
+          0.1909289649997845,
+          0.20326399500027037,
+          0.19503258499980802
+        ]
+      },
+      "verify": {
+        "median_seconds": 0.2331575650000559,
+        "samples_seconds": [
+          0.25230511200015826,
+          0.23782445500000904,
+          0.22938078400011364,
+          0.22987793199990847,
+          0.2331575650000559
+        ]
+      },
+      "context": {
+        "median_seconds": 0.27167313100017054,
+        "samples_seconds": [
+          0.2855522629997722,
+          0.2730202160000772,
+          0.2686226499999975,
+          0.26900426600013816,
+          0.27167313100017054
+        ]
+      },
+      "cold_context_seconds": 0.2906570840000313,
+      "settle": {
+        "median_seconds": 0.36595972300028734,
+        "samples_seconds": [
+          0.3691287070000726,
+          0.3102506159998484,
+          0.3070062889996734,
+          0.36595972300028734,
+          0.5143794989999151
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "e13ab096f0ae75fe8b3bc247d272a6ec6142f23bdf8a4e11821147a6d2482043",
+        "health": {
+          "1X2:HOME": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DNB:HOME": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 201,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 201,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "a623199c082a2b81752e7fa433c804f4209a07490c49b6d1bb43bc379b255d08"
+      }
+    },
+    {
+      "unrelated_fixtures": 1000,
+      "feedback_rows": 7007,
+      "recapture": {
+        "median_seconds": 1.0857759719997375,
+        "samples_seconds": [
+          1.3840294110000286,
+          1.177352056000018,
+          1.0857759719997375,
+          0.9904629650000061,
+          1.0182945249998738
+        ]
+      },
+      "verify": {
+        "median_seconds": 1.195144485000128,
+        "samples_seconds": [
+          1.1983545389998653,
+          1.195144485000128,
+          1.1725084240001706,
+          1.3378851080001368,
+          1.1925605970000106
+        ]
+      },
+      "context": {
+        "median_seconds": 1.472167654000259,
+        "samples_seconds": [
+          1.4413044469997658,
+          1.4563015660000929,
+          1.4781723000000966,
+          1.4771512350002922,
+          1.472167654000259
+        ]
+      },
+      "cold_context_seconds": 1.445113267999659,
+      "settle": {
+        "median_seconds": 2.108866560000024,
+        "samples_seconds": [
+          2.155169216000104,
+          2.1143112759996257,
+          2.0505724619997636,
+          2.108866560000024,
+          2.090535275000093
+        ]
+      },
+      "semantic_result": {
+        "integrity": true,
+        "idempotent_capture": true,
+        "policy_approved": false,
+        "context_hash": "aef9359879394c40c0c5fe3196faf02bfb4ba3d4d36ef0810511a6b4643dc621",
+        "health": {
+          "1X2:HOME": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DOUBLE_CHANCE:1X": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "DNB:HOME": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "HANDICAP:HOME:-1": {
+            "n": 1001,
+            "state": "WORKING",
+            "trust": "HIGH"
+          },
+          "TOTAL:OVER:2.5": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "BTTS:YES": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          },
+          "TEAM_TOTAL:HOME_OVER:1.5": {
+            "n": 1001,
+            "state": "FROZEN",
+            "trust": "INSUFFICIENT"
+          }
+        },
+        "settlement": {
+          "idempotent": false,
+          "records": 7
+        },
+        "settlement_health": "5a43c397c287f5935e215f2142925680177593d4f933262f07c4613c9f538776"
+      }
+    }
+  ],
+  "statistical_profitability_proven": false
+}

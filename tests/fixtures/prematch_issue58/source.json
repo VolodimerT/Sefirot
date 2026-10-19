@@ -1,0 +1,352 @@
+{
+  "schema": "prematch-synthetic-source-v1",
+  "synthetic": true,
+  "fixture_id": 900001,
+  "league_id": 9,
+  "season": 2030,
+  "profile": "LOWER",
+  "capture_at": "2030-01-01T09:00:00+00:00",
+  "quote_at": "2030-01-01T09:01:00+00:00",
+  "decision_at": "2030-01-01T09:02:00+00:00",
+  "packets": [
+    {
+      "data": {
+        "get": "fixtures",
+        "parameters": {
+          "id": 900001
+        },
+        "errors": [],
+        "results": 1,
+        "paging": {
+          "current": 1,
+          "total": 1
+        },
+        "response": [
+          {
+            "fixture": {
+              "id": 900001,
+              "date": "2030-01-01T12:00:00+00:00",
+              "timestamp": 1893499200,
+              "status": {
+                "short": "NS"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          }
+        ]
+      },
+      "receipt": {
+        "provider_host": "v3.football.api-sports.io",
+        "endpoint": "/fixtures",
+        "parameters": {
+          "id": 900001
+        },
+        "request_started_at": "2030-01-01T08:59:56.400000+00:00",
+        "received_at": "2030-01-01T09:00:00+00:00",
+        "payload_hash": "5909213f1e6f31416c0295288b60952dbecd3b2c6f96526d7c431d7ec2061777",
+        "http_status": 200,
+        "provider": "API_FOOTBALL_V3",
+        "sports_only": true
+      }
+    },
+    {
+      "data": {
+        "get": "fixtures",
+        "parameters": {
+          "league": 9,
+          "season": 2030
+        },
+        "errors": [],
+        "results": 8,
+        "paging": {
+          "current": 1,
+          "total": 1
+        },
+        "response": [
+          {
+            "fixture": {
+              "id": 1,
+              "date": "2029-12-29T09:00:00+00:00",
+              "timestamp": 1893229200,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 2,
+              "date": "2029-12-29T08:00:00+00:00",
+              "timestamp": 1893225600,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 3,
+              "date": "2029-12-29T07:00:00+00:00",
+              "timestamp": 1893222000,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 4,
+              "date": "2029-12-29T06:00:00+00:00",
+              "timestamp": 1893218400,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 5,
+              "date": "2029-12-29T05:00:00+00:00",
+              "timestamp": 1893214800,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 6,
+              "date": "2029-12-29T04:00:00+00:00",
+              "timestamp": 1893211200,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 7,
+              "date": "2029-12-29T03:00:00+00:00",
+              "timestamp": 1893207600,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          },
+          {
+            "fixture": {
+              "id": 8,
+              "date": "2029-12-29T02:00:00+00:00",
+              "timestamp": 1893204000,
+              "status": {
+                "short": "FT"
+              }
+            },
+            "league": {
+              "id": 9,
+              "season": 2030
+            },
+            "teams": {
+              "home": {
+                "id": 1,
+                "name": "Team A"
+              },
+              "away": {
+                "id": 2,
+                "name": "Team B"
+              }
+            },
+            "score": {
+              "fulltime": {
+                "home": 2,
+                "away": 1
+              }
+            }
+          }
+        ]
+      },
+      "receipt": {
+        "provider_host": "v3.football.api-sports.io",
+        "endpoint": "/fixtures",
+        "parameters": {
+          "league": 9,
+          "season": 2030
+        },
+        "request_started_at": "2030-01-01T07:59:56.400000+00:00",
+        "received_at": "2030-01-01T08:00:00+00:00",
+        "payload_hash": "555de41dfa7866e619592d7e201d62b0f1723e5a59484554f2082456b236d624",
+        "http_status": 200,
+        "provider": "API_FOOTBALL_V3",
+        "sports_only": true
+      }
+    }
+  ],
+  "gateway_contract": {
+    "ok": true,
+    "shared_budget_guard": "POSTGRES_RESERVATION_V1",
+    "quota": {
+      "x-ratelimit-requests-remaining": "1000",
+      "x-ratelimit-remaining": "10"
+    }
+  },
+  "hash": "43d6d44c3aecea71bd39baf36a3a809e08c5b92ccf26543cce237f5d19c4d5f8"
+}

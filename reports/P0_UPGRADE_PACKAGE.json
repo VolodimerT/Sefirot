@@ -1,0 +1,24 @@
+{
+  "version": "2.4.0",
+  "exit": 0,
+  "demo": {
+    "version": "2.4.0",
+    "synthetic": true,
+    "prediction_id": "8f73f04da6a7fe4952d4d6daa24dc7c5dbbbf60b70321f71bb37d3a2aea52dd6",
+    "decision_id": "ab240eb619a27661a4e7160b054ae442c665735ca8dbccd520b1f26d245046e1",
+    "decision": "PASS",
+    "verdict": "skip",
+    "class": "D",
+    "reasons": [
+      "PROBABILITY_RECALCULATION_REQUIRED",
+      "POLICY_NOT_APPROVED",
+      "SYNTHETIC_DATA_RESEARCH_ONLY",
+      "NO_ADMISSIBLE_MAIN_MARKET"
+    ],
+    "markets_evaluated": 7,
+    "replay_matches": true,
+    "feedback_rows": 7,
+    "integrity": true,
+    "monetary_stake": 0.0
+  }
+}

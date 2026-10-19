@@ -11,16 +11,29 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src'))
 from sefirot.backtesting import walk_forward
 from sefirot.contracts import VERSION,Policy
+from sefirot.identity import code_hash,model_code_hash
 from sefirot.retrospective import audit_cases
 
+def test_counts(stderr):
+    """Keep unittest run/skip counts distinct; absent evidence is not success."""
+    runs=re.findall(r'^Ran (\d+) tests? in .+$',stderr,re.MULTILINE)
+    success=re.findall(r'^OK(?: \(skipped=(\d+)\))?$',stderr,re.MULTILINE)
+    if len(runs)!=1 or len(success)!=1:
+        raise ValueError('UNVERIFIED_TEST_SUMMARY')
+    total=int(runs[0]);skipped=int(success[0] or 0)
+    if total<1 or not 0<=skipped<=total:
+        raise ValueError('INCONSISTENT_TEST_SUMMARY')
+    return {'tests':total,'tests_passed':total-skipped,'tests_skipped':skipped}
+
 def main():
+    sys.stdout.reconfigure(encoding='utf-8',errors='strict')
     report_dir=ROOT/'reports';report_dir.mkdir(exist_ok=True)
     started=time.monotonic()
-    test=subprocess.run([sys.executable,str(ROOT/'test_sefirot.py')],cwd=ROOT,capture_output=True,text=True)
+    test=subprocess.run([sys.executable,str(ROOT/'test_sefirot.py')],cwd=ROOT,capture_output=True,encoding='utf-8')
     (report_dir/'TEST_OUTPUT.txt').write_text(test.stdout+test.stderr,encoding='utf-8')
     if test.returncode:
         print(test.stderr,file=sys.stderr);return test.returncode
-    demo=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'demo'],cwd=ROOT,capture_output=True,text=True)
+    demo=subprocess.run([sys.executable,str(ROOT/'sefirot.py'),'demo'],cwd=ROOT,capture_output=True,encoding='utf-8')
     if demo.returncode:
         print(demo.stderr,file=sys.stderr);return demo.returncode
     demo_result=json.loads(demo.stdout)
@@ -31,24 +44,25 @@ def main():
     (report_dir/'BACKTEST.json').write_text(json.dumps(backtest,indent=2,ensure_ascii=False),encoding='utf-8')
     audit=audit_cases(json.loads((ROOT/'examples/audit_cases_20260927_30.json').read_text(encoding='utf-8')),Policy())
     (report_dir/'AUDIT_REGRESSION_REPORT.json').write_text(json.dumps(audit,indent=2,ensure_ascii=False),encoding='utf-8')
-    count=re.search(r'Ran (\d+) tests?',test.stderr)
-    result={'version':VERSION,'python':platform.python_version(),'platform':platform.system(),'elapsed_seconds':round(time.monotonic()-started,3),
-            'test_exit':test.returncode,'tests':int(count.group(1)) if count else None,'demo':demo_result,'backtest_fixtures':backtest['fixtures'],'backtest_scored_markets':backtest['metrics']['n'],
+    counts=test_counts(test.stderr)
+    result={'version':VERSION,'code_hash':code_hash(),'model_hash':model_code_hash(),'python':platform.python_version(),'platform':platform.system(),'elapsed_seconds':round(time.monotonic()-started,3),
+            'test_exit':test.returncode,**counts,'demo':demo_result,'backtest_fixtures':backtest['fixtures'],'backtest_scored_markets':backtest['metrics']['n'],
             'audit_cases':audit['cases'],'audit_outcomes':audit['outcomes'],'audit_dataset_hash':audit['dataset_hash'],'audit_holdout_eligible':audit['holdout_eligible'],
             'statistical_profitability_proven':False,'generated_at':datetime.now(timezone.utc).isoformat()}
     (report_dir/'RELEASE_CHECK.json').write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding='utf-8')
     (report_dir/'TEST_REPORT.md').write_text(f'''# SEFIROT CORE {VERSION}: проверка сборки
 
 - Среда: Python {result['python']}, {result['platform']}.
-- Автоматические тесты: **{result['tests']}/{result['tests']}**, код завершения **0**, полный список в TEST_OUTPUT.txt. Новых тестов по аудитам: 31.
+- Автоматические тесты: успешно **{result['tests_passed']}**, пропущено **{result['tests_skipped']}**, всего **{result['tests']}**; код завершения **0**, полный список и причины пропусков в TEST_OUTPUT.txt.
 - Сквозной demo: захват → решение → replay → результат → семь рынков feedback; целостность и replay подтверждены.
 - Хронологический backtest: **{backtest['fixtures']} синтетических матчей / {backtest['metrics']['n']} оценённых рынков**. Все решения и отказы учтены; результат не сертифицирует модель.
 - Ретроспективные случаи: **{audit['cases']}** из четырёх аудитных документов; {audit['outcomes']}. Неподдерживаемые рынки отмечены явно; исходные предматчевые прогнозы не восстановлены. Данные unverified/holdout=false, это не проверка эффективности новой модели.
 - Время прогона: {result['elapsed_seconds']} сек.
 - Реальных проспективных матчей для эмпирического допуска: **0**.
-- Windows/Ubuntu и Python 3.11/3.13 проверяются в GitHub Actions при публикации. Для CORE 2.2 предыдущие восемь проверок прошли; статус CORE 2.3 виден в PR текущей версии. Локально выполнена только указанная среда, запуск Windows здесь не заявляется.
-- Реальная авторизованная выгрузка CLI в Supabase всё ещё не проверена: роль NOLOGIN, нет пароля/CA. Схема из CORE 2.2 сохраняется; миграции CORE 2.3 не потребовались. Tavily не использовался.
-- GitHub connector при записи вернул 403 Resource not accessible by integration, git push — отсутствие credentials. Публикация выполняется через ранее разрешённый пользователем браузер; это ограничение инструментов, а не провал тестов.
+- Windows/Ubuntu и Python 3.11/3.13 настроены в GitHub Actions. Этот отчёт фиксирует локальный прогон в указанной среде; результаты удалённого CI в него не включены.
+- Авторизованная выгрузка CLI в Supabase здесь не проверялась. Новая миграция не добавлена. Tavily не использовался.
+- Этот скрипт проверяет техническую сборку; историческое сравнение P0 выполняется отдельным p0-upgrade-benchmark и не сертифицирует денежный допуск.
+- CORE {VERSION}: обе ветки CORE 2.4 объединены; регрессии проверяют PUSH/контракты, внешние ID, разделение hash, пригодность фактов для финальной проверки и согласованность решения/исполнения. Старые fitted-артефакты и денежные допуски автоматически не мигрируются.
 - Независимого внешнего аудитора не было. Проведена отдельная проверка контрпримеров и сверка правил; см. docs/FINAL_AUDIT.md.
 
 Дата UTC: {result['generated_at']}.

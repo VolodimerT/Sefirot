@@ -1,0 +1,44 @@
+<!doctype html><html lang="ru"><head><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; form-action &#39;none&#39;; base-uri &#39;none&#39;"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Сефирот — рабочая очередь</title><style>
+:root{color-scheme:dark;--bg:#101713;--surface:#1a241e;--line:#33463a;--text:#edf4ec;--muted:#a9b7aa;--accent:#c5ec85}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+main{max-width:1160px;margin:auto;padding:34px 24px 60px}header{display:flex;justify-content:space-between;gap:24px;align-items:center}
+h1{font-size:clamp(28px,4vw,42px);letter-spacing:-1px;margin:4px 0}h2{font-size:20px;margin:0 0 16px}p{margin:6px 0}
+.eyebrow{color:var(--accent);font-size:12px;letter-spacing:2px;text-transform:uppercase}.muted,small{color:var(--muted)}
+.pill{border:1px solid var(--line);border-radius:30px;padding:5px 12px;font-size:12px;white-space:nowrap}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:26px 0 20px}
+button,a.button{font:inherit;border:0;border-radius:9px;background:var(--accent);color:#162011;padding:12px 18px;cursor:pointer;text-decoration:none;font-weight:650}
+button:disabled{opacity:.4;cursor:default}a.secondary{background:transparent;border:1px solid var(--line);color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.stat,.box,.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.stat strong{display:block;font-size:30px}.stat span{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:20px}.card{margin-bottom:12px}.cardhead{display:flex;justify-content:space-between;gap:12px}.card h3{font-size:19px;margin:0 0 6px}
+.reason{margin-top:12px;color:var(--muted)}.error{border-color:#9f625a;background:#33231f;padding:16px;border-radius:12px;margin:14px 0}
+.filename{font-family:ui-monospace,monospace;font-size:13px;overflow-wrap:anywhere;border-top:1px solid var(--line);padding:10px 0}
+ol{padding-left:20px}li{margin:10px 0}.path{overflow-wrap:anywhere;font-size:12px;color:var(--muted)}
+details{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}summary{cursor:pointer;color:var(--accent)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 ui-monospace,monospace;color:var(--muted)}
+footer{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media(max-width:760px){main{padding:22px 16px}.grid{grid-template-columns:1fr}header{align-items:flex-start}.stats{gap:8px}.stat{padding:14px}.stat strong{font-size:24px}}
+</style></head><body><main>
+<header><div><div class="eyebrow">SEFIROT / PREMATCH</div><h1>Рабочая очередь</h1><p class="muted">Спортивные данные → прогноз → решение → результат</p></div><span class="pill">Локальный режим</span></header>
+<div class="error">Синтетический образец. Обработка в этом файле отключена; рабочая очередь запускается командой work --web.</div><div class="toolbar"><button disabled>Обработать очередь</button><button disabled>Обновить обзор</button></div><p class="muted">Последний запуск: обработано или уже сохранено 2; ошибок 0.</p><small>Обзор: 01.01.2030 14:02 Киев</small>
+<section class="stats"><div class="stat"><strong>2</strong><span>Файлов в папке</span></div><div class="stat"><strong>2</strong><span>Записанных заданий</span></div><div class="stat"><strong>0</strong><span>Ошибок последнего запуска</span></div></section>
+<div class="grid"><section><h2>Последние сохранённые записи</h2><article class="card"><div class="cardhead"><h3>A — B</h3><span class="pill">пропуск · D</span></div><p class="muted">Решение записано · 01.01.2030 14:02 Киев</p><p>Рынок не допущен</p><p class="reason">Сохранённое решение. Для нового входа нужна новая перепроверка.</p><details><summary>Почему такое решение</summary><pre>A — B
+Вердикт: пропуск | PASS | класс D | RECALCULATE
+Сборка 2.4.2 / 321d7b37ab04; модель 46f1c991a2ee; калибратор нет.
+Кандидат для проверки (допуска нет): DOUBLE_CHANCE:1X
+КФ 2.100; implied 47.62%; модель 85.92%; PUSH 0.00%
+Base EV +80.44%; Low EV -100.00%; stress +69.76%; ROBUST_VALUE
+Fair 1.164; edge +38.31%.
+Конечного порога цены нет при текущем диапазоне вероятности.
+Доверие к вероятности: BLOCKED; калибровка UNCALIBRATED, holdout UNVALIDATED, контекст UNKNOWN. Числовой балл не валидирован.
+Расхождение: +38.31% | EXTREME_RECALCULATE | SINGLE_PRICE_BREAK_EVEN_PROXY.
+Запечатанный пул: 7; с ценой: 7. Просмотр других матчей вне этого решения не учтён.
+Причины: недостаточно калибровочных данных; компетенция в этом контексте неизвестна; нужны независимые подтверждения фактов; модель не прошла независимую проверку; экстремальное расхождение модели и рынка; версия политики не утверждена; нужен новый прогноз по спортивным данным; цена не проходит Base/Low EV; не хватает проверенной истории подсистем; синтетические данные: только исследование; слишком широкий диапазон вероятности
+RESEARCH_ONLY: Сохранить исследовательский результат; для допуска нужны новые реальные предматчевые наблюдения.
+SPORTS_DATA: Получить недостающие спортивные сведения через API; проверить ID, профиль, источники и время. Изменение фактов требует нового seal.
+MODEL_VALIDATION: Накопить отдельные калибровочные данные и пройти заранее назначенный будущий holdout нужного контракта и контекста.
+POLICY: Проверить утверждение точной версии политики после эмпирической проверки; высокий EV его не заменяет.
+PRICE: Отложить запрос цены: сначала закрыть остальные блокировки; коэффициент их не устраняет.
+Лимит ставки: 0.00. Перепроверить спортивные факты; при подтверждённом изменении создать новую прематч-ревизию.</pre></details><small>Задание: 02-decide</small></article><article class="card"><div class="cardhead"><h3>A — B</h3><span class="pill">Прогноз сохранён</span></div><p class="muted">Прогноз сохранён · 01.01.2030 14:00 Киев</p><p>Вероятность зафиксирована до цены. Следующий шаг — цена и перепроверка.</p><p class="reason">Синтетический пример. Денежного допуска нет.</p><small>Задание: 01-capture</small></article></section><aside><section class="box"><h2>Порядок работы</h2><ol><li><b>Спорт.</b> Добавьте CAPTURE без цены.</li><li><b>Seal.</b> Обработайте и сохраните прогноз.</li><li><b>Перепроверка.</b> Добавьте DECIDE с новой ценой и актуальными фактами.</li><li><b>Итог.</b> После матча добавьте RESULT и CLOSING.</li></ol><p class="path">Папка: inbox / синтетический пример</p></section><section class="box" style="margin-top:16px"><h2>Файлы очереди</h2><p class="muted">Список имён, не проверка содержимого. Обработанные файлы тоже могут остаться здесь.</p><div class="filename">01-capture.json</div><div class="filename">02-decide.json</div></section></aside></div>
+<footer>PASS — нормальный результат анализа. Ошибка задания показана отдельно. Здесь нет исполнителя ставок, LIVE или запросов к API.<br>Показаны последние 30 записей журнала. Сохранённая карточка не подтверждает текущую цену или готовность нового входа.</footer>
+</main></body></html>
