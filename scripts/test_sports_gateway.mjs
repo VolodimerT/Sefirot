@@ -81,6 +81,23 @@ for(const attempt of ['0','4','12','01','1.0']){
  assert.equal(JSON.parse(finalized.options.body).outcome,'FAILURE');
  assert.equal(s.calls.filter(c=>c.url.includes('v3.football.api-sports.io')).length,1);
 }
+{
+ const data={get:'fixtures/statistics',parameters:{fixture:'123'},errors:[],results:1,
+   paging:{current:1,total:1},response:[{team:{id:1},statistics:[
+     {type:'Free Kicks',value:11},{type:'Fouls',value:9}]}]};
+ const headers={'x-ratelimit-requests-remaining':'7490','x-ratelimit-requests-limit':'7500',
+   'x-ratelimit-remaining':'295','x-ratelimit-limit':'300'};
+ const s=setup({upstream:Response.json(data,{headers})});
+ assert.equal(s.safe(data,'fixtures/statistics'),true);
+ const out=await s.call({headers:sourceHeaders,body:{endpoint:'fixtures/statistics',params:{fixture:123}}});
+ assert.equal(out.status,200);
+ assert.equal(out.body.ok,true);
+ assert.ok(s.calls.some(c=>c.url.endsWith('/sefirot_source_append')));
+ const saved=s.calls.find(c=>c.url.endsWith('/sefirot_source_append'));
+ assert.equal(JSON.parse(saved.options.body).p_raw.includes('"Free Kicks"'),true);
+ assert.equal(JSON.parse(s.calls.find(c=>c.url.endsWith('/sefirot_sports_budget_finish')).options.body).outcome,'SUCCESS');
+ assert.equal(out.body.monetary_permission,false);
+}
 const vectors=[{tiny:0.000001,a:1e-7,b:1e21,c:1e20,d:-0.0000001}, {'😀':'кириллица','\uE000':[0,null,true,'\n'] }];
 console.log('SOURCE_CANONICAL_VECTORS='+JSON.stringify(vectors.map(v=>({wire:JSON.stringify(v),canonical:setup().canonical(v)}))));
 let tests = 0;
