@@ -25,7 +25,7 @@ RECEIPT_FIELDS = ("provider", "provider_host", "endpoint", "parameters",
 STAT_TYPES = {
     "Total Shots", "Shots on Goal", "Shots off Goal", "Blocked Shots",
     "Shots insidebox", "Shots outsidebox", "Corner Kicks", "Yellow Cards",
-    "Red Cards", "Fouls", "Offsides", "Ball Possession", "Expected Goals",
+    "Red Cards", "Fouls", "Free Kicks", "Offsides", "Ball Possession", "Expected Goals",
     "Total passes", "Passes accurate", "Passes %", "Goalkeeper Saves",
     # Real API-Football /fixtures/statistics uses snake_case for these metrics.
     # Their inclusion permits archive integrity; it does not establish xG calibration.
