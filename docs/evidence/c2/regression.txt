@@ -1,0 +1,28 @@
+test_dst_transition_days_are_not_forced_to_24_hours (test_day_bundle_c2.CalendarC2Tests.test_dst_transition_days_are_not_forced_to_24_hours) ... ok
+test_kyiv_summer_offset_and_half_open_end (test_day_bundle_c2.CalendarC2Tests.test_kyiv_summer_offset_and_half_open_end) ... ok
+test_kyiv_winter_midnight_in_previous_utc_day (test_day_bundle_c2.CalendarC2Tests.test_kyiv_winter_midnight_in_previous_utc_day) ... ok
+test_scanner_kyiv_day_and_referee_applies_only_to_yc (test_day_bundle_c2.CalendarC2Tests.test_scanner_kyiv_day_and_referee_applies_only_to_yc) ... ok
+test_unsupported_zone_and_timezone_echo_rejected (test_day_bundle_c2.CalendarC2Tests.test_unsupported_zone_and_timezone_echo_rejected) ... ok
+test_utc_packet_cannot_claim_kyiv_day (test_day_bundle_c2.CalendarC2Tests.test_utc_packet_cannot_claim_kyiv_day) ... ok
+test_archive_receipt_alone_does_not_prove_local_first_availability (test_day_bundle_c2.QualificationC2Tests.test_archive_receipt_alone_does_not_prove_local_first_availability) ... ok
+test_archive_selector_mismatch_cannot_qualify_history (test_day_bundle_c2.QualificationC2Tests.test_archive_selector_mismatch_cannot_qualify_history) ... ok
+test_calendar_identity_conflict_is_not_hidden_by_archive (test_day_bundle_c2.QualificationC2Tests.test_calendar_identity_conflict_is_not_hidden_by_archive) ... ok
+test_calibrator_cannot_contain_another_reserved_holdout (test_day_bundle_c2.QualificationC2Tests.test_calibrator_cannot_contain_another_reserved_holdout) ... ok
+test_conflicting_teams_and_revised_results_are_quarantined (test_day_bundle_c2.QualificationC2Tests.test_conflicting_teams_and_revised_results_are_quarantined) ... ok
+test_future_labels_are_not_prematch_features (test_day_bundle_c2.QualificationC2Tests.test_future_labels_are_not_prematch_features) ... ok
+test_holdout_fit_overlap_and_late_reservation_block (test_day_bundle_c2.QualificationC2Tests.test_holdout_fit_overlap_and_late_reservation_block) ... ok
+test_identity_map_local_availability_labels_and_history (test_day_bundle_c2.QualificationC2Tests.test_identity_map_local_availability_labels_and_history) ... ok
+test_late_import_cannot_backdate_a_prematch_receipt (test_day_bundle_c2.QualificationC2Tests.test_late_import_cannot_backdate_a_prematch_receipt) ... ok
+test_live_wal_is_rejected_without_ignoring_it (test_day_bundle_c2.QualificationC2Tests.test_live_wal_is_rejected_without_ignoring_it) ... ok
+test_malformed_frozen_calibration_is_blocked_not_trusted (test_day_bundle_c2.QualificationC2Tests.test_malformed_frozen_calibration_is_blocked_not_trusted) ... ok
+test_missing_inputs_never_fall_back_to_c1_synthetic_snapshots (test_day_bundle_c2.QualificationC2Tests.test_missing_inputs_never_fall_back_to_c1_synthetic_snapshots) ... ok
+test_missing_sources_and_fouls_yc_separation (test_day_bundle_c2.QualificationC2Tests.test_missing_sources_and_fouls_yc_separation) ... ok
+test_no_network_or_fit_api_called (test_day_bundle_c2.QualificationC2Tests.test_no_network_or_fit_api_called) ... ok
+test_role_reservation_must_precede_the_seal (test_day_bundle_c2.QualificationC2Tests.test_role_reservation_must_precede_the_seal) ... ok
+test_snapshot_and_archive_unchanged_no_sidecar_created (test_day_bundle_c2.QualificationC2Tests.test_snapshot_and_archive_unchanged_no_sidecar_created) ... ok
+test_train_excludes_reserved_calibration_and_holdout (test_day_bundle_c2.QualificationC2Tests.test_train_excludes_reserved_calibration_and_holdout) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.146s
+
+OK

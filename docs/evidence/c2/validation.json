@@ -1,0 +1,53 @@
+{
+  "schema": "c2-engineering-validation-v1",
+  "base_commit": "08246f7af5c0bfed8c3be92e66f20cd7bb67f8c3",
+  "python": "3.14.3",
+  "full_release": {
+    "passed": 1699,
+    "skipped": 9,
+    "total": 1708,
+    "exit_code": 0,
+    "integrity": true,
+    "replay": true
+  },
+  "new_contract_tests": {
+    "passed": 23,
+    "skipped": 0
+  },
+  "c1_regressions_preserved": 30,
+  "node": {
+    "gateway": 41,
+    "cockpit": 11,
+    "session": 12,
+    "exit_codes": [
+      0,
+      0,
+      0
+    ]
+  },
+  "real_bundle_qualified": false,
+  "real_inputs_available": false,
+  "w1_audit_available": false,
+  "synthetic_demo_snapshots_used_for_qualification": false,
+  "model_fit_allowed": false,
+  "next_blocker": "SUPPLY_REAL_DAY_ARCHIVE_AND_CHECKPOINTED_SQLITE",
+  "core_src_models_policy_unchanged": true,
+  "all_existing_C1_reports_receipts_examples_unchanged": true,
+  "source_sha256": {
+    "research/daily_scanner.py": "892b62b23f2f5496357c3b4aec7f3751c5abc826fb4da3f08975c5d521f16636",
+    "research/day_calendar.py": "5369a12f667af402c2b3dc45f11dc8bbbaf38235dcf0bd958ce1257c7d6c9d00",
+    "research/day_bundle.py": "20a43173fdc5cb37e81b6049c49558562d35a825338da13a90a94cd6409b3874",
+    "scripts/daily_prematch_scanner.py": "571a2b6151256451e906290329712b0612536441843715c9563e883c6c26f73b",
+    "scripts/qualify_day_bundle.py": "9eb74775287495bed2252a1f7b1622f6c178513a24f6778c4edc24ef171229d4",
+    "tests/test_day_bundle_c2.py": "b6ba45d60255f551c97b3215d61b1853b36280731e81ee5af1f1f6a4a7d4c386"
+  },
+  "artifact_sha256": {
+    "node-cockpit.txt": "be6160d9931d772ece2763b4d7bdd57c9cc2494afa313c005df8f7eb8328364b",
+    "regression.txt": "da816cbafdb419751c6b0181a67d2f3cbab7f9a518abd3c44fce533d6f69f365",
+    "node-gateway.txt": "195bef2660d04348af4d7f84d912c129845f436d0e21aea6667a001bc9aae4b8",
+    "python3143.txt": "d25b22f95acf88fb3ca2aba90f1e0142bbbfe62f5efc059697f8c93e69007eff",
+    "node-session.txt": "6460370d97d4a74c955a785f765dcb090549ecfbaa6ccbcc04583ebd8bef98fa",
+    "qualification-inputs-missing.json": "742c69f400b6ce302b7e06ce3e84ffd9e9e5ca7376730ee2a90bccbee0182b99",
+    "release3143.json": "2ced023ff598c015b7a707f7d8fcdf6ba45723fd07f8557b977d1963251d1c99"
+  }
+}

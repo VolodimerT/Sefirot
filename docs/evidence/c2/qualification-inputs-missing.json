@@ -1,0 +1,225 @@
+{
+  "schema": "day-bundle-qualification-v1",
+  "day_window": {
+    "day": "2026-10-29",
+    "timezone": "Europe/Kyiv",
+    "start_utc": "2026-10-28T22:00:00+00:00",
+    "end_utc_exclusive": "2026-10-29T22:00:00+00:00",
+    "duration_hours": 24.0
+  },
+  "as_of": "2026-10-29T10:00:00Z",
+  "decision": "PASS",
+  "model_probability": null,
+  "ev": null,
+  "model_fit_allowed": false,
+  "monetary_permission": false,
+  "execution_enabled": false,
+  "network_requests": 0,
+  "artifacts_modified": 0,
+  "fixtures": [],
+  "day_fixture_ids": [],
+  "blockers": [
+    "ARCHIVE_NOT_SUPPLIED",
+    "CHECKPOINTED_SQLITE_SNAPSHOT_REQUIRED",
+    "EXTERNAL_ORIGIN_NOT_ATTESTED",
+    "MODEL_FIT_NOT_AUTHORIZED",
+    "VALID_DAY_CALENDAR_REQUIRED",
+    "W1_AUDIT_NOT_SUPPLIED"
+  ],
+  "audit": {
+    "status": "NOT_SUPPLIED"
+  },
+  "calendar_status": "NOT_SUPPLIED",
+  "data_label": "SAVED_INPUTS_NOT_EXTERNALLY_ATTESTED",
+  "future_exclusions": [],
+  "implementation_sha256": "20a43173fdc5cb37e81b6049c49558562d35a825338da13a90a94cd6409b3874",
+  "archive": {
+    "packet_reviews": [],
+    "manifest_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "issues": [
+      "ARCHIVE_NOT_SUPPLIED"
+    ]
+  },
+  "snapshot": {
+    "status": "NOT_SUPPLIED",
+    "snapshot_sha256": null,
+    "unchanged": null,
+    "source_packet_count": 0,
+    "forward_status": "NOT_VERIFIED"
+  },
+  "day_fixture_count": null,
+  "coverage_by_league": {},
+  "coverage_by_market": {
+    "1X2": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "DOUBLE_CHANCE": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "DNB": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "HANDICAP": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "TOTAL": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "BTTS": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "TEAM_TOTAL": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "CORNERS": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "SHOTS": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "EXACT_MARKET_DATA_AND_INDEPENDENT_CALIBRATION"
+      ]
+    },
+    "FOULS": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": false,
+      "required_sources": [
+        "DIRECT_COMMITTED_AND_SUFFERED_FOUL_COUNTS"
+      ]
+    },
+    "YELLOW_CARDS": {
+      "saved_day_fixtures": null,
+      "fixtures_with_local_sports_inputs": null,
+      "fixtures_with_verified_quotes": 0,
+      "qualified": 0,
+      "decision": "PASS",
+      "model_probability": null,
+      "ev": null,
+      "referee_gate_required": true,
+      "required_sources": [
+        "INDEPENDENT_REFEREE_YC_HISTORY_AND_CALIBRATION"
+      ]
+    }
+  },
+  "missing_sources": [
+    "FIRST_AVAILABLE_REGULATION_FT_HISTORY_RECEIPTS",
+    "EXACT_FIXTURE_TEAM_STATISTICS_RECEIPTS",
+    "DOCUMENTED_XG_PROVIDER_WITH_TIMESTAMP_AND_DEFINITION",
+    "PREMATCH_FACT_INJURY_REPORT_WITH_ORIGIN",
+    "PREMATCH_CONFIRMED_LINEUP_WITH_ORIGIN",
+    "SEPARATE_EXACT_BOOKMAKER_EVENT_LINE_RULES_AND_QUOTE_RECEIPTS"
+  ],
+  "next_blocker": "SUPPLY_REAL_DAY_ARCHIVE_AND_CHECKPOINTED_SQLITE",
+  "role_summary": {
+    "TRAIN": {
+      "chronology_usable": 0,
+      "structurally_usable": 0,
+      "qualified": 0
+    },
+    "CALIBRATION": {
+      "chronology_usable": 0,
+      "structurally_usable": 0,
+      "qualified": 0
+    },
+    "HOLDOUT": {
+      "chronology_usable": 0,
+      "structurally_usable": 0,
+      "qualified": 0
+    }
+  },
+  "qualification_status": "INPUTS_MISSING_OR_REJECTED",
+  "hash": "ef8dea197f7ed65c98967cf5c6c7a7ad7667972a6d58d5bd3fc21b57723b2108"
+}
