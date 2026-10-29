@@ -23,6 +23,11 @@ ACK = {'completed': True, 'id': UID, 'attempts': 1}
 
 
 class ProbeWorkerRecoveryTests(unittest.TestCase):
+    def setUp(self):
+        # The circuit stop is process-local by design; isolate synthetic jobs.
+        queue._provider_stop = None
+        self.addCleanup(setattr, queue, '_provider_stop', None)
+
     def test_read_only_core_can_run_explicit_sports_only_worker(self):
         result = {'queries': [{'endpoint': 'status', 'status': 'ERROR',
                               'reason': 'SHARED_BUDGET_STALE_BUDGET'}]}
@@ -35,6 +40,7 @@ class ProbeWorkerRecoveryTests(unittest.TestCase):
         self.assertEqual(store.call_args.args[0]['action'], 'probe_complete')
         self.assertEqual(store.call_args.args[0]['response'], result)
         self.assertEqual(store.call_args.args[0]['attempt'], 1)
+        self.assertTrue(queue.worker_status()['provider_paused'])
 
     def test_sports_only_mode_never_dispatches_core_mutations(self):
         for kind in ('capture', 'decide', 'result', 'stake_snapshot', 'demo', 'situation'):
@@ -47,6 +53,7 @@ class ProbeWorkerRecoveryTests(unittest.TestCase):
                 self.assertFalse(store.call_args.args[0]['success'])
                 self.assertEqual(store.call_args.args[0]['error'], 'INPUT_VALIDATION_OR_PREMATCH_GATE')
                 core.assert_not_called(); demo.assert_not_called(); collect.assert_not_called()
+                self.assertFalse(queue.worker_status()['provider_paused'])
 
     def test_expired_budget_is_reported_without_direct_provider_fallback(self):
         from sefirot.football_gateway import SportsBudgetGateError
@@ -57,6 +64,7 @@ class ProbeWorkerRecoveryTests(unittest.TestCase):
         result = store.call_args.args[0]['response']
         self.assertEqual(result['queries'][0]['reason'], 'SHARED_BUDGET_STALE_BUDGET')
         self.assertFalse(result['monetary_permission'])
+        self.assertTrue(queue.worker_status()['provider_paused'])
 
     def test_reclaimed_probe_does_not_repeat_provider_in_sports_only_mode(self):
         for attempt in (2, 3):
@@ -184,3 +192,4 @@ class ProbeWorkerRecoveryTests(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+

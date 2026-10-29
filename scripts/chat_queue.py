@@ -107,6 +107,7 @@ def _process_one(sports):
         # An unleased completion would bypass fencing. Leave it for review.
         raise RuntimeError("PROVIDER_FETCH_LEASE_REQUIRED")
     success=False
+    provider_attempted=False
     result=None
     error=None
     try:
@@ -128,6 +129,7 @@ def _process_one(sports):
                 # Reuse the guarded collector. Never restore/write the CORE
                 # ledger or enable capture/decision/result HTTP operations.
                 from chat_sports_probe import collect
+                provider_attempted=True
                 if os.environ.get('SEFIROT_SOURCE_ARCHIVE','0')=='1':
                     def persist(packet):
                         from chat_sports_probe import _safe_source
@@ -164,7 +166,7 @@ def _process_one(sports):
     # Latch only after the fenced completion is acknowledged, so a lost ack
     # still follows the existing no-refetch lease recovery path.
     queries = result.get("queries") if isinstance(result, dict) else None
-    failed_probe = (sports and job.get("attempt") == 1 and
+    failed_probe = (sports and provider_attempted and
                     (not success or isinstance(queries, list) and
                      any(isinstance(query, dict) and query.get("status") == "ERROR"
                          for query in queries)))
