@@ -56,7 +56,12 @@ class SportsGatewayTransportError(ValueError):
         if code not in self.CODES:
             raise ValueError("unknown sports gateway failure")
         self.code = code
-        super().__init__("sports gateway transport failed")
+        # Preserve the fixed public messages consumed by existing health and
+        # data-session classifiers while the probe receives the exact code.
+        message = ("sports gateway network unavailable" if code in
+                   ("UPSTREAM_TIMEOUT", "UPSTREAM_UNAVAILABLE") else
+                   "sports gateway upstream HTTP " + code.rsplit("_", 1)[1])
+        super().__init__(message)
 
 
 def safe_stat_labels(labels):
