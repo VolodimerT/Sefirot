@@ -1,0 +1,35 @@
+test_daily_report_reproducible_pass (test_daily_scanner.DailyScannerTests.test_daily_report_reproducible_pass) ... ok
+test_expired_quote_rejected_by_existing_adapter (test_daily_scanner.DailyScannerTests.test_expired_quote_rejected_by_existing_adapter) ... ok
+test_filtered_calendar_rejected (test_daily_scanner.DailyScannerTests.test_filtered_calendar_rejected) ... ok
+test_future_results_excluded (test_daily_scanner.DailyScannerTests.test_future_results_excluded) ... ok
+test_incompatible_period_rejected (test_daily_scanner.DailyScannerTests.test_incompatible_period_rejected) ... ok
+test_incompatible_quarter_line_rejected (test_daily_scanner.DailyScannerTests.test_incompatible_quarter_line_rejected) ... ok
+test_incomplete_calendar (test_daily_scanner.DailyScannerTests.test_incomplete_calendar) ... ok
+test_maximum_two_independent_candidates (test_daily_scanner.DailyScannerTests.test_maximum_two_independent_candidates) ... ok
+test_missing_calibration_and_unproven_probability (test_daily_scanner.DailyScannerTests.test_missing_calibration_and_unproven_probability) ... ok
+test_missing_history_and_lineups (test_daily_scanner.DailyScannerTests.test_missing_history_and_lineups) ... ok
+test_missing_ledger_not_created (test_daily_scanner.DailyScannerTests.test_missing_ledger_not_created) ... ok
+test_no_network_even_for_complete_scan (test_daily_scanner.DailyScannerTests.test_no_network_even_for_complete_scan) ... ok
+test_prematch_only (test_daily_scanner.DailyScannerTests.test_prematch_only) ... ok
+test_quote_origin_not_self_attested (test_daily_scanner.DailyScannerTests.test_quote_origin_not_self_attested) ... ok
+test_real_core_read_only_ledger_path (test_daily_scanner.DailyScannerTests.test_real_core_read_only_ledger_path) ... ok
+test_referee_gate_holds (test_daily_scanner.DailyScannerTests.test_referee_gate_holds) ... ok
+test_tipster_or_probability_override_rejected (test_daily_scanner.DailyScannerTests.test_tipster_or_probability_override_rejected) ... ok
+test_unvalidated_death_test_does_not_leak_probability_or_ev (test_daily_scanner.DailyScannerTests.test_unvalidated_death_test_does_not_leak_probability_or_ev) ... ok
+test_valid_saved_price_cannot_override_pass (test_daily_scanner.DailyScannerTests.test_valid_saved_price_cannot_override_pass) ... ok
+test_wrong_identity (test_daily_scanner.DailyScannerTests.test_wrong_identity) ... ok
+test_wrong_quote_fixture_rejected (test_daily_scanner.DailyScannerTests.test_wrong_quote_fixture_rejected) ... ok
+test_zero_value (test_daily_scanner.DailyScannerTests.test_zero_value) ... ok
+test_all_calendar_fixtures_retained_including_postponed (test_daily_scanner_day_coverage.DayCoverageTests.test_all_calendar_fixtures_retained_including_postponed) ... ok
+test_calendar_not_in_archive_keeps_fixtures_but_blocks_models (test_daily_scanner_day_coverage.DayCoverageTests.test_calendar_not_in_archive_keeps_fixtures_but_blocks_models) ... ok
+test_corrupt_archive_keeps_calendar_and_never_reads_ledger (test_daily_scanner_day_coverage.DayCoverageTests.test_corrupt_archive_keeps_calendar_and_never_reads_ledger) ... ok
+test_empty_provider_day_is_explicit_zero_not_data_loss (test_daily_scanner_day_coverage.DayCoverageTests.test_empty_provider_day_is_explicit_zero_not_data_loss) ... ok
+test_future_changed_results_never_affect_earlier_sports (test_daily_scanner_day_coverage.DayCoverageTests.test_future_changed_results_never_affect_earlier_sports) ... ok
+test_invalid_prices_container_is_an_explicit_pass (test_daily_scanner_day_coverage.DayCoverageTests.test_invalid_prices_container_is_an_explicit_pass) ... ok
+test_missing_archive_does_not_erase_valid_calendar (test_daily_scanner_day_coverage.DayCoverageTests.test_missing_archive_does_not_erase_valid_calendar) ... ok
+test_one_export_io_error_does_not_abort_the_day (test_daily_scanner_day_coverage.DayCoverageTests.test_one_export_io_error_does_not_abort_the_day) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.940s
+
+OK

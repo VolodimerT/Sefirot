@@ -1,0 +1,51 @@
+{
+  "schema": "c1-day-coverage-validation-v1",
+  "parent_commit": "449cfbcc5391bd196dc5d68cad3ee5dc4c8be66e",
+  "scope": "Offline calendar retention under rejected archive / invalid global prices / one-fixture I/O errors",
+  "python": "3.14.3",
+  "full_release": {
+    "exit_code": 0,
+    "total": 1685,
+    "passed": 1676,
+    "skipped": 9,
+    "integrity": true,
+    "replay": true
+  },
+  "scanner_regression": {
+    "total": 30,
+    "passed": 30,
+    "skipped": 0,
+    "new_tests": 8
+  },
+  "red_on_parent": {
+    "total": 8,
+    "passed": 1,
+    "failures": 3,
+    "errors": 4
+  },
+  "source_sha256": {
+    "research/daily_scanner.py": "a2831acefc82607d23d26a3a3eb4aa2eef39397a40c3205b448204050b39ca2c",
+    "tests/test_daily_scanner_day_coverage.py": "e9dafbdb261fb90713d3ff4ed2b3d729af37a5f81bcf4815f9b99a5997f854a8",
+    "tests/test_daily_scanner.py": "66e3c931b3e42ad0f312f5170f53336800cea163e61513c60abc4f99fc9e7beb",
+    "scripts/daily_prematch_scanner.py": "8ad1bf61edadbe63bbf75c19ac1d4888494467bfb566e16861c921a716f6d5c1",
+    "scripts/daily_scanner_demo.py": "202abc2a5898cdc0a1c226ef16850b9310f30eadfea121ec1d1307554849a07a"
+  },
+  "all_503_original_baseline_files_unchanged": true,
+  "main_merge": false,
+  "deployment": false,
+  "monetary_permission": false,
+  "multi_day": {
+    "calendar": 3,
+    "reported": 3,
+    "prematch": 2,
+    "excluded_prematch": 1,
+    "cli_equals_saved_report": true,
+    "missing_archive_retains_calendar": true
+  },
+  "artifact_sha256": {
+    "python3143.txt": "763d98aaa86f54026978e90c05efe685ea682de6fa20268393aa44ad8d2b7c94",
+    "release3143.json": "879cd4005c79f3f53c9128c909bc521b1ab32ac49f80a069645e0af55e5e28a2",
+    "green.txt": "28a496b7c83e07d8385b126c1fdfb4b8d34344ad53b18b7d624dfeacfa7b06ef",
+    "red.txt": "195a2f3ba8145a1b0d6e7aedf46ca33dd01ac25857d6b65dc165e45d30514c29"
+  }
+}

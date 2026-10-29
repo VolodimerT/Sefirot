@@ -1,0 +1,50 @@
+{
+  "schema": "c1-checkpoint-v1",
+  "main": "d09a8af22f0dec8c84bc203d468b913b46fc2f94",
+  "integration_head": "50e91e7addee6f4c1140d496cfcad1f4aa62494c",
+  "pr56": "https://github.com/VolodimerT/Sefirot/pull/56",
+  "stability_branch_and_supplied_render_sha": "6cfa1f126a2ab64730c32a9ed43003713b6d804a",
+  "render_runtime_queried": false,
+  "merge_base": "b1b431effdda1c2632b8983eaf0bac504cf44c2a",
+  "integration_ahead": 11,
+  "integration_behind": 4,
+  "automatic_merge_performed": false,
+  "pr70_merge_is_ancestor": true,
+  "pr71_merge_is_ancestor": true,
+  "pr72_four_files_byte_equal": {
+    "scripts/chat_sports_probe.py": {
+      "equal": true,
+      "sha256": "73361b79403e79539457037bcb06d9317a4b2674165c85b56881c147ef58d3ab"
+    },
+    "server/sports_gateway.js": {
+      "equal": true,
+      "sha256": "67fa0fba436b1edc7ee01b09cde435e785c285d0f5d9f06db17eb0c56668040f"
+    },
+    "scripts/test_sports_gateway.mjs": {
+      "equal": true,
+      "sha256": "2fbf6354a343e7a5fb370e355bb40cb6365bc72816e2ec242812f9a29096a83f"
+    },
+    "tests/test_guarded_probe_evidence.py": {
+      "equal": true,
+      "sha256": "e1eff1db91087bf1d1bb00bbc710e58a2f52a77e516d3e6e7943438f52ba8c0e"
+    }
+  },
+  "baseline_preservation": {
+    "src/": {
+      "files": 64,
+      "all_equal": true
+    },
+    "reports/": {
+      "files": 40,
+      "all_equal": true
+    },
+    "supabase/": {
+      "files": 16,
+      "all_equal": true
+    },
+    "server/": {
+      "files": 4,
+      "all_equal": true
+    }
+  }
+}

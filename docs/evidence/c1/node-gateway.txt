@@ -1,0 +1,43 @@
+SOURCE_CANONICAL_VECTORS=[{"wire":"{\"tiny\":0.000001,\"a\":1e-7,\"b\":1e+21,\"c\":100000000000000000000,\"d\":-1e-7}","canonical":"{\"a\":1e-07,\"b\":1e+21,\"c\":100000000000000000000,\"d\":-1e-07,\"tiny\":1e-06}"},{"wire":"{\"😀\":\"кириллица\",\"\":[0,null,true,\"\\n\"]}","canonical":"{\"\":[0,null,true,\"\\n\"],\"😀\":\"кириллица\"}"}]
+ok unauthorized and query-token callers make no upstream request
+ok empty deployment and expired session reject before secret lookup
+ok old credential remains valid beside a temporary session
+ok GET does not access provider or secrets
+ok odds, unknown paths and prototype names are rejected
+ok unknown, boolean and composite parameters are rejected
+ok oversized and malformed input make no provider request
+ok fixed host and encoded parameters never send auth in the URL
+ok fixture endpoint echo must match before successful response
+ok timezone fallback is rejected even for an empty provider packet
+ok fixture parameter keys and scalar values must match without private error text
+ok stringified fixture parameter echo is preserved without relabeling
+ok status redacts account while preserving subscription and quota
+ok observed quota is preserved and malformed values fail closed
+ok HTTP failure preserves code without upstream body
+ok provider errors are classified without raw text
+ok account suspension is explicit without copying private messages or negations
+ok incomplete and inconsistent fixture packets are rejected
+ok diagnostics contain only fixed flags and allowed field labels
+ok oversized upstream stream is cancelled
+ok network and timeout exceptions do not leak URLs or values
+ok invalid UTF-8 and non-JSON are sanitized
+ok server configuration and secret lookup fail closed
+ok shared budget refusals make zero provider calls
+ok malformed or unavailable budget fails before provider IO
+ok every uncertain upstream attempt opens the shared circuit without refund or retry
+ok only observed numeric quota can keep the circuit active
+ok observed limit and counter contradictions cannot authorize another call
+ok failed finalization returns fixed error and makes no retry
+ok all enrichment endpoints preserve the shared reservation and finish order
+ok every budget refusal protects every enrichment endpoint
+ok malformed shared permits block enrichment before provider IO
+ok known valid quota completes each enrichment reservation successfully
+ok unknown quota latches FAILURE for every enrichment endpoint
+ok enrichment provider failures are finalized once with sanitized errors
+ok failed enrichment finalization cannot return successful evidence or retry
+ok new required selectors are enforced without budget or provider IO
+ok legitimate team statistics object shape is distinct from arrays
+ok invalid dates and oversized new history selectors never consume quota
+ok partial pages and bool results cannot become enrichment observations
+ok shared guard marker is issued only on successfully finalized legacy and new replies
+GATEWAY_CONTRACTS_PASSED=41

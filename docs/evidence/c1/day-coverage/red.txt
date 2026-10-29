@@ -1,0 +1,121 @@
+test_all_calendar_fixtures_retained_including_postponed (test_daily_scanner_day_coverage.DayCoverageTests.test_all_calendar_fixtures_retained_including_postponed) ... ERROR
+test_calendar_not_in_archive_keeps_fixtures_but_blocks_models (test_daily_scanner_day_coverage.DayCoverageTests.test_calendar_not_in_archive_keeps_fixtures_but_blocks_models) ... FAIL
+test_corrupt_archive_keeps_calendar_and_never_reads_ledger (test_daily_scanner_day_coverage.DayCoverageTests.test_corrupt_archive_keeps_calendar_and_never_reads_ledger) ... FAIL
+test_empty_provider_day_is_explicit_zero_not_data_loss (test_daily_scanner_day_coverage.DayCoverageTests.test_empty_provider_day_is_explicit_zero_not_data_loss) ... ERROR
+test_future_changed_results_never_affect_earlier_sports (test_daily_scanner_day_coverage.DayCoverageTests.test_future_changed_results_never_affect_earlier_sports) ... ok
+test_invalid_prices_container_is_an_explicit_pass (test_daily_scanner_day_coverage.DayCoverageTests.test_invalid_prices_container_is_an_explicit_pass) ... ERROR
+test_missing_archive_does_not_erase_valid_calendar (test_daily_scanner_day_coverage.DayCoverageTests.test_missing_archive_does_not_erase_valid_calendar) ... FAIL
+test_one_export_io_error_does_not_abort_the_day (test_daily_scanner_day_coverage.DayCoverageTests.test_one_export_io_error_does_not_abort_the_day) ... ERROR
+
+======================================================================
+ERROR: test_all_calendar_fixtures_retained_including_postponed (test_daily_scanner_day_coverage.DayCoverageTests.test_all_calendar_fixtures_retained_including_postponed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 58, in test_all_calendar_fixtures_retained_including_postponed
+    self.assert_full_pass(one)
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 45, in assert_full_pass
+    self.assertEqual(result['fixture_counts'], {'calendar': 3, 'reported': 3, 'prematch': 2, 'excluded_prematch': 1})
+                     ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'fixture_counts'
+
+======================================================================
+ERROR: test_empty_provider_day_is_explicit_zero_not_data_loss (test_daily_scanner_day_coverage.DayCoverageTests.test_empty_provider_day_is_explicit_zero_not_data_loss)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 124, in test_empty_provider_day_is_explicit_zero_not_data_loss
+    self.assertEqual(result['fixture_counts'], {'calendar': 0, 'reported': 0, 'prematch': 0, 'excluded_prematch': 0})
+                     ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'fixture_counts'
+
+======================================================================
+ERROR: test_invalid_prices_container_is_an_explicit_pass (test_daily_scanner_day_coverage.DayCoverageTests.test_invalid_prices_container_is_an_explicit_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 112, in test_invalid_prices_container_is_an_explicit_pass
+    self.assert_full_pass(result)
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 45, in assert_full_pass
+    self.assertEqual(result['fixture_counts'], {'calendar': 3, 'reported': 3, 'prematch': 2, 'excluded_prematch': 1})
+                     ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'fixture_counts'
+
+======================================================================
+ERROR: test_one_export_io_error_does_not_abort_the_day (test_daily_scanner_day_coverage.DayCoverageTests.test_one_export_io_error_does_not_abort_the_day)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 101, in test_one_export_io_error_does_not_abort_the_day
+    result = run(packet, tmp)
+             ^^^^^^^^^^^^^^^^
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 36, in run
+    return scan_day(calendar=packet, archive=directory, day='2030-01-01',
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Sefirot/research/daily_scanner.py", line 190, in scan_day
+    exported = export_sports(archive, fid, at, profile=profile, source_reliability=0.)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1204, in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 96, in export
+    raise OSError('OWNED_TEST_IO_ERROR')
+OSError: OWNED_TEST_IO_ERROR
+
+======================================================================
+FAIL: test_calendar_not_in_archive_keeps_fixtures_but_blocks_models (test_daily_scanner_day_coverage.DayCoverageTests.test_calendar_not_in_archive_keeps_fixtures_but_blocks_models)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 89, in test_calendar_not_in_archive_keeps_fixtures_but_blocks_models
+    self.assert_full_pass(result)
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 42, in assert_full_pass
+    self.assertEqual([f['fixture_id'] for f in result['fixtures']], [900001, 900002, 900003])
+AssertionError: Lists differ: [] != [900001, 900002, 900003]
+
+Second list contains 3 additional elements.
+First extra element 0:
+900001
+
+- []
++ [900001, 900002, 900003]
+
+======================================================================
+FAIL: test_corrupt_archive_keeps_calendar_and_never_reads_ledger (test_daily_scanner_day_coverage.DayCoverageTests.test_corrupt_archive_keeps_calendar_and_never_reads_ledger)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 80, in test_corrupt_archive_keeps_calendar_and_never_reads_ledger
+    self.assert_full_pass(result)
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 42, in assert_full_pass
+    self.assertEqual([f['fixture_id'] for f in result['fixtures']], [900001, 900002, 900003])
+AssertionError: Lists differ: [] != [900001, 900002, 900003]
+
+Second list contains 3 additional elements.
+First extra element 0:
+900001
+
+- []
++ [900001, 900002, 900003]
+
+======================================================================
+FAIL: test_missing_archive_does_not_erase_valid_calendar (test_daily_scanner_day_coverage.DayCoverageTests.test_missing_archive_does_not_erase_valid_calendar)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 68, in test_missing_archive_does_not_erase_valid_calendar
+    self.assert_full_pass(result)
+  File "/workspace/Sefirot/tests/test_daily_scanner_day_coverage.py", line 42, in assert_full_pass
+    self.assertEqual([f['fixture_id'] for f in result['fixtures']], [900001, 900002, 900003])
+AssertionError: Lists differ: [] != [900001, 900002, 900003]
+
+Second list contains 3 additional elements.
+First extra element 0:
+900001
+
+- []
++ [900001, 900002, 900003]
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.079s
+
+FAILED (failures=3, errors=4)

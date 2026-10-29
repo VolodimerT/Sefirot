@@ -1,0 +1,616 @@
+{
+  "schema": "daily-prematch-scanner-v0",
+  "day": "2030-01-01",
+  "as_of": "2030-01-01T09:02:00+00:00",
+  "data_label": "SYNTHETIC_TEST_ONLY",
+  "input_hash": "37ff2ed0582ec2344806b591841d68260fd523ebd9dfbc8027b7107466021d66",
+  "code_hash": "1b4063c526f94eb284e7ca8125c61477a2e08ffe5fd1468e809a8bf8bf83ff1d",
+  "model_hash": "bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee",
+  "scanner_sha256": "a2831acefc82607d23d26a3a3eb4aa2eef39397a40c3205b448204050b39ca2c",
+  "calendar_status": "STRUCTURALLY_COMPLETE_LOCAL_RECEIPT",
+  "calendar_scope": "PROVIDER_AVAILABLE_UTC_DAY",
+  "worldwide_completeness": "NOT_ATTESTED",
+  "decision": "PASS",
+  "candidates": [],
+  "fixtures": [
+    {
+      "fixture_id": 900001,
+      "league_id": 9,
+      "team_ids": [
+        1,
+        2
+      ],
+      "home": "Team A",
+      "away": "Team B",
+      "kickoff": "2030-01-01T12:00:00+00:00",
+      "blockers": [
+        "CRITICAL_EVIDENCE_UNRELIABLE",
+        "INSUFFICIENT_HISTORY",
+        "MISSING_AWAY_TEAM",
+        "MISSING_COACH",
+        "MISSING_FORMAT",
+        "MISSING_HOME_TEAM",
+        "MISSING_INJURIES",
+        "MISSING_LINEUP",
+        "MISSING_ROTATION",
+        "MISSING_TACTICS",
+        "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED"
+      ],
+      "markets": [
+        {
+          "market": "1X2:HOME",
+          "status": "PASS",
+          "blockers": [
+            "CALIBRATION_INSUFFICIENT",
+            "CONTEXT_UNKNOWN",
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "DIVERGENCE_NEEDS_CORROBORATION",
+            "HOLDOUT_UNVALIDATED",
+            "INDEPENDENT_QUOTE_ORIGIN_NOT_ATTESTED",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS",
+            "MODEL_MARKET_DIVERGENCE",
+            "NO_ADMISSIBLE_MAIN_MARKET",
+            "POLICY_NOT_APPROVED",
+            "PROBABILITY_RECALCULATION_REQUIRED",
+            "ROBUST_EV_INSUFFICIENT",
+            "SEPHIRA_HISTORY_INSUFFICIENT",
+            "SYNTHETIC_DATA_RESEARCH_ONLY",
+            "UNCERTAINTY_TOO_WIDE",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": 0.47619047619047616,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": 2.1,
+          "tactical_fit": {
+            "scenario": "BASELINE",
+            "fact_id": null,
+            "status": "RECHECK_REQUIRED"
+          },
+          "public_trap": {
+            "status": "NOT_INDEPENDENTLY_ASSESSED",
+            "rule": "no popularity or market movement may replace sports evidence",
+            "unexplained_movement": false,
+            "narrative_dependence": "NOT_QUANTIFIED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "VALIDATION_BLOCKED",
+            "loss_branches": [
+              {
+                "home": 1,
+                "away": 1
+              }
+            ],
+            "stress_ev_min": null,
+            "under_ceiling": null
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DOUBLE_CHANCE:1X",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DNB:HOME",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "HANDICAP:HOME:-1",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TOTAL:OVER:2.5",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "BTTS:YES",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TEAM_TOTAL:HOME_OVER:1.5",
+          "status": "PASS",
+          "blockers": [
+            "CRITICAL_EVIDENCE_UNRELIABLE",
+            "INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED",
+            "INSUFFICIENT_HISTORY",
+            "MARKET_NOT_IN_SEALED_POOL",
+            "MISSING_AWAY_TEAM",
+            "MISSING_COACH",
+            "MISSING_FORMAT",
+            "MISSING_HOME_TEAM",
+            "MISSING_INJURIES",
+            "MISSING_LINEUP",
+            "MISSING_ROTATION",
+            "MISSING_TACTICS"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        }
+      ],
+      "coverage": {
+        "schema": "sports-coverage-v1",
+        "status": "SPORTS_DATA_INCOMPLETE",
+        "fixture_id": 900001,
+        "match": {
+          "id": "api-football:fixture:900001",
+          "home": "Team A",
+          "away": "Team B",
+          "league": "api-football:league:9",
+          "kickoff": "2030-01-01T12:00:00+00:00",
+          "sport": "football",
+          "format": "REGULATION_90",
+          "competition_profile": "LOWER"
+        },
+        "archive_cutoff": "2030-01-01T09:02:00+00:00",
+        "sports_as_of": "2030-01-01T09:00:00+00:00",
+        "target_observed_at": "2030-01-01T09:00:00+00:00",
+        "history_rows": 8,
+        "eligible_history_rows": 0,
+        "excluded_by_policy": [
+          "api-football:fixture:1",
+          "api-football:fixture:2",
+          "api-football:fixture:3",
+          "api-football:fixture:4",
+          "api-football:fixture:5",
+          "api-football:fixture:6",
+          "api-football:fixture:7",
+          "api-football:fixture:8"
+        ],
+        "exclusion_reasons": {},
+        "observed_history_seasons": {
+          "2030": 8
+        },
+        "teams": {
+          "home": {
+            "name": "Team A",
+            "eligible_games": 0,
+            "games_needed": 8
+          },
+          "away": {
+            "name": "Team B",
+            "eligible_games": 0,
+            "games_needed": 8
+          }
+        },
+        "required_team_games": 8,
+        "blockers": [
+          "CRITICAL_EVIDENCE_UNRELIABLE",
+          "INSUFFICIENT_HISTORY",
+          "MISSING_AWAY_TEAM",
+          "MISSING_COACH",
+          "MISSING_FORMAT",
+          "MISSING_HOME_TEAM",
+          "MISSING_INJURIES",
+          "MISSING_LINEUP",
+          "MISSING_ROTATION",
+          "MISSING_TACTICS"
+        ],
+        "history_coverage_ready": false,
+        "price_recheck_useful": false,
+        "source_reliability": 0.0,
+        "policy_hash": "5d92a9c98c13df0d313b8ef9f59605e93482b2eeb7f31f91f5031969871becd9",
+        "forecast_created": false,
+        "monetary_permission": false,
+        "execution_enabled": false,
+        "limitations": [
+          "API receipt hashes are not provider signatures",
+          "Archive deletion or full receipt fabrication is not detected",
+          "Data coverage is not calibration, holdout or monetary admission"
+        ],
+        "hash": "a69470bf9c2b2074b3e32eb16801a8450d9d582482d9bbdd0b4a12a646ad1691"
+      },
+      "sports_hash": "4154d257c355e79e2f7bb7a44a44db57420066d5bfbfb451e99f85b8f32219d5",
+      "information_status": "BLOCKED",
+      "small_markets": [
+        {
+          "market": "CORNERS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "SHOTS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "FOULS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        },
+        {
+          "market": "YELLOW_CARDS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "fixture_counts": {
+    "calendar": 1,
+    "reported": 1,
+    "prematch": 1,
+    "excluded_prematch": 0
+  },
+  "archive_status": "VERIFIED_LOCAL_STRUCTURE",
+  "blockers": [],
+  "ledger_status": "HASH_CHAIN_VERIFIED_LOCAL",
+  "network_requests": 0,
+  "model_fits": 0,
+  "ledger_writes": 0,
+  "monetary_permission": false,
+  "execution_enabled": false,
+  "stake": 0.0,
+  "excluded_future_packets": 0,
+  "report_hash": "885e0c7529c653e75f3f5ee608fea3a658f72124dd680a9c4d44135541d7de9f"
+}

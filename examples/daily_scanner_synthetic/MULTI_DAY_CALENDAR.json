@@ -1,0 +1,121 @@
+{
+  "data": {
+    "get": "fixtures",
+    "parameters": {
+      "date": "2030-01-01",
+      "timezone": "UTC"
+    },
+    "errors": [],
+    "results": 3,
+    "paging": {
+      "current": 1,
+      "total": 1
+    },
+    "response": [
+      {
+        "fixture": {
+          "id": 900001,
+          "date": "2030-01-01T12:00:00+00:00",
+          "timestamp": 1893499200,
+          "status": {
+            "short": "NS"
+          }
+        },
+        "league": {
+          "id": 9,
+          "season": 2030
+        },
+        "teams": {
+          "home": {
+            "id": 1,
+            "name": "Test 0 home"
+          },
+          "away": {
+            "id": 2,
+            "name": "Test 0 away"
+          }
+        },
+        "score": {
+          "fulltime": {
+            "home": null,
+            "away": null
+          }
+        }
+      },
+      {
+        "fixture": {
+          "id": 900002,
+          "date": "2030-01-01T13:00:00+00:00",
+          "timestamp": 1893502800,
+          "status": {
+            "short": "NS"
+          }
+        },
+        "league": {
+          "id": 9,
+          "season": 2030
+        },
+        "teams": {
+          "home": {
+            "id": 11,
+            "name": "Test 1 home"
+          },
+          "away": {
+            "id": 12,
+            "name": "Test 1 away"
+          }
+        },
+        "score": {
+          "fulltime": {
+            "home": null,
+            "away": null
+          }
+        }
+      },
+      {
+        "fixture": {
+          "id": 900003,
+          "date": "2030-01-01T14:00:00+00:00",
+          "timestamp": 1893506400,
+          "status": {
+            "short": "PST"
+          }
+        },
+        "league": {
+          "id": 9,
+          "season": 2030
+        },
+        "teams": {
+          "home": {
+            "id": 21,
+            "name": "Test 2 home"
+          },
+          "away": {
+            "id": 22,
+            "name": "Test 2 away"
+          }
+        },
+        "score": {
+          "fulltime": {
+            "home": null,
+            "away": null
+          }
+        }
+      }
+    ]
+  },
+  "receipt": {
+    "provider_host": "v3.football.api-sports.io",
+    "endpoint": "/fixtures",
+    "parameters": {
+      "date": "2030-01-01",
+      "timezone": "UTC"
+    },
+    "request_started_at": "2030-01-01T08:59:56.400000+00:00",
+    "received_at": "2030-01-01T09:00:00+00:00",
+    "payload_hash": "bfd300c3bc7fabcc6d35e9eb42aa1cf2d7936f8e2848870080072c63d601d48c",
+    "http_status": 200,
+    "provider": "API_FOOTBALL_V3",
+    "sports_only": true
+  }
+}

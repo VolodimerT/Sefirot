@@ -1,0 +1,77 @@
+{
+  "schema": "c1-validation-v1",
+  "baseline_commit": "50e91e7addee6f4c1140d496cfcad1f4aa62494c",
+  "python3143_final": {
+    "command": "python3.14 scripts/verify_release.py",
+    "exit_code": 0,
+    "python": "3.14.3",
+    "tests_passed": 1668,
+    "tests_skipped": 9,
+    "tests_total": 1677,
+    "demo_integrity": true,
+    "demo_replay_matches": true,
+    "backtest_fixtures_synthetic": 12,
+    "backtest_rows_synthetic": 84,
+    "log": "python3143-final.txt",
+    "release": "release3143.json"
+  },
+  "scanner_regressions": {
+    "passed": 22,
+    "skipped": 0,
+    "exit_code": 0,
+    "log": "scanner-regression.txt"
+  },
+  "python312_intermediate": {
+    "passed": 1665,
+    "skipped": 9,
+    "total": 1674,
+    "exit_code": 0,
+    "log": "python312-full.txt"
+  },
+  "initial_sandbox_failure": {
+    "passed": 1591,
+    "failures": 7,
+    "errors": 62,
+    "skipped": 9,
+    "total": 1669,
+    "log": "initial-sandbox-failure.txt",
+    "causes": [
+      "LOOPBACK_BIND_DENIED",
+      "PGLITE_NOT_INSTALLED"
+    ]
+  },
+  "node": {
+    "version": "v24.19.0",
+    "gateway": 41,
+    "cockpit": 11,
+    "session": 12,
+    "all_exit_codes": 0
+  },
+  "source_sha256": {
+    "research/daily_scanner.py": "fb449c76a94c49aef06c80aa7fead56f37b47098135d2c4c9e50c1dcef736f66",
+    "scripts/daily_prematch_scanner.py": "8ad1bf61edadbe63bbf75c19ac1d4888494467bfb566e16861c921a716f6d5c1",
+    "scripts/daily_scanner_demo.py": "202abc2a5898cdc0a1c226ef16850b9310f30eadfea121ec1d1307554849a07a",
+    "tests/test_daily_scanner.py": "66e3c931b3e42ad0f312f5170f53336800cea163e61513c60abc4f99fc9e7beb"
+  },
+  "all_503_original_files_byte_identical": true,
+  "cli_report_equals_checked_example": true,
+  "native_postgres_optional_skips_are_not_passes": true,
+  "production_operations": 0,
+  "real_shortlist_certified": false,
+  "model_probability_in_synthetic_report": null,
+  "ev_in_synthetic_report": null,
+  "monetary_permission": false,
+  "artifact_sha256": {
+    "python3143-final.txt": "01d91ccb2ecb76e35f9ad5e58307e5347469a0f352e28689ec4f12b85e49fc44",
+    "node-cockpit.txt": "be6160d9931d772ece2763b4d7bdd57c9cc2494afa313c005df8f7eb8328364b",
+    "release3143-stdout.json": "5001c463aafde70990133d6d0b570c822e15fadeafb4fa10b6e2a06b9d3bb895",
+    "node-gateway.txt": "195bef2660d04348af4d7f84d912c129845f436d0e21aea6667a001bc9aae4b8",
+    "python312-full.txt": "e5595f77a6a91bd3c8e9f79cf3220a3d3bae9fe5a505d74e855db28260590021",
+    "scanner-regression.txt": "31b2541c3065d25f000b50dae063c2ab6634a1a993fffa0285df707aa8f9109a",
+    "checkpoint.json": "8792b8a0b7342823fb3d70648a801604330caa7113cb695e9f7ea2159ecb08e8",
+    "node-session.txt": "6460370d97d4a74c955a785f765dcb090549ecfbaa6ccbcc04583ebd8bef98fa",
+    "release3143.json": "b09c5e69f9c089c02a2c348d82229c81c0d8fbe3fad93b1612fdc060575ed148",
+    "demo-integrity.json": "9302d41b1fe7f169303f2d0d362da8e8e7b7964a912e35194f2bfb3bd0ba938b",
+    "initial-sandbox-failure.txt": "259736097e3ce89fc6a7a00d4265db7483766af3672e3cdde0327bd968b50b97"
+  }
+}
