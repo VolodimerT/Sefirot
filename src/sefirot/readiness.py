@@ -34,6 +34,7 @@ def inspect_readiness(service, prediction_id, at):
     for row in decision['decision_card']['alternatives']:
         blockers = sorted(set(row['effective_blockers']) - ignored)
         output['markets'].append({'market': row['market'], 'ready_for_price_recheck': not blockers,
+            'probability_trust':row['probability_trust'],
             'blockers': [{'code': c, 'text': REASON_TEXT.get(c, c)} for c in blockers]})
     useful = any(m['ready_for_price_recheck'] for m in output['markets'])
     return enrich_readiness({**output, 'quote_recheck_useful': useful,

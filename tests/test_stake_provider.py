@@ -118,7 +118,12 @@ class StakeProviderTests(unittest.TestCase):
 
     def test_research_snapshot_keeps_raw_names_and_blocks_execution(self):
         prediction, event, markets, received = fixture()
-        snap = research_snapshot(event, prediction, received, markets, [{"provider": "STAKE_GRAPHQL_EXPERIMENTAL"}])
+        receipt = {'provider': 'STAKE_GRAPHQL_EXPERIMENTAL', 'provider_host': 'stake.com',
+                   'endpoint': '/_api/graphql', 'operation_name': 'FixtureGroupMarkets',
+                   'request_started_at': prediction['sealed_at'], 'received_at': received,
+                   'http_status': 200, 'payload_hash': 'a' * 64,
+                   'credential_exposed': False, 'monetary_permission': False}
+        snap = research_snapshot(event, prediction, received, markets, [receipt])
         self.assertEqual(snap["normalization"], "RAW_STAKE_NAMES_ONLY")
         self.assertEqual(snap["market_count"], 1)
         self.assertEqual(snap["markets"][0]["name"], "1x2")

@@ -1,6 +1,9 @@
 """Sports-only API-Football source; missing sporting facts remain missing."""
-from .contracts import PROFILES, digest, integer, number, text, time
+from datetime import date
+import re
+from .contracts import PROFILES, digest, integer, number, text, time, result_chronology
 from .credentials import credential
+from .football_query import validate_fixture_query, validate_fixture_query_parameters
 from .provider_transport import ProviderConnection, request_json
 
 HOST = 'v3.football.api-sports.io'
@@ -13,7 +16,92 @@ PARAMETERS = {
     'fixtures/lineups': {'fixture','team','player','type'},
     'fixtures/statistics': {'fixture','team','type','half'},
     'injuries': {'league','season','fixture','team','player','date','ids','timezone'},
+    # Quota-aware, read-only research sources; no odds, provider predictions or live.
+    'standings': {'league','season','team'},
+    'teams/statistics': {'league','season','team','date'},
+    'fixtures/headtohead': {'h2h','last','league','season','from','to','status','venue'},
+    'fixtures/events': {'fixture','team','player','type'},
+    'fixtures/players': {'fixture','team'},
+    'coachs': {'id','team','search'},
+    'players/squads': {'team','player'},
+    'players/topscorers': {'league','season'},
+    'players/topassists': {'league','season'},
+    'players/topyellowcards': {'league','season'},
+    'players/topredcards': {'league','season'},
 }
+OBJECT_RESPONSE_ENDPOINTS = frozenset({'teams/statistics'})
+ENRICHMENT_REQUIRED = {
+    'standings': {'league','season'},
+    'teams/statistics': {'league','season','team'},
+    'fixtures/headtohead': {'h2h'},
+    'fixtures/events': {'fixture'},
+    'fixtures/players': {'fixture'},
+    'coachs': set(),
+    'players/squads': set(),
+    'players/topscorers': {'league','season'},
+    'players/topassists': {'league','season'},
+    'players/topyellowcards': {'league','season'},
+    'players/topredcards': {'league','season'},
+}
+
+
+def validate_enrichment_request(endpoint, params):
+    """Extra fail-closed validation for new endpoints, keeping old API contracts."""
+    required = ENRICHMENT_REQUIRED.get(endpoint)
+    if required is None:
+        return
+    if not required.issubset(params):
+        raise ValueError('missing required sports query parameter')
+    if endpoint in {'coachs', 'players/squads'} and not params:
+        raise ValueError('sports identity selector required')
+    import re as _re
+    for name in ('fixture','league','season','team','id','player','last'):
+        if name in params:
+            value = params[name]
+            if isinstance(value, bool) or not _re.fullmatch(r'[0-9]{1,10}', str(value)) or int(value) <= 0:
+                raise ValueError('invalid sports numeric selector')
+    if 'last' in params and int(params['last']) > 50:
+        raise ValueError('bounded sports history selector required')
+    if endpoint == 'fixtures/headtohead':
+        pair = params['h2h']
+        if not isinstance(pair, str) or not _re.fullmatch(r'[1-9][0-9]{0,9}-[1-9][0-9]{0,9}', pair):
+            raise ValueError('invalid head-to-head team pair')
+        if len(set(pair.split('-'))) != 2:
+            raise ValueError('head-to-head requires distinct teams')
+    if endpoint == 'coachs' and 'search' in params and (
+            not isinstance(params['search'], str) or len(params['search']) < 3):
+        raise ValueError('coach search too short')
+    if endpoint == 'teams/statistics' and 'date' in params and (
+            not isinstance(params['date'], str) or
+            not _re.fullmatch(r'20[0-9]{2}-[01][0-9]-[0-3][0-9]', params['date'])):
+        raise ValueError('invalid statistics cutoff date')
+    if endpoint == 'teams/statistics' and 'date' in params:
+        try:
+            date.fromisoformat(params['date'])
+        except ValueError:
+            raise ValueError('invalid statistics cutoff date') from None
+
+
+def validate_provider_data(endpoint, data):
+    """All transports reject incomplete pages and bool/count ambiguities."""
+    if not isinstance(data, dict) or data.get('errors') not in ([], {}):
+        raise ValueError('API-Football provider response malformed')
+    if endpoint == 'status':
+        if not isinstance(data.get('response'), dict):
+            raise ValueError('API-Football status malformed')
+        return
+    if type(data.get('results')) is not int or data['results'] < 0:
+        raise ValueError('API-Football response count malformed')
+    if endpoint in OBJECT_RESPONSE_ENDPOINTS:
+        if not isinstance(data.get('response'), dict):
+            raise ValueError('API-Football object response malformed')
+    elif not isinstance(data.get('response'), list) or data['results'] != len(data['response']):
+        raise ValueError('API-Football response count malformed')
+    paging = data.get('paging')
+    if (not isinstance(paging, dict) or type(paging.get('current')) is not int
+            or paging['current'] != 1 or type(paging.get('total')) is not int
+            or paging['total'] not in (0, 1)):
+        raise ValueError('API-Football incomplete pagination; do not import partial data')
 
 
 class FootballRequestError(ValueError):
@@ -21,9 +109,15 @@ class FootballRequestError(ValueError):
     def __init__(self, errors, receipt=None):
         keys = {str(k).lower() for k in errors} if isinstance(errors, dict) else set()
         words = str(errors).lower()
+        access = next((value for key, value in errors.items() if str(key).lower() == 'access'), None) if isinstance(errors, dict) else None
+        suspended = isinstance(access, str) and re.search(
+            r'\baccount\s+(?:(?:is|has been)\s+)?(?:(?:temporarily|permanently)\s+)?suspended\b',
+            access, re.IGNORECASE)
         self.code = ('SEASON_ACCESS_DENIED' if 'plan' in keys and 'season' in words else
-                     'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'rate_limit', 'rate limit'} else
+                     'PROVIDER_QUOTA_EXHAUSTED' if keys & {'requests', 'ratelimit', 'rate_limit', 'rate limit'} else
                      'PROVIDER_AUTH_FAILED' if keys & {'token', 'key', 'api_key'} else
+                     'PROVIDER_ACCOUNT_SUSPENDED' if suspended else
+                     'PROVIDER_ACCESS_DENIED' if 'access' in keys else
                      'PROVIDER_REJECTED_REQUEST')
         self.receipt = receipt
         super().__init__('API-Football provider rejected request; HTTP 200 is not success: ' + self.code)
@@ -35,6 +129,9 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
         raise ValueError('unsupported sports endpoint/parameters; odds and live queries disabled')
     if any(not isinstance(v, (str,int)) or isinstance(v,bool) for v in params.values()):
         raise ValueError('invalid sports query parameter')
+    validate_enrichment_request(endpoint, params)
+    if endpoint == 'fixtures':
+        validate_fixture_query_parameters(params)
     packet = request_json(HOST, '/' + endpoint, params,
                           {'x-apisports-key': api_key or credential('API_FOOTBALL_KEY')},
                           connection_factory=connection_factory)
@@ -43,11 +140,9 @@ def get(endpoint, params=None, *, api_key=None, connection_factory=ProviderConne
         raise ValueError('API-Football response malformed')
     if data['errors']:
         raise FootballRequestError(data['errors'], packet['receipt'])
-    if endpoint != 'status':
-        if not isinstance(data['response'], list) or data.get('results') != len(data['response']):
-            raise ValueError('API-Football response count malformed')
-        if data.get('paging', {}).get('total', 1) > 1:
-            raise ValueError('API-Football incomplete pagination; do not import partial data')
+    validate_provider_data(endpoint, data)
+    if endpoint == 'fixtures':
+        validate_fixture_query(data, params)
     packet['receipt'].update(provider='API_FOOTBALL_V3', sports_only=True)
     return packet
 
@@ -57,6 +152,14 @@ def status_summary(packet):
     if not isinstance(data, dict):
         raise ValueError('API-Football status malformed')
     sub, requests = data.get('subscription', {}), data.get('requests', {})
+    if not isinstance(sub, dict) or not isinstance(requests, dict):
+        raise ValueError('API-Football status malformed')
+    if ((sub.get('active') is not None and type(sub['active']) is not bool)
+            or (sub.get('plan') is not None and not isinstance(sub['plan'], str))
+            or any(requests.get(key) is not None and
+                   (type(requests[key]) is not int or requests[key] < 0)
+                   for key in ('current', 'limit_day'))):
+        raise ValueError('API-Football status malformed')
     return {'subscription_active':sub.get('active'),'plan':sub.get('plan'),
             'requests_current':requests.get('current'),'requests_limit_day':requests.get('limit_day'),
             'receipt':packet['receipt']}
@@ -66,12 +169,20 @@ def _rows(packet):
     receipt = packet['receipt']
     if receipt['provider_host'] != HOST or receipt['endpoint'] != '/fixtures':
         raise ValueError('fixture response required')
+    if not isinstance(packet['data'], dict):
+        raise ValueError('API-Football fixture response malformed')
     if digest(packet['data']) != receipt['payload_hash']:
         raise ValueError('fixture response integrity mismatch')
     time(receipt['received_at'])
-    if packet['data']['errors'] or packet['data'].get('paging', {}).get('total', 1) > 1:
+    paging = packet['data'].get('paging', {})
+    if (packet['data']['errors'] or not isinstance(paging, dict)
+            or type(paging.get('total', 1)) is not int or paging.get('total', 1) not in (0, 1)):
         raise ValueError('invalid or incomplete fixture response')
-    return packet['data']['response']
+    rows = packet['data']['response']
+    if (not isinstance(rows, list) or any(not isinstance(row, dict)
+            or not isinstance(row.get('fixture', {}), dict) for row in rows)):
+        raise ValueError('API-Football fixture response malformed')
+    return rows
 
 
 def fixture_identity(row):
@@ -89,13 +200,33 @@ def fixture_identity(row):
             'kickoff':start.isoformat(),'sport':'football','format':'REGULATION_90'}
 
 
+def validate_prematch_state(row):
+    """NS cannot coexist with played minutes; optional unknown is not zero."""
+    if not isinstance(row, dict) or not isinstance(row.get('fixture', {}), dict):
+        raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
+    status = row.get('fixture', {}).get('status')
+    if not isinstance(status, dict) or status.get('short') != 'NS':
+        raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
+    elapsed = status.get('elapsed')
+    if elapsed is not None:
+        integer(elapsed, 'prematch elapsed', 0, 0)
+    score = row.get('score')
+    if score is not None and not isinstance(score, dict):
+        raise ValueError('prematch score container malformed')
+    fulltime = (score or {}).get('fulltime')
+    if fulltime is not None and (not isinstance(fulltime, dict) or
+                                any(value is not None for value in fulltime.values())):
+        raise ValueError('prematch NS fixture contains a result')
+
+
 def select_prematch(packet, fixture_id):
     integer(fixture_id, 'fixture id', 1, MAX_PROVIDER_ID)
     matches = [r for r in _rows(packet) if r.get('fixture', {}).get('id') == fixture_id]
     if len(matches) != 1:
         raise ValueError('exact unique API-Football fixture required')
     row = matches[0];match = fixture_identity(row)
-    if row['fixture']['status']['short'] != 'NS' or time(match['kickoff']) <= time(packet['receipt']['received_at']):
+    validate_prematch_state(row)
+    if time(match['kickoff']) <= time(packet['receipt']['received_at']):
         raise ValueError('fixture is not prematch; live/postponed/cancelled imports disabled')
     return row, match
 
@@ -122,11 +253,20 @@ def normalize_sports(target_packet, fixture_id, history_packets, *, profile, sou
             ident = fixture_identity(row);reason = None
             if ident['id'] == match['id']:reason = 'TARGET_RESULT_EXCLUDED'
             elif ident['league'] != match['league']:reason = 'OTHER_COMPETITION'
-            elif row['fixture']['status']['short'] != 'FT':reason = 'NOT_REGULATION_FT; AET/PEN_NOT_IMPORTED'
-            elif time(ident['kickoff']) >= time(stamp):reason = 'IMPOSSIBLE_RESULT_CHRONOLOGY'
+            elif not isinstance(row['fixture'].get('status'), dict):
+                raise ValueError('API-Football fixture status malformed')
+            elif row['fixture']['status'].get('short') != 'FT':reason = 'NOT_REGULATION_FT; AET/PEN_NOT_IMPORTED'
+            if reason is None:
+                try:
+                    result_chronology(ident['kickoff'],stamp,stamp)
+                except ValueError:
+                    reason = 'IMPOSSIBLE_RESULT_CHRONOLOGY'
             if reason:
                 excluded.append({'id':ident['id'],'reason':reason});continue
-            goals = row.get('score', {}).get('fulltime', {})
+            score = row.get('score', {})
+            if not isinstance(score, dict) or not isinstance(score.get('fulltime', {}), dict):
+                raise ValueError('API-Football regulation score malformed')
+            goals = score.get('fulltime', {})
             for side in ('home','away'):integer(goals.get(side), 'regulation goals', 0, 50)
             normalized = {'id':ident['id'],'home':ident['home'],'away':ident['away'],
                           'league':ident['league'],'kickoff':ident['kickoff'],

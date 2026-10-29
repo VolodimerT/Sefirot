@@ -1,0 +1,136 @@
+"""Verify the ChatGPT-Supabase research queue never places bets."""
+import sys
+from pathlib import Path
+import unittest
+from unittest.mock import patch
+from types import ModuleType
+ROOT=Path(__file__).resolve().parents[1]
+sys.path[:0]=[str(ROOT/"src"),str(ROOT/"scripts")]
+import chat_queue
+
+class QueueTests(unittest.TestCase):
+    def test_empty_queue_is_noop(self):
+        with patch.object(chat_queue,"request",return_value={"job":None}) as api:
+            self.assertFalse(chat_queue.process_one())
+            self.assertEqual(api.call_count,1)
+    def test_status_executes_canonical_core_and_acks(self):
+        job={"job":{"id":"6e7dbf7b-8276-438f-a712-922005e19ddb","kind":"status","request":{}}}
+        replies=iter([job,{"completed":True}])
+        with patch.object(chat_queue,"request",side_effect=lambda q:next(replies)) as api:
+            with patch.object(chat_queue,"execute",return_value={"stage":"READY"}) as engine:
+                self.assertTrue(chat_queue.process_one())
+                engine.assert_called_once_with("status",{})
+                self.assertEqual(api.call_args.args[0]["success"],True)
+                self.assertEqual(api.call_args.args[0]["response"]["stage"],"READY")
+    def test_rejects_unknown_betting_action(self):
+        job={"job":{"id":"6e7dbf7b-8276-438f-a712-922005e19ddb","kind":"place_bet","request":{}}}
+        replies=iter([job,{"completed":True}])
+        with patch.object(chat_queue,"request",side_effect=lambda q:next(replies)) as api:
+            with patch.object(chat_queue,"execute") as engine:
+                self.assertTrue(chat_queue.process_one())
+                engine.assert_not_called()
+                self.assertFalse(api.call_args.args[0]["success"])
+
+    def test_reclaimed_probe_does_not_repeat_provider_fetch(self):
+        for attempt in (2,3):
+            with self.subTest(attempt=attempt):
+                job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                            'kind':'sports_probe','request':{'queries':[]},'attempt':attempt}}
+                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
+                     patch.object(chat_queue,'execute') as engine:
+                    self.assertTrue(chat_queue.process_one())
+                    engine.assert_not_called()
+                    self.assertEqual(api.call_args.args[0]['error'],'PROVIDER_FETCH_RETRY_REQUIRES_REVIEW')
+                    self.assertFalse(api.call_args.args[0]['success'])
+
+    def test_probe_requires_an_integer_first_attempt(self):
+        for attempt in (None,True,0,1.0,'1',4):
+            with self.subTest(attempt=attempt):
+                job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                            'kind':'sports_probe','request':{'queries':[]},'attempt':attempt}}
+                with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
+                     patch.object(chat_queue,'execute') as engine:
+                    with self.assertRaisesRegex(RuntimeError,'PROVIDER_FETCH_LEASE_REQUIRED'):
+                        chat_queue.process_one()
+                    engine.assert_not_called()
+                    self.assertEqual(api.call_count,1)
+
+    def test_probe_first_attempt_executes_and_preserves_receipt(self):
+        job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                    'kind':'sports_probe','request':{'queries':[]},'attempt':1}}
+        original={'queries':[{'receipt':{'payload_hash':'a'*64}}]}
+        attempt=1
+        with patch.object(chat_queue,'request',side_effect=[job,{'completed':True,'id':job['job']['id'],'attempts':attempt}]) as api, \
+             patch.object(chat_queue,'execute',return_value=original) as engine:
+            self.assertTrue(chat_queue.process_one())
+            engine.assert_called_once_with('sports_probe',{'queries':[]})
+            self.assertEqual(api.call_args.args[0]['response'],original)
+            self.assertTrue(api.call_args.args[0]['success'])
+
+    def test_lost_completion_does_not_trigger_another_fetch_on_reclaim(self):
+        item={'id':'6e7dbf7b-8276-438f-a712-922005e19ddb','kind':'sports_probe',
+              'request':{'queries':[]},'attempt':1}
+        replies=[{'job':item},OSError('SYNTHETIC_UNAVAILABLE'),
+                 {'job':{**item,'attempt':2}},{'completed':True,'id':item['id'],'attempts':2}]
+        with patch.object(chat_queue,'request',side_effect=replies) as api, \
+             patch.object(chat_queue,'execute',return_value={'queries':[]}) as engine:
+            with self.assertRaises(OSError):chat_queue.process_one()
+            self.assertTrue(chat_queue.process_one())
+            self.assertEqual(engine.call_count,1)
+            self.assertEqual(api.call_args.args[0]['error'],'PROVIDER_FETCH_RETRY_REQUIRES_REVIEW')
+    def test_sports_probe_pace_keeps_lower_bound_and_is_configurable(self):
+        import os
+        with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': '2'}):
+            self.assertEqual(chat_queue.sports_probe_pace_seconds(),2)
+        with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': '61'}):
+            self.assertEqual(chat_queue.sports_probe_pace_seconds(),61)
+        for invalid in ('0','1','62','3.0','-1','+2',' ','٢','999999999'):
+            with self.subTest(invalid=invalid):
+                with patch.dict(os.environ, {'SEFIROT_SPORTS_PROBE_PACE_SECONDS': invalid}):
+                    with self.assertRaisesRegex(ValueError,'SPORTS_PROBE_PACE_OUT_OF_RANGE'):
+                        chat_queue.sports_probe_pace_seconds()
+
+    def test_provider_failure_latches_before_next_claim_and_appears_in_status(self):
+        import os
+        failed={'queries':[{'endpoint':'fixtures','status':'ERROR',
+                            'reason':'PROVIDER_TRANSPORT_OR_AUTH_UNAVAILABLE'}]}
+        job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                    'kind':'sports_probe','request':{'queries':[{'endpoint':'fixtures',
+                    'params':{'id':123}}]},'attempt':1}}
+        probe=ModuleType('chat_sports_probe')
+        probe.collect=lambda payload:failed
+        with patch.dict(os.environ,{'SEFIROT_CHAT_JOB_WORKER_MODE':'sports_probe',
+                                    'SEFIROT_SOURCE_ARCHIVE':'0'}), \
+             patch.dict(sys.modules,{'chat_sports_probe':probe}), \
+             patch.object(chat_queue,'read_only_mode',return_value=True), \
+             patch.object(chat_queue,'_provider_stop',None), \
+             patch.object(chat_queue,'request',side_effect=[job,{'completed':True,
+                 'id':job['job']['id'],'attempts':1}]) as api:
+            self.assertTrue(chat_queue.process_one())
+            self.assertEqual(api.call_count,2)
+            self.assertFalse(chat_queue.process_one())
+            self.assertEqual(api.call_count,2)
+            status=chat_queue.worker_status()
+            self.assertTrue(status['provider_paused'])
+            self.assertEqual(status['provider_pause_reason'],'PROBE_REQUIRES_REVIEW')
+
+    def test_successful_probe_does_not_pause_provider(self):
+        import os
+        job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                    'kind':'sports_probe','request':{'queries':[]},'attempt':1}}
+        probe=ModuleType('chat_sports_probe')
+        probe.collect=lambda payload:{'queries':[{'status':'DONE'}]}
+        with patch.dict(os.environ,{'SEFIROT_CHAT_JOB_WORKER_MODE':'sports_probe',
+                                    'SEFIROT_SOURCE_ARCHIVE':'0'}), \
+             patch.dict(sys.modules,{'chat_sports_probe':probe}), \
+             patch.object(chat_queue,'read_only_mode',return_value=True), \
+             patch.object(chat_queue,'_provider_stop',None), \
+             patch.object(chat_queue,'request',side_effect=[job,{'completed':True,
+                 'id':job['job']['id'],'attempts':1},{'job':None}]) as api:
+            self.assertTrue(chat_queue.process_one())
+            self.assertFalse(chat_queue.process_one())
+            self.assertEqual(api.call_count,3)
+            self.assertFalse(chat_queue.worker_status()['provider_paused'])
+
+if __name__=="__main__":unittest.main()
+

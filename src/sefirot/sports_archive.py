@@ -8,8 +8,10 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import re
+import os
+import tempfile
 
-from .contracts import Policy, digest, integer, number, strict, text, time
+from .contracts import Policy, canonical, digest, integer, number, strict, text, time, result_chronology
 from .evidence import eligible_history, inspect
 from .football_provider import HOST, MAX_PROVIDER_ID, PARAMETERS, fixture_identity, normalize_sports
 
@@ -22,7 +24,7 @@ def validate_packet(packet, at=None):
            ('quota', 'transport', 'upstream_received_at'))
     if (receipt['provider_host'] != HOST or receipt['endpoint'] != '/fixtures'
             or receipt['provider'] != 'API_FOOTBALL_V3' or receipt['sports_only'] is not True
-            or receipt['http_status'] != 200):
+            or type(receipt['http_status']) is not int or receipt['http_status'] != 200):
         raise ValueError('successful sports-only API-Football fixture receipt required')
     started, received = time(receipt['request_started_at']), time(receipt['received_at'])
     if started > received or (at is not None and received > time(at)):
@@ -91,15 +93,20 @@ def archive_packets(packets, directory, at):
         target = root / (key + '.json')
         if key in existing:
             continue
+        temporary = None
         try:
-            with target.open('x', encoding='utf-8') as file:
-                json.dump(packet, file, ensure_ascii=False, indent=2, allow_nan=False)
-                file.write('\n')
+            with tempfile.NamedTemporaryFile(dir=root, prefix='.pending-', delete=False) as file:
+                temporary = Path(file.name)
+                file.write((canonical(packet)+'\n').encode('utf-8'))
+                file.flush(); os.fsync(file.fileno())
+            os.link(temporary, target)
         except FileExistsError:
             if digest(validate_packet(json.loads(target.read_text(encoding='utf-8')), at)) != key:
                 raise ValueError('concurrent sports archive conflict') from None
         else:
             added.append(key)
+        finally:
+            if temporary is not None:temporary.unlink()
     return {'schema': 'sports-archive-import-v1', 'at': at, 'status': 'OBSERVATIONS_ARCHIVED',
             'added_packets': len(added), 'existing_packets': len(existing),
             'input_unique_packets': len(unique), 'added_hashes': added,
@@ -107,7 +114,8 @@ def archive_packets(packets, directory, at):
 
 
 def _identity(row):
-    return (row['league']['id'], row['teams']['home']['id'], row['teams']['away']['id'])
+    return (row['league']['id'], row['league'].get('season'),
+            row['teams']['home']['id'], row['teams']['away']['id'])
 
 
 def export_sports(directory, fixture_id, as_of, *, profile, source_reliability, policy=None):
@@ -166,6 +174,12 @@ def export_sports(directory, fixture_id, as_of, *, profile, source_reliability, 
             continue
         first_packet, first = finals[0]
         ident = fixture_identity(first)
+        try:
+            result_chronology(ident['kickoff'],first_packet['receipt']['received_at'],
+                              first_packet['receipt']['received_at'])
+        except ValueError:
+            exclusions.append({'fixture_id': fid, 'reason': 'IMPOSSIBLE_RESULT_CHRONOLOGY'})
+            continue
         if any(first['teams'][side]['id'] not in target_names and
                first['teams'][side]['name'] in target_names.values() for side in ('home', 'away')):
             exclusions.append({'fixture_id': fid, 'reason': 'TEAM_NAME_COLLISION'})
