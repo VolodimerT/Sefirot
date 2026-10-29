@@ -16,9 +16,13 @@ const status = {errors: [], response: {account: {email: "PRIVATE_ACCOUNT_VALUE"}
 
 function setup({upstream = Response.json(fixtures), authRows = auth, env = true, rpc = null, budget = null, finish = null, sourceReady=true, sourceAck=true} = {}) {
   const calls = [];
+  const timers = [];
+  const diagnostics = [];
   let handler;
   const sandbox = {Request, Response, TextEncoder, TextDecoder, AbortController, URLSearchParams,
-    setTimeout, clearTimeout, crypto: webcrypto,
+    setTimeout: (callback, ms) => {timers.push(ms); return setTimeout(callback, ms);},
+    clearTimeout, crypto: webcrypto,
+    console: {error: (...parts) => diagnostics.push(parts)},
     Deno: {env: {get: key => env ? ({SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
       SUPABASE_SERVICE_ROLE_KEY: "PRIVATE_SERVICE_ROLE_KEY"})[key] : undefined},
       serve: value => { handler = value; }},
@@ -37,7 +41,7 @@ function setup({upstream = Response.json(fixtures), authRows = auth, env = true,
       return upstream;
     }};
   vm.runInNewContext(source.replace(marker, "const DEPLOYED_AUTH = " + JSON.stringify(authRows) + ";"), sandbox);
-  return {canonical:sandbox.sourceCanonical,safe:sandbox.sourceSafe,calls, call: async ({body = {endpoint: "fixtures", params: {}},
+  return {canonical:sandbox.sourceCanonical,safe:sandbox.sourceSafe,calls,timers,diagnostics, call: async ({body = {endpoint: "fixtures", params: {}},
       credential = token, method = "POST", queryToken = false, headers = {}} = {}) => {
     const req = new Request("https://gateway.test/" + (queryToken ? "?t=" + token : ""), {
       method, headers: credential === null ? {} : {"x-sefirot-runner-token": credential,...headers},
@@ -202,7 +206,7 @@ await test("observed quota is preserved and malformed values fail closed", async
   assert.equal((await s.call()).body.error, "INVALID_QUOTA_HEADER");
 });
 await test("HTTP failure preserves code without upstream body", async () => {
-  for (const code of [201, 302, 401, 403, 429]) {
+  for (const code of [201, 302, 401, 403, 429, 502, 503]) {
     const s = setup({upstream: new Response("PRIVATE_API_KEY", {status: code})}); const out = await s.call();
     assert.equal(out.status, 502); assert.equal(out.body.upstream_http_status, code);
     assert.ok(!JSON.stringify(out).includes("PRIVATE_API_KEY"));
@@ -259,6 +263,9 @@ await test("network and timeout exceptions do not leak URLs or values", async ()
     const s = setup({upstream: error}); const out = await s.call();
     assert.equal(out.body.error, name === "AbortError" ? "UPSTREAM_TIMEOUT" : "UPSTREAM_UNAVAILABLE");
     assert.ok(!JSON.stringify(out).includes("PRIVATE"));
+    assert.deepEqual(s.diagnostics.at(-1), ["SEFIROT_GATEWAY_FAILURE", "PROVIDER", out.body.error]);
+    assert.ok(s.timers.includes(7000));
+    assert.equal(s.calls.filter(c => c.url.endsWith("/sefirot_sports_budget_finish")).length, 1);
   }
 });
 await test("invalid UTF-8 and non-JSON are sanitized", async () => {
@@ -334,6 +341,8 @@ await test("failed finalization returns fixed error and makes no retry", async (
       Response.json({ok: true, extra: "PRIVATE_TOKEN"})]) {
     const s = setup({finish}); const out = await s.call();
     assert.equal(out.body.error, "SHARED_BUDGET_UNAVAILABLE"); assert.equal(s.calls.length, 4);
+    assert.deepEqual(s.diagnostics.at(-1), ["SEFIROT_GATEWAY_FAILURE",
+      "BUDGET_FINALIZATION", "SHARED_BUDGET_UNAVAILABLE"]);
     assert.ok(!JSON.stringify(out).includes("PRIVATE_TOKEN"));
   }
 });
@@ -464,3 +473,4 @@ await test("shared guard marker is issued only on successfully finalized legacy 
 });
 
 process.stdout.write("GATEWAY_CONTRACTS_PASSED=" + tests + "\n");
+

@@ -3,7 +3,9 @@ const DEPLOYED_AUTH = []; // SEFIROT_DEPLOY_AUTH
 const HOST = "v3.football.api-sports.io";
 const MAX_BODY = 16384;
 const MAX_RESPONSE = 2000000;
-const TIMEOUT_MS = 9000;
+// Leave time for the mandatory budget finalization inside the edge request.
+// The 29 Oct failure took 9447 ms with a 9000 ms upstream cap.
+const TIMEOUT_MS = 7000;
 const ALLOWED = {
   status: [],
   leagues: ["id", "name", "country", "code", "season", "team", "type", "current", "search", "last"],
@@ -273,6 +275,7 @@ Deno.serve(async req => {
       (row.expires_at === null || Number.isFinite(row.expires_at) && Date.now() < row.expires_at))) {
     return json({ok: false, error: "UNAUTHORIZED"}, 401);
   }
+  let phase = "PREFLIGHT";
   try {
     const job=req.headers.get('x-sefirot-source-job-id');
     const attempt=req.headers.get('x-sefirot-source-attempt');
@@ -308,6 +311,7 @@ Deno.serve(async req => {
       budget_reason: budget.reason}, 429);
     const observation = {outcome: "FAILURE", remaining_day: null, remaining_minute: null, observed_minute_limit: null};
     try {
+    phase = "PROVIDER";
     const startedAt=new Date().toISOString();
     const query = new URLSearchParams();
     for (const [name, value] of Object.entries(params)) query.set(name, String(value));
@@ -365,6 +369,7 @@ Deno.serve(async req => {
     }
     let sourceArchive=null,sourceReceipt=null;
     if(job!==null) {
+      phase = "SOURCE_ARCHIVE";
       if(!sourceSafe(data,endpoint)){const error=new GatewayError('SOURCE_SAFETY');
         error.unsupported_stat_labels=sourceHints(data,endpoint);throw error;}
       sourceReceipt={provider:'API_FOOTBALL_V3',provider_host:HOST,endpoint:'/'+endpoint,parameters:params,
@@ -382,9 +387,16 @@ Deno.serve(async req => {
       shared_budget_guard: "POSTGRES_RESERVATION_V1",
       sports_only: true, monetary_permission: false, execution_enabled: false});
     } catch(error) { observation.outcome='FAILURE'; throw error;
-    } finally { await finishBudget(budget.permit, observation); }
+    } finally {
+      try { await finishBudget(budget.permit, observation); }
+      catch(error) { phase = "BUDGET_FINALIZATION"; throw error; }
+    }
   } catch (error) {
+    // Fixed stage/code only. Never log provider bodies, URLs, headers or keys.
+    console.error("SEFIROT_GATEWAY_FAILURE", phase,
+      error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE");
     return json({ok: false, error: error instanceof GatewayError ? error.code : "GATEWAY_UNAVAILABLE",
       ...(error instanceof GatewayError&&error.code==='SOURCE_SAFETY'?{unsupported_stat_labels:error.unsupported_stat_labels??[]}: {})}, 502);
   }
 });
+
