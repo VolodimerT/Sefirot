@@ -6,7 +6,7 @@
   "input_hash": "37ff2ed0582ec2344806b591841d68260fd523ebd9dfbc8027b7107466021d66",
   "code_hash": "1b4063c526f94eb284e7ca8125c61477a2e08ffe5fd1468e809a8bf8bf83ff1d",
   "model_hash": "bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee",
-  "scanner_sha256": "fb449c76a94c49aef06c80aa7fead56f37b47098135d2c4c9e50c1dcef736f66",
+  "scanner_sha256": "a2831acefc82607d23d26a3a3eb4aa2eef39397a40c3205b448204050b39ca2c",
   "calendar_status": "STRUCTURALLY_COMPLETE_LOCAL_RECEIPT",
   "calendar_scope": "PROVIDER_AVAILABLE_UTC_DAY",
   "worldwide_completeness": "NOT_ATTESTED",
@@ -596,6 +596,13 @@
       ]
     }
   ],
+  "fixture_counts": {
+    "calendar": 1,
+    "reported": 1,
+    "prematch": 1,
+    "excluded_prematch": 0
+  },
+  "archive_status": "VERIFIED_LOCAL_STRUCTURE",
   "blockers": [],
   "ledger_status": "HASH_CHAIN_VERIFIED_LOCAL",
   "network_requests": 0,
@@ -605,5 +612,5 @@
   "execution_enabled": false,
   "stake": 0.0,
   "excluded_future_packets": 0,
-  "report_hash": "ee3400f7db9bdf1675172c0e07eb9496442c0bf9c85a4d3b421bf41d416bd58c"
+  "report_hash": "885e0c7529c653e75f3f5ee608fea3a658f72124dd680a9c4d44135541d7de9f"
 }

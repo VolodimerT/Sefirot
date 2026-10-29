@@ -162,30 +162,46 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
               'scanner_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
               'calendar_status': 'REJECTED', 'calendar_scope': 'PROVIDER_AVAILABLE_UTC_DAY',
               'worldwide_completeness': 'NOT_ATTESTED', 'decision': 'PASS', 'candidates': [],
-              'fixtures': [], 'blockers': [], 'ledger_status': 'REQUESTED' if database is not None else 'NOT_SUPPLIED',
+              'fixtures': [], 'fixture_counts': {'calendar': None, 'reported': 0, 'prematch': 0, 'excluded_prematch': 0},
+              'archive_status': 'NOT_CHECKED', 'blockers': [], 'ledger_status': 'REQUESTED' if database is not None else 'NOT_SUPPLIED',
               'network_requests': 0, 'model_fits': 0, 'ledger_writes': 0,
               'monetary_permission': False, 'execution_enabled': False, 'stake': 0.0}
     try:
         fixtures = calendar_day(calendar, day, at)
-        packets = read_archive(archive)
-        # Exact calendar must be in the immutable archive used for sports export.
-        if not any(digest(p) == digest(calendar) for p in packets):
-            raise ValueError('CALENDAR_NOT_IN_ARCHIVE')
     except (ValueError, KeyError, TypeError, OSError) as exc:
-        report['blockers'] = ['CALENDAR_OR_ARCHIVE_INVALID', type(exc).__name__]
+        report['blockers'] = ['CALENDAR_INVALID', type(exc).__name__]
         report['report_hash'] = digest(report)
         return report
     report['calendar_status'] = 'STRUCTURALLY_COMPLETE_LOCAL_RECEIPT'
-    report['excluded_future_packets'] = sum(time(p['receipt']['received_at']) > time(at) for p in packets)
+    report['fixture_counts']['calendar'] = len(fixtures)
+    prematch = sum(f['fixture']['status']['short'] == 'NS' and time(at) < time(f['fixture']['date'])
+                   for f in fixtures)
+    report['fixture_counts'].update(prematch=prematch, excluded_prematch=len(fixtures)-prematch)
+    try:
+        packets = read_archive(archive)
+        # A valid calendar remains visible even when the sporting archive fails.
+        if not any(digest(p) == digest(calendar) for p in packets):
+            raise ValueError('CALENDAR_NOT_IN_ARCHIVE')
+    except (ValueError, KeyError, TypeError, OSError):
+        report['archive_status'] = 'REJECTED'
+        report['blockers'].append('ARCHIVE_UNAVAILABLE_OR_INVALID')
+        report['excluded_future_packets'] = None
+    else:
+        report['archive_status'] = 'VERIFIED_LOCAL_STRUCTURE'
+        report['excluded_future_packets'] = sum(time(p['receipt']['received_at']) > time(at) for p in packets)
+    if prices is not None and not isinstance(prices, dict):
+        report['blockers'].append('PRICES_INPUT_INVALID')
+    if database is not None and report['blockers']:
+        report['ledger_status'] = 'NOT_READ_INPUT_REJECTED'
     for fixture in fixtures:
         fid = fixture['fixture']['id']
         item = {'fixture_id': fid, 'league_id': fixture['league']['id'],
                 'team_ids': [fixture['teams'][s]['id'] for s in ('home', 'away')],
                 'home': fixture['teams']['home']['name'], 'away': fixture['teams']['away']['name'],
-                'kickoff': fixture['fixture']['date'], 'blockers': [], 'markets': [], 'coverage': None}
+                'kickoff': fixture['fixture']['date'], 'blockers': list(report['blockers']), 'markets': [], 'coverage': None}
         if fixture['fixture']['status']['short'] != 'NS' or time(at) >= time(item['kickoff']):
             item['blockers'].append('PREMATCH_ONLY')
-        else:
+        elif report['archive_status'] == 'VERIFIED_LOCAL_STRUCTURE':
             try:
                 exported = export_sports(archive, fid, at, profile=profile, source_reliability=0.)
                 item['coverage'] = exported['coverage']
@@ -193,9 +209,9 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
                 item['sports_hash'] = digest(exported['sports'])
                 # Archive source reliability is NOT an external attestation.
                 item['blockers'].append('INDEPENDENT_SPORTS_ORIGIN_NOT_ATTESTED')
-            except (ValueError, KeyError, TypeError):
+            except (ValueError, KeyError, TypeError, OSError):
                 item['blockers'].append('SPORTS_EXPORT_OR_IDENTITY_FAILED')
-        if database is not None and not item['blockers'][:1] == ['PREMATCH_ONLY']:
+        if database is not None and not report['blockers'] and 'PREMATCH_ONLY' not in item['blockers']:
             try:
                 if not Path(database).is_file():
                     report['ledger_status'] = 'ABSENT'
@@ -236,6 +252,7 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
         item['small_markets'] = [{**_empty(k, ['SMALL_MODEL_UNVALIDATED']),
                                  'referee_gate': referee if k in ('FOULS', 'YELLOW_CARDS') else {'status': 'NOT_APPLICABLE', 'reason': 'DIRECT_COUNT_MODEL_REQUIRED'}} for k in SMALL]
         report['fixtures'].append(item)
+    report['fixture_counts']['reported'] = len(report['fixtures'])
     report['candidates'] = independent_candidates(report['fixtures']) if not synthetic else []
     report['decision'] = 'RESEARCH_SHORTLIST' if report['candidates'] else 'PASS'
     report['report_hash'] = digest(report)
@@ -245,7 +262,8 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
 def render_report(report):
     lines = [f"DAILY REPORT {report['day']} — {report['data_label']}",
              f"{report['decision']} | candidates={len(report['candidates'])} | stake=0",
-             f"Calendar: {report['calendar_status']}; worldwide completeness NOT_ATTESTED."]
+             f"Calendar: {report['calendar_status']}; worldwide completeness NOT_ATTESTED.",
+             f"Fixtures: {report['fixture_counts']}; archive: {report['archive_status']}."]
     for fixture in report['fixtures']:
         lines.append(f"{fixture['fixture_id']}: {fixture['home']} — {fixture['away']}: PASS")
         for row in fixture['markets'] + fixture['small_markets']:

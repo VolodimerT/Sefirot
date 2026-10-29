@@ -117,7 +117,7 @@ monetary permission. SQLite/demo artifacts are not published in Git.
 The saved price adapter does not invent prices for unavailable families. An absent
 family is a data gap, not a reason to shop a prettier accumulator.
 
-## Validation and limits
+## Initial C1 validation and limits (449cfbcc)
 
 See [validation.json](evidence/c1/validation.json) and retained logs in
 [evidence/c1](evidence/c1/). Counts distinguish passed/skipped/failed. The initial
@@ -149,3 +149,52 @@ source provenance, already validated calibration/HOLDOUT artifacts and separate
 quote evidence. Re-run without changing original seals, Policy or journal.
 Source/quote attestation design is a separate code review; no budget activation,
 provider call, production write, deployment or merge is authorized by this report.
+
+## Follow-up: whole-day retention and archive failures, 29 October
+
+The initial C1 checkpoint above is commit `449cfbcc5391bd196dc5d68cad3ee5dc4c8be66e`.
+Its 10/10 CI jobs passed on their first attempts; all five unit matrix jobs logged
+22 C1 regressions and 1668 passed / 9 skipped / 1677 total. Separate native
+PostgreSQL sync/probe/budget jobs also passed. The initial evidence is retained.
+
+Further owned regressions reproduce lost day coverage: a valid calendar was
+labelled rejected and all its fixtures erased when the archive was missing,
+corrupt or lacked the exact calendar packet. A per-fixture OSError also aborted
+the entire day. A malformed top-level price container lacked an explicit gate.
+
+The follow-up separates calendar and archive status. A structurally valid
+calendar remains visible in full even when archive QC fails. Every fixture
+receives PASS and the archive blocker; the model ledger is not opened for rejected
+global inputs. A per-fixture I/O error blocks that fixture and preserves the rest
+of the report. Invalid calendar evidence still rejects the calendar itself.
+`fixture_counts` records calendar/reported/prematch/excluded counts. Unknown
+calendar count and unknown future-packet exclusions are null, not invented zero.
+
+Eight additional regressions cover three-fixture retention (including a postponed
+fixture), missing/corrupt/wrong archive, isolated I/O failure, malformed prices,
+empty provider day and genuinely changed future result scores. The latter changes
+historical goals in a later receipt and proves that the earlier sporting inputs
+and market rows remain identical. These tests never alter original fixtures.
+Red/green and final release evidence: [day-coverage](evidence/c1/day-coverage/).
+
+Reproduce the checked-in **synthetic three-fixture** day without a ledger:
+
+```sh
+python scripts/daily_prematch_scanner.py \
+  --calendar examples/daily_scanner_synthetic/MULTI_DAY_CALENDAR.json \
+  --archive examples/daily_scanner_synthetic/day-coverage-archive \
+  --day 2030-01-01 --at 2030-01-01T09:00:00+00:00 --profile LOWER --synthetic
+```
+
+The output equals [MULTI_DAY_REPORT.json](../examples/daily_scanner_synthetic/MULTI_DAY_REPORT.json).
+The [missing-archive report](../examples/daily_scanner_synthetic/MULTI_DAY_ARCHIVE_MISSING.json)
+retains the same three fixtures with explicit PASS, rejected archive, unknown
+excluded-future count and zero monetary permission. No P0 proof gate is relaxed.
+The original single-fixture report is regenerated for the new scanner digest;
+its calendar, original ledger and source fixtures remain unchanged.
+
+Final follow-up local release on Python **3.14.3**: **1676 passed / 9 skipped /
+1685 total**, exit 0; integrity/replay true, all 30 scanner regressions passed.
+Source hashes and retained pre-fix failures: [validation.json](evidence/c1/day-coverage/validation.json).
+Exact new-head CI must be checked after publication; earlier green CI belongs
+to `449cfbcc`, not automatically to this follow-up.

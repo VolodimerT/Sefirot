@@ -1,0 +1,1277 @@
+{
+  "schema": "daily-prematch-scanner-v0",
+  "day": "2030-01-01",
+  "as_of": "2030-01-01T09:00:00+00:00",
+  "data_label": "SYNTHETIC_TEST_ONLY",
+  "input_hash": "fc18e02d4add05a7d1d8f30933f663124a850ba7403068ba117fa7c765e98c9e",
+  "code_hash": "1b4063c526f94eb284e7ca8125c61477a2e08ffe5fd1468e809a8bf8bf83ff1d",
+  "model_hash": "bdb154a9ea169a1a7b9b719df0d90a1cc7126f9978bc66e7195a4e83d8edefee",
+  "scanner_sha256": "a2831acefc82607d23d26a3a3eb4aa2eef39397a40c3205b448204050b39ca2c",
+  "calendar_status": "STRUCTURALLY_COMPLETE_LOCAL_RECEIPT",
+  "calendar_scope": "PROVIDER_AVAILABLE_UTC_DAY",
+  "worldwide_completeness": "NOT_ATTESTED",
+  "decision": "PASS",
+  "candidates": [],
+  "fixtures": [
+    {
+      "fixture_id": 900001,
+      "league_id": 9,
+      "team_ids": [
+        1,
+        2
+      ],
+      "home": "Test 0 home",
+      "away": "Test 0 away",
+      "kickoff": "2030-01-01T12:00:00+00:00",
+      "blockers": [
+        "ARCHIVE_UNAVAILABLE_OR_INVALID"
+      ],
+      "markets": [
+        {
+          "market": "1X2:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DOUBLE_CHANCE:1X",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DNB:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "HANDICAP:HOME:-1",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TOTAL:OVER:2.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "BTTS:YES",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TEAM_TOTAL:HOME_OVER:1.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        }
+      ],
+      "coverage": null,
+      "information_status": "BLOCKED",
+      "small_markets": [
+        {
+          "market": "CORNERS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "SHOTS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "FOULS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        },
+        {
+          "market": "YELLOW_CARDS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": 900002,
+      "league_id": 9,
+      "team_ids": [
+        11,
+        12
+      ],
+      "home": "Test 1 home",
+      "away": "Test 1 away",
+      "kickoff": "2030-01-01T13:00:00+00:00",
+      "blockers": [
+        "ARCHIVE_UNAVAILABLE_OR_INVALID"
+      ],
+      "markets": [
+        {
+          "market": "1X2:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DOUBLE_CHANCE:1X",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DNB:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "HANDICAP:HOME:-1",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TOTAL:OVER:2.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "BTTS:YES",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TEAM_TOTAL:HOME_OVER:1.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        }
+      ],
+      "coverage": null,
+      "information_status": "BLOCKED",
+      "small_markets": [
+        {
+          "market": "CORNERS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "SHOTS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "FOULS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        },
+        {
+          "market": "YELLOW_CARDS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "fixture_id": 900003,
+      "league_id": 9,
+      "team_ids": [
+        21,
+        22
+      ],
+      "home": "Test 2 home",
+      "away": "Test 2 away",
+      "kickoff": "2030-01-01T14:00:00+00:00",
+      "blockers": [
+        "ARCHIVE_UNAVAILABLE_OR_INVALID",
+        "PREMATCH_ONLY"
+      ],
+      "markets": [
+        {
+          "market": "1X2:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DOUBLE_CHANCE:1X",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "DNB:HOME",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "HANDICAP:HOME:-1",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TOTAL:OVER:2.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "BTTS:YES",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        },
+        {
+          "market": "TEAM_TOTAL:HOME_OVER:1.5",
+          "status": "PASS",
+          "blockers": [
+            "ARCHIVE_UNAVAILABLE_OR_INVALID",
+            "HISTORY_AND_LINEUP_PROOF_REQUIRED",
+            "PREMATCH_ONLY",
+            "VALIDATED_PROBABILITY_REQUIRED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "alternative_status": "NO_PROVEN_ALTERNATIVE"
+        }
+      ],
+      "coverage": null,
+      "information_status": "BLOCKED",
+      "small_markets": [
+        {
+          "market": "CORNERS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "SHOTS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "status": "NOT_APPLICABLE",
+            "reason": "DIRECT_COUNT_MODEL_REQUIRED"
+          }
+        },
+        {
+          "market": "FOULS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        },
+        {
+          "market": "YELLOW_CARDS",
+          "status": "PASS",
+          "blockers": [
+            "SMALL_MODEL_UNVALIDATED"
+          ],
+          "model_probability": null,
+          "push_probability": null,
+          "loss_probability": null,
+          "implied_probability": null,
+          "fair_odds": null,
+          "ev": null,
+          "ev_low": null,
+          "odds": null,
+          "tactical_fit": {
+            "status": "NOT_PROVEN"
+          },
+          "public_trap": {
+            "status": "NOT_ASSESSED",
+            "popularity_data": "NOT_SUPPLIED"
+          },
+          "death_test": {
+            "status": "NOT_PROVEN"
+          },
+          "alternative_market": null,
+          "referee_gate": {
+            "schema": "referee-yc-gate-v1",
+            "status": "HOLD",
+            "decision": "PASS",
+            "class": "D",
+            "missing_fields": [
+              "calibration_hash",
+              "cleaner_market_exists",
+              "confirmed_at",
+              "ev",
+              "fixture_id",
+              "kickoff",
+              "referee_id",
+              "risk",
+              "rules_version",
+              "yc_per_foul",
+              "yc_per_game"
+            ],
+            "blockers": [
+              "CONFIRMED_REFEREE_REQUIRED",
+              "EXACT_FIXTURE_ID_REQUIRED",
+              "INDEPENDENT_REFEREE_SOURCE_ORIGIN_NOT_ATTESTED",
+              "INDEPENDENT_YC_CALIBRATION_REQUIRED",
+              "NO_CLEANER_MARKET_PROOF_REQUIRED",
+              "PREMATCH_REFEREE_RECEIPT_REQUIRED",
+              "RISK_0_1_REQUIRED",
+              "STAKE_YC_RULES_REQUIRED",
+              "TARGET_KICKOFF_REQUIRED",
+              "VERIFIED_YC_EV_REQUIRED",
+              "YC_PER_FOUL_REQUIRED",
+              "YC_PER_GAME_REQUIRED"
+            ],
+            "source_attested": false,
+            "probability": null,
+            "ev": null,
+            "monetary_permission": false,
+            "stake": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "fixture_counts": {
+    "calendar": 3,
+    "reported": 3,
+    "prematch": 2,
+    "excluded_prematch": 1
+  },
+  "archive_status": "REJECTED",
+  "blockers": [
+    "ARCHIVE_UNAVAILABLE_OR_INVALID"
+  ],
+  "ledger_status": "NOT_SUPPLIED",
+  "network_requests": 0,
+  "model_fits": 0,
+  "ledger_writes": 0,
+  "monetary_permission": false,
+  "execution_enabled": false,
+  "stake": 0.0,
+  "excluded_future_packets": null,
+  "report_hash": "6e70e48ca89d2f21e249a3098da2fb0d0ea98f48a5daca5016512ff8255d2464"
+}
