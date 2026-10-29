@@ -17,6 +17,7 @@ _lifecycle_lock = Lock()
 _state_lock = Lock()
 _stop = Event()
 _thread = None
+_provider_stop = None  # Process-local fail-closed latch; only a reviewed restart clears it.
 _state = {"last_poll_at": None, "last_completed_at": None,
           "completed_jobs": 0, "last_error": None}
 
@@ -35,9 +36,12 @@ def worker_status():
     sports = sports_only_mode()
     with _state_lock:
         state = dict(_state)
+        provider_stop = _provider_stop
     return {**state, "mode": "sports_probe" if sports else "canonical",
             "running": bool(_thread and _thread.is_alive()),
             "stopping": _stop.is_set(), "shared_budget_required": True,
+            "provider_paused": provider_stop is not None,
+            "provider_pause_reason": provider_stop,
             "provider_quota": "NOT_VERIFIED",
             "source_archive_configured": os.environ.get("SEFIROT_SOURCE_ARCHIVE","0")=="1",
             "source_archive_ready": "CHECKED_BEFORE_CLAIM" if os.environ.get("SEFIROT_SOURCE_ARCHIVE","0")=="1" else "NOT_CONFIGURED",
@@ -68,6 +72,10 @@ def _complete_probe(payload):
 def process_one() -> bool:
     sports = sports_only_mode()
     if read_only_mode() and not sports:return False
+    # A gateway timeout, safety failure or shared-budget denial may have opened
+    # the circuit. Do not claim and consume the rest of a queued batch blindly.
+    with _state_lock:
+        if sports and _provider_stop is not None:return False
     # In-process callers cannot accidentally run multiple consumers. PostgreSQL
     # SKIP LOCKED + the shared gateway reservation serialize cross-process work.
     if not _process_lock.acquire(blocking=False):return False
@@ -87,6 +95,7 @@ def process_one() -> bool:
 
 
 def _process_one(sports):
+    global _provider_stop
     envelope=request({"action":"claim"})
     job=envelope.get("job")
     if job is None:return False
@@ -151,10 +160,21 @@ def _process_one(sports):
         acknowledgment=request(complete)
     if acknowledgment.get("completed") is not True:
         raise RuntimeError("CHAT_JOB_NOT_ACKNOWLEDGED")
+    # Collect preserves any successful packets in a partially completed batch.
+    # Latch only after the fenced completion is acknowledged, so a lost ack
+    # still follows the existing no-refetch lease recovery path.
+    queries = result.get("queries") if isinstance(result, dict) else None
+    failed_probe = (sports and job.get("attempt") == 1 and
+                    (not success or isinstance(queries, list) and
+                     any(isinstance(query, dict) and query.get("status") == "ERROR"
+                         for query in queries)))
     with _state_lock:
         _state["last_completed_at"] = _now()
         _state["completed_jobs"] += 1
         _state["last_error"] = error
+        if failed_probe:
+            _provider_stop = "PROBE_REQUIRES_REVIEW"
+            _state["last_error"] = _provider_stop
     print("SEFIROT_CHAT_JOB_"+("DONE" if success else "PASS")+
           " id="+str(uid),flush=True)
     return True
@@ -206,3 +226,4 @@ def stop(timeout=25):
         thread = _thread
     if thread:
         thread.join(timeout=timeout)
+

@@ -45,6 +45,20 @@ class SportsBudgetGateError(ValueError):
         super().__init__("sports shared budget refused request")
 
 
+class SportsGatewayTransportError(ValueError):
+    """Fixed gateway failure code; never carry an upstream body or credential."""
+
+    CODES = frozenset({"UPSTREAM_TIMEOUT", "UPSTREAM_UNAVAILABLE",
+                       "UPSTREAM_HTTP_429", "UPSTREAM_HTTP_502",
+                       "UPSTREAM_HTTP_503"})
+
+    def __init__(self, code):
+        if code not in self.CODES:
+            raise ValueError("unknown sports gateway failure")
+        self.code = code
+        super().__init__("sports gateway transport failed")
+
+
 def safe_stat_labels(labels):
     """Bounded schema hints only: never arbitrary provider strings/values."""
     if not isinstance(labels,list):return []
@@ -132,9 +146,11 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
             if wrapper.get('error') == 'UPSTREAM_HTTP_ERROR':
                 status = wrapper.get('upstream_http_status')
                 if type(status) is int and 100 <= status <= 599:
+                    if status in (429, 502, 503):
+                        raise SportsGatewayTransportError('UPSTREAM_HTTP_' + str(status))
                     raise ValueError('sports gateway upstream HTTP ' + str(status))
             if wrapper.get('error') in ('UPSTREAM_TIMEOUT', 'UPSTREAM_UNAVAILABLE'):
-                raise ValueError('sports gateway network unavailable')
+                raise SportsGatewayTransportError(wrapper['error'])
             raise ValueError('sports gateway HTTP ' + str(int(response.status)))
         received = clock().isoformat()
         if (wrapper.get('provider') != 'API_FOOTBALL_V3' or wrapper.get('provider_host') != HOST
@@ -181,3 +197,4 @@ def get_sports(endpoint, params=None, *, opener=None, clock=None, require_shared
         raise ValueError('sports gateway network unavailable') from None
     finally:
         close_transport(response)
+

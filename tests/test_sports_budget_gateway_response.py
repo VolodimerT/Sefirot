@@ -145,6 +145,31 @@ class SportsBudgetResponseTests(unittest.TestCase):
                 gateway.SportsBudgetGateError(value)
             self.assertNotIn('OWNED_PRIVATE_MARKER', str(e.exception))
 
+    def test_fixed_transport_failures_survive_probe_without_private_body(self):
+        sys.path.insert(0, str(ROOT / 'scripts'))
+        import chat_sports_probe as probe
+        cases=((502,'UPSTREAM_TIMEOUT','UPSTREAM_TIMEOUT'),
+               (502,'UPSTREAM_UNAVAILABLE','UPSTREAM_UNAVAILABLE'),
+               (502,'UPSTREAM_HTTP_ERROR','UPSTREAM_HTTP_502'),
+               (502,'UPSTREAM_HTTP_ERROR','UPSTREAM_HTTP_503'),
+               (502,'UPSTREAM_HTTP_ERROR','UPSTREAM_HTTP_429'))
+        for outer,error,expected in cases:
+            with self.subTest(expected=expected):
+                data={'ok':False,'error':error,'raw_secret':'OWNED_PRIVATE_MARKER'}
+                if error=='UPSTREAM_HTTP_ERROR':
+                    data['upstream_http_status']=int(expected.rsplit('_',1)[1])
+                with self.assertRaises(gateway.SportsGatewayTransportError) as raised:
+                    self._request(outer,data)
+                self.assertEqual(raised.exception.code,expected)
+                self.assertNotIn('OWNED_PRIVATE_MARKER',str(raised.exception))
+                with patch.object(probe,'get_sports',side_effect=raised.exception), \
+                     patch.object(probe,'transport_status',return_value={'transport':'SUPABASE_GATEWAY'}):
+                    result=probe.collect({'queries':[{'endpoint':'status','params':{}},
+                        {'endpoint':'fixtures','params':{'id':123}}]})
+                self.assertEqual(result['queries'][0]['reason'],expected)
+                self.assertEqual(len(result['queries']),1)
+
 
 if __name__ == "__main__":
     unittest.main()
+

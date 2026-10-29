@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import unittest
 from unittest.mock import patch
+from types import ModuleType
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/"src"),str(ROOT/"scripts")]
 import chat_queue
@@ -89,4 +90,47 @@ class QueueTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError,'SPORTS_PROBE_PACE_OUT_OF_RANGE'):
                         chat_queue.sports_probe_pace_seconds()
 
+    def test_provider_failure_latches_before_next_claim_and_appears_in_status(self):
+        import os
+        failed={'queries':[{'endpoint':'fixtures','status':'ERROR',
+                            'reason':'PROVIDER_TRANSPORT_OR_AUTH_UNAVAILABLE'}]}
+        job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                    'kind':'sports_probe','request':{'queries':[{'endpoint':'fixtures',
+                    'params':{'id':123}}]},'attempt':1}}
+        probe=ModuleType('chat_sports_probe')
+        probe.collect=lambda payload:failed
+        with patch.dict(os.environ,{'SEFIROT_CHAT_JOB_WORKER_MODE':'sports_probe',
+                                    'SEFIROT_SOURCE_ARCHIVE':'0'}), \
+             patch.dict(sys.modules,{'chat_sports_probe':probe}), \
+             patch.object(chat_queue,'read_only_mode',return_value=True), \
+             patch.object(chat_queue,'_provider_stop',None), \
+             patch.object(chat_queue,'request',side_effect=[job,{'completed':True,
+                 'id':job['job']['id'],'attempts':1}]) as api:
+            self.assertTrue(chat_queue.process_one())
+            self.assertEqual(api.call_count,2)
+            self.assertFalse(chat_queue.process_one())
+            self.assertEqual(api.call_count,2)
+            status=chat_queue.worker_status()
+            self.assertTrue(status['provider_paused'])
+            self.assertEqual(status['provider_pause_reason'],'PROBE_REQUIRES_REVIEW')
+
+    def test_successful_probe_does_not_pause_provider(self):
+        import os
+        job={'job':{'id':'6e7dbf7b-8276-438f-a712-922005e19ddb',
+                    'kind':'sports_probe','request':{'queries':[]},'attempt':1}}
+        probe=ModuleType('chat_sports_probe')
+        probe.collect=lambda payload:{'queries':[{'status':'DONE'}]}
+        with patch.dict(os.environ,{'SEFIROT_CHAT_JOB_WORKER_MODE':'sports_probe',
+                                    'SEFIROT_SOURCE_ARCHIVE':'0'}), \
+             patch.dict(sys.modules,{'chat_sports_probe':probe}), \
+             patch.object(chat_queue,'read_only_mode',return_value=True), \
+             patch.object(chat_queue,'_provider_stop',None), \
+             patch.object(chat_queue,'request',side_effect=[job,{'completed':True,
+                 'id':job['job']['id'],'attempts':1},{'job':None}]) as api:
+            self.assertTrue(chat_queue.process_one())
+            self.assertFalse(chat_queue.process_one())
+            self.assertEqual(api.call_count,3)
+            self.assertFalse(chat_queue.worker_status()['provider_paused'])
+
 if __name__=="__main__":unittest.main()
+
