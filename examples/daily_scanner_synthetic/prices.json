@@ -1,0 +1,44 @@
+{
+  "900001": {
+    "event": {
+      "id": "synthetic-event-900001",
+      "sport_key": "soccer_test",
+      "home_team": "Team A",
+      "away_team": "Team B",
+      "commence_time": "2030-01-01T12:00:00+00:00",
+      "bookmakers": [
+        {
+          "key": "synthetic_book",
+          "markets": [
+            {
+              "key": "h2h",
+              "last_update": "2030-01-01T09:01:00+00:00",
+              "outcomes": [
+                {
+                  "name": "Team A",
+                  "price": 2.1
+                },
+                {
+                  "name": "Draw",
+                  "price": 3.2
+                },
+                {
+                  "name": "Team B",
+                  "price": 3.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "sport": "soccer_test",
+    "event_id": "synthetic-event-900001",
+    "bookmaker": "synthetic_book",
+    "received_at": "2030-01-01T09:01:00+00:00",
+    "rules_confirmed": true,
+    "market_keys": [
+      "h2h"
+    ]
+  }
+}

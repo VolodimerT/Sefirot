@@ -1,0 +1,61 @@
+{
+  "data": {
+    "get": "fixtures",
+    "parameters": {
+      "date": "2030-01-01",
+      "timezone": "UTC"
+    },
+    "errors": [],
+    "results": 1,
+    "paging": {
+      "current": 1,
+      "total": 1
+    },
+    "response": [
+      {
+        "fixture": {
+          "id": 900001,
+          "date": "2030-01-01T12:00:00+00:00",
+          "timestamp": 1893499200,
+          "status": {
+            "short": "NS"
+          }
+        },
+        "league": {
+          "id": 9,
+          "season": 2030
+        },
+        "teams": {
+          "home": {
+            "id": 1,
+            "name": "Team A"
+          },
+          "away": {
+            "id": 2,
+            "name": "Team B"
+          }
+        },
+        "score": {
+          "fulltime": {
+            "home": null,
+            "away": null
+          }
+        }
+      }
+    ]
+  },
+  "receipt": {
+    "provider_host": "v3.football.api-sports.io",
+    "endpoint": "/fixtures",
+    "parameters": {
+      "date": "2030-01-01",
+      "timezone": "UTC"
+    },
+    "request_started_at": "2030-01-01T08:59:56.400000+00:00",
+    "received_at": "2030-01-01T09:00:00+00:00",
+    "payload_hash": "5b608a35e133cef818625ca993a0edc91c715e4b90733fce6d801ad662f9873c",
+    "http_status": 200,
+    "provider": "API_FOOTBALL_V3",
+    "sports_only": true
+  }
+}
