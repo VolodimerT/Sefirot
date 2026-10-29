@@ -4,7 +4,6 @@ No fitting, seal creation, source fetching, ledger writes or monetary admission.
 """
 from contextlib import closing
 from copy import deepcopy
-from datetime import date, timezone
 from hashlib import sha256
 from pathlib import Path
 import sqlite3
@@ -16,26 +15,12 @@ from sefirot.markets import DEFAULT_POOL, market_of
 from sefirot.odds_provider import quotes_from_event
 from sefirot.repository import Repository
 from sefirot.service import Service
-from sefirot.sports_archive import read_archive, export_sports, validate_packet
-from sefirot.football_query import validate_fixture_query
+from sefirot.sports_archive import read_archive, export_sports
 from sefirot.football_provider import fixture_identity
 from research.referee_yc_shadow import inspect_referee
+from research.day_calendar import calendar_day, day_window
 
 SMALL = ('CORNERS', 'SHOTS', 'FOULS', 'YELLOW_CARDS')
-
-
-def calendar_day(packet, day, at):
-    """Complete single provider date query, not a handpicked league/fixture list."""
-    date.fromisoformat(day)
-    validate_packet(packet, at)
-    params = packet['receipt']['parameters']
-    if params != {'date': day, 'timezone': 'UTC'} and params != {'date': day}:
-        raise ValueError('COMPLETE_UTC_DATE_QUERY_REQUIRED')
-    validate_fixture_query(packet['data'], params)
-    rows = packet['data']['response']
-    if any(time(r['fixture']['date']).astimezone(timezone.utc).date().isoformat() != day for r in rows):
-        raise ValueError('CALENDAR_DAY_MISMATCH')
-    return sorted(rows, key=lambda r: (time(r['fixture']['date']), r['fixture']['id']))
 
 
 def _empty(key, blockers):
@@ -101,7 +86,7 @@ def independent_candidates(fixtures):
     rows.sort(key=lambda v: (-v[1]['ev_low'], -v[1]['ev'], str(v[0]['fixture_id']), v[1]['market']))
     selected, teams, clusters = [], set(), set()
     for fixture, market in rows:
-        cluster = (fixture['league_id'], fixture['kickoff'][:10])
+        cluster = (fixture['league_id'], fixture.get('calendar_day', time(fixture['kickoff']).date().isoformat()))
         members = set(fixture['team_ids'])
         if members & teams or cluster in clusters:
             market['status'] = 'PASS'
@@ -154,7 +139,7 @@ def _sealed_markets(repo, fixture, at, price):
 
 
 def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, prices=None,
-             synthetic=False):
+             synthetic=False, timezone='UTC'):
     time(at)
     report = {'schema': 'daily-prematch-scanner-v0', 'day': day, 'as_of': at,
               'data_label': 'SYNTHETIC_TEST_ONLY' if synthetic else 'SAVED_OFFLINE_NOT_EXTERNALLY_ATTESTED',
@@ -167,12 +152,14 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
               'network_requests': 0, 'model_fits': 0, 'ledger_writes': 0,
               'monetary_permission': False, 'execution_enabled': False, 'stake': 0.0}
     try:
-        fixtures = calendar_day(calendar, day, at)
+        fixtures = calendar_day(calendar, day, at, timezone)
     except (ValueError, KeyError, TypeError, OSError) as exc:
         report['blockers'] = ['CALENDAR_INVALID', type(exc).__name__]
         report['report_hash'] = digest(report)
         return report
     report['calendar_status'] = 'STRUCTURALLY_COMPLETE_LOCAL_RECEIPT'
+    report['day_window'] = day_window(day, timezone)
+    report['calendar_scope'] = 'PROVIDER_AVAILABLE_LOCAL_DAY'
     report['fixture_counts']['calendar'] = len(fixtures)
     prematch = sum(f['fixture']['status']['short'] == 'NS' and time(at) < time(f['fixture']['date'])
                    for f in fixtures)
@@ -198,7 +185,7 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
         item = {'fixture_id': fid, 'league_id': fixture['league']['id'],
                 'team_ids': [fixture['teams'][s]['id'] for s in ('home', 'away')],
                 'home': fixture['teams']['home']['name'], 'away': fixture['teams']['away']['name'],
-                'kickoff': fixture['fixture']['date'], 'blockers': list(report['blockers']), 'markets': [], 'coverage': None}
+                'kickoff': fixture['fixture']['date'], 'calendar_day': day, 'calendar_timezone': timezone, 'blockers': list(report['blockers']), 'markets': [], 'coverage': None}
         if fixture['fixture']['status']['short'] != 'NS' or time(at) >= time(item['kickoff']):
             item['blockers'].append('PREMATCH_ONLY')
         elif report['archive_status'] == 'VERIFIED_LOCAL_STRUCTURE':
@@ -249,8 +236,9 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
             market['alternative_market'] = alternatives[0]['market'] if alternatives else None
             market['alternative_status'] = 'EXISTING_GATES_PASSED' if alternatives else 'NO_PROVEN_ALTERNATIVE'
         referee = inspect_referee()
-        item['small_markets'] = [{**_empty(k, ['SMALL_MODEL_UNVALIDATED']),
-                                 'referee_gate': referee if k in ('FOULS', 'YELLOW_CARDS') else {'status': 'NOT_APPLICABLE', 'reason': 'DIRECT_COUNT_MODEL_REQUIRED'}} for k in SMALL]
+        item['small_markets'] = [{**_empty(k, ['SMALL_MODEL_UNVALIDATED'] +
+            (['DIRECT_COMMITTED_SUFFERED_COUNTS_REQUIRED'] if k == 'FOULS' else [])),
+                                 'referee_gate': referee if k == 'YELLOW_CARDS' else {'status': 'NOT_APPLICABLE', 'reason': 'DIRECT_COUNT_MODEL_REQUIRED'}} for k in SMALL]
         report['fixtures'].append(item)
     report['fixture_counts']['reported'] = len(report['fixtures'])
     report['candidates'] = independent_candidates(report['fixtures']) if not synthetic else []

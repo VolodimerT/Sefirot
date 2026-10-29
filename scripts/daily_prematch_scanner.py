@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--calendar', required=True)
     parser.add_argument('--archive', required=True)
     parser.add_argument('--day', required=True, help='UTC date')
+    parser.add_argument('--timezone', choices=['UTC', 'Europe/Kyiv'], default='UTC')
     parser.add_argument('--at', required=True, help='Frozen as-of timestamp')
     parser.add_argument('--profile', required=True, choices=['MEN', 'WOMEN', 'RESERVE', 'LOWER'])
     parser.add_argument('--database', help='Existing ledger, opened read-only')
@@ -24,7 +25,7 @@ def main():
     calendar = strict_json_payload(Path(args.calendar).read_bytes())
     prices = strict_json_payload(Path(args.prices).read_bytes()) if args.prices else None
     result = scan_day(calendar=calendar, archive=args.archive, day=args.day, at=args.at,
-                      profile=args.profile, database=args.database, prices=prices, synthetic=args.synthetic)
+                      profile=args.profile, database=args.database, prices=prices, synthetic=args.synthetic, timezone=args.timezone)
     print(render_report(result) if args.markdown else json.dumps(result, ensure_ascii=False, indent=2), end='\n')
     return 0
 
