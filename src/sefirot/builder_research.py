@@ -114,7 +114,7 @@ def create_builder_grid(grid, prediction, policy, at):
                      'history_sensitivity': sensitivities, 'sensitivity_probability_min': floor,
                      'sensitivity_break_even_odds_raw': 1 / floor if floor else None,
                      'confidence_interval': False, 'builder_odds': None, 'builder_ev': None,
-                     'class': 'D', 'stake': 0., 'monetary_permission': False})
+                     'class': 'C', 'stake': 0., 'monetary_permission': False})
     output = {'schema': SCHEMA, 'prediction_id': prediction['id'], 'sealed_at': at,
               'match': grid['match'], 'grid': grid, 'grid_hash': grid['hash'],
               'passport': history['passport'], 'universe_hash': digest(builder_universe()),
@@ -126,7 +126,7 @@ def create_builder_grid(grid, prediction, policy, at):
               'unmodelled_death_tests': ['FIRST_GOAL_PATH', 'LEVEL_AT_60', 'TEMPO', 'ATTACKER_ABSENCE', 'REFEREE_VARIANCE'],
               'unsupported_joint_dimensions': ['SHOTS', 'CORNERS', 'FOULS', 'CARDS'],
               'calibration_applied': False, 'joint_calibration_status': 'UNVALIDATED',
-              'quotes_read': False, 'class': 'D', 'stake': 0., 'monetary_permission': False,
+              'quotes_read': False, 'class': 'C', 'stake': 0., 'monetary_permission': False,
               'execution_enabled': False, 'holdout_eligible': False,
               'limitations': ['Dependence follows the raw goal model; it is not empirical joint calibration.',
                               'Terminal scores are not a first-goal or minute-by-minute scenario model.',
@@ -159,6 +159,6 @@ def compare_builder_singles(report, prediction, quotes, policy, at, receipt=None
               'best_single_diagnostic': best, 'priced_single_count': singles['priced_count'],
               'status': 'MISSING_API_BUILDER_QUOTE', 'candidates': report['candidates'],
               'builder_beats_best_single': None, 'joint_calibration_status': 'UNVALIDATED',
-              'class': 'D', 'stake': 0., 'monetary_permission': False, 'execution_enabled': False}
+              'class': 'C', 'stake': 0., 'monetary_permission': False, 'execution_enabled': False}
     output['hash'] = digest(output)
     return output

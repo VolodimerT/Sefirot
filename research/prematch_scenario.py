@@ -119,7 +119,7 @@ def run_scenario(*, fixture_directory=FIXTURES, work_directory=None):
         if [r["status"] for r in completed] != ["ALREADY_PROCESSED", "DONE"]:
             raise ValueError("SCENARIO_DECISION_FAILED")
         decision = repo.get("jobs", decision_job["id"])["result"]
-        if decision["decision"] != "PASS" or decision["class"] != "D" or repo.all("bets"):
+        if decision["decision"] != "PASS" or decision["class"] != "C" or repo.all("bets"):
             raise ValueError("SYNTHETIC_PASS_INVARIANT_FAILED")
         audit_before = repo.db.execute("SELECT count(*) FROM audit_logs").fetchone()[0]
         duplicate = process_inbox(service, inbox)

@@ -34,7 +34,7 @@ class CoherenceAdmissionTests(unittest.TestCase):
         self.assertIn('CALIBRATION_COHERENCE_CONFLICT',[i['code'] for i in result['issues']])
         self.assertEqual(digest(p['candidates']),before)
         self.assertTrue(all(not c['eligible'] for c in result['candidates']))
-        self.assertEqual(result['class'],'D')
+        self.assertEqual(result['class'],'RED')
 
     def test_stress_incompatibility_blocks_even_with_consistent_base(self):
         p,case,quotes,context=self.conflicting(stress_only=True)
