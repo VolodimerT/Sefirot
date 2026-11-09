@@ -5,6 +5,7 @@ wins/losses. Keep these calculations outside CORE/Policy until independent
 calibration and settlement-rule evidence exist.
 """
 from math import fsum, isfinite
+from .markets import Market, settle
 
 
 def _number(value, name):
@@ -94,8 +95,23 @@ def simulate_express(legs, hypothetical_stake, max_hypothetical_exposure):
         raise ValueError("correlated same-fixture legs require a joint builder contract")
     gross = 1.
     for leg in legs:
-        gross *= quarter_payoff(leg["kind"], leg["side"], leg["line"],
-                                leg["home"], leg["away"], leg["odds"])["gross_return_per_unit"]
+        kind, side, line = leg["kind"], leg["side"], leg.get("line")
+        odds = _number(leg["odds"], "odds")
+        if odds <= 1 or odds > 10000:
+            raise ValueError("invalid odds")
+        if kind in ("HANDICAP", "TOTAL", "TEAM_TOTAL") and line is not None:
+            line = _number(line, "line")
+            units = round(line * 4)
+            is_quarter = abs(line * 4 - units) <= 1e-9 and units % 2 == 1
+        else:
+            is_quarter = False
+        if is_quarter:
+            leg_return = quarter_payoff(kind, side, line, leg["home"],
+                                        leg["away"], odds)["gross_return_per_unit"]
+        else:
+            outcome = settle(Market(kind, side, line), leg["home"], leg["away"])
+            leg_return = odds if outcome == "WIN" else 1. if outcome == "PUSH" else 0.
+        gross *= leg_return
     return {"hypothetical_stake": stake, "hypothetical_exposure_cap": limit,
             "gross_return": stake * gross, "net_result": stake * (gross - 1),
             "decision": "PASS", "stake": 0., "monetary_permission": False,
