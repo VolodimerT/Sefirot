@@ -44,6 +44,7 @@ class SmallMarketTests(unittest.TestCase):
         self.assertAlmostEqual(out['shrunk_recent_mean'], 10+90*3/13)
         self.assertEqual(out['status'], 'DESCRIPTIVE_RESEARCH_ONLY')
         self.assertIsNone(out['probability']); self.assertIsNone(out['ev'])
+        self.assertEqual(out['class'], 'C')
         self.assertEqual(out['stake'], 0.)
         self.assertIn('SMALL_MARKET_MODEL_UNVALIDATED', out['blockers'])
 

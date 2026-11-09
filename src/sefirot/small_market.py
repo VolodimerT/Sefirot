@@ -158,7 +158,7 @@ def review_small_market(dataset, at):
               'opponent_allowed_baseline': opponent_allowed,
               'observations': observations, 'blockers': sorted(blockers),
               'status': 'INSUFFICIENT_BASELINE' if len(long) < METHOD['long_games_min'] else 'DESCRIPTIVE_RESEARCH_ONLY',
-              'probability': None, 'ev': None, 'class': 'D', 'stake': 0.,
+              'probability': None, 'ev': None, 'class': 'C', 'stake': 0.,
               'monetary_permission': False, 'execution_enabled': False, 'holdout_eligible': False,
               'limitations': ['No learned count distribution, line probability, joint goal/statistic model or admission.',
                               'Allowed counts describe what other teams recorded against the next opponent, without opponent strength adjustment.',

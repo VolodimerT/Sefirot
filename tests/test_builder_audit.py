@@ -78,6 +78,7 @@ class JointBuilderTests(unittest.TestCase):
             self.assertEqual(len(row['history_sensitivity']), 3)
             self.assertEqual(row['stake'], 0.)
             self.assertIsNone(row['builder_ev'])
+            self.assertEqual(row['class'], 'C')
         self.assertEqual(p, before)
         self.assertEqual(self.repo.all('decisions'), [])
         self.assertTrue(self.repo.verify())
@@ -96,6 +97,7 @@ class JointBuilderTests(unittest.TestCase):
         self.assertEqual(out['priced_single_count'], 1)
         self.assertEqual(out['best_single_diagnostic']['market'], OVER)
         self.assertIsNone(out['builder_beats_best_single'])
+        self.assertEqual(out['class'], 'C')
         self.assertEqual(out['status'], 'MISSING_API_BUILDER_QUOTE')
         self.assertTrue(all(row['builder_odds'] is None for row in out['candidates']))
 

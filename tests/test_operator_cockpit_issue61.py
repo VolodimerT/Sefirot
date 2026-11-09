@@ -90,7 +90,7 @@ class PhoneOperatorTests(unittest.TestCase):
         self.assertEqual(db.read_bytes(),before)
         record=out["verified_market_views"][0]
         self.assertEqual(record["core_decision"],"PASS")
-        self.assertEqual(record["core_class"],"D")
+        self.assertEqual(record["core_class"],"C")
         self.assertFalse(record["fresh_quote_attested"])
         self.assertEqual(record["source"],"ORIGINAL_VERIFIED_DECISION_CARD")
         self.assertIsNotNone(record["markets"][0]["model_probability"])

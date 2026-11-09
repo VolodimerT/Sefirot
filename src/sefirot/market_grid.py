@@ -9,6 +9,35 @@ from .probability import estimate, calibrate, ev_bounds
 SCHEMA = 'main-market-grid-v1'
 
 
+def _facts_first(prediction):
+    """Present only sealed sports evidence; no market price enters this stage."""
+    sports = prediction['sports']
+    sources = {row['id']: row for row in sports['sources']}
+    facts = []
+    for key, row in sorted(prediction['witness']['resolved'].items()):
+        source = sources[row['source_id']]
+        facts.append({'id': row['id'], 'key': key, 'value': row['value'],
+                      'kind': 'FACT', 'source_id': row['source_id'],
+                      'source_group': source['independence_group'],
+                      'source_reliability_asserted': source['reliability'],
+                      'observed_at': row['observed_at'],
+                      'published_at': row['published_at'],
+                      'received_at': row['received_at']})
+    return {'scenario': prediction['scenario']['type'],
+            'facts': facts,
+            'model_team_games': list(prediction['model']['team_games']),
+            'history_rows_supplied': len(sports['history']),
+            'source_issues': [issue['code'] for issue in prediction['issues']],
+            'missing_metrics': ['XG_XGA_NOT_IN_CORE_SPORTS_CONTRACT',
+                                'PLAYER_ROLES_NOT_VERIFIED',
+                                'REST_AND_SCHEDULE_NOT_VERIFIED'],
+            'fact_direction_for_market': 'NOT_INFERRED_FROM_FACT_LIST',
+            'source_independence_from_bookmaker_lines': 'NOT_ATTESTED',
+            'price_inputs_read': False}
+
+
+
+
 def universe():
     """Fifty fixed regulation-time contracts, independent of prices/results."""
     rows = [{'kind': '1X2', 'side': side} for side in ('HOME', 'DRAW', 'AWAY')]
@@ -35,6 +64,7 @@ def create_grid(prediction, policy, at):
     if digest(original['candidates']) != digest(prediction['candidates']) or digest(original['model']) != digest(prediction['model']):
         raise ValueError('sealed sporting output does not reproduce')
     mass, variants, model = estimate(prediction['sports'], policy, prediction['goal_model'])
+    sports_facts = _facts_first(prediction)
     rows = []
     for contract in universe():
         market = market_of(contract); raw = probabilities(market, mass)
@@ -49,16 +79,23 @@ def create_grid(prediction, policy, at):
                      'calibration_high': calibration['high'],
                      'stress_probabilities': [list(p) for p in stresses],
                      'selection_issues': selection_issues,
+                     'sports_scenario': {
+                         'fact_ids': [fact['id'] for fact in sports_facts['facts']],
+                         'model_raw_outcomes': list(raw),
+                         'market_support_from_facts': 'NOT_VERIFIED',
+                         'market_contradictions': [issue['code'] for issue in selection_issues],
+                         'missing': sports_facts['missing_metrics']},
                      'selection_status': 'BLOCKED_BY_SCENARIO' if selection_issues else 'NO_EXPLICIT_CONFLICT',
                      'death_test': {'loss_probability_raw': raw[2],
                          'top_score_losses': [s for s in model['score_scenarios']
                                               if settle(market, s['home'], s['away']) == 'LOSS']},
+                     'class': 'C', 'class_reason': 'PRICE_NOT_READ_AND_MODEL_UNVALIDATED',
                      'verdict': 'RESEARCH_ONLY', 'stake': 0.})
     grid = {'schema': SCHEMA, 'prediction_id': prediction['id'], 'match': prediction['sports']['match'],
             'sealed_at': at, 'source_sealed_at': prediction['sealed_at'],
             'code_hash': prediction['code_hash'], 'model_hash': prediction['model_hash'],
             'policy_hash': prediction['policy_hash'], 'universe_hash': digest(universe()),
-            'candidates': rows, 'source_issues': prediction['issues'],
+            'candidates': rows, 'sports_facts': sports_facts, 'source_issues': prediction['issues'],
             'selection_constraints': original['scenario']['selection_constraints'],
             'synthetic': prediction['synthetic'], 'quotes_read': False,
             'monetary_permission': False, 'execution_enabled': False,
@@ -112,10 +149,24 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
                            'calibration_ev_low': low, 'calibration_ev_high': high,
                            'raw_stress_ev_min': min(payoff_ev(*p[:2], odds) for p in candidate['stress_probabilities']),
                            'market_reference': market_reference(eligible_quotes, quote, *base[:2]),
+                           'reference_interpretation': 'BENCHMARK_NOT_TRUE_PROBABILITY',
+                           'validated_probability': None, 'validated_ev': None,
+                           'ev_reliability': 'RAW_OR_BIN_DIAGNOSTIC_NOT_HOLDOUT_VERIFIED',
                            'tactical_fit': 'SOURCE_SEAL_ONLY; no added sporting facts',
                            'public_trap': 'UNASSESSED; no public positioning data'})
+        critical_source = any(issue['code'] in ('FIXTURE_IDENTITY_CONFLICT',
+            'UNRESOLVED_CONFLICT', 'LIVE_FORBIDDEN', 'UNSUPPORTED_FORMAT',
+            'CALIBRATION_COHERENCE_CONFLICT') for issue in grid['source_issues'])
+        conflict = critical_source or any(issue['code'] == 'SCENARIO_MARKET_CONFLICT'
+                       for issue in candidate['selection_issues'])
+        reason = ('CRITICAL_SOURCE_CONFLICT' if critical_source else
+                  'SCENARIO_MARKET_CONFLICT' if conflict else
+                  'PRICE_MISSING_OR_STALE' if not prices else
+                  'SELECTION_AND_HOLDOUT_UNVALIDATED')
         rows.append({**candidate, 'prices': prices, 'price_status': 'PRICED' if prices else 'MISSING_OR_STALE',
-                     'class': 'D', 'verdict': 'RESEARCH_ONLY', 'monetary_permission': False})
+                     'class': 'RED' if conflict else 'C', 'class_reason': reason,
+                     'decision': 'PASS', 'bet_eligible': False,
+                     'verdict': 'RESEARCH_ONLY', 'monetary_permission': False})
     return {'schema': 'main-market-comparison-v1', 'grid_hash': grid['hash'],
             'prediction_id': prediction['id'], 'at': at, 'candidates': rows,
             'candidate_count': len(rows), 'priced_count': sum(bool(row['prices']) for row in rows),
