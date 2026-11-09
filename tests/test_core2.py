@@ -200,6 +200,8 @@ class RiskAndGovernanceTests(unittest.TestCase):
         self.assertEqual(competence(self.records(60,.01),Policy(),severe=2)['state'],'FROZEN')
     def test_paired_comparison_same_cases(self):
         old=self.records(60,.1);new=self.records(60,.3)
+        for rows in (old,new):
+            for i,row in enumerate(rows):row['kickoff']=(NOW+timedelta(days=i)).isoformat()
         self.assertEqual(compare_versions(old,new,Policy())['recommendation'],'ROLLBACK')
         new[0]['outcome']='LOSS'
         with self.assertRaises(ValueError):compare_versions(old,new,Policy())
