@@ -274,7 +274,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         and bool(evaluations)
         and all(c.get('ev') is not None and c['ev'] <= 0
                 and c['calibration'] == 'CALIBRATED_BIN'
-                and context['releases'].get(c['key'], {}).get('passed') is True
+                and (context['releases'].get(c['key']) or {}).get('passed') is True
                 and all(i['code'] in ('ROBUST_EV_INSUFFICIENT', 'DEATH_TEST_PRICE_FRAGILITY')
                         for i in c['issues'])
                 for c in evaluations))
