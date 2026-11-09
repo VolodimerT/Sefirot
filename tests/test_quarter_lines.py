@@ -32,7 +32,7 @@ class FactsFirstMathTests(unittest.TestCase):
         self.assertEqual(two["outcomes"], ["WIN", "WIN"])
         self.assertAlmostEqual(two["net_per_unit"], .85)
         under = quarter_payoff("TEAM_TOTAL", "HOME_UNDER", 1.25, 1, 0, 1.85)
-        self.assertEqual(under["outcomes"], ["WIN", "PUSH"])
+        self.assertEqual(under["outcomes"], ["PUSH", "WIN"])
         self.assertAlmostEqual(under["net_per_unit"], .425)
         self.assertFalse(one["monetary_permission"])
 

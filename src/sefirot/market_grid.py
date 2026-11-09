@@ -154,9 +154,13 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
                            'ev_reliability': 'RAW_OR_BIN_DIAGNOSTIC_NOT_HOLDOUT_VERIFIED',
                            'tactical_fit': 'SOURCE_SEAL_ONLY; no added sporting facts',
                            'public_trap': 'UNASSESSED; no public positioning data'})
-        conflict = any(issue['code'] == 'SCENARIO_MARKET_CONFLICT'
+        critical_source = any(issue['code'] in ('FIXTURE_IDENTITY_CONFLICT',
+            'UNRESOLVED_CONFLICT', 'LIVE_FORBIDDEN', 'UNSUPPORTED_FORMAT',
+            'CALIBRATION_COHERENCE_CONFLICT') for issue in grid['source_issues'])
+        conflict = critical_source or any(issue['code'] == 'SCENARIO_MARKET_CONFLICT'
                        for issue in candidate['selection_issues'])
-        reason = ('SCENARIO_MARKET_CONFLICT' if conflict else
+        reason = ('CRITICAL_SOURCE_CONFLICT' if critical_source else
+                  'SCENARIO_MARKET_CONFLICT' if conflict else
                   'PRICE_MISSING_OR_STALE' if not prices else
                   'SELECTION_AND_HOLDOUT_UNVALIDATED')
         rows.append({**candidate, 'prices': prices, 'price_status': 'PRICED' if prices else 'MISSING_OR_STALE',

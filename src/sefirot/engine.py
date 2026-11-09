@@ -266,7 +266,7 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         risk.update(stress_class=selected['stress_grade']['class'],stress_stake_multiplier=selected['stake_multiplier'],probability_bound_basis=selected['probability_bound_basis'])
         if risk['stake']==0:issues.append(finding('arbiter','RISK_LIMIT'));blocked=True
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
-    verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
+    verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN','CALIBRATION_COHERENCE_CONFLICT') for i in issues) else 'skip'
     # D means a genuinely evaluated bad price, not an empty quote or missing
     # model evidence. A/B remain governed by the unchanged BET admission path.
     no_edge_proven = (not prediction['synthetic'] and prediction['mode'] == 'NORMAL'

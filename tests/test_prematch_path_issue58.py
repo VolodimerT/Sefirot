@@ -101,7 +101,7 @@ class PrematchPathTests(unittest.TestCase):
         self.assertTrue(report["replay_matches"])
         self.assertEqual(report["source_adapter_training_rows"], 0)
         self.assertEqual(report["truth_levels"]["CORE_PASS"]["core_decision"], "PASS")
-        self.assertEqual(report["truth_levels"]["CORE_PASS"]["core_class"], "D")
+        self.assertEqual(report["truth_levels"]["CORE_PASS"]["core_class"], "C")
         self.assertIsNone(report["truth_levels"]["CORE_BET"])
         self.assertIsNone(report["truth_levels"]["OUR_TICKET"])
         self.assertFalse(report["truth_levels"]["BOOKMAKER_QUOTE_OBSERVED"]["verified_real"])

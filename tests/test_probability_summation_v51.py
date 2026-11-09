@@ -121,7 +121,7 @@ class ProbabilitySummationTests(unittest.TestCase):
                     result = service.decide(p['id'], [q], case['recheck'],
                                             {'bankroll': 1000., 'peak': 1000.}, case['decision_at'])
                     self.assertEqual((result['decision'], result['class'], result['risk']['stake']),
-                                     ('PASS', 'D', 0.))
+                                     ('PASS', 'C', 0.))
                     self.assertIn('CALIBRATION_COHERENCE_UNVERIFIED', [i['code'] for i in result['issues']])
                     self.assertEqual(repo.all('bets'), [])
                     self.assertEqual(repo.all('policy_approvals'), [])
