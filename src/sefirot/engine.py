@@ -267,10 +267,28 @@ def decide(prediction,quotes,recheck_data,at,context,portfolio,policy):
         if risk['stake']==0:issues.append(finding('arbiter','RISK_LIMIT'));blocked=True
     final='BET' if selected and not blocked and risk['stake']>0 else 'PASS'
     verdict='playable with conditions' if final=='BET' and conditional else 'playable' if final=='BET' else 'unplayable' if any(i['code'] in ('UNRESOLVED_CONFLICT','JOURNAL_INTEGRITY','LIVE_FORBIDDEN') for i in issues) else 'skip'
-    grade='B' if final=='BET' and conditional else 'A' if final=='BET' and selected['competence']['trust']=='HIGH' else 'B' if final=='BET' else 'RED' if verdict=='unplayable' else 'C' if selected else 'D'
+    # D means a genuinely evaluated bad price, not an empty quote or missing
+    # model evidence. A/B remain governed by the unchanged BET admission path.
+    no_edge_proven = (not prediction['synthetic'] and prediction['mode'] == 'NORMAL'
+        and all(i['code'] == 'NO_ADMISSIBLE_MAIN_MARKET' for i in issues)
+        and bool(evaluations)
+        and all(c.get('ev') is not None and c['ev'] <= 0
+                and c['calibration'] == 'CALIBRATED_BIN'
+                and context['releases'].get(c['key'], {}).get('passed') is True
+                and all(i['code'] in ('ROBUST_EV_INSUFFICIENT', 'DEATH_TEST_PRICE_FRAGILITY')
+                        for i in c['issues'])
+                for c in evaluations))
+    grade = ('B' if final == 'BET' and conditional else
+             'A' if final == 'BET' and selected['competence']['trust'] == 'HIGH' else
+             'B' if final == 'BET' else 'RED' if verdict == 'unplayable' else
+             'D' if no_edge_proven else 'C')
+    class_basis = ('MONETARY_ADMISSION' if final == 'BET' else
+                   'CRITICAL_CONFLICT' if grade == 'RED' else
+                   'VALIDATED_NO_EDGE' if grade == 'D' else
+                   'DATA_OR_VALIDATION_INSUFFICIENT')
     unknown=bool(thesis_reviews) or any(i['code'] in ('UNKNOWN_CONTEXT','COMPETITION_PROFILE_UNKNOWN','MODEL_MATCHUP_CONFLICT','MATCHUP_SUPPORT_INSUFFICIENT','SCENARIO_CONSTRAINT_UNVERIFIED','SPORTS_CHANGED_RECALCULATE') for i in issues) or any(i['code'] in ('MODEL_MARKET_DIVERGENCE','DIVERGENCE_NEEDS_CORROBORATION','UNEXPLAINED_LINE_MOVEMENT') for c in evaluations for i in c['issues'])
     out={'coherence':coherence,'version':VERSION,'prediction_id':prediction['id'],'match_id':match['id'],'at':at,'mode':'UNKNOWN' if unknown else prediction['mode'],
-            'decision':final,'verdict':verdict,'class':grade,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
+            'decision':final,'verdict':verdict,'class':grade,'class_basis':class_basis,'confidence':'INSUFFICIENT' if blocked else 'MEDIUM' if conditional or selected['competence']['trust']!='HIGH' else 'HIGH',
             'selected_market':selected['key'] if final=='BET' else None,
             'screened_market':selected['key'] if selected else None,'candidates':evaluations,'issues':issues,'thesis_reviews':thesis_reviews,
             'conditions':[i for i in issues+(selected['issues'] if selected else []) if i['severity']=='WARN'],'risk':risk,'execution_enabled':False,

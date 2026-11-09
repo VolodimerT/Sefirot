@@ -90,9 +90,13 @@ class FinalDecisionTests(unittest.TestCase):
     def test_no_edge_and_no_data_are_different_reasons_for_pass(self):
         p,case,quotes,context=controlled(win=.48,odds=2.)
         out=decision(p,case,quotes,context);self.assertEqual(out['decision_card']['status'],'NO_EDGE')
+        self.assertEqual(out['class'], 'D')
+        self.assertEqual(out['class_basis'], 'VALIDATED_NO_EDGE')
         self.assertIsNone(out['decision_card']['research_candidate'])
         p['candidates'][0]['calibration']='UNCALIBRATED'
         out=decision(p,case,quotes,context);self.assertEqual(out['decision_card']['status'],'NOT_EVALUABLE')
+        self.assertEqual(out['class'], 'C')
+        self.assertEqual(out['class_basis'], 'DATA_OR_VALIDATION_INSUFFICIENT')
 
     def test_missing_price_does_not_hide_missing_model_validation(self):
         p,case,quotes,context=controlled();p['candidates'][0]['calibration']='UNCALIBRATED'
@@ -100,6 +104,7 @@ class FinalDecisionTests(unittest.TestCase):
         self.assertIn('CALIBRATION_INSUFFICIENT',out['limiting_factors'])
         self.assertIn('MISSING_CURRENT_PRICE',out['limiting_factors'])
         self.assertEqual(out['decision_card']['status'],'NOT_EVALUABLE')
+        self.assertEqual(out['class'], 'C')
 
     def test_global_veto_is_attached_to_each_candidate(self):
         p,case,quotes,context=controlled();context['policy_approved']=False
