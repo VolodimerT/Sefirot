@@ -173,6 +173,10 @@ class FrozenGridTests(unittest.TestCase):
         self.assertEqual(len(universe()), 50)
         self.assertEqual(len({c['key'] for c in self.grid['candidates']}), 50)
         self.assertFalse(self.grid['monetary_permission'])
+        self.assertFalse(self.grid['sports_facts']['price_inputs_read'])
+        self.assertEqual(self.grid['sports_facts']['model_team_games'], list(self.prediction['model']['team_games']))
+        self.assertTrue(all(f['kind'] == 'FACT' and f['source_id'] and f['observed_at']
+                            for f in self.grid['sports_facts']['facts']))
         by_key = {c['key']: c for c in self.grid['candidates']}
         for c in self.prediction['candidates']:
             self.assertEqual(by_key[c['key']]['raw'], c['raw'])
@@ -218,6 +222,14 @@ class FrozenGridTests(unittest.TestCase):
         self.assertGreater(br['prices'][0]['ev_base'],ar['prices'][0]['ev_base'])
         self.assertAlmostEqual(ar['prices'][0]['ev_raw'], 2*ar['raw'][0]-1)
         self.assertFalse(a['monetary_permission']);self.assertEqual(ar['stake'],0.)
+        self.assertEqual(ar['class'], 'C')
+        self.assertEqual(ar['class_reason'], 'SELECTION_AND_HOLDOUT_UNVALIDATED')
+        self.assertIsNone(ar['prices'][0]['validated_probability'])
+        self.assertIsNone(ar['prices'][0]['validated_ev'])
+        self.assertEqual(ar['prices'][0]['reference_interpretation'],
+                         'BENCHMARK_NOT_TRUE_PROBABILITY')
+        self.assertEqual(ar['sports_scenario'], br['sports_scenario'])
+        self.assertFalse(ar['bet_eligible'])
         self.assertEqual(a['priced_count'],2);self.assertEqual(a['candidate_count'],50)
 
     def test_price_received_before_grid_rejected_and_stale_retained_as_missing(self):

@@ -161,7 +161,7 @@ def build_card(decision,prediction,policy):
             'passport':passport(prediction),'action_plan':tasks,
             'stage':'FINAL' if decision['decision']=='BET' else 'PREVIEW' if status in ('RECALCULATE','NOT_EVALUABLE') else 'READY',
             'verdict':decision['verdict'],'verdict_ru':VERDICTS[decision['verdict']],
-            'class':decision['class'],'status':status,'at':decision['at'],
+            'class':decision['class'],'class_basis':decision.get('class_basis'),'status':status,'at':decision['at'],
             'match':prediction['sports']['match'],
             'selected_market':decision['selected_market'] if decision['decision']=='BET' else None,
             'screened_market':screened,
