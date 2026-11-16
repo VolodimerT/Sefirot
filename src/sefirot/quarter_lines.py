@@ -116,3 +116,79 @@ def simulate_express(legs, hypothetical_stake, max_hypothetical_exposure):
             "gross_return": stake * gross, "net_result": stake * (gross - 1),
             "decision": "PASS", "stake": 0., "monetary_permission": False,
             "execution_enabled": False}
+
+
+def review_independent_express(legs, policy, at):
+    """Review two/three sealed, distinct-fixture main legs without placing bets.
+
+    A product of marginal score-model returns is an *assumption diagnostic*;
+    different fixture IDs alone do not establish stochastic independence.
+    Quote receipts prove local content binding, not bookmaker acceptance of a
+    combined ticket or its actual settlement rules.
+    """
+    from .contracts import time
+    from .market_grid import compare_grid
+
+    if not isinstance(legs, list) or len(legs) not in (2, 3):
+        raise ValueError('two or three predeclared legs required')
+    rows = []; fixture_ids = set(); bookmakers = set(); teams = set(); risk = set()
+    for leg in legs:
+        if not isinstance(leg, dict) or set(leg) != {
+                'grid', 'prediction', 'quotes', 'receipt', 'market_key', 'line_id'}:
+            raise ValueError('sealed research leg contract required')
+        grid = leg['grid']; match = grid['match']; fid = match['id']
+        if fid in fixture_ids:
+            raise ValueError('same-fixture legs require the joint builder model')
+        fixture_ids.add(fid)
+        comparison = compare_grid(grid, leg['prediction'], leg['quotes'], policy, at, leg['receipt'])
+        matching = [row for row in comparison['candidates'] if row['key'] == leg['market_key']]
+        if len(matching) != 1 or matching[0]['class'] == 'RED':
+            raise ValueError('unavailable or conflicting prematch leg')
+        candidate = matching[0]
+        prices = [p for p in candidate['prices'] if p['line_id'] == leg['line_id']]
+        if len(prices) != 1 or not isinstance(leg['line_id'], str) or not leg['line_id']:
+            raise ValueError('one fresh receipt-bound line required for each leg')
+        price = prices[0]; odds = price['odds']
+        win, push, loss = candidate['raw']
+        if abs(fsum((win, push, loss)) - 1) > 1e-8:
+            raise ValueError('invalid sealed outcome mass')
+        bookmakers.add(price['bookmaker'])
+        new_teams = {match['home'], match['away']}
+        if teams & new_teams: risk.add('SHARED_TEAM_ACROSS_FIXTURES')
+        teams.update(new_teams)
+        rows.append({'fixture_id': fid, 'league': match['league'],
+                     'kickoff': match['kickoff'], 'market_key': candidate['key'],
+                     'bookmaker': price['bookmaker'], 'line_id': price['line_id'],
+                     'odds': odds, 'raw_win': win, 'raw_push': push,
+                     'raw_loss': loss, 'sport_quality': candidate['sport_quality']['status'],
+                     'bet_value': candidate['bet_value']['status'],
+                     'raw_expected_gross': win * odds + push,
+                     'raw_single_ev': win * odds + push - 1,
+                     'synthetic': grid['synthetic']})
+    if len(bookmakers) != 1: risk.add('CROSS_BOOKMAKER_PRICES')
+    if len({r['league'] for r in rows}) == 1: risk.add('SHARED_LEAGUE_FACTORS_UNQUANTIFIED')
+    if len({time(r['kickoff']).date() for r in rows}) == 1: risk.add('SHARED_MATCH_DAY_FACTORS_UNQUANTIFIED')
+    if any(r['synthetic'] for r in rows): risk.add('SYNTHETIC_SOURCE')
+    # PUSH returns one unit on that leg. A half-win/loss needs the separate
+    # quarter-line contract and a verified bookmaker repricing rule.
+    raw_gross = 1.; full_win_odds = 1.; full_win_probability = 1.
+    for row in rows:
+        raw_gross *= row['raw_expected_gross']
+        full_win_odds *= row['odds']
+        full_win_probability *= row['raw_win']
+    best = max(rows, key=lambda r: (r['raw_single_ev'], r['fixture_id'], r['market_key']))
+    return {'schema': 'independent-express-research-v1', 'at': at, 'legs': rows,
+            'mode': 'INDEPENDENT_EXPRESS', 'sport_quality': 'UNVERIFIED',
+            'bet_value': 'UNVERIFIED', 'independence': 'ASSUMED_NOT_ESTABLISHED',
+            'correlation_risks': sorted(risk),
+            'raw_full_win_probability_if_independent': full_win_probability,
+            'raw_expected_gross_if_independent': raw_gross,
+            'raw_ev_if_independent': raw_gross - 1,
+            'quoted_full_win_odds_product_diagnostic': full_win_odds,
+            'actual_combined_bookmaker_price': None,
+            'best_single_raw_diagnostic': {'fixture_id': best['fixture_id'],
+                'market_key': best['market_key'], 'raw_ev': best['raw_single_ev']},
+            'validated_probability': None, 'validated_ev': None,
+            'death_test': 'JOINT_STRESS_AND_CORRELATION_UNVALIDATED',
+            'class': 'C', 'decision': 'PASS', 'stake': 0.,
+            'monetary_permission': False, 'execution_enabled': False}
