@@ -11,6 +11,12 @@ adapter now records each valid quarter-line outcome as
 Malformed prices, times, teams, duplicates and incomplete lines still fail
 closed. Quarter prices are **not** promoted into the CORE quote contract.
 
+Exact-head CI also exposed an independent runner break: `ubuntu-latest` moved
+to Ubuntu 26.04, while the public `actions/python-versions` manifest lists
+Python 3.14.3 only for Ubuntu 22.04 and 24.04. The `tests` workflow now pins
+Ubuntu 24.04 across Python and isolated PostgreSQL jobs. Python 3.14.3 remains
+required; this does not skip or relax a test.
+
 The main grid's read-only comparison now exposes separate `sport_quality` and
 `bet_value` axes. It never derives a sport score from price or treats raw model
 EV as verified value. Its `C/PASS/stake=0` admission remains unchanged.
