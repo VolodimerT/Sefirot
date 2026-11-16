@@ -278,6 +278,9 @@ class FrozenGridTests(unittest.TestCase):
         self.assertEqual(view['source_status'], 'SYNTHETIC')
         self.assertEqual(len(view['markets']), 50)
         self.assertEqual(view['priced_markets'], 2)
+        self.assertEqual(view['markets'][0]['model_review']['holdout_status'],
+                         'NOT_ATTESTED_IN_EXPANDED_GRID')
+        self.assertIsNone(view['markets'][0]['model_review']['validated_probability'])
         self.assertTrue(all(r['admission']['verdict'] == 'PASS' and
                             r['admission']['stake'] == 0 for r in view['markets']))
         self.assertEqual(self.repo.all('decisions'), [])
