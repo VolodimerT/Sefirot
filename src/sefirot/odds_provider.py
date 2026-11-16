@@ -23,6 +23,14 @@ FAMILY_KEYS = {'1X2': 'h2h', 'DNB': 'draw_no_bet', 'HANDICAP': 'spreads',
                'TOTAL': 'totals', 'BTTS': 'btts', 'TEAM_TOTAL': 'team_totals'}
 
 
+class UnsupportedQuarterLine(ValueError):
+    """A valid provider line that the sealed CORE cannot settle or price."""
+
+    def __init__(self, contract):
+        self.contract = contract
+        super().__init__('quarter line is research-only')
+
+
 def request_markets(keys):
     if not isinstance(keys, (list, tuple)) or not keys or len(keys) > len(MARKET_KEYS):
         raise ValueError('bounded main-market request required')
@@ -234,8 +242,15 @@ def _outcome_contract(key, outcome, match):
                 contract = {'kind': 'TEAM_TOTAL', 'side': teams[team] + '_' + name.upper(), 'line': point}
             else:
                 contract = {'kind': 'TOTAL', 'side': name.upper(), 'line': point}
-    market = market_of(contract)  # Reject quarter lines before assigning quotes.
     odds = number(outcome.get('price'), 'decimal odds', 1.00000001, 10000)
+    if contract['kind'] in ('HANDICAP', 'TOTAL', 'TEAM_TOTAL'):
+        line = contract['line']
+        if contract['kind'] != 'HANDICAP' and line < 0:
+            raise ValueError('negative total line')
+        units = round(line * 4)
+        if abs(line * 4 - units) <= 1e-9 and units % 2:
+            raise UnsupportedQuarterLine(contract)
+    market = market_of(contract)
     if market.kind == 'HANDICAP':
         partition = (market.kind, market.line if market.side == 'HOME' else -market.line)
     elif market.kind == 'TEAM_TOTAL':
@@ -264,14 +279,21 @@ def _main_quotes(book, prediction, sport, event_id, bookmaker, received, request
             outcomes = block.get('outcomes')
             if not isinstance(outcomes, list) or not 1 <= len(outcomes) <= 256:
                 raise ValueError('bounded outcomes required')
-            partitions = {}
+            partitions = {}; unsupported = []
             for outcome in outcomes:
-                partition, market, contract, odds = _outcome_contract(key, outcome, match)
+                try:
+                    partition, market, contract, odds = _outcome_contract(key, outcome, match)
+                except UnsupportedQuarterLine as exc:
+                    unsupported.append(exc.contract)
+                    continue
                 partitions.setdefault(partition, []).append((market, contract, odds))
         except (ValueError, TypeError, KeyError):
             # Reject the whole provider market if an outcome cannot be assigned
             # safely. Never salvage a duplicate or guess its opposite line.
             rejected.append({'provider_market': key, 'reason': 'INVALID_MARKET_OR_TIME'}); continue
+        for contract in unsupported:
+            rejected.append({'provider_market': key, 'market': contract,
+                             'reason': 'UNSUPPORTED_QUARTER_LINE'})
         for partition, rows in sorted(partitions.items(), key=lambda item: repr(item[0])):
             kind = partition[0]
             expected = ({'HOME', 'DRAW', 'AWAY'} if kind == '1X2' else

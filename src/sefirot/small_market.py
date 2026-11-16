@@ -9,7 +9,15 @@ from .sports_archive import validate_packet
 from .provider_transport import QUOTA_HEADERS
 
 METRICS = {'SHOTS': 'Total Shots', 'SOT': 'Shots on Goal', 'CORNERS': 'Corner Kicks',
-           'FOULS': 'Fouls', 'CARDS': 'Yellow Cards'}
+           'FOULS': 'Fouls', 'OFFSIDES': 'Offsides', 'CARDS': 'Yellow Cards'}
+REQUIRED_FACTORS = {
+    'CORNERS': ('ATTACK_TEMPO', 'WIDE_PLAY', 'CROSSES', 'SCORE_STATE'),
+    'SHOTS': ('ATTACK_VOLUME', 'LINEUP_ROLES', 'EXPECTED_MINUTES'),
+    'SOT': ('SHOT_QUALITY', 'LINEUP_ROLES', 'EXPECTED_MINUTES'),
+    'FOULS': ('FOULS_COMMITTED_AND_DRAWN', 'DUEL_INTENSITY', 'TACTICS'),
+    'OFFSIDES': ('DEFENSIVE_LINE_HEIGHT', 'VERTICAL_RUNS', 'RUNNER_ROLES'),
+    'CARDS': ('CONFIRMED_REFEREE', 'REFEREE_YC_PER_GAME', 'REFEREE_YC_PER_FOUL',
+              'LOW_CARD_RISK', 'BOOKMAKER_CARD_RULES', 'CLEANER_ALTERNATIVE')}
 METHOD = {'schema': 'small-statistics-diagnostic-v1', 'recent_games': 3,
           'long_games_max': 20, 'long_games_min': 10, 'history_days': 730,
           'shrink_rule': 'recent mean weight = recent_n / (long_n + recent_n)',
@@ -148,6 +156,8 @@ def review_small_market(dataset, at):
               'dataset_hash': digest(dataset), 'fixture_id': fid, 'team_id': tid, 'opponent_id': opponent,
               'profile': dataset['profile'], 'profile_provenance': 'OPERATOR_ASSERTION_SAME_LEAGUE_NOT_INDEPENDENT_VERIFICATION',
               'metric': dataset['metric'], 'provider_type': metric, 'method': dict(METHOD),
+              'sport_factors': {'status': 'NOT_VERIFIED_FROM_STATISTICS_COUNTS',
+                                'missing': list(REQUIRED_FACTORS[dataset['metric']])},
               'eligible_games': len(observations), 'future_packets_excluded': future_packets,
               'exclusion_reasons': dict(sorted(excluded.items())),
               'long_fixture_ids': [r['fixture_id'] for r in long], 'recent_fixture_ids': [r['fixture_id'] for r in recent],

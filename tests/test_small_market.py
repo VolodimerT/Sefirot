@@ -54,6 +54,17 @@ class SmallMarketTests(unittest.TestCase):
         self.assertEqual(out['status'], 'INSUFFICIENT_BASELINE')
         self.assertIn('LONG_BASELINE_INSUFFICIENT', out['blockers'])
 
+    def test_offsides_are_descriptive_and_do_not_infer_defensive_line(self):
+        d = data(metric='OFFSIDES')
+        d['statistic_packets'] = [statistics(10+i, 3, metric='Offsides') for i in range(13)]
+        out = self.review(d)
+        self.assertEqual(out['eligible_games'], 13)
+        self.assertEqual(out['provider_type'], 'Offsides')
+        self.assertIn('DEFENSIVE_LINE_HEIGHT', out['sport_factors']['missing'])
+        self.assertIsNone(out['probability'])
+        self.assertIsNone(out['ev'])
+        self.assertEqual((out['class'], out['stake']), ('C', 0.))
+
     def test_null_is_missing_but_zero_is_real_observation(self):
         d = data(); d['statistic_packets'][0] = statistics(10, None); d['statistic_packets'][1] = statistics(11, 0)
         out = self.review(d)

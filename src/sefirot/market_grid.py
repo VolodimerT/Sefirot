@@ -163,7 +163,19 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
                   'SCENARIO_MARKET_CONFLICT' if conflict else
                   'PRICE_MISSING_OR_STALE' if not prices else
                   'SELECTION_AND_HOLDOUT_UNVALIDATED')
+        sport_quality = ('CRITICAL_CONFLICT' if critical_source else
+                         'SCENARIO_CONFLICT' if conflict else
+                         'EVIDENCE_INCOMPLETE' if grid['source_issues'] or sports_missing(candidate) else
+                         'MODEL_UNVALIDATED')
+        bet_value = 'PRICE_UNAVAILABLE' if not prices else 'PROBABILITY_UNVALIDATED'
         rows.append({**candidate, 'prices': prices, 'price_status': 'PRICED' if prices else 'MISSING_OR_STALE',
+                     'sport_quality': {'status': sport_quality,
+                                       'facts': len(grid['sports_facts']['facts']),
+                                       'team_games': grid['sports_facts']['model_team_games'],
+                                       'missing_evidence': candidate['sports_scenario']['missing'],
+                                       'price_used': False},
+                     'bet_value': {'status': bet_value, 'validated_probability': None,
+                                   'validated_ev': None, 'comparison_is_admission': False},
                      'class': 'RED' if conflict else 'C', 'class_reason': reason,
                      'decision': 'PASS', 'bet_eligible': False,
                      'verdict': 'RESEARCH_ONLY', 'monetary_permission': False})
@@ -175,3 +187,10 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
             'monetary_permission': False, 'execution_enabled': False,
             'selection_validation': grid['selection_validation'],
             'next_action': 'Validate the full frozen selection procedure on unseen matches; EV alone grants no admission'}
+
+
+def sports_missing(candidate):
+    """Research facts never silently become market-specific supporting evidence."""
+    return (bool(candidate['selection_issues']) or
+            candidate['sports_scenario']['market_support_from_facts'] != 'VERIFIED' or
+            bool(candidate['sports_scenario']['missing']))

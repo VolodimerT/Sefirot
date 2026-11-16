@@ -18,6 +18,7 @@ from sefirot.market_grid import create_grid, validate_grid, compare_grid, univer
 from sefirot.markets import market_of, market_reference, settle
 from sefirot.odds_provider import quotes_from_event, event_odds, keys_for_candidates
 from sefirot.repository import Repository
+from sefirot.research_projection import match_research_view
 from sefirot.service import Service
 from test_odds_provider import fixture
 
@@ -79,6 +80,26 @@ class ExpandedFeedTests(unittest.TestCase):
             if change == 'duplicate': block['outcomes'].append(copy.deepcopy(block['outcomes'][0]))
             result = self.convert(event)
             self.assertFalse(any(q['market'].get('side', '').startswith('HOME_') for q in result['quotes']))
+
+    def test_quarter_partition_does_not_discard_supported_neighbor(self):
+        p, event, at = expanded_event()
+        block = next(m for m in event['bookmakers'][0]['markets'] if m['key'] == 'totals')
+        block['outcomes'] += [{'name': 'Over', 'point': 2.25, 'price': 1.9},
+                              {'name': 'Under', 'point': 2.25, 'price': 1.9}]
+        result = quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
+                                   rules_confirmed=True, market_keys=('totals',))
+        self.assertEqual({market_of(q['market']).key for q in result['quotes']},
+                         {'TOTAL:OVER:2.5', 'TOTAL:UNDER:2.5'})
+        self.assertEqual([r['reason'] for r in result['receipt']['rejected_lines']],
+                         ['UNSUPPORTED_QUARTER_LINE', 'UNSUPPORTED_QUARTER_LINE'])
+        self.assertEqual(result['receipt']['quotes_hash'], digest(result['quotes']))
+
+        # An actually malformed neighboring outcome still invalidates the
+        # provider market instead of being silently salvaged.
+        block['outcomes'][-1]['price'] = 'bad'
+        with self.assertRaisesRegex(ValueError, 'no complete supported'):
+            quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
+                              rules_confirmed=True, market_keys=('totals',))
 
     def test_non_json_nan_payload_rejects_the_entire_import(self):
         _, event, _ = expanded_event()
@@ -224,6 +245,10 @@ class FrozenGridTests(unittest.TestCase):
         self.assertFalse(a['monetary_permission']);self.assertEqual(ar['stake'],0.)
         self.assertEqual(ar['class'], 'C')
         self.assertEqual(ar['class_reason'], 'SELECTION_AND_HOLDOUT_UNVALIDATED')
+        self.assertEqual(ar['sport_quality']['status'], 'EVIDENCE_INCOMPLETE')
+        self.assertFalse(ar['sport_quality']['price_used'])
+        self.assertEqual(ar['bet_value']['status'], 'PROBABILITY_UNVALIDATED')
+        self.assertIsNone(ar['bet_value']['validated_ev'])
         self.assertIsNone(ar['prices'][0]['validated_probability'])
         self.assertIsNone(ar['prices'][0]['validated_ev'])
         self.assertEqual(ar['prices'][0]['reference_interpretation'],
@@ -231,6 +256,38 @@ class FrozenGridTests(unittest.TestCase):
         self.assertEqual(ar['sports_scenario'], br['sports_scenario'])
         self.assertFalse(ar['bet_eligible'])
         self.assertEqual(a['priced_count'],2);self.assertEqual(a['candidate_count'],50)
+
+    def test_sports_and_price_axes_remain_separate_when_price_missing(self):
+        at = (self.now + timedelta(minutes=2)).isoformat()
+        result = self.compare(self.quotes(), at)
+        missing = next(c for c in result['candidates'] if c['key'] == 'BTTS:YES')
+        priced = next(c for c in result['candidates'] if c['key'] == 'TOTAL:OVER:2.5')
+        self.assertEqual(missing['sport_quality'], priced['sport_quality'])
+        self.assertEqual(missing['bet_value']['status'], 'PRICE_UNAVAILABLE')
+        self.assertEqual(priced['bet_value']['status'], 'PROBABILITY_UNVALIDATED')
+        self.assertEqual(missing['class'], 'C')
+        self.assertEqual(priced['decision'], 'PASS')
+
+    def test_readonly_projection_recomputes_receipt_bound_review(self):
+        quotes = self.quotes(); at = quotes[0]['received_at']
+        receipt = {'provider': 'THE_ODDS_API_V4', 'quotes_hash': digest(quotes),
+                   'grid_hash': self.grid['hash'], 'fixture_id': self.grid['match']['id'],
+                   'bookmaker': 'API_BOOK', 'received_at': at}
+        view = match_research_view(self.grid, self.prediction, quotes, receipt, self.policy, at)
+        self.assertEqual(view['schema'], 'sefirot-readonly-match-research-v1')
+        self.assertEqual(view['source_status'], 'SYNTHETIC')
+        self.assertEqual(len(view['markets']), 50)
+        self.assertEqual(view['priced_markets'], 2)
+        self.assertEqual(view['markets'][0]['model_review']['holdout_status'],
+                         'NOT_ATTESTED_IN_EXPANDED_GRID')
+        self.assertIsNone(view['markets'][0]['model_review']['validated_probability'])
+        self.assertTrue(all(r['admission']['verdict'] == 'PASS' and
+                            r['admission']['stake'] == 0 for r in view['markets']))
+        self.assertEqual(self.repo.all('decisions'), [])
+        self.assertTrue(self.repo.verify())
+        with self.assertRaisesRegex(ValueError, 'API receipt'):
+            match_research_view(self.grid, self.prediction, quotes,
+                                {**receipt, 'quotes_hash': 'altered'}, self.policy, at)
 
     def test_price_received_before_grid_rejected_and_stale_retained_as_missing(self):
         quotes=self.quotes();early=self.prediction['sealed_at']

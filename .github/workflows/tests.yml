@@ -8,10 +8,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
         python-version: ['3.11', '3.13']
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python-version: '3.14.3'
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
       - name: Full release verification
         run: python scripts/verify_release.py
   postgres-sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -70,7 +70,7 @@ jobs:
           SEFIROT_TEST_POSTGRES_DSN: postgresql://postgres:sefirot-local-ci-only@127.0.0.1:5432/sefirot_sync_test
         run: python -m unittest discover -s tests -p test_postgres_sync.py -v
   postgres-probe:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
