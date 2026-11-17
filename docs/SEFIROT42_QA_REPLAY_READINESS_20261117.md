@@ -63,8 +63,11 @@ All fixture and market values are identical.
 Read-only Supabase inventory on 17 November: 485 archived sports packets,
 313 `/fixtures/statistics`, 164 `/fixtures`, 5 `/fixtures/lineups`, 3
 `/status`; canonical predictions, decisions and bookmaker snapshots are all
-zero. The observed statistics include shots, corners and fouls. No archived
-`Expected Goals`/xG metric was found in the fixture-statistics packets.
+zero. The observed statistics include shots, corners and fouls. **Correction
+from the 4.3 independent QA:** the earlier query missed the snake_case
+`expected_goals` statistic. It contains 528 populated values in the archived
+fixture-statistics packets; all were received after their source fixture's
+kickoff. See `SEFIROT43_INDEPENDENT_QA_20261117.md` for the lineage check.
 There are no archived injuries endpoint packets or trusted bookmaker quotes.
 Statistics received after kickoff cannot be used as prematch features for
 that fixture.

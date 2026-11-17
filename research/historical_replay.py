@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from contextlib import closing
 from hashlib import sha256
-from io import BytesIO
 from pathlib import Path, PurePosixPath
 import json
 import os
@@ -16,7 +15,6 @@ import shutil
 import sqlite3
 import subprocess
 import sys
-import tarfile
 from tempfile import TemporaryDirectory
 
 from sefirot.contracts import digest
@@ -26,6 +24,7 @@ PINNED_BUILDS = {
     'PR78': '72f8018e0719f05ec8aa74398e1a582a82d6d06d',
     'PR79': '84dce563fc8a444118276cdaa0f332e6a8e79b8c',
     'PR80': 'dbf32996c07ec9c1f1fca7fe1243ab4eaf033c86',
+    'PR81': '45889c4a5648a7a3f1f88c1cc75f9145ea8a7587',
 }
 
 _CHILD = r'''
@@ -86,38 +85,64 @@ def _recorded_build(ledger, decision_id):
     return code, version
 
 
+def _git(repo, *args, data=None):
+    # Git replacement refs and caller-supplied object stores must never affect
+    # the meaning of a reviewed pinned SHA. No lazy fetch/network is allowed.
+    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    env.update(GIT_NO_REPLACE_OBJECTS='1', GIT_NO_LAZY_FETCH='1',
+               GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=os.devnull,
+               GIT_OPTIONAL_LOCKS='0')
+    try:
+        result = subprocess.run(['git', '-C', str(repo), *args], input=data,
+                                env=env, capture_output=True, check=False, timeout=20)
+    except (OSError, subprocess.TimeoutExpired):
+        raise ValueError('PINNED_BUILD_UNAVAILABLE') from None
+    if result.returncode:
+        raise ValueError('PINNED_BUILD_UNAVAILABLE')
+    return result.stdout
+
+
+def _verified_object(repo, kind, object_id):
+    data = _git(repo, 'cat-file', kind, object_id)
+    actual = _git(repo, 'hash-object', '-t', kind, '--stdin', data=data).strip().decode('ascii')
+    if actual != object_id:
+        raise ValueError('GIT_OBJECT_HASH_MISMATCH')
+    return data
+
+
 def _extract_build(repo, commit, destination):
     if not re.fullmatch(r'[0-9a-f]{40}', commit):
         raise ValueError('INVALID_PINNED_COMMIT')
-    try:
-        archive = subprocess.run(['git', '-C', str(repo), 'archive', commit, 'src/sefirot'],
-                                 capture_output=True, check=False)
-    except OSError:
-        raise ValueError('PINNED_BUILD_UNAVAILABLE') from None
-    if archive.returncode or len(archive.stdout) > 20_000_000:
-        raise ValueError('PINNED_BUILD_UNAVAILABLE')
+    _verified_object(repo, 'commit', commit)
+    for expression in (commit+'^{tree}', commit+':src', commit+':src/sefirot'):
+        tree_id = _git(repo, 'rev-parse', expression).strip().decode('ascii')
+        if not re.fullmatch(r'[0-9a-f]{40}', tree_id):
+            raise ValueError('INVALID_BUILD_TREE')
+        _verified_object(repo, 'tree', tree_id)
     total = 0
-    try:
-        tar = tarfile.open(fileobj=BytesIO(archive.stdout))
-    except tarfile.TarError:
-        raise ValueError('INVALID_BUILD_ARCHIVE') from None
-    with tar:
-        for member in tar:
-            parts = PurePosixPath(member.name).parts
-            if member.isdir() and parts in (('src',), ('src', 'sefirot')):
-                continue
-            if parts[:2] != ('src', 'sefirot') or '..' in parts or member.issym() or member.islnk():
-                raise ValueError('INVALID_BUILD_ARCHIVE')
-            if member.isdir():
-                continue
-            if not member.isfile() or member.size > 1_000_000:
-                raise ValueError('INVALID_BUILD_ARCHIVE')
-            total += member.size
-            if total > 10_000_000:
-                raise ValueError('INVALID_BUILD_ARCHIVE')
-            path = destination.joinpath(*parts)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(tar.extractfile(member).read())
+    entries = _git(repo, 'ls-tree', '-r', '-z', commit, '--', 'src/sefirot').split(b'\0')
+    for entry in entries:
+        if not entry:
+            continue
+        try:
+            metadata, raw_path = entry.split(b'\t', 1)
+            mode, kind, raw_id = metadata.split()
+            object_id = raw_id.decode('ascii')
+            parts = PurePosixPath(raw_path.decode('utf-8')).parts
+        except (ValueError, UnicodeDecodeError):
+            raise ValueError('INVALID_BUILD_TREE') from None
+        if (mode not in (b'100644', b'100755') or kind != b'blob'
+                or len(parts) != 3 or parts[:2] != ('src', 'sefirot')
+                or not parts[2].endswith('.py') or '\\' in parts[2]
+                or not re.fullmatch(r'[0-9a-f]{40}', object_id)):
+            raise ValueError('INVALID_BUILD_ARCHIVE')
+        content = _verified_object(repo, 'blob', object_id)
+        total += len(content)
+        if len(content) > 1_000_000 or total > 10_000_000:
+            raise ValueError('INVALID_BUILD_ARCHIVE')
+        path = destination.joinpath(*parts)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
     modules = destination/'src'/'sefirot'
     if not (modules/'identity.py').is_file():
         raise ValueError('INCOMPLETE_BUILD_ARCHIVE')

@@ -200,7 +200,9 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             observations[mid].append((source_packet,raw,binding[0]['available_at'] if binding else None))
     for mid, entries in sorted(observations.items()):
         entries.sort(key=lambda v:(time(v[0]['receipt']['received_at']),digest(v[0])))
-        raw = entries[0][1]; identity = fixture_identity(raw); kickoff = time(identity['kickoff'])
+        # The earliest observation is historical evidence, not the current
+        # schedule. A revision must not borrow its kickoff for a later packet.
+        raw = entries[-1][1]; identity = fixture_identity(raw); kickoff = time(identity['kickoff'])
         item = {'fixture_id':mid, 'provider_fixture_id':raw['fixture']['id'],
             'league_id':raw['league']['id'], 'season':raw['league'].get('season'),
             'team_ids':{s:raw['teams'][s]['id'] for s in ('home','away')},
@@ -212,7 +214,11 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             'model_probability':None, 'ev':None, 'decision':'PASS'}
         identities = {(r['league']['id'],r['league'].get('season'),r['teams']['home']['id'],
                        r['teams']['away']['id'],time(r['fixture']['date'])) for _,r,_ in entries}
-        if len(identities)!=1:
+        schedule_changed = len({time(r['fixture']['date']) for _,r,_ in entries})>1
+        identity_conflict = len(identities)!=1
+        if schedule_changed:
+            item['blockers'].append('FIXTURE_SCHEDULE_CHANGED')
+        if identity_conflict:
             item['blockers'].append('FIXTURE_IDENTITY_CONFLICT')
         item['blockers'].extend(sorted({reason for p,r,_ in entries if (reason:=_query_row(p,r))}))
         finals = []
@@ -221,23 +227,23 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             obs = {'packet_hash':digest(packet),'receipt_hash':digest(receipt),
                    'source':receipt['provider'],'received_at':receipt['received_at'],
                    'locally_available_at':available,'state':state,
-                   'feature_available_before_kickoff':bool(available and time(available)<kickoff
-                       and time(receipt['received_at'])<kickoff and state=='NS')}
+                   'feature_available_before_kickoff':bool(not identity_conflict and available
+                       and time(available)<kickoff and time(receipt['received_at'])<kickoff and state=='NS')}
             item['observations'].append(obs)
             if obs['feature_available_before_kickoff']:
                 item['prematch_observations'].append(obs['packet_hash'])
-            if state=='FT' and available and time(receipt['received_at'])>=kickoff+timedelta(minutes=90):
+            if not identity_conflict and state=='FT' and available and time(receipt['received_at'])>=kickoff+timedelta(minutes=90):
                 finals.append((available,digest(r['score']['fulltime'])))
         if len({h for _,h in finals})>1:
             item['blockers'].append('RESULT_REVISION_CONFLICT')
         elif finals:
             item['label_available_at'] = min((t for t,_ in finals),key=time)
-        facts = [e for p in snap['predictions'] if p['sports']['match']['id']==mid
+        facts = [e for p in snap['predictions'] if not identity_conflict and p['sports']['match']['id']==mid
                  and snap['bindings'].get(mid)==p['id']
                  and p['captured_prematch'] and not p['reconstructed'] and time(p['sealed_at'])<kickoff
                  for e in p['sports']['evidence'] if e['kind']=='FACT'
                  and time(e['received_at'])<kickoff and time(e['received_at'])<=cutoff]
-        pre_stats = [p for r,p in enrichment[mid] if time(r['available_at'])<kickoff]
+        pre_stats = [p for r,p in enrichment[mid] if not identity_conflict and time(r['available_at'])<kickoff]
         item['feature_coverage'] = {'history':False, 'statistics':bool(pre_stats),
             'xg':False, 'injuries':any(e['key']=='injuries' for e in facts),
             'lineups':any(e['key']=='lineup' for e in facts), 'quotes':False}

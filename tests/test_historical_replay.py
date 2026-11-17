@@ -5,6 +5,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
+import os
 
 from research.historical_replay import replay_historical
 from research.prematch_scenario import run_scenario
@@ -58,3 +60,48 @@ class HistoricalReplayTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'INVALID_BUILD_LABEL'):
             replay_historical(self.ledger, self.case['decision_id'],
                               builds={'../untrusted': self.commit}, repo_root=self.repo)
+
+    def test_git_replace_and_inherited_git_object_override_cannot_change_pinned_build(self):
+        source = self.repo/'src'/'sefirot'/'odds_provider.py'
+        source.write_text(source.read_text()+'\n# replacement object\n')
+        subprocess.run(['git','-C',str(self.repo),'add','src/sefirot'],check=True,capture_output=True)
+        subprocess.run(['git','-C',str(self.repo),'-c','user.name=QA',
+                        '-c','user.email=qa@example.invalid','commit','-qm','replacement'],
+                       check=True,capture_output=True)
+        replacement = subprocess.check_output(['git','-C',str(self.repo),'rev-parse','HEAD'],
+                                              text=True).strip()
+        subprocess.run(['git','-C',str(self.repo),'replace',self.commit,replacement],
+                       check=True,capture_output=True)
+        with patch.dict(os.environ,{'GIT_OBJECT_DIRECTORY':str(self.root/'invalid-object-store')}):
+            result = replay_historical(self.ledger,self.case['decision_id'],
+                                       builds={'REVIEWED':self.commit},repo_root=self.repo)
+        self.assertEqual(result['status'],'MATCH')
+        self.assertEqual(result['commit'],self.commit)
+        self.assertEqual(sha256(self.ledger.read_bytes()).hexdigest(),self.before)
+
+    def test_nested_executable_package_outside_code_hash_is_rejected(self):
+        nested=self.repo/'src'/'sefirot'/'unhashed_plugin'
+        nested.mkdir()
+        (nested/'__init__.py').write_text('raise RuntimeError("must not execute")\n')
+        subprocess.run(['git','-C',str(self.repo),'add','src/sefirot'],check=True,capture_output=True)
+        subprocess.run(['git','-C',str(self.repo),'-c','user.name=QA',
+                        '-c','user.email=qa@example.invalid','commit','-qm','nested package'],
+                       check=True,capture_output=True)
+        nested_commit=subprocess.check_output(['git','-C',str(self.repo),'rev-parse','HEAD'],
+                                              text=True).strip()
+        with self.assertRaisesRegex(ValueError,'INVALID_BUILD_ARCHIVE'):
+            replay_historical(self.ledger,self.case['decision_id'],
+                              builds={'NESTED':nested_commit},repo_root=self.repo)
+
+    def test_corrupted_git_blob_cannot_be_used_as_archived_code(self):
+        object_id=subprocess.check_output(['git','-C',str(self.repo),'rev-parse',
+            self.commit+':src/sefirot/identity.py'],text=True).strip()
+        blob=self.repo/'.git'/'objects'/object_id[:2]/object_id[2:]
+        self.assertTrue(blob.is_file())
+        data=blob.read_bytes()
+        blob.chmod(0o600)
+        blob.write_bytes(data[:8]+bytes([data[8]^1])+data[9:])
+        with self.assertRaisesRegex(ValueError,'PINNED_BUILD_UNAVAILABLE|GIT_OBJECT_HASH_MISMATCH'):
+            replay_historical(self.ledger,self.case['decision_id'],
+                              builds={'REVIEWED':self.commit},repo_root=self.repo)
+        self.assertEqual(sha256(self.ledger.read_bytes()).hexdigest(),self.before)
