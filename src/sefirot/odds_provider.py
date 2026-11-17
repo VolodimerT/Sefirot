@@ -259,6 +259,12 @@ def _outcome_contract(key, outcome, match):
         contract = {'kind': 'BTTS', 'side': name.upper()}
     else:
         point = number(outcome.get('point'), 'line', -100, 100)
+        # The provider serializes decimal lines as JSON numbers. Treat values
+        # within the existing quarter-grid tolerance as the same exact line;
+        # otherwise opposite sides can evade completeness checks.
+        units = round(point * 4)
+        if abs(point * 4 - units) <= 1e-9:
+            point = units / 4
         point = 0. if point == 0 else point
         if key.endswith('spreads'):
             if name not in teams: raise ValueError('unknown handicap team')

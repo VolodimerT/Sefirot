@@ -92,6 +92,9 @@ class DayCoverageTests(unittest.TestCase):
         self.assert_full_pass(one)
         self.assertEqual(one, two)
         self.assertIn('PREMATCH_ONLY', one['fixtures'][2]['blockers'])
+        self.assertIn('FIXTURE_POSTPONED', one['fixtures'][2]['blockers'])
+        self.assertEqual(one['fixtures'][2]['postponement']['status'], 'PST')
+        self.assertFalse(any('FIXTURE_POSTPONED' in f['blockers'] for f in one['fixtures'][:2]))
 
     def test_missing_archive_does_not_erase_valid_calendar(self):
         _, packet = inputs()

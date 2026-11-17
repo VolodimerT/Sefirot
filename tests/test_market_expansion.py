@@ -118,6 +118,18 @@ class ExpandedFeedTests(unittest.TestCase):
             self.assertEqual({market_of(q['market']).key for q in result['quotes']},
                              {'TOTAL:OVER:2.5', 'TOTAL:UNDER:2.5'})
 
+    def test_equivalent_quarter_points_share_one_checked_partition(self):
+        p, event, at = expanded_event()
+        block = next(m for m in event['bookmakers'][0]['markets'] if m['key'] == 'totals')
+        block['outcomes'] += [{'name': 'Over', 'point': 2.25, 'price': 1.9},
+                              {'name': 'Under', 'point': 2.2500000001, 'price': 1.9}]
+        result = quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
+                                   rules_confirmed=True, market_keys=('totals',))
+        self.assertEqual([r['reason'] for r in result['receipt']['rejected_lines']],
+                         ['UNSUPPORTED_QUARTER_LINE'])
+        self.assertEqual({market_of(q['market']).key for q in result['quotes']},
+                         {'TOTAL:OVER:2.5', 'TOTAL:UNDER:2.5'})
+
         p, event, at = expanded_event()
         block = next(m for m in event['bookmakers'][0]['markets'] if m['key'] == 'totals')
         block['outcomes'].append(copy.deepcopy(block['outcomes'][0]))
