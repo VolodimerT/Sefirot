@@ -6,7 +6,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from sefirot.contracts import digest
+from sefirot.contracts import digest, time
 from sefirot.sports_archive import archive_packets
 from research.daily_scanner import scan_day, calendar_day, independent_candidates, _project
 from research.prematch_scenario import run_scenario
@@ -168,6 +168,26 @@ class DailyScannerTests(unittest.TestCase):
                          'PRICE_BLIND_SEALED')
         self.assertEqual(result['decision'], 'PASS')
         self.assertTrue(all(m['model_probability'] is None for m in result['fixtures'][0]['markets']))
+
+    def test_rescheduled_calendar_cannot_reuse_old_kickoff_seal(self):
+        source, calendar = synthetic_inputs()
+        moved = deepcopy(calendar)
+        fixture = moved['data']['response'][0]['fixture']
+        fixture['date'] = '2030-01-01T14:00:00+00:00'
+        fixture['timestamp'] = int(time(fixture['date']).timestamp())
+        moved['receipt']['payload_hash'] = digest(moved['data'])
+        with TemporaryDirectory() as tmp:
+            work = Path(tmp)/'scenario'
+            run_scenario(work_directory=work)
+            archive_packets([moved],work/'archive',source['capture_at'])
+            db=work/'scenario.sqlite';before=db.read_bytes()
+            report=scan_day(calendar=moved,archive=work/'archive',day='2030-01-01',
+                at=source['decision_at'],profile='LOWER',database=db,synthetic=True)
+            self.assertEqual(db.read_bytes(),before)
+        item=report['fixtures'][0]
+        self.assertIn('EXACT_PREMATCH_SEAL_REQUIRED',item['blockers'])
+        self.assertEqual(item['research_pipeline']['probability_seal'],'MISSING')
+        self.assertTrue(all(m['status']=='PASS' and m['model_probability'] is None for m in item['markets']))
 
     def price_scan(self, mutate):
         source, calendar = synthetic_inputs()

@@ -70,6 +70,11 @@ class FactsFirstMathTests(unittest.TestCase):
     def test_quarter_handicap_and_175_cover_partial_result(self):
         self.assertEqual(quarter_payoff("TOTAL", "OVER", 1.75, 1, 1, 2.)["outcomes"], ["WIN", "PUSH"])
         self.assertEqual(quarter_payoff("HANDICAP", "HOME", -.25, 0, 0, 2.)["outcomes"], ["LOSS", "PUSH"])
+        self.assertEqual(quarter_payoff("HANDICAP", "HOME", -.2500000001, 0, 0, 2.)["half_lines"], [-.5, 0.])
+        self.assertEqual(quarter_payoff("HANDICAP", "HOME", -.75, 1, 0, 2.)["outcomes"], ["PUSH", "WIN"])
+        self.assertEqual(quarter_payoff("HANDICAP", "HOME", -1.25, 1, 0, 2.)["outcomes"], ["LOSS", "PUSH"])
+        with self.assertRaises(ValueError):
+            quarter_payoff("HANDICAP", "HOME", -.2500000004, 0, 0, 2.)
         with self.assertRaises(ValueError):
             quarter_payoff("TEAM_TOTAL", "HOME_OVER", 1.5, 1, 0, 1.85)
         with self.assertRaises(ValueError):
@@ -143,6 +148,7 @@ class FactsFirstMathTests(unittest.TestCase):
                                    1 - (1 - review['legs'][0]['raw_loss']) *
                                    (1 - review['legs'][1]['raw_loss']))
             self.assertTrue(review['death_test']['correlation_unmodelled'])
+            self.assertEqual(review['death_test']['status'], 'BLOCKED_CORRELATION_UNMODELLED')
             self.assertIsNone(review['best_confirmed_single'])
             self.assertEqual((review['class'], review['decision'], review['stake']), ('C', 'PASS', 0.))
             self.assertEqual(repo.all('decisions'), [])

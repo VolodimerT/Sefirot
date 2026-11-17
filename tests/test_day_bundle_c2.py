@@ -96,6 +96,20 @@ class QualificationC2Tests(unittest.TestCase):
         self.assertEqual({f['fixture_id'] for f in report['fixtures'] if f['in_saved_day']},
                          {'api-football:fixture:20','api-football:fixture:21'})
 
+    def test_rescheduled_fixture_never_mix_old_kickoff_with_new_evidence(self):
+        day='2026-10-18';old_at='2026-10-17T08:00:00+00:00';new_at='2026-10-17T10:00:00+00:00'
+        old=packet(params={'date':day},rows=[row(20,'2026-10-18T12:00:00+00:00')],at=old_at)
+        moved=packet(params={'date':day},rows=[row(20,'2026-10-18T15:00:00+00:00')],at=new_at)
+        archive_packets([old,moved],self.archive,new_at)
+        report=qualify_day(day=day,as_of=new_at,timezone='UTC',calendar=moved,archive=self.archive)
+        item=next(f for f in report['fixtures'] if f['provider_fixture_id']==20)
+        self.assertEqual(item['kickoff'],'2026-10-18T15:00:00+00:00')
+        self.assertIn('FIXTURE_SCHEDULE_CHANGED',item['blockers'])
+        self.assertEqual(item['prematch_observations'],[])
+        self.assertTrue(all(not o['feature_available_before_kickoff'] for o in item['observations']))
+        self.assertFalse(item['roles']['TRAIN']['chronology_usable'])
+        self.assertFalse(item['roles']['HOLDOUT']['qualified'])
+
     def put(self,p,at):
         repo=Repository(str(self.db))
         try:self.assertTrue(ingest(repo,canonical(p).encode(),imported_at=at)['accepted'])

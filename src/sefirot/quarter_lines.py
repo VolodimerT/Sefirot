@@ -219,7 +219,8 @@ def review_independent_express(legs, policy, at):
                 'market_key': best['market_key'], 'raw_ev': best['raw_single_ev']},
             'best_confirmed_single': None,
             'validated_probability': None, 'validated_ev': None,
-            'death_test': {'status': 'RAW_INDEPENDENCE_DIAGNOSTIC_ONLY',
+            'death_test': {'status': ('BLOCKED_CORRELATION_UNMODELLED' if findings
+                                      else 'RAW_INDEPENDENCE_DIAGNOSTIC_ONLY'),
                 'any_full_loss_probability_if_independent': 1 - no_full_loss,
                 'stressed_expected_gross_floor_if_independent': stressed_gross_floor,
                 'correlation_unmodelled': bool(findings)},
