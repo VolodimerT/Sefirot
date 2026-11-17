@@ -15,7 +15,7 @@ from research.football_pipeline import ingest
 from research.day_calendar import day_window,calendar_day
 from research.day_bundle import qualify_day,_role_reviews
 from research.daily_scanner import scan_day
-from test_football_pipeline import packet,fixture
+from test_football_pipeline import packet,fixture,stats
 
 
 def row(fid, kickoff, state='NS'):
@@ -142,6 +142,36 @@ class QualificationC2Tests(unittest.TestCase):
         self.assertEqual(items[20]['pre_kickoff_history_fixture_ids'],['api-football:fixture:10'])
         self.assertEqual(r['day_fixture_ids'],['api-football:fixture:20'])
         self.assertFalse(items[10]['roles']['HOLDOUT']['qualified'])
+
+    def test_xg_history_respects_source_kickoff_import_and_scan_cutoff(self):
+        self.prepare()
+        good=stats(at='2026-10-16T13:00:00+00:00')
+        for team in good['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'1.25'})
+        good['receipt']['payload_hash']=digest(good['data'])
+        self.put(good,'2026-10-17T09:00:00+00:00')
+        early=stats(at='2026-10-14T10:00:00+00:00')
+        for team in early['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'9.99'})
+        early['receipt']['payload_hash']=digest(early['data'])
+        self.put(early,'2026-10-17T09:00:00+00:00')
+        late=stats(at='2026-10-16T14:00:00+00:00')
+        for team in late['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'2.50'})
+        late['receipt']['payload_hash']=digest(late['data'])
+        self.put(late,'2026-10-17T10:01:00+00:00')
+        wrong=stats(at='2026-10-16T15:00:00+00:00')
+        wrong['data']['response'][0]['team']['id']=999
+        wrong['receipt']['payload_hash']=digest(wrong['data'])
+        self.put(wrong,'2026-10-17T09:00:00+00:00')
+        report=self.report()
+        item=next(f for f in report['fixtures'] if f['provider_fixture_id']==20)
+        sources=item['historical_statistic_sources']
+        self.assertEqual(len(sources),1)
+        self.assertEqual(sources[0]['received_at'],'2026-10-16T13:00:00+00:00')
+        self.assertEqual(sources[0]['first_local_available_at'],'2026-10-17T09:00:00+00:00')
+        self.assertTrue(item['observed_historical_xg'])
+        self.assertFalse(item['feature_coverage']['xg'])
 
     def test_late_import_cannot_backdate_a_prematch_receipt(self):
         self.prepare(late=True);r=self.report();item=next(f for f in r['fixtures'] if f['provider_fixture_id']==10)
