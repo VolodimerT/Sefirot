@@ -215,6 +215,10 @@ def scan_day(*, calendar, archive, day, at, profile='UNKNOWN', database=None, pr
             'sports_evidence': 'NOT_VERIFIED', 'probability_seal': 'MISSING',
             'market_grid': 'NOT_CREATED', 'quotes': 'MISSING',
             'market_review': 'BLOCKED', 'audit': 'NOT_CHECKED'}
+        if fixture['fixture']['status']['short'] == 'PST':
+            item['postponement'] = {'status': 'PST', 'new_kickoff': 'NOT_VERIFIED',
+                                   'new_plan_required': True}
+            item['blockers'].append('FIXTURE_POSTPONED')
         if fixture['fixture']['status']['short'] != 'NS' or time(at) >= time(item['kickoff']):
             item['blockers'].append('PREMATCH_ONLY')
         elif report['archive_status'] == 'VERIFIED_LOCAL_STRUCTURE':
