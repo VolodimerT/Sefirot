@@ -155,11 +155,21 @@ class QualificationC2Tests(unittest.TestCase):
             team['statistics'].append({'type':'expected_goals','value':'9.99'})
         early['receipt']['payload_hash']=digest(early['data'])
         self.put(early,'2026-10-17T09:00:00+00:00')
+        live=stats(at='2026-10-14T13:00:00+00:00')
+        for team in live['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'8.88'})
+        live['receipt']['payload_hash']=digest(live['data'])
+        self.put(live,'2026-10-17T09:00:00+00:00')
         late=stats(at='2026-10-16T14:00:00+00:00')
         for team in late['data']['response']:
             team['statistics'].append({'type':'expected_goals','value':'2.50'})
         late['receipt']['payload_hash']=digest(late['data'])
         self.put(late,'2026-10-17T10:01:00+00:00')
+        future=stats(at='2026-10-17T11:00:00+00:00')
+        for team in future['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'4.00'})
+        future['receipt']['payload_hash']=digest(future['data'])
+        self.put(future,'2026-10-17T11:01:00+00:00')
         wrong=stats(at='2026-10-16T15:00:00+00:00')
         wrong['data']['response'][0]['team']['id']=999
         wrong['receipt']['payload_hash']=digest(wrong['data'])
@@ -172,6 +182,46 @@ class QualificationC2Tests(unittest.TestCase):
         self.assertEqual(sources[0]['first_local_available_at'],'2026-10-17T09:00:00+00:00')
         self.assertTrue(item['observed_historical_xg'])
         self.assertFalse(item['feature_coverage']['xg'])
+
+    def test_revised_nonfinal_source_cannot_supply_historical_xg(self):
+        self.prepare()
+        xg=stats(at='2026-10-16T12:00:00+00:00')
+        for team in xg['data']['response']:
+            team['statistics'].append({'type':'expected_goals','value':'1.25'})
+        xg['receipt']['payload_hash']=digest(xg['data'])
+        self.put(xg,'2026-10-16T12:01:00+00:00')
+        revised=packet(params={'id':10},rows=[row(10,'2026-10-14T12:00:00+00:00','NS')],
+                       at='2026-10-16T13:00:00+00:00')
+        self.put(revised,'2026-10-16T13:01:00+00:00')
+        archive_packets([revised],self.archive,'2026-10-17T10:00:00Z')
+        report=self.report()
+        target=next(f for f in report['fixtures'] if f['provider_fixture_id']==20)
+        self.assertEqual(target['pre_kickoff_history_fixture_ids'],[])
+        self.assertFalse(target['observed_historical_xg'])
+
+    def test_opponent_only_statistic_is_not_target_team_history(self):
+        self.cal['data']['response'][0]['teams']['away']['id']=3
+        self.cal['receipt']['payload_hash']=digest(self.cal['data'])
+        self.prepare()
+        opponent=stats(at='2026-10-16T12:00:00+00:00')
+        opponent['data']['response']=opponent['data']['response'][1:]
+        opponent['data']['results']=1
+        opponent['data']['response'][0]['statistics'].append(
+            {'type':'expected_goals','value':'3.00'})
+        opponent['receipt']['payload_hash']=digest(opponent['data'])
+        self.put(opponent,'2026-10-16T12:01:00+00:00')
+        target=next(f for f in self.report()['fixtures'] if f['provider_fixture_id']==20)
+        self.assertEqual(target['pre_kickoff_history_fixture_ids'],['api-football:fixture:10'])
+        self.assertEqual(target['historical_statistic_sources'],[])
+        self.assertFalse(target['observed_historical_xg'])
+        mixed=stats(at='2026-10-16T13:00:00+00:00')
+        mixed['data']['response'][1]['statistics'].append(
+            {'type':'expected_goals','value':'3.00'})
+        mixed['receipt']['payload_hash']=digest(mixed['data'])
+        self.put(mixed,'2026-10-16T13:01:00+00:00')
+        target=next(f for f in self.report()['fixtures'] if f['provider_fixture_id']==20)
+        self.assertEqual(target['historical_statistic_sources'][0]['target_team_ids_observed'],[1])
+        self.assertFalse(target['observed_historical_xg'])
 
     def test_late_import_cannot_backdate_a_prematch_receipt(self):
         self.prepare(late=True);r=self.report();item=next(f for f in r['fixtures'] if f['provider_fixture_id']==10)
