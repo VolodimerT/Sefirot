@@ -208,7 +208,8 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             'team_ids':{s:raw['teams'][s]['id'] for s in ('home','away')},
             'names_observed':{s:sorted({r['teams'][s]['name'] for _,r,_ in entries}) for s in ('home','away')},
             'kickoff':identity['kickoff'], 'in_saved_day':mid in report['day_fixture_ids'],
-            'blockers':[], 'observations':[], 'prematch_observations':[], 'label_available_at':None,
+            'blockers':[], 'observations':[], 'prematch_observations':[],
+            'label_available_at':None, 'first_ft_receipt_at':None,
             'synthetic_detected':any(p['sports'].get('synthetic') is True for p in snap['predictions']
                                      if p['sports']['match']['id']==mid),
             'model_probability':None, 'ev':None, 'decision':'PASS'}
@@ -233,11 +234,15 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             if obs['feature_available_before_kickoff']:
                 item['prematch_observations'].append(obs['packet_hash'])
             if not identity_conflict and state=='FT' and available and time(receipt['received_at'])>=kickoff+timedelta(minutes=90):
-                finals.append((available,digest(r['score']['fulltime'])))
-        if len({h for _,h in finals})>1:
+                finals.append((available,digest(r['score']['fulltime']),receipt['received_at']))
+        if len({h for _,h,_ in finals})>1:
             item['blockers'].append('RESULT_REVISION_CONFLICT')
         elif finals:
-            item['label_available_at'] = min((t for t,_ in finals),key=time)
+            if raw['fixture']['status']['short'] != 'FT':
+                item['blockers'].append('SOURCE_STATUS_REVISED_AFTER_FT')
+            else:
+                item['label_available_at'] = min((t for t,_,_ in finals),key=time)
+                item['first_ft_receipt_at'] = min((t for _,_,t in finals),key=time)
         facts = [e for p in snap['predictions'] if not identity_conflict and p['sports']['match']['id']==mid
                  and snap['bindings'].get(mid)==p['id']
                  and p['captured_prematch'] and not p['reconstructed'] and time(p['sealed_at'])<kickoff
@@ -263,20 +268,28 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
             prior_item = next(f for f in report['fixtures'] if f['fixture_id']==prior)
             source_kickoff = time(prior_item['kickoff'])
             expected_teams = set(prior_item['team_ids'].values())
+            target_teams = set(item['team_ids'].values())
             for rec,p in enrichment[prior]:
                 if (p['receipt']['endpoint'].lstrip('/')=='fixtures/statistics'
                         and p['data']['response']
                         and {team['team']['id'] for team in p['data']['response']} <= expected_teams
-                        and time(p['receipt']['received_at']) >= source_kickoff
+                        and any(team['team']['id'] in target_teams
+                                for team in p['data']['response'])
+                        and time(p['receipt']['received_at']) >= time(prior_item['first_ft_receipt_at'])
                         and time(p['receipt']['received_at']) < min(cutoff,time(item['kickoff']))
                         and time(rec['available_at']) < min(cutoff,time(item['kickoff']))):
                     metric_sources.append({'fixture_id':prior,'packet_hash':digest(p),
                         'source_match_kickoff':source_kickoff.isoformat(),
+                        'source_ft_received_at':prior_item['first_ft_receipt_at'],
                         'received_at':p['receipt']['received_at'],
                         'first_local_available_at':rec['available_at'],
                         'scan_cutoff':cutoff.isoformat(),
                         'target_kickoff':item['kickoff'],
+                        'target_team_ids_observed':sorted(team['team']['id']
+                            for team in p['data']['response']
+                            if team['team']['id'] in target_teams),
                         'metrics':sorted({v['type'] for team in p['data']['response']
+                            if team['team']['id'] in target_teams
                             for v in team.get('statistics',[]) if v.get('value') is not None})})
         item['historical_statistic_sources'] = metric_sources
         item['feature_coverage']['statistics'] = bool(metric_sources)

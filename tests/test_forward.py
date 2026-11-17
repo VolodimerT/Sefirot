@@ -68,6 +68,15 @@ class ForwardTests(unittest.TestCase):
         self.assertEqual(self.repo.all('predictions'), [])
         self.assertEqual(inspect_plan(self.service, plan['id'])['planned_fixtures'], 1)
 
+    def test_single_future_plan_with_stale_original_cannot_capture_a_seal(self):
+        self.target = packet([row(100, status='NS', hours=3, score=(None, None))], -48)
+        plan = self.plan()
+        self.assertEqual(len(plan['members']), 1)
+        attempt = self.collect(plan)
+        self.assertEqual(attempt['counts'], {'STALE_TARGET_OBSERVATION': 1})
+        self.assertEqual(self.repo.all('predictions'), [])
+        self.assertEqual(self.repo.all('bets'), [])
+
     def test_complete_research_capture_api_result_feedback_and_retry(self):
         plan = self.plan(); self.collect(plan)
         first = self.repo.all('predictions')[0]
