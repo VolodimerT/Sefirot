@@ -118,6 +118,30 @@ def simulate_express(legs, hypothetical_stake, max_hypothetical_exposure):
             "execution_enabled": False}
 
 
+def pairwise_correlations(rows):
+    """Name every overlapping fixture pair; never infer independence from a third leg."""
+    from .contracts import time
+
+    findings = []
+    for index, left in enumerate(rows):
+        for right in rows[index + 1:]:
+            factors = []
+            same_league = left['league'] == right['league']
+            if same_league:
+                factors.append('SHARED_LEAGUE_FACTORS_UNQUANTIFIED')
+            if time(left['kickoff']).date() == time(right['kickoff']).date():
+                factors.append('SHARED_MATCH_DAY_FACTORS_UNQUANTIFIED')
+            if set(left['teams']) & set(right['teams']):
+                factors.append('SHARED_TEAM_ACROSS_FIXTURES' if same_league
+                               else 'SAME_TEAM_NAME_IDENTITY_UNVERIFIED')
+            if set(left['source_groups']) & set(right['source_groups']):
+                factors.append('SHARED_SOURCE_GROUP_UNQUANTIFIED')
+            if factors:
+                findings.append({'fixture_ids': [left['fixture_id'], right['fixture_id']],
+                                 'factors': factors})
+    return findings
+
+
 def review_independent_express(legs, policy, at):
     """Review two/three sealed, distinct-fixture main legs without placing bets.
 
@@ -126,12 +150,11 @@ def review_independent_express(legs, policy, at):
     Quote receipts prove local content binding, not bookmaker acceptance of a
     combined ticket or its actual settlement rules.
     """
-    from .contracts import time
     from .market_grid import compare_grid
 
     if not isinstance(legs, list) or len(legs) not in (2, 3):
         raise ValueError('two or three predeclared legs required')
-    rows = []; fixture_ids = set(); bookmakers = set(); teams = set(); risk = set()
+    rows = []; fixture_ids = set(); bookmakers = set(); risk = set()
     for leg in legs:
         if not isinstance(leg, dict) or set(leg) != {
                 'grid', 'prediction', 'quotes', 'receipt', 'market_key', 'line_id'}:
@@ -153,33 +176,39 @@ def review_independent_express(legs, policy, at):
         if abs(fsum((win, push, loss)) - 1) > 1e-8:
             raise ValueError('invalid sealed outcome mass')
         bookmakers.add(price['bookmaker'])
-        new_teams = {match['home'], match['away']}
-        if teams & new_teams: risk.add('SHARED_TEAM_ACROSS_FIXTURES')
-        teams.update(new_teams)
         rows.append({'fixture_id': fid, 'league': match['league'],
                      'kickoff': match['kickoff'], 'market_key': candidate['key'],
+                     'teams': [match['home'], match['away']],
+                     'source_groups': sorted({fact['source_group'] for fact in
+                         grid['sports_facts']['facts']}),
                      'bookmaker': price['bookmaker'], 'line_id': price['line_id'],
                      'odds': odds, 'raw_win': win, 'raw_push': push,
                      'raw_loss': loss, 'sport_quality': candidate['sport_quality']['status'],
+                     'raw_stress_expected_gross_min': min(
+                         p[0] * odds + p[1] for p in candidate['stress_probabilities']),
                      'bet_value': candidate['bet_value']['status'],
                      'raw_expected_gross': win * odds + push,
                      'raw_single_ev': win * odds + push - 1,
                      'synthetic': grid['synthetic']})
+    findings = pairwise_correlations(rows)
+    risk.update(factor for finding in findings for factor in finding['factors'])
     if len(bookmakers) != 1: risk.add('CROSS_BOOKMAKER_PRICES')
-    if len({r['league'] for r in rows}) == 1: risk.add('SHARED_LEAGUE_FACTORS_UNQUANTIFIED')
-    if len({time(r['kickoff']).date() for r in rows}) == 1: risk.add('SHARED_MATCH_DAY_FACTORS_UNQUANTIFIED')
     if any(r['synthetic'] for r in rows): risk.add('SYNTHETIC_SOURCE')
     # PUSH returns one unit on that leg. A half-win/loss needs the separate
     # quarter-line contract and a verified bookmaker repricing rule.
     raw_gross = 1.; full_win_odds = 1.; full_win_probability = 1.
+    no_full_loss = 1.; stressed_gross_floor = 1.
     for row in rows:
         raw_gross *= row['raw_expected_gross']
         full_win_odds *= row['odds']
         full_win_probability *= row['raw_win']
+        no_full_loss *= 1 - row['raw_loss']
+        stressed_gross_floor *= row['raw_stress_expected_gross_min']
     best = max(rows, key=lambda r: (r['raw_single_ev'], r['fixture_id'], r['market_key']))
     return {'schema': 'independent-express-research-v1', 'at': at, 'legs': rows,
             'mode': 'INDEPENDENT_EXPRESS', 'sport_quality': 'UNVERIFIED',
             'bet_value': 'UNVERIFIED', 'independence': 'ASSUMED_NOT_ESTABLISHED',
+            'correlation_findings': findings,
             'correlation_risks': sorted(risk),
             'raw_full_win_probability_if_independent': full_win_probability,
             'raw_expected_gross_if_independent': raw_gross,
@@ -188,7 +217,11 @@ def review_independent_express(legs, policy, at):
             'actual_combined_bookmaker_price': None,
             'best_single_raw_diagnostic': {'fixture_id': best['fixture_id'],
                 'market_key': best['market_key'], 'raw_ev': best['raw_single_ev']},
+            'best_confirmed_single': None,
             'validated_probability': None, 'validated_ev': None,
-            'death_test': 'JOINT_STRESS_AND_CORRELATION_UNVALIDATED',
+            'death_test': {'status': 'RAW_INDEPENDENCE_DIAGNOSTIC_ONLY',
+                'any_full_loss_probability_if_independent': 1 - no_full_loss,
+                'stressed_expected_gross_floor_if_independent': stressed_gross_floor,
+                'correlation_unmodelled': bool(findings)},
             'class': 'C', 'decision': 'PASS', 'stake': 0.,
             'monetary_permission': False, 'execution_enabled': False}
