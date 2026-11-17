@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sefirot.markets import market_reference, payoff_ev, margin
-from sefirot.quarter_lines import quarter_payoff, quarter_review, simulate_express, review_independent_express
+from sefirot.quarter_lines import quarter_payoff, quarter_review, simulate_express, review_independent_express, pairwise_correlations
 from sefirot.contracts import Policy, digest
 from sefirot.fixtures import example
 from sefirot.market_grid import create_grid
@@ -15,6 +15,31 @@ from datetime import datetime, timedelta, timezone
 
 
 class FactsFirstMathTests(unittest.TestCase):
+    def test_pairwise_correlation_reports_only_the_affected_fixture_ids(self):
+        rows = [
+            {'fixture_id': 'a1', 'league': 'A', 'kickoff': '2030-01-01T12:00:00+00:00',
+             'teams': ['Alpha', 'Beta'], 'source_groups': ['source-1']},
+            {'fixture_id': 'a2', 'league': 'A', 'kickoff': '2030-01-02T12:00:00+00:00',
+             'teams': ['Gamma', 'Delta'], 'source_groups': ['source-2']},
+            {'fixture_id': 'b1', 'league': 'B', 'kickoff': '2030-01-03T12:00:00+00:00',
+             'teams': ['Epsilon', 'Zeta'], 'source_groups': ['source-3']},
+        ]
+        self.assertEqual(pairwise_correlations(rows), [
+            {'fixture_ids': ['a1', 'a2'],
+             'factors': ['SHARED_LEAGUE_FACTORS_UNQUANTIFIED']}])
+        rows[2]['kickoff'] = '2030-01-02T15:00:00+00:00'
+        self.assertEqual(pairwise_correlations(rows)[1], {
+            'fixture_ids': ['a2', 'b1'],
+            'factors': ['SHARED_MATCH_DAY_FACTORS_UNQUANTIFIED']})
+        rows[2]['kickoff'] = '2030-01-03T15:00:00+00:00'
+        rows[2]['teams'][0] = 'Gamma'
+        self.assertEqual(pairwise_correlations(rows)[1], {
+            'fixture_ids': ['a2', 'b1'],
+            'factors': ['SAME_TEAM_NAME_IDENTITY_UNVERIFIED']})
+        rows[0]['league'] = 'C'
+        rows[2]['teams'][0] = 'Eta'
+        self.assertEqual(pairwise_correlations(rows), [])
+
     def test_complete_two_way_185_is_fair_reference_200_not_value(self):
         stamp = "2030-01-01T10:00:00+00:00"
         quotes = [{"market": {"kind": "TOTAL", "side": side, "line": 2.5},
@@ -91,7 +116,8 @@ class FactsFirstMathTests(unittest.TestCase):
                 grid_at = (now + timedelta(minutes=1)).isoformat()
                 quote_at = (now + timedelta(minutes=2)).isoformat()
                 grid = create_grid(prediction, policy, grid_at)
-                quotes = [{'market': {'kind': 'TOTAL', 'side': side, 'line': 2.5},
+                line = 2.5 if fid == 'synthetic-one' else 2.
+                quotes = [{'market': {'kind': 'TOTAL', 'side': side, 'line': line},
                            'bookmaker': 'SYNTHETIC_BOOK', 'odds': 1.85,
                            'observed_at': quote_at, 'received_at': quote_at,
                            'phase': 'FINAL', 'rules': 'REGULATION_90',
@@ -100,9 +126,10 @@ class FactsFirstMathTests(unittest.TestCase):
                            'grid_hash': grid['hash'], 'fixture_id': fid,
                            'bookmaker': 'SYNTHETIC_BOOK', 'received_at': quote_at}
                 legs.append({'grid': grid, 'prediction': prediction, 'quotes': quotes,
-                             'receipt': receipt, 'market_key': 'TOTAL:OVER:2.5',
+                             'receipt': receipt, 'market_key': f'TOTAL:OVER:{line:g}',
                              'line_id': 'complete-total'})
             review = review_independent_express(legs, policy, quote_at)
+            self.assertGreater(review['legs'][1]['raw_push'], 0)
             self.assertAlmostEqual(review['raw_expected_gross_if_independent'],
                                    review['legs'][0]['raw_expected_gross'] * review['legs'][1]['raw_expected_gross'])
             self.assertEqual(review['quoted_full_win_odds_product_diagnostic'], 1.85**2)
@@ -110,6 +137,13 @@ class FactsFirstMathTests(unittest.TestCase):
             self.assertIsNone(review['validated_ev'])
             self.assertEqual(review['independence'], 'ASSUMED_NOT_ESTABLISHED')
             self.assertIn('SHARED_TEAM_ACROSS_FIXTURES', review['correlation_risks'])
+            self.assertEqual(review['correlation_findings'][0]['fixture_ids'],
+                             ['synthetic-one', 'synthetic-two'])
+            self.assertAlmostEqual(review['death_test']['any_full_loss_probability_if_independent'],
+                                   1 - (1 - review['legs'][0]['raw_loss']) *
+                                   (1 - review['legs'][1]['raw_loss']))
+            self.assertTrue(review['death_test']['correlation_unmodelled'])
+            self.assertIsNone(review['best_confirmed_single'])
             self.assertEqual((review['class'], review['decision'], review['stake']), ('C', 'PASS', 0.))
             self.assertEqual(repo.all('decisions'), [])
             self.assertTrue(repo.verify())

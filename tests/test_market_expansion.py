@@ -68,7 +68,7 @@ class ExpandedFeedTests(unittest.TestCase):
             block['outcomes'][1]['point'] = point
             result = self.convert(event)
             self.assertFalse(any(line['provider_market'] == key for line in result['receipt']['lines']))
-            self.assertTrue(any(r['reason'] == 'INCOMPLETE_OR_DUPLICATE_LINE' for r in result['receipt']['rejected_lines']))
+            self.assertTrue(any(r['reason'] == 'INCOMPLETE_LINE' for r in result['receipt']['rejected_lines']))
 
     def test_quarter_bool_unknown_team_and_duplicate_rejected(self):
         for change in ('quarter', 'bool', 'wrong_team', 'duplicate'):
@@ -91,7 +91,7 @@ class ExpandedFeedTests(unittest.TestCase):
         self.assertEqual({market_of(q['market']).key for q in result['quotes']},
                          {'TOTAL:OVER:2.5', 'TOTAL:UNDER:2.5'})
         self.assertEqual([r['reason'] for r in result['receipt']['rejected_lines']],
-                         ['UNSUPPORTED_QUARTER_LINE', 'UNSUPPORTED_QUARTER_LINE'])
+                         ['UNSUPPORTED_QUARTER_LINE'])
         self.assertEqual(result['receipt']['quotes_hash'], digest(result['quotes']))
 
         # An actually malformed neighboring outcome still invalidates the
@@ -100,6 +100,30 @@ class ExpandedFeedTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'no complete supported'):
             quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
                               rules_confirmed=True, market_keys=('totals',))
+
+    def test_quarter_partition_distinguishes_complete_missing_duplicate(self):
+        for mode, expected in (('complete', 'UNSUPPORTED_QUARTER_LINE'),
+                               ('missing', 'INCOMPLETE_LINE'),
+                               ('duplicate', 'DUPLICATE_LINE_OUTCOME')):
+            p, event, at = expanded_event()
+            block = next(m for m in event['bookmakers'][0]['markets'] if m['key'] == 'totals')
+            quarter = [{'name': 'Over', 'point': 2.25, 'price': 1.9},
+                       {'name': 'Under', 'point': 2.25, 'price': 1.9}]
+            if mode == 'missing': quarter.pop()
+            if mode == 'duplicate': quarter.append(copy.deepcopy(quarter[0]))
+            block['outcomes'] += quarter
+            result = quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
+                                       rules_confirmed=True, market_keys=('totals',))
+            self.assertEqual([r['reason'] for r in result['receipt']['rejected_lines']], [expected])
+            self.assertEqual({market_of(q['market']).key for q in result['quotes']},
+                             {'TOTAL:OVER:2.5', 'TOTAL:UNDER:2.5'})
+
+        p, event, at = expanded_event()
+        block = next(m for m in event['bookmakers'][0]['markets'] if m['key'] == 'totals')
+        block['outcomes'].append(copy.deepcopy(block['outcomes'][0]))
+        result = quotes_from_event(event, p, 'soccer_epl', 'event1234', 'testbook', at,
+                                   rules_confirmed=True, market_keys=('h2h', 'totals'))
+        self.assertIn('DUPLICATE_LINE_OUTCOME', [r['reason'] for r in result['receipt']['rejected_lines']])
 
     def test_non_json_nan_payload_rejects_the_entire_import(self):
         _, event, _ = expanded_event()
@@ -189,6 +213,20 @@ class FrozenGridTests(unittest.TestCase):
         quotes[0]['odds']=10.0
         with self.assertRaisesRegex(ValueError,'API receipt'):
             compare_grid(self.grid,self.prediction,quotes,self.policy,at,receipt)
+
+    def test_client_rehashed_receipt_cannot_attest_provider_origin(self):
+        quotes = self.quotes(); at = quotes[0]['received_at']
+        receipt = {'provider': 'THE_ODDS_API_V4', 'quotes_hash': digest(quotes),
+                   'grid_hash': self.grid['hash'], 'fixture_id': self.grid['match']['id'],
+                   'bookmaker': 'API_BOOK', 'received_at': at}
+        local = compare_grid(self.grid, self.prediction, quotes, self.policy, at, receipt)
+        self.assertEqual(local['quote_origin_status'], 'NOT_ATTESTED_BY_PRIVATE_SERVER')
+        self.assertIsNone(local['trusted_server_receipt_id'])
+        for claim in ({'origin_attested': True}, {'server_receipt_id': 'forged-id'},
+                      {'trusted': False}):
+            with self.subTest(claim=claim), self.assertRaisesRegex(ValueError, 'origin claim'):
+                compare_grid(self.grid, self.prediction, quotes, self.policy, at,
+                             {**receipt, **claim})
 
     def test_fifty_contracts_and_sealed_candidates_agree_without_journal_writes(self):
         self.assertEqual(len(universe()), 50)

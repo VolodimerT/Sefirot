@@ -124,6 +124,11 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
         or receipt.get('quotes_hash') != digest(quotes) or receipt.get('grid_hash') != grid['hash']
         or receipt.get('fixture_id') != grid['match']['id']):
         raise ValueError('matching API receipt required; manual or altered quotes rejected')
+    # A caller can recompute a local hash. It cannot assert server provenance
+    # by attaching a self-declared trust flag or an unverified private ID.
+    if {'origin_attested', 'provider_origin_attested', 'trusted',
+        'server_receipt_id', 'trust_level'} & receipt.keys():
+        raise ValueError('client-supplied quote origin claim rejected')
     by_key = {}; eligible_quotes = []
     for quote in quotes:
         if quote.get('bookmaker') != receipt.get('bookmaker') or quote.get('received_at') != receipt.get('received_at'):
@@ -183,7 +188,9 @@ def compare_grid(grid, prediction, quotes, policy, at, receipt=None):
             'prediction_id': prediction['id'], 'at': at, 'candidates': rows,
             'candidate_count': len(rows), 'priced_count': sum(bool(row['prices']) for row in rows),
             'quotes_hash': digest(quotes), 'api_receipt_hash': digest(receipt),
-            'provenance': 'Local API adapter receipt; content binding, not a provider digital signature',
+            'provenance': 'CLIENT_SUPPLIED_LOCAL_HASH_ONLY; provider origin not attested',
+            'quote_origin_status': 'NOT_ATTESTED_BY_PRIVATE_SERVER',
+            'trusted_server_receipt_id': None,
             'monetary_permission': False, 'execution_enabled': False,
             'selection_validation': grid['selection_validation'],
             'next_action': 'Validate the full frozen selection procedure on unseen matches; EV alone grants no admission'}

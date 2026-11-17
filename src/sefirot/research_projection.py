@@ -30,6 +30,7 @@ def match_research_view(grid, prediction, quotes, receipt, policy, at):
             'at': at, 'source_status': 'SYNTHETIC' if grid['synthetic'] else 'SEALED_RESEARCH',
             'sports_facts': grid['sports_facts'], 'markets': rows,
             'priced_markets': compared['priced_count'],
+            'quote_origin_status': compared['quote_origin_status'],
             'missing_sources': grid['sports_facts']['missing_metrics'],
             'decision': 'PASS', 'monetary_permission': False,
             'execution_enabled': False}
