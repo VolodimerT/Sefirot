@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -59,6 +60,19 @@ def _file_hash(path):
         for block in iter(lambda: stream.read(1 << 20), b''):
             h.update(block)
     return h.hexdigest()
+
+
+def _ledger_state(path):
+    """Reject live SQLite sidecars and path substitution at each replay boundary."""
+    try:
+        info = path.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_size > 256_000_000
+                or any(Path(str(path) + suffix).exists()
+                       for suffix in ('-journal', '-wal', '-shm'))):
+            raise ValueError('CHECKPOINTED_REGULAR_LEDGER_REQUIRED')
+    except OSError:
+        raise ValueError('CHECKPOINTED_REGULAR_LEDGER_REQUIRED') from None
+    return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns
 
 
 def _recorded_build(ledger, decision_id):
@@ -152,15 +166,13 @@ def _extract_build(repo, commit, destination):
 def replay_historical(ledger, decision_id, *, builds=PINNED_BUILDS, repo_root=None):
     """Route a read-only copy by sealed code_hash and version, never by a label alone."""
     path = Path(ledger)
-    if (path.is_symlink() or not path.is_file() or path.stat().st_size > 256_000_000
-            or Path(str(path)+'-wal').exists() or Path(str(path)+'-shm').exists()):
-        raise ValueError('CHECKPOINTED_REGULAR_LEDGER_REQUIRED')
+    initial_state = _ledger_state(path)
     repo_root = Path(repo_root or Path(__file__).resolve().parents[1])
     original_hash = _file_hash(path)
     with TemporaryDirectory(prefix='sefirot-historical-replay-') as tmp:
         copied = Path(tmp)/'ledger.sqlite'
         shutil.copyfile(path, copied)
-        if _file_hash(copied) != original_hash:
+        if _ledger_state(path) != initial_state or _file_hash(copied) != original_hash:
             raise ValueError('LEDGER_CHANGED_DURING_COPY')
         sealed_hash, version = _recorded_build(copied, decision_id)
         selected = None
@@ -191,7 +203,8 @@ def replay_historical(ledger, decision_id, *, builds=PINNED_BUILDS, repo_root=No
         if (result != {'matches':True,'decision_id':decision_id,
                        'code_hash':sealed_hash,'version':version}):
             raise ValueError('HISTORICAL_REPLAY_MISMATCH')
-        if _file_hash(copied) != original_hash or _file_hash(path) != original_hash:
+        if (_ledger_state(path) != initial_state or _file_hash(copied) != original_hash
+                or _file_hash(path) != original_hash):
             raise ValueError('LEDGER_CHANGED_DURING_REPLAY')
         return {'status':'MATCH', 'build':label, 'commit':commit,
                 'code_hash':sealed_hash, 'version':version,

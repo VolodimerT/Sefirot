@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import os
+import sqlite3
 
 from research.historical_replay import replay_historical
 from research.prematch_scenario import run_scenario
@@ -51,6 +52,35 @@ class HistoricalReplayTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'CHECKPOINTED_REGULAR_LEDGER_REQUIRED'):
             replay_historical(self.ledger, self.case['decision_id'],
                               builds={'REVIEWED': self.commit}, repo_root=self.repo)
+        self.assertEqual(sha256(self.ledger.read_bytes()).hexdigest(), self.before)
+
+    def test_active_rollback_journal_is_rejected_without_changing_ledger(self):
+        db = sqlite3.connect(self.ledger)
+        try:
+            db.execute('BEGIN IMMEDIATE')
+            db.execute('CREATE TABLE qa_active_transaction (id INTEGER)')
+            self.assertTrue(Path(str(self.ledger)+'-journal').exists())
+            with self.assertRaisesRegex(ValueError, 'CHECKPOINTED_REGULAR_LEDGER_REQUIRED'):
+                replay_historical(self.ledger, self.case['decision_id'],
+                                  builds={'REVIEWED': self.commit}, repo_root=self.repo)
+        finally:
+            db.rollback()
+            db.close()
+        self.assertEqual(sha256(self.ledger.read_bytes()).hexdigest(), self.before)
+
+    def test_identical_bytes_cannot_hide_ledger_path_replacement(self):
+        original_copy = shutil.copyfile
+
+        def replace_after_copy(src, dst):
+            original_copy(src, dst)
+            replacement = self.root/'replacement.sqlite'
+            replacement.write_bytes(self.ledger.read_bytes())
+            replacement.replace(self.ledger)
+
+        with patch('research.historical_replay.shutil.copyfile', side_effect=replace_after_copy):
+            with self.assertRaisesRegex(ValueError, 'LEDGER_CHANGED_DURING_COPY'):
+                replay_historical(self.ledger, self.case['decision_id'],
+                                  builds={'REVIEWED': self.commit}, repo_root=self.repo)
         self.assertEqual(sha256(self.ledger.read_bytes()).hexdigest(), self.before)
 
     def test_unknown_decision_and_invalid_build_label_fail_closed(self):

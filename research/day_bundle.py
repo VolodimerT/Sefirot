@@ -260,17 +260,31 @@ def qualify_day(*, day, as_of, timezone='Europe/Kyiv', calendar=None, archive=No
         item['feature_coverage']['history'] = bool(history)
         metric_sources = []
         for prior in history:
+            prior_item = next(f for f in report['fixtures'] if f['fixture_id']==prior)
+            source_kickoff = time(prior_item['kickoff'])
+            expected_teams = set(prior_item['team_ids'].values())
             for rec,p in enrichment[prior]:
                 if (p['receipt']['endpoint'].lstrip('/')=='fixtures/statistics'
-                        and time(rec['available_at'])<time(item['kickoff'])):
+                        and p['data']['response']
+                        and {team['team']['id'] for team in p['data']['response']} <= expected_teams
+                        and time(p['receipt']['received_at']) >= source_kickoff
+                        and time(p['receipt']['received_at']) < min(cutoff,time(item['kickoff']))
+                        and time(rec['available_at']) < min(cutoff,time(item['kickoff']))):
                     metric_sources.append({'fixture_id':prior,'packet_hash':digest(p),
-                        'available_at':rec['available_at'],
+                        'source_match_kickoff':source_kickoff.isoformat(),
+                        'received_at':p['receipt']['received_at'],
+                        'first_local_available_at':rec['available_at'],
+                        'scan_cutoff':cutoff.isoformat(),
+                        'target_kickoff':item['kickoff'],
                         'metrics':sorted({v['type'] for team in p['data']['response']
                             for v in team.get('statistics',[]) if v.get('value') is not None})})
         item['historical_statistic_sources'] = metric_sources
         item['feature_coverage']['statistics'] = bool(metric_sources)
-        item['feature_coverage']['xg'] = any(set(p['metrics']) & {'Expected Goals','expected_goals'}
-                                           for p in metric_sources)
+        item['observed_historical_xg'] = any('expected_goals' in p['metrics']
+                                            for p in metric_sources)
+        # A numeric provider field has no documented unit/definition in the
+        # saved original. Observation is useful for audit, not model admission.
+        item['feature_coverage']['xg'] = False
         item['missing_sources'] = [v for k,v in REQUIRED.items() if not item['feature_coverage'][k]]
         for review in item['roles'].values():
             review['reasons'] = sorted(set(review['reasons'] + [v for k,v in REQUIRED.items() if k!='quotes' and not item['feature_coverage'][k]]))
