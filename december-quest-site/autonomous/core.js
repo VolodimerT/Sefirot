@@ -26,7 +26,7 @@ function parseCsv(raw){
  const headers=matrix.shift()?.map(v=>v.trim())||[];
  if(!headers.includes('HomeTeam')||!headers.includes('AwayTeam'))throw Error('CSV_WRONG_SCHEMA');
  const records=[];
- for(const r of matrix){if(r.length<6)continue;const o={};headers.forEach((k,i)=>{if(k)o[k]=r[i]??'';});records.push(o);}
+ for(const r of matrix){if(r.length<3)continue;const o={};headers.forEach((k,i)=>{if(k)o[k]=r[i]??'';});records.push(o);}
  return records;
 }
 function csvDate(v){
