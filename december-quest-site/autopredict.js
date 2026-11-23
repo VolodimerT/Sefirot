@@ -3,7 +3,7 @@
 'use strict';
 const B=window.questBridge,KEY='sb_publishable_ue9huxLpXqo4iJxRGfd3yw_WRM0sHBO';
 const API='https://kxqpwgwihtjmqlcxgfxp.supabase.co/rest/v1/';
-const H=B.escape;let data=[],run=null,ready=false,loading=false,error='',lastLoaded=0,day='all',league='all',modelOnly=false;
+const H=B.escape;let data=[],run=null,validation=[],settlements=[],ready=false,loading=false,error='',lastLoaded=0,day='all',league='all',modelOnly=false;
 const dateFmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'});
 const timeFmt=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit',hour12:false});
 const fmt=(v,d=1)=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d}):'Н/Д';
@@ -17,17 +17,19 @@ async function request(path){
  return x;
 }
 const stat=()=>({total:data.length,ready:data.filter(x=>x.status==='MODEL_ONLY'||x.status==='WAITING_ODDS').length,
- unsupported:data.filter(x=>x.status==='UNSUPPORTED_LEAGUE').length,last:run?.completed_at||null});
+ unsupported:data.filter(x=>x.status==='UNSUPPORTED_LEAGUE').length,validated_leagues:validation.length,settled:settlements.length,last:run?.completed_at||null});
 function active(){return location.hash.slice(1).split('?')[0]==='autopredict';}
 async function load(){
  if(loading)return;loading=true;error='';
  try{
-  const [forecasts,runs]=await Promise.all([
+  const [forecasts,runs,checks,finished]=await Promise.all([
    request('sefirot_december_quest_auto_forecasts?select=fixture_key,competition,kickoff,generated_at,source_cutoff,model_version,status,verdict,risk_class,probabilities,markets,best_candidate,evidence,sample_n,notes&order=kickoff.asc&limit=200'),
-   request('sefirot_december_quest_auto_runs?select=started_at,completed_at,run_status,fetch_ok,sources_attempted,scanned,forecasted,insufficient,errors&order=started_at.desc&limit=1')
+   request('sefirot_december_quest_auto_runs?select=started_at,completed_at,model_version,run_status,fetch_ok,sources_attempted,scanned,forecasted,insufficient,errors&order=started_at.desc&limit=1'),
+   request('sefirot_december_quest_auto_validation?select=competition,model_version,sample_n,model_brier,baseline_brier,model_logloss,baseline_logloss,relative_skill,status,generated_at&order=competition.asc&limit=20'),
+   request('sefirot_december_quest_auto_settlements?select=fixture_key,model_brier,model_logloss,result,settled_at,source_quality&order=settled_at.desc&limit=200')
   ]);
   data=forecasts.filter(x=>typeof x.fixture_key==='string'&&Number.isFinite(Date.parse(x.kickoff))&&x.probabilities);
-  run=runs[0]||null;lastLoaded=Date.now();ready=true;
+  run=runs[0]||null;validation=checks;settlements=finished;lastLoaded=Date.now();ready=true;
  }catch(e){error=String(e.message||e);ready=true;}
  finally{loading=false;if(active())B.refresh();}
 }
@@ -63,10 +65,20 @@ function view(){
  '<article><small>Нет покрытия</small><strong>'+counts.unsupported+'</strong></article>'+
  '<article><small>Проверенных value</small><strong>0</strong></article></div>';
  out+='<div class="panel v6-auto-intro"><div><b>Последний расчёт:</b> '+H(latest)+' (Киев) · '+H(run?.run_status||'нет')+' · источники '+H(String(run?.fetch_ok??0))+'/'+H(String(run?.sources_attempted??0))+'</div>'+
- '<div><b>Автозапуск:</b> ежедневно в 19:00 по Киеву; дата матча и время — отдельный gate.</div>'+
+ '<div><b>Автозапуск:</b> ежедневно в 19:00 по Киеву; версия '+H(run?.model_version||'нет')+'; дата матча и время — отдельный gate.</div>'+
  '<div class="v6-auto-actions"><button class="button secondary" data-auto="reload">Перечитать прогнозы</button><button class="button secondary" data-route="maintenance">Контроль расписания</button></div></div>';
  if(error)out+='<div class="notice warn">Доступность модели временно не подтверждена: '+H(error)+'. Сохранённые старые P могут устареть. PASS.</div>';
  if(loading&&!ready)out+='<div class="notice">Получаю автоматические прогнозы из Supabase…</div>';
+ const audit=validation.filter(v=>v.sample_n>0);
+ out+='<section class="panel v6-auto-audit"><div class="section-head"><h2 class="section-heading">Проверка модели</h2><span class="muted small">Walk-forward, только матчи до прогноза</span></div>';
+ if(!audit.length)out+='<p class="muted">Историческая проверка пока отсутствует. Не считай P подтверждённой.</p>';
+ else {
+  out+='<div class="table-scroll"><table class="table"><thead><tr><th>Лига</th><th>Тестов</th><th>Brier модели</th><th>Brier базы</th><th>Результат</th></tr></thead><tbody>';
+  for(const v of audit)out+='<tr><td>'+H(competitionNames[v.competition]||v.competition)+'</td><td>'+H(String(v.sample_n))+'</td><td>'+fmt(Number(v.model_brier),4)+'</td><td>'+fmt(Number(v.baseline_brier),4)+'</td><td>'+H(v.status==='PROMISING'?'Ниже базы (пока SHADOW)':v.status==='NO_EDGE'?'Нет преимущества над базой':'Недостаточно')+'</td></tr>';
+  out+='</tbody></table></div>';
+ }
+ const avgSettle=settlements.length?settlements.reduce((a,z)=>a+Number(z.model_brier||0),0)/settlements.length:null;
+ out+='<p class="muted small">Проспективно проверенных исходов: <b>'+settlements.length+'</b> · средний Brier '+(avgSettle===null?'Н/Д':fmt(avgSettle,4))+'. Исторический результат может отличаться от будущего. Букмекерское преимущество не доказано.</p></section>';
  if(!data.length)return out+emptyState();
  out+='<div class="panel v6-auto-filter"><label>День<select id="v6-auto-day"><option value="all"'+(day==='all'?' selected':'')+'>Все 31 дня</option>';
  for(let d=1;d<=31;d++){const val='2026-12-'+String(d).padStart(2,'0');out+='<option value="'+val+'"'+(day===val?' selected':'')+'>'+d+' декабря</option>';}
