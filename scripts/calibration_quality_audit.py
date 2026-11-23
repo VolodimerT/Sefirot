@@ -40,6 +40,8 @@ DEFAULT_COVERAGE_MIN = 0.8
 def _validate(report):
     if not isinstance(report, dict) or report.get("schema") != "forward-scorecard-v1":
         raise ValueError("original forward-scorecard-v1 required")
+    if report.get("synthetic_test_only"):
+        raise ValueError("synthetic scorecard is test-only")
     content = dict(report)
     signature = content.pop("hash", None)
     if not isinstance(signature, str) or signature != digest(content):

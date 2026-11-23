@@ -8,11 +8,17 @@ from collections import Counter
 
 from .contracts import PROFILES, digest, integer, number, time
 from .football_provider import MAX_PROVIDER_ID, fixture_identity, validate_prematch_state
+from .evaluation import probability_vector
 from .identity import code_hash, model_code_hash
 from .markets import DEFAULT_POOL
 from .sports_archive import export_sports, read_archive, validate_packet
 
 SCHEMA = 'api-forward-plan-v1'
+# These optional facts are unavailable in the sports-only goal baseline.
+# Their absence still blocks money decisions under the original Policy.
+SHADOW_OPTIONAL_FACTS = frozenset({
+    'MISSING_LINEUP', 'MISSING_INJURIES', 'MISSING_COACH', 'MISSING_ROTATION', 'MISSING_TACTICS',
+})
 
 
 def _save(service, payload):
@@ -38,7 +44,16 @@ def _plan(service, plan_id, *, current=True):
 
 
 def create_plan(service, packet, profiles, *, role='CALIBRATION',
-                source_reliability, calibrator_id=None):
+                source_reliability, calibrator_id=None, shadow=False, synthetic_test_only=False):
+    if synthetic_test_only and (not shadow or role != 'CALIBRATION'):
+        raise ValueError('synthetic data requires a shadow calibration test plan')
+    if shadow:
+        from .football_query import validate_fixture_query
+        params = packet['receipt']['parameters']
+        if (packet['receipt'].get('transport') != 'SUPABASE_GATEWAY'
+                or set(params) != {'id'} or len(packet['data']['response']) != 1):
+            raise ValueError('shadow requires an exact single-fixture gateway packet')
+        validate_fixture_query(packet['data'], params)
     at = service.now()
     validate_packet(packet, at)
     if not service.repo.verify():
@@ -96,6 +111,9 @@ def create_plan(service, packet, profiles, *, role='CALIBRATION',
             'selection_receipt': deepcopy(packet['receipt']), 'excluded_counts': dict(excluded),
             'selection': 'Every future NS fixture in the declared leagues of this API packet',
             'monetary_permission': False, 'execution_enabled': False}
+    if shadow:
+        plan['shadow'] = True
+        plan['synthetic_test_only'] = synthetic_test_only
     plan['id'] = digest(plan)
     # Reserve every member and the plan atomically, before the first forecast.
     with service.repo.transaction():
@@ -149,8 +167,28 @@ def capture_plan(service, plan_id, archive):
                 elif (plan['calibrator_id'] and time(service.repo.get('calibrators', plan['calibrator_id'])['fit_at'])
                       > time(imported['sports']['as_of'])):
                     row.update(status='CALIBRATOR_NEWER_THAN_SPORTS_DATA')
+                elif plan.get('shadow') and set(imported['coverage']['blockers']) - SHADOW_OPTIONAL_FACTS:
+                    row.update(status='SHADOW_SPORTS_GATE_BLOCKED')
                 else:
-                    prediction = service.capture(imported['sports'], plan['markets'], plan['calibrator_id'])
+                    sports = imported['sports']
+                    if plan.get('synthetic_test_only'):
+                        sports = {**sports, 'synthetic': True}
+                        row['sports_hash'] = digest(sports)
+                    if plan.get('shadow'):
+                        try:
+                            with service.repo.transaction():
+                                prediction = service.capture(sports, plan['markets'], plan['calibrator_id'])
+                                for candidate in prediction['candidates']:
+                                    probability_vector(candidate['raw'])
+                                    probability_vector(candidate['base'])
+                                if set(i['code'] for i in prediction['issues'] if i['severity'] == 'BLOCK') - SHADOW_OPTIONAL_FACTS:
+                                    raise ValueError('shadow model admission blocked')
+                        except (ValueError, ArithmeticError):
+                            row.update(status='SHADOW_MODEL_REJECTED')
+                            attempts.append(row)
+                            continue
+                    else:
+                        prediction = service.capture(sports, plan['markets'], plan['calibrator_id'])
                     row.update(status='SEALED_RESEARCH', prediction_id=prediction['id'],
                                sports_gates_passed=not imported['coverage']['blockers'])
         attempts.append(row)
@@ -163,8 +201,10 @@ def settle_plan(service, plan_id, packet):
     plan = _plan(service, plan_id)
     at = service.now(); validate_packet(packet, at)
     statuses_before = {r['match_id']: r['status'] for r in inspect_plan(service, plan_id)['fixtures']}
-    if any(s == 'INVALID_OR_REVISED_SEAL' for s in statuses_before.values()):
+    if 'INVALID_OR_REVISED_SEAL' in statuses_before.values():
         raise ValueError('cohort contains an incompatible or revised forecast; review required')
+    if 'RESULT_REVIEW' in statuses_before.values():
+        raise ValueError('cohort contains a disputed result; review required')
     observed = {r['fixture']['id']: r for r in packet['data']['response']}
     ready, statuses = [], []
     for member in plan['members']:
@@ -211,6 +251,11 @@ def settle_plan(service, plan_id, packet):
         'finished_at_semantics': 'FT receipt upper bound; exact final whistle unknown'})
 
 
+def disputed_shadow_plans(jobs):
+    return {job['plan_id'] for job in jobs if job.get('schema') == 'prospective-shadow-state-v1'
+            and job.get('status') == 'RESULT_REVIEW' and job.get('plan_id')}
+
+
 def inspect_plan(service, plan_id):
     # Share exact original-seal validation with the scorecard. Import locally
     # because the read-only scorecard also uses this module's plan validator.
@@ -219,6 +264,7 @@ def inspect_plan(service, plan_id):
     assignments = {a['match_id']: a for a in service.repo.all('split_assignments')}
     results = {r['match_id']: r for r in service.repo.all('results')}
     jobs = service.repo.all('jobs')
+    disputed = plan_id in disputed_shadow_plans(jobs)
     api_sources = {}
     for job in jobs:
         if job.get('plan_id') == plan_id and job.get('schema') == 'api-forward-result-source-v1':
@@ -234,6 +280,8 @@ def inspect_plan(service, plan_id):
                   else 'SETTLED' if result else 'AWAITING_RESULT')
         if status == 'NO_SEAL' and time(service.now()) >= time(member['match']['kickoff']):
             status = 'MISSED_PREMATCH_WINDOW'
+        if disputed and original:
+            status = 'RESULT_REVIEW'
         if status == 'SETTLED' and result['source'] not in api_sources.get(mid, set()):
             status = 'SETTLED_WITHOUT_FORWARD_API_RECEIPT'
         rows.append({'match_id': mid, 'kickoff': member['match']['kickoff'], 'status': status,

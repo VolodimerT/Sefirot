@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from .contracts import digest, integer, time
 from .evaluation import metrics, probability_vector
 from .football_provider import HOST
-from .forward import _plan
+from .forward import _plan, disputed_shadow_plans
 from .identity import code_hash, model_code_hash
 from .markets import market_of, settle
 
@@ -45,7 +45,7 @@ def _history_reference(prediction, market):
 def _forecast_valid(prediction, plan, member, assignment):
     return (prediction.get('id') == digest({k: v for k, v in prediction.items() if k != 'id'})
             and prediction['captured_prematch'] and not prediction['reconstructed']
-            and not prediction['synthetic'] and prediction['parent'] is None and prediction['revision'] == 0
+            and prediction['synthetic'] is bool(plan.get('synthetic_test_only')) and prediction['parent'] is None and prediction['revision'] == 0
             and prediction['code_hash'] == plan['code_hash'] and prediction['model_hash'] == plan['model_hash']
             and prediction['policy_hash'] == plan['policy_hash'] and prediction['sports']['match'] == member['match']
             and prediction['model_id'] == digest([plan['code_hash'], plan['policy_hash'], plan['calibrator_id'], None])
@@ -124,6 +124,7 @@ def create_scorecard(service, plan_id, at):
         raise ValueError('scorecard requires compatible archived probability/settlement code')
     repo = service.repo
     jobs = [j for j in repo.all('jobs', at) if j.get('plan_id') == plan_id]
+    disputed = plan_id in disputed_shadow_plans(jobs)
     assignments = {a['match_id']: a for a in repo.all('split_assignments', at)}
     results = {r['match_id']: r for r in repo.all('results', at)}
     capture_proofs = defaultdict(list); result_proofs = defaultdict(list); attempts = defaultdict(list)
@@ -161,7 +162,8 @@ def create_scorecard(service, plan_id, at):
                      and time(a['at']) <= time(p['sealed_at']) <= time(finished)
                      and a.get('source_receipts') and all(_receipt(r, p['sealed_at']) for r in a['source_receipts'])]
             result = results.get(mid)
-            if not proof: row['status'] = 'UNVERIFIED_API_CAPTURE'
+            if disputed: row['status'] = 'RESULT_REVIEW'
+            elif not proof: row['status'] = 'UNVERIFIED_API_CAPTURE'
             elif result is None: row['status'] = 'AWAITING_RESULT'
             elif result['status'] == 'VOID': row['status'] = 'VOID_NOT_SCORED'
             elif result not in result_proofs[mid]: row['status'] = 'UNVERIFIED_API_RESULT'
@@ -237,6 +239,8 @@ def create_scorecard(service, plan_id, at):
                               'Brier/log loss and ECE measure forecast diagnostics, not executable EV or profitability.',
                               'Reliability groups on small samples are noisy; no confidence interval or independent sample count is claimed.',
                               'No market benchmark, Builder validation, or certification gate is supplied by this report.']}
+    if plan.get('synthetic_test_only'):
+        output['synthetic_test_only'] = True
     output['hash'] = digest(output)
     return output
 
