@@ -172,7 +172,7 @@ def _preflight(service, archive, fid, profile, reliability, observations, at, ex
             (row, selection, original, data))
 
 
-def plan_next(service, source_repo, league, profile, source_reliability, *, limit=20):
+def plan_next(service, source_repo, league, profile, source_reliability, *, limit=20, synthetic_test_only=False):
     integer(league, 'league ID', 1, MAX_PROVIDER_ID)
     integer(limit, 'discovery limit', 1, 100)
     if profile not in PROFILES or profile == 'UNKNOWN':
@@ -196,7 +196,8 @@ def plan_next(service, source_repo, league, profile, source_reliability, *, limi
                                              observed[fid], at)
             reviews.append({'fixture_id': fid, **review})
             if admissible:
-                selected = enqueue(service, source_repo, fid, profile, source_reliability)
+                selected = enqueue(service, source_repo, fid, profile, source_reliability,
+                                   synthetic_test_only=synthetic_test_only)
                 break
     return {'at': at, 'selected': selected, 'candidates': reviews, 'network_requests': 0, **BASE}
 
@@ -344,8 +345,9 @@ def fetch_approved(service, source_repo, params, *, phase, expires_at, approval_
             raise ValueError('queued original fixture required')
         kickoff = time(task['match']['kickoff'])
         saved = _states(service).get(task['id'], {})
-        if phase == 'NS' and (time(at) >= kickoff or saved.get('status') not in (None, 'NEEDS_DATA')):
-            raise ValueError('fixture is outside collection stage')
+        if phase == 'NS' and (not kickoff - timedelta(hours=24) <= time(at) < kickoff
+                              or saved.get('status') not in (None, 'NEEDS_DATA')):
+            raise ValueError('NS requires an eligible fixture in its last 24 hours')
         if phase == 'FT' and (time(at) < kickoff + timedelta(minutes=90) or saved.get('status') not in ('AWAITING_FT', 'SETTLED')):
             raise ValueError('FT requires a sealed fixture past regulation time')
     else:

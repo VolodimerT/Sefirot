@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'src')]
 
 from research.football_pipeline import ingest
+from research.prospective_schedule import tick
 from research.prospective_shadow import enqueue, fetch_approved, plan_next, render, report, run
 from sefirot.repository import Repository
 from sefirot.service import Service
@@ -27,7 +28,9 @@ def main(argv=None):
     discover = steps.add_parser('plan-next', help='review archived upcoming matches and queue one qualified fixture')
     discover.add_argument('--league', type=int, required=True)
     discover.add_argument('--limit', type=int, default=20)
-    for selection in (add, discover):
+    scheduled = steps.add_parser('tick', help='run one cadenced offline planning/capture/settlement/report cycle')
+    scheduled.add_argument('--league', type=int, required=True)
+    for selection in (add, discover, scheduled):
         selection.add_argument('--profile', required=True, choices=('MEN', 'WOMEN', 'RESERVE', 'LOWER'))
         selection.add_argument('--source-reliability', type=float, required=True,
                                help='explicit source assertion under existing Policy')
@@ -52,6 +55,22 @@ def main(argv=None):
             args.source_db.parent.mkdir(parents=True, exist_ok=True)
             with closing(Repository(args.source_db)) as source:
                 result = [ingest(source, file.read_bytes()) for file in args.packets]
+        elif args.step == 'tick':
+            args.db.parent.mkdir(parents=True, exist_ok=True)
+            with closing(Repository(args.db)) as ledger:
+                if args.source_db.is_file():
+                    try:
+                        source = Repository(args.source_db, read_only=True)
+                    except (OSError, sqlite3.OperationalError):
+                        source = None
+                else:
+                    source = None
+                try:
+                    result = tick(Service(ledger), source, league=args.league,
+                                  profile=args.profile, reliability=args.source_reliability)
+                finally:
+                    if source is not None:
+                        source.close()
         else:
             if not args.source_db.is_file() or (args.step == 'report' and not args.db.is_file()):
                 raise ValueError('source ledger required, and report also requires a shadow ledger')
