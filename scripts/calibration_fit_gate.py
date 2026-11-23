@@ -15,6 +15,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from sefirot.contracts import Policy, digest, time
+from sefirot.forward import disputed_shadow_plans
 from sefirot.forward_scorecard import _forecast_valid, _receipt
 from sefirot.identity import model_code_hash
 from sefirot.markets import market_from_key, settle
@@ -151,12 +152,15 @@ def assess(repository, policy, at):
     contract_matches = defaultdict(set)
     verified = set()
     model_ids = set()
+    disputed = disputed_shadow_plans(jobs)
     for r in records:
         mid = r["match_id"]
         try:
             if mid not in plans or mid not in assignments:
                 raise ValueError("training observation has no original calibration plan")
             plan, member = plans[mid]
+            if plan['id'] in disputed:
+                raise ValueError('original forward result is disputed')
             pred = predictions.get(r["prediction_id"])
             bucket = _checked_record(r, plan, member, assignments[mid], pred,
                                      results.get(mid), captures.get(r["prediction_id"], []),
