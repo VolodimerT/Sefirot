@@ -7,7 +7,7 @@ const positive=x=>finite(x)&&x>1?x:null;
 const round=x=>Math.round((x+Number.EPSILON)*100)/100;
 const localKickoff=x=>typeof x==='string'&&/^2026-12-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d/.test(x)?Date.parse(x.slice(0,16)+':00+02:00'):null;
 function fixtureIdentity(l){const id=String(l?.fixtureId||'').trim().toLowerCase();if(id)return id;return [String(l?.home||'').trim().toLowerCase(),String(l?.away||'').trim().toLowerCase()].sort().join('|')+'|'+String(l?.kickoff||'').slice(0,10);}
-function independent(legs){return Array.isArray(legs)&&legs.length>0&&legs.every(x=>fixtureIdentity(x).length>13)&&new Set(legs.map(fixtureIdentity)).size===legs.length;}
+function independent(legs){return Array.isArray(legs)&&legs.length>0&&legs.every(x=>String(x?.fixtureId||'').trim()||(x?.home&&x?.away&&x?.kickoff))&&new Set(legs.map(fixtureIdentity)).size===legs.length;}
 function scenario(t,settings){
  const price=t?.purchased?Number(settings?.price)||0:0;
  if(t?.mode==='pass')return {odds:null,implied:null,model:null,ev:-price,reason:'PASS: ставка 0'};
