@@ -34,6 +34,17 @@ function hypothesisView(){
  out+='<div class="panel"><h3>'+(enough?'Предварительный объём достигнут — статистическая значимость не доказана':'Предварительный порог: 8 закрытых дней каждой группы пока не достигнут')+'</h3><p>«Интересность» здесь измеряется только количеством матчей с 21:00 до 23:00 в нашей неполной подборке из девяти турниров. Связь с проходимостью ещё не доказана.</p><p>Правила: прематч-класс дня определяется до игр; сравниваются только закрытые туры; PASS и возвраты учитываются отдельно. Корреляция не означает причинность. В сезоне максимум 31 день: для надёжного вывода нужно продолжение на следующие сезоны.</p></div>';
  return out;
 }
+function calibrationView(){
+ const q=C.calibration(B.data());
+ let out=heading('Калибровка вероятностей','Наблюдаем систематические ошибки P по Brier Score, Log Loss и группам вероятностей. Без независимых серверных свидетельств это только клиентская статистика.');
+ out+='<div class="v5-metrics">'+metric('Проверяемых исходов',q.n)+metric('Brier ↓',q.brier===null?'Н/Д':f(q.brier))+metric('Log Loss ↓',q.logLoss===null?'Н/Д':f(q.logLoss))+metric('Заявленных серверных ссылок',q.serverRefClaimCount)+'</div>';
+ out+='<section class="panel"><h3>Калибровка по диапазонам P</h3><div class="table-scroll"><table class="table"><thead><tr><th>Диапазон P</th><th>N</th><th>Средняя P</th><th>Факт WIN</th></tr></thead><tbody>';
+ for(const bin of q.bins)out+='<tr><td>'+h(bin.range)+'</td><td>'+bin.n+'</td><td>'+(bin.forecastP===null?'Н/Д':f(bin.forecastP)+'%')+'</td><td>'+(bin.observedP===null?'Н/Д':f(bin.observedP)+'%')+'</td></tr>';
+ out+='</tbody></table></div><p class="muted">Показаны только закрытые win/lose с P, записанной в прематчевом снимке по времени клиента. PUSH и половинные исходы исключены.</p></section>';
+ out+='<div class="notice warn">Снимок в localStorage может быть изменён пользователем или устройством. Даже наличие ID серверного снимка здесь НЕ проверяет его содержимое. Для независимой приёмки необходимо сверить исходную запись с append-only таблицей Supabase и результаты матчей. Не использовать данные как доказательство прибыльности до этого аудита.</div>';
+ if(q.n<30)out+='<div class="notice">Предварительная выборка мала: для оценки устойчивости требуется хотя бы 30 независимых исходов, а для доказательства value — значительно больше и сравнение с линией.</div>';
+ return out;
+}
 function careerView(){
  const d=B.data(),x=E.analytics(d),c=V.storage(),snaps=Object.values(c).filter(v=>v.state==='sealed'),b=C.sealedBrier(d);
  const missions=[['Первая разведка',snaps.length>=1],['5 исследованных матчей',snaps.length>=5],['5 закрытых туров',x.closed.length>=5],['30 проверенных прогнозов',b.n>=30]];
@@ -52,6 +63,6 @@ function maintenanceView(){
 document.addEventListener('change',e=>{if(e.target?.id==='v5-duel-day'){V.setDay(e.target.value);}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-v5-extra]');if(t?.dataset.v5Extra==='reload')window.QuestSchedule?.load();});
 window.addEventListener('quest-fixtures-updated',()=>{if(/^#(maintenance|hypotheses|career|duel)(?:$|\?)/.test(window.location.hash))B.refresh();});
-Object.assign(V,{duelView,hypothesisView,careerView,maintenanceView});
+Object.assign(V,{duelView,hypothesisView,calibrationView,careerView,maintenanceView});
 B.refresh();
 })();
