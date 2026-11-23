@@ -1,0 +1,43 @@
+{
+  "id": "/",
+  "name": "SEFIROT December Quest — Football Intelligence",
+  "short_name": "SEFIROT Quest",
+  "description": "Приватный SHADOW-менеджер прематч-аналитики. Ставок и букмекерских интеграций нет.",
+  "lang": "ru",
+  "start_url": "/#hub",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a1020",
+  "theme_color": "#0a1020",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Матчи декабря",
+      "short_name": "Матчи",
+      "url": "/#fixtures"
+    },
+    {
+      "name": "AI Scout",
+      "short_name": "Скаут",
+      "url": "/#scout"
+    },
+    {
+      "name": "Market Radar",
+      "short_name": "Рынки",
+      "url": "/#radar"
+    },
+    {
+      "name": "Облако",
+      "short_name": "Синхрон",
+      "url": "/#sync"
+    }
+  ]
+}
