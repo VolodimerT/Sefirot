@@ -13,12 +13,12 @@ function scenario(t,settings){
  if(t?.mode==='pass')return {odds:null,implied:null,model:null,ev:-price,reason:'PASS: ставка 0'};
  const legs=(t?.legs||[]).filter(x=>x.enabled);
  if(!legs.length||legs.length>3)return {odds:null,implied:null,model:null,ev:null,reason:'Нет 1–3 активных событий'};
- if(legs.length>1&&!t.independenceReviewed)return {odds:null,implied:null,model:null,ev:null,reason:'Независимость не подтверждена'};
- if(!independent(legs))return {odds:null,implied:null,model:null,ev:null,reason:'Дублирование или отсутствие идентификатора матча'};
  const odds=legs.reduce((v,l)=>positive(l.odds)===null?NaN:v*l.odds,1);
  if(!finite(odds))return {odds:null,implied:null,model:null,ev:null,reason:'Не указаны коэффициенты'};
+ const totalOdds=round(odds),implied=1/odds;
+ if(legs.length>1&&!t.independenceReviewed)return {odds:totalOdds,implied,model:null,ev:null,reason:'Независимость не подтверждена'};
+ if(!independent(legs))return {odds:totalOdds,implied,model:null,ev:null,reason:'Дублирование или отсутствие идентификатора матча'};
  const model=legs.reduce((v,l)=>percent(l.prob)===null?NaN:v*l.prob/100,1);
- const totalOdds=round(odds);
  if(!finite(model))return {odds:totalOdds,implied:1/odds,model:null,ev:null,reason:'Н/Д: отсутствует независимая модельная вероятность'};
  const stake=finite(settings?.stake)?settings.stake:1000;
  return {odds:totalOdds,implied:1/odds,model,ev:round(model*odds*stake-stake-price),reason:'Условный EV по введённым P; не гарантия'};
