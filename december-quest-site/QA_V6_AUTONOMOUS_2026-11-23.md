@@ -27,9 +27,9 @@ Repository branch: feature/december-quest-web-v3-20261123
   - Ligue 1 n=72: 0.6157 versus 0.6361
   - Serie A n=74: 0.5402 versus 0.6388
 - P1/H/P2 model example Coventry–Ipswich (Dec 1): 50.383% / 20.318% / 29.299%, clearly labelled forecast-only.
-- Production Vercel deployment: dpl_H3EUBvBXt1TFRe6r9CEXgwM7KFjX, superseded by V6.1 production with current title. All checked forecast JS/CSS/HTML served HTTP 200.
+- Production Vercel deployment: dpl_H3EUBvBXt1TFRe6r9CEXgwM7KFjX, V6.1 production deployment, READY. All checked forecast JS/CSS/HTML served HTTP 200.
 - Independent browser QA on staging V6 and V6.1: real results rendered from Supabase, filters per day/league, supported/unsupported matches, details (totals/BTTS), calibration 5 rows, no JS errors, no sportsbook actions. Direct live production read confirmed.
-- Unaunthenticated POST to v2: HTTP 401 {"ok":false,"error":"UNAUTHORIZED"}; no CSV fetch.
+- Unauthenticated POST to v2: HTTP 401 {"ok":false,"error":"UNAUTHORIZED"}; no CSV fetch.
 - Database audit: 114 latest forecasts; 60 version 0.2 model probabilities; no non-PASS verdicts; no bookmaker odds or verified-value entries; 5 backtest rows; 0 settlements; 1 user cloud-save row, not rewritten by job; cron active; no anon writes.
 
 ## What remains NOT ACCEPTED
