@@ -63,9 +63,12 @@ function arenaView(){
  out+='<details class="panel"><summary>Игровая арена V4 с радаром</summary>'+(window.QuestExtra?.arenaView()||'Нет данных')+'</details>';return out;
 }
 function weakView(){
- const t=B.data().tours[day]||E.emptyTour(day),a=C.legAudit(t),v=C.scenario(t,B.data().settings);
+ const t=B.data().tours[day]||E.emptyTour(day),a=C.legAudit(t,B.data().settings),v=C.scenario(t,B.data().settings),gate=C.feeGate(t,B.data().settings);
  let out=title('Weak Leg Detector','Сначала главные рынки. Проверка коэффициента, P модели, EV и рисков каждой ноги.')+options();
  out+='<div class="panel"><b>КФ</b> '+fmt(v.odds)+' · <b>Implied P</b> '+(v.implied===null?'Н/Д':fmt(v.implied*100)+'%')+' · <b>Модель P</b> '+(v.model===null?'Н/Д':fmt(v.model*100)+'%')+' · <b>EV</b> '+(v.ev===null?'Н/Д':B.money(v.ev))+'<p class="muted">'+esc(v.reason)+'</p></div>';
+ out+='<div class="notice warn">Итоговый класс: '+esc(gate.code)+' · '+esc(gate.verdict)+(gate.code==='RED'?' — корреляционный блок':'')+'. Отдельное положительное value НЕ компенсирует отрицательный EV после цены прогноза.</div>';
+ const sensit=v.model!==null&&v.odds!==null?C.sensitivity(v.model*100,v.odds,{stake:B.data().settings.stake,price:t.purchased?B.data().settings.price:0}):null;
+ if(sensit)out+='<article class="panel"><h3>Death-test вероятности (±5 п.п.)</h3><p>Требуемая безубыточная вероятность: '+fmt(sensit.breakEvenP)+'% · запас '+fmt(sensit.marginPP)+' п.п.</p><p>EV при P−5: '+B.money(sensit.lowEV)+' · EV при P+5: '+B.money(sensit.highEV)+'</p><p class="v5-warning">'+(sensit.robust?'Численно устойчиво, источник P ещё не подтверждён.':'Ставка теряет value или уже невыгодна при небольшом отклонении P.')+'</p></article>';
  if(!a.length)out+='<div class="panel">Нет ног экспресса: PASS.</div>';
  a.forEach((l,i)=>{out+='<article class="panel"><h3>Нога '+(i+1)+': '+esc(l.home)+' — '+esc(l.away)+'</h3><p>'+esc(l.market)+' · КФ '+fmt(l.odds)+' · implied '+(l.implied===null?'Н/Д':fmt(l.implied*100)+'%')+' · P '+fmt(l.prob)+'%</p>';
  if(l.delta!==null)out+='<p>Разница P − implied: '+fmt(l.delta*100)+' п.п.</p>';
