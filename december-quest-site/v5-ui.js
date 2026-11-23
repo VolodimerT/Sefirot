@@ -44,8 +44,8 @@ function scoutView(){
  out+='</select></label></div><label class="v5-check"><input type="checkbox" data-v5-field="injuriesChecked"'+(x.injuriesChecked?' checked':'')+'> Проверены травмы и дисквалификации</label>';
  out+=noteField('tactical','Tactical fit',x.tactical)+noteField('publicTrap','Public trap',x.publicTrap)+noteField('deathTest','Death-test',x.deathTest)+noteField('notes','Примечания, выборка и качество источников',x.notes);
  out+='</fieldset><div class="v5-buttons">';
- if(x.state==='draft')out+='<button class="button" data-v5-act="seal">Запечатать исследование</button>';
- else out+='<span>Запечатано: '+esc(x.sealedAt||'')+'</span>';
+ if(x.state==='draft')out+='<button class="button" data-v5-act="server-seal">Серверный PREMATCH SEAL</button><button class="button secondary" data-v5-act="seal">Локальная фиксация</button>';
+ else out+='<span>'+(x.serverSealId?'SERVER VERIFIED':'ТОЛЬКО ЛОКАЛЬНО')+': '+esc(x.sealedAt||'')+'</span>'+(x.serverSealId?'':' <button class="button secondary" data-v5-act="server-seal">Зафиксировать на сервере сейчас</button>');
  out+='<button class="button secondary" data-v5-act="copy">Добавить в черновик</button><button class="button secondary" data-route="arena">Арена</button></div></div>';
  out+='<div class="notice warn">Рейтинги и статистика не превращаются в модельную вероятность. После начала матча прематч-функции заблокированы.</div>';
  return out;
@@ -91,6 +91,27 @@ function seal(){
  if(!C.checkedUrl(x.ownSource)||x.tactical.trim().length<20||x.deathTest.trim().length<20){B.toast('Нужны HTTPS-источник, tactical fit и death-test по 20 знаков.',true);return;}
  x.state='sealed';x.sealedAt=new Date().toISOString();x.updatedAt=x.sealedAt;x.snapshot=JSON.stringify({...x,snapshot:''});B.save();B.refresh();B.toast('Разбор локально зафиксирован.');
 }
+let serverSealBusy=false;
+async function serverSealResearch(){
+ if(serverSealBusy)return;
+ const g=context().match;if(!g){B.toast('Матч не выбран.',true);return;}
+ const ko=Date.parse(g.kickoff);if(!Number.isFinite(ko)||ko<=Date.now()){B.toast('Нельзя фиксировать после начала.',true);return;}
+ const x=card(g,true);
+ if(x.serverSealId){B.toast('Уже есть неизменяемый серверный снимок.',true);return;}
+ if(!C.checkedUrl(x.ownSource)||x.tactical.trim().length<20||x.deathTest.trim().length<20){B.toast('Заполни HTTPS-источник, tactical fit и death-test.',true);return;}
+ if(!window.QuestExtra?.serverSeal){B.toast('Облачная фиксация недоступна.',true);return;}
+ serverSealBusy=true;
+ try{
+  const snapshot={version:1,fixtureKey:g.fixture_key,competition:g.competition,kickoff:g.kickoff,
+   home:g.home_team,away:g.away_team,asOfClaim:new Date().toISOString(),
+   research:{...x,snapshot:'',serverSealId:''},calendarSource:g.source_url,timingStatus:g.timing_status};
+  const receipt=await window.QuestExtra.serverSeal('research',g.fixture_key,g.kickoff,snapshot);
+  x.serverSealId=receipt.id;x.sealedAt=receipt.sealed_at;x.state='sealed';x.updatedAt=x.sealedAt;
+  x.snapshot=JSON.stringify({...snapshot,serverSealId:receipt.id,serverTime:receipt.sealed_at});
+  B.save();B.refresh();B.toast('Серверный PREMATCH seal подтверждён. Время установлено базой.');
+ }catch(err){B.toast('SERVER SEAL НЕ СОСТОЯЛСЯ: '+String(err.message||err).slice(0,170),true);}
+ finally{serverSealBusy=false;}
+}
 function copy(){
  const g=context().match;if(!g||Date.parse(g.kickoff)<=Date.now()){B.toast('Прематч-импорт недоступен.',true);return;}
  const d=gdate(g),data=B.data(),t=data.tours[d]||(data.tours[d]=E.emptyTour(d));
@@ -102,6 +123,7 @@ document.addEventListener('click',e=>{
  const el=e.target.closest('[data-v5-act]');if(!el)return;
  if(el.dataset.v5Act==='refresh')window.QuestSchedule?.load();
  else if(el.dataset.v5Act==='seal')seal();
+ else if(el.dataset.v5Act==='server-seal')serverSealResearch();
  else if(el.dataset.v5Act==='copy')copy();
 });
 document.addEventListener('change',e=>{
