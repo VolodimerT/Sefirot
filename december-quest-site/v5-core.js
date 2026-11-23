@@ -75,10 +75,10 @@ function legAudit(t,settings){
 function checkedUrl(s){return typeof s==='string'&&s.length<500&&/^https:\/\/(?:[a-z0-9-]+\.)+[a-z]{2,}(?::443)?(?:[\/?#][^\s<>"']*)?$/i.test(s);}
 function cardReadiness(x,fixture){
  const signals=[
- ['Источник исследования',checkedUrl(x?.ownSource)],
+ ['HTTPS-ссылка указана (содержимое не проверено)',checkedUrl(x?.ownSource)],
  ['Карточка обновлена за 7 дней (не гарантия свежести источника)',Number.isFinite(Date.parse(x?.updatedAt))&&Date.now()-Date.parse(x.updatedAt)<=7*86400000&&Date.parse(x.updatedAt)<=Date.now()+60000],
  ['xG обеих команд',finite(x?.homeXgf)&&finite(x?.homeXga)&&finite(x?.awayXgf)&&finite(x?.awayXga)],
- ['Составы и травмы',x?.lineupStatus==='confirmed'&&!!x?.injuriesChecked],
+ ['Составы и травмы: подтверждение заявлено вручную',x?.lineupStatus==='confirmed'&&!!x?.injuriesChecked],
  ['Тактический fit',String(x?.tactical||'').trim().length>=20],
  ['Контраргумент и death-test',String(x?.deathTest||'').trim().length>=20],
  ['Обоснование public trap',String(x?.publicTrap||'').trim().length>=20]
