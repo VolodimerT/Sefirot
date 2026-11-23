@@ -1,5 +1,7 @@
 /* Isolated December Quest model runner: public CSV only, POST requires Vault-stored cron token. */
 import Core from "./core.js";
+import Validation from "./validation.js";
+import Settlement from "./settlement.js";
 const PROJECT=Deno.env.get("SUPABASE_URL")||"";
 const SECRET=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const STATIC_BASE="https://football-data.co.uk";
@@ -37,11 +39,12 @@ async function authenticate(token){
 }
 async function execute(){
  const runStarted=new Date(),now=runStarted.getTime();
- const recent=await rest("sefirot_december_quest_auto_runs?select=started_at,run_status&order=started_at.desc&limit=1");
- if(Array.isArray(recent)&&recent[0]?.run_status==='OK'&&now-Date.parse(recent[0].started_at)<6*3600*1000)return {ok:true,skipped:"RUN_WITHIN_SIX_HOURS",at:recent[0].started_at};
- const fixtures=await rest("sefirot_december_quest_fixtures?select=fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status&kickoff=gt."+encodeURIComponent(new Date(now+30*60000).toISOString())+"&order=kickoff.asc&limit=200");
- if(!Array.isArray(fixtures)||fixtures.length>200)throw Error('FIXTURE_SOURCE_SHAPE');
- const leagues=[...new Set(fixtures.map(f=>f.competition))].filter(x=>Object.hasOwn(CSV_CODES,x));
+ const recent=await rest("sefirot_december_quest_auto_runs?select=started_at,run_status,model_version&order=started_at.desc&limit=1");
+ if(Array.isArray(recent)&&recent[0]?.run_status==='OK'&&recent[0]?.model_version===Core.MODEL_VERSION&&now-Date.parse(recent[0].started_at)<6*3600*1000)return {ok:true,skipped:"RUN_WITHIN_SIX_HOURS",at:recent[0].started_at};
+ const allFixtures=await rest("sefirot_december_quest_fixtures?select=fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status&order=kickoff.asc&limit=200");
+ if(!Array.isArray(allFixtures)||allFixtures.length>200)throw Error('FIXTURE_SOURCE_SHAPE');
+ const fixtures=allFixtures.filter(g=>Date.parse(g.kickoff)>now+30*60000);
+ const leagues=[...new Set(allFixtures.map(f=>f.competition))].filter(x=>Object.hasOwn(CSV_CODES,x));
  const urls=[];
  for(const code of leagues){for(const season of ['2627','2526'])urls.push({code,season,url:STATIC_BASE+'/mmz4281/'+season+'/'+CSV_CODES[code]+'.csv'});}
  urls.push({code:"weekly",season:"weekly",url:STATIC_BASE+'/fixtures.csv'});
@@ -61,11 +64,13 @@ async function execute(){
   dataByLeague[league]=[...uniq.values()];
  }
  const weekly=fetched.find(x=>x.code==='weekly'&&x.ok)?.records||[];
+ const validations=leagues.map(x=>({...Validation.backtest(x,dataByLeague[x]||[],now),generated_at:runStarted.toISOString()}));
+ const validationMap=new Map(validations.map(x=>[x.competition,x]));
  const rows=[];let ready=0,insufficient=0;
  for(const g of fixtures){
   let r=Core.forecast(g,dataByLeague[g.competition]||[],now);
   r=Core.attachQuotes(r,weekly,g,now);
-  r.evidence={...r.evidence,upstream_sources:fetched.filter(p=>p.code===g.competition).map(p=>({season:p.season,url:p.url,ok:p.ok})),
+  r.evidence={...r.evidence,walk_forward:(()=>{const q=validationMap.get(g.competition);return q?{status:q.status,n:q.sample_n,model_brier:q.model_brier,baseline_brier:q.baseline_brier}:null;})(),upstream_sources:fetched.filter(p=>p.code===g.competition).map(p=>({season:p.season,url:p.url,ok:p.ok})),
    fixture_source:g.source_url,fixture_source_quality:g.source_quality,fixture_timing_status:g.timing_status,
    public_history_only:true,provider_not_betting_exchange:true,not_fitted_on_future_results:true};
   if(r.status==='MODEL_ONLY'||r.status==='WAITING_ODDS')ready++;else insufficient++;
@@ -75,6 +80,7 @@ async function execute(){
  // Abort on total provider failure: do not overwrite credible data with unverified zeroes.
  const sourceGood=fetched.filter(x=>x.ok).length,sourceErrors=fetched.filter(x=>!x.ok).map(x=>x.code+':'+x.season+' '+x.error);
  if(sourceGood===0)throw Error('ALL_PUBLIC_CSV_SOURCES_UNAVAILABLE');
+ if(validations.length)await rest('sefirot_december_quest_auto_validation?on_conflict=competition',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(validations)});
  const slices=[];for(let i=0;i<rows.length;i+=30)slices.push(rows.slice(i,i+30));
  for(const slice of slices){
   await rest('sefirot_december_quest_auto_forecasts?on_conflict=fixture_key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(slice)});
@@ -84,7 +90,22 @@ async function execute(){
   probabilities:x.probabilities,markets:x.markets,status:x.status,evidence:x.evidence
  }));
  for(let i=0;i<snapshotRows.length;i+=30){
-  await rest('sefirot_december_quest_auto_snapshots?on_conflict=fixture_key,generated_day',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(snapshotRows.slice(i,i+30))});
+  await rest('sefirot_december_quest_auto_snapshots?on_conflict=fixture_key,generated_day,model_version',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(snapshotRows.slice(i,i+30))});
+ }
+ let newSettlements=0;
+ const historyFixtures=allFixtures.filter(g=>Core.LEAGUE_FILES[g.competition]&&Date.parse(g.kickoff)<now-8*3600000&&new Date(g.kickoff).toISOString().slice(0,10)<new Date(now).toISOString().slice(0,10));
+ if(historyFixtures.length){
+  const [existing,snaps]=await Promise.all([
+   rest('sefirot_december_quest_auto_settlements?select=fixture_key&limit=200'),
+   rest('sefirot_december_quest_auto_snapshots?select=id,fixture_key,generated_at,status,probabilities&order=generated_at.asc&limit=1500')
+  ]);
+  const done=new Set((existing||[]).map(x=>x.fixture_key));
+  const settled=historyFixtures.filter(g=>!done.has(g.fixture_key))
+   .map(g=>Settlement.resultFromFixture(g,dataByLeague[g.competition]||[],snaps||[],now)).filter(Boolean);
+  for(let i=0;i<settled.length;i+=30){
+   await rest('sefirot_december_quest_auto_settlements?on_conflict=fixture_key',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(settled.slice(i,i+30))});
+  }
+  newSettlements=settled.length;
  }
  const runStatus=sourceErrors.length?'PARTIAL':'OK';
  await rest('sefirot_december_quest_auto_runs',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({
@@ -94,7 +115,7 @@ async function execute(){
  })});
  return {ok:true,status:runStatus,model_version:Core.MODEL_VERSION,fixture_count:fixtures.length,with_model:ready,missing_data:insufficient,
   sources_ok:sourceGood,sources_attempted:urls.length,source_errors:sourceErrors,
-  odds_provider_timestamp_verified:false,action:'SHADOW_ONLY',wagers_executed:0};
+  odds_provider_timestamp_verified:false,walk_forward:validations.map(v=>({league:v.competition,n:v.sample_n,status:v.status,model_brier:v.model_brier,baseline_brier:v.baseline_brier})),settlements_added:newSettlements,action:'SHADOW_ONLY',wagers_executed:0};
 }
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
