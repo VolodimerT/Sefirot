@@ -1,5 +1,5 @@
 /* December Quest autonomous PREMATCH model: purely deterministic, no wagers, no live feeds. */
-const MODEL_VERSION='DQ-POISSON-0.1';
+const MODEL_VERSION='DQ-POISSON-0.2';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
 const ALIASES={
  EPL:{'Hull City':'Hull','Nottingham Forest':"Nott'm Forest",'Manchester City':'Man City','Manchester United':'Man United'},
