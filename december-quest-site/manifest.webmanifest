@@ -20,6 +20,11 @@
   ],
   "shortcuts": [
     {
+      "name": "Автономные прогнозы",
+      "short_name": "Прогнозы",
+      "url": "/#autopredict"
+    },
+    {
       "name": "Матчи декабря",
       "short_name": "Матчи",
       "url": "/#fixtures"
