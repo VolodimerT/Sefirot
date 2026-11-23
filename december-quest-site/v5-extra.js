@@ -12,8 +12,9 @@ function metric(label,value){return '<article><small>'+h(label)+'</small><strong
 function duelView(){
  const day=V.day(),d=B.data(),t=d.tours[day]||E.emptyTour(day),b=C.sealedBrier(d),q=C.scenario(t,d.settings);
  let out=heading('CAP vs SEFIROT','Дуэль исходного прогноза и нашего решения. Исходы считаем отдельно; три стратегии не складываем в одну прибыль.');
+ out+='<div class="panel v5-select"><label>Игровой день<select id="v5-duel-day">'+E.days.map(x=>'<option value="'+x+'"'+(x===day?' selected':'')+'>'+Number(x.slice(-2))+' декабря</option>').join('')+'</select></label><button class="button secondary" data-route="tour">Открыть купон</button></div>';
  out+='<div class="v5-metrics">'+metric('День',day.slice(-2)+' декабря')+metric('EV нашей модели',currency(q.ev))+metric('Brier',b.brier===null?'Н/Д':f(b.brier))+metric('Учтено вероятностей',b.n)+'</div>';
- out+='<div class="notice warn">Brier рассчитывается только по замороженным до kickoff P, без возвратов и половинных расчётов. Маленькая выборка не показывает реального превосходства.</div>';
+ out+='<div class="notice warn">Brier из клиентского журнала — предварительная метрика, НЕ независимая верификация. Для доказательства prospective нужны серверные снимки до kickoff и сверка исходов. Возвраты и половинные расчёты исключены. Маленькая выборка не показывает преимущества.</div>';
  out+='<div class="panel"><h3>Сценарии</h3><div class="v5-duel"><div><strong>CAP</strong><p>Оригинал купона</p><small>'+h(t.baseline?.label||'Нет прематч-снимка')+'</small></div><div><strong>SEFIROT</strong><p>'+h(t.verdict||'PASS')+'</p><small>Только проверенное EV</small></div><div><strong>PASS</strong><p>Контроль риска</p><small>Без дополнительной ставки</small></div></div></div>';
  out+='<details class="panel"><summary>Исходная дуэль V4 и сравнительная статистика</summary>'+(window.QuestExtra?.duelView()||'Данные недоступны')+'</details>';
  return out;
@@ -48,6 +49,7 @@ function maintenanceView(){
  out+='<div class="v5-metrics">'+metric('В каталоге',a.length)+metric('Устаревшие записи',stale.length)+metric('Требуют подтверждения',unconfirmed.length)+metric('Дней сезона',31)+'</div>';
  out+='<article class="panel"><h3>За 48 часов до начала</h3><p>Перепроверить kickoff, составы, травмы, линию и независимость ног. Источник старше 7 дней — предупредить о необходимости повторной проверки; нет модельной P — PASS.</p><button class="button secondary" data-v5-extra="reload">Обновить из нашей базы</button><button class="button secondary" data-route="fixtures">Открыть матчи</button><p class="muted">Полная сверка внешних сайтов требует отдельного процесса. Фоновая проверка не активирована.</p></article>';return out;
 }
+document.addEventListener('change',e=>{if(e.target?.id==='v5-duel-day'){V.setDay(e.target.value);}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-v5-extra]');if(t?.dataset.v5Extra==='reload')window.QuestSchedule?.load();});
 window.addEventListener('quest-fixtures-updated',()=>{if(/^#(maintenance|hypotheses|career|duel)(?:$|\?)/.test(window.location.hash))B.refresh();});
 Object.assign(V,{duelView,hypothesisView,careerView,maintenanceView});
