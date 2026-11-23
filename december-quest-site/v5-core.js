@@ -37,7 +37,7 @@ function legAudit(t){
   return {id:l.id,home:l.home,away:l.away,market:l.market,odds:o,prob:p,implied:o?1/o:null,delta:o&&p!==null?p/100-1/o:null,issues,pass:issues.length===0};
  });
 }
-function checkedUrl(s){try{const u=new URL(s);return u.protocol==='https:'&&u.hostname.length>3&&s.length<500;}catch{return false;}}
+function checkedUrl(s){return typeof s==='string'&&s.length<500&&/^https:\/\/(?:[a-z0-9-]+\.)+[a-z]{2,}(?::443)?(?:[\/?#][^\s<>"']*)?$/i.test(s);}
 function cardReadiness(x,fixture){
  const signals=[
  ['Источник исследования',checkedUrl(x?.ownSource)],
