@@ -1,0 +1,91 @@
+/* SEFIROT December Quest V5 — deterministic analysis kernel. No odds scraping or real bets. */
+(function(root,factory){const api=factory();if(typeof module!=='undefined'&&module.exports)module.exports=api;if(root)root.QuestV5Core=api;})(typeof window!=='undefined'?window:null,function(){
+'use strict';
+const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const percent=x=>finite(x)&&x>0&&x<=100?x:null;
+const positive=x=>finite(x)&&x>1?x:null;
+const round=x=>Math.round((x+Number.EPSILON)*100)/100;
+const localKickoff=x=>typeof x==='string'&&/^2026-12-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d/.test(x)?Date.parse(x.slice(0,16)+':00+02:00'):null;
+function fixtureIdentity(l){const id=String(l?.fixtureId||'').trim().toLowerCase();if(id)return id;return [String(l?.home||'').trim().toLowerCase(),String(l?.away||'').trim().toLowerCase()].sort().join('|')+'|'+String(l?.kickoff||'').slice(0,10);}
+function independent(legs){return Array.isArray(legs)&&legs.length>0&&legs.every(x=>fixtureIdentity(x).length>13)&&new Set(legs.map(fixtureIdentity)).size===legs.length;}
+function scenario(t,settings){
+ const price=t?.purchased?Number(settings?.price)||0:0;
+ if(t?.mode==='pass')return {odds:null,implied:null,model:null,ev:-price,reason:'PASS: ставка 0'};
+ const legs=(t?.legs||[]).filter(x=>x.enabled);
+ if(!legs.length||legs.length>3)return {odds:null,implied:null,model:null,ev:null,reason:'Нет 1–3 активных событий'};
+ if(legs.length>1&&!t.independenceReviewed)return {odds:null,implied:null,model:null,ev:null,reason:'Независимость не подтверждена'};
+ if(!independent(legs))return {odds:null,implied:null,model:null,ev:null,reason:'Дублирование или отсутствие идентификатора матча'};
+ const odds=legs.reduce((v,l)=>positive(l.odds)===null?NaN:v*l.odds,1);
+ if(!finite(odds))return {odds:null,implied:null,model:null,ev:null,reason:'Не указаны коэффициенты'};
+ const model=legs.reduce((v,l)=>percent(l.prob)===null?NaN:v*l.prob/100,1);
+ const totalOdds=round(odds);
+ if(!finite(model))return {odds:totalOdds,implied:1/odds,model:null,ev:null,reason:'Н/Д: отсутствует независимая модельная вероятность'};
+ const stake=finite(settings?.stake)?settings.stake:1000;
+ return {odds:totalOdds,implied:1/odds,model,ev:round(model*odds*stake-stake-price),reason:'Условный EV по введённым P; не гарантия'};
+}
+function legAudit(t){
+ const legs=(t?.legs||[]).filter(l=>l.enabled);
+ return legs.map(l=>{
+  const p=percent(l.prob),o=positive(l.odds);
+  const issues=[];
+  if(o===null)issues.push('Коэффициент отсутствует');
+  if(p===null)issues.push('Нет модельной вероятности');
+  if(p!==null&&o!==null&&p/100<=1/o)issues.push('Нет подтверждённого положительного value');
+  if(l.market==='ЖК'&&!(l.referee&&finite(l.ycGame)&&finite(l.ycFoul)&&l.lowCardRisk&&l.rulesConfirmed&&l.noCleanerMarket))issues.push('Referee Gate не пройден');
+  if(o!==null&&o<=1.25)issues.push('Низкий коэффициент — не добивать экспресс');
+  if(!l.home||!l.away||!l.kickoff)issues.push('Нет полных данных матча');
+  return {id:l.id,home:l.home,away:l.away,market:l.market,odds:o,prob:p,implied:o?1/o:null,delta:o&&p!==null?p/100-1/o:null,issues,pass:issues.length===0};
+ });
+}
+function checkedUrl(s){try{const u=new URL(s);return u.protocol==='https:'&&u.hostname.length>3&&s.length<500;}catch{return false;}}
+function cardReadiness(x,fixture){
+ const signals=[
+ ['Источник исследования',checkedUrl(x?.sourceUrl)],
+ ['Актуальность источника до 7 дней',Number.isFinite(Date.parse(x?.updatedAt))&&Date.now()-Date.parse(x.updatedAt)<=7*86400000&&Date.parse(x.updatedAt)<=Date.now()+60000],
+ ['xG обеих команд',finite(x?.homeXgf)&&finite(x?.homeXga)&&finite(x?.awayXgf)&&finite(x?.awayXga)],
+ ['Составы и травмы',x?.lineups==='confirmed'&&!!x?.injuriesChecked],
+ ['Тактический fit',String(x?.tactical||'').trim().length>=20],
+ ['Контраргумент и death-test',String(x?.deathTest||'').trim().length>=20],
+ ['Обоснование public trap',String(x?.publicTrap||'').trim().length>=20]
+ ];
+ if(fixture?.timing_status!=='confirmed')signals.push(['Время начала подтверждено',false]);
+ return {total:signals.length,complete:signals.filter(x=>x[1]).length,signals,grade:signals.every(x=>x[1])?'достаточно для аудита, но не для автоматического EV':'требуются данные'};
+}
+function compareProb(p,odd,stake=1000,fee=350){
+ if(percent(p)===null||positive(odd)===null)return null;
+ const implied=1/odd,edge=p/100-implied,ev=round(p/100*odd*stake-stake-fee);
+ return {implied,edge,ev,breakeven:(stake+fee)/(stake*odd)};
+}
+function sealedBrier(data){
+ let n=0,total=0,hidden=0;const days={};
+ for(const [date,t] of Object.entries(data?.tours||{})){
+  if(t?.state!=='closed'||typeof t.sealedSnapshot!=='string')continue;
+  let s;try{s=JSON.parse(t.sealedSnapshot);}catch{continue;}
+  if(!Array.isArray(s.legs)||!t.sealedAt)continue;
+  const sealed=Date.parse(t.sealedAt);if(!Number.isFinite(sealed))continue;
+  let used=0;
+  for(const l of s.legs){
+   if(!l.enabled||percent(l.prob)===null)continue;
+   const actual=(t.legs||[]).find(x=>x.id===l.id);
+   if(!actual||!['win','lose'].includes(actual.status))continue;
+   const kickoff=localKickoff(l.kickoff);
+   if(!Number.isFinite(kickoff)||sealed>=kickoff){hidden++;continue;}
+   const p=l.prob/100,y=actual.status==='win'?1:0;
+   total+=(p-y)**2;n++;used++;
+  }
+  if(used)days[date]=used;
+ }
+ return {n,brier:n?round(total/n):null,excludedLate:hidden,days};
+}
+function hypothesis(data,counts,threshold=5){
+ const groups={busy:{days:0,wins:0,pnl:0},quiet:{days:0,wins:0,pnl:0}};
+ for(const [day,t] of Object.entries(data?.tours||{})){
+  if(t?.state!=='closed')continue;
+  const key=(Number(counts?.[day])||0)>=threshold?'busy':'quiet',g=groups[key];
+  g.days++;if(t.mode!=='pass'&&t.legs?.filter(l=>l.enabled).length&&t.legs.filter(l=>l.enabled).every(l=>l.status==='win'))g.wins++;
+  // P&L must be computed by the existing engine; do not derive a guess here.
+ }
+ return {groups,threshold,usable:Math.min(groups.busy.days,groups.quiet.days)>=20};
+}
+return {percent,positive,scenario,legAudit,checkedUrl,cardReadiness,compareProb,sealedBrier,hypothesis,fixtureIdentity,independent,localKickoff,round};
+});
