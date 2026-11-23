@@ -27,12 +27,12 @@ function normalize(list){
 async function load(){
  if(loading)return;loading=true;error='';
  try{
-  const url=API+'?select=fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,note&order=kickoff.asc&limit=500';
+  const url=API+'?select=fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,note,checked_at&order=kickoff.asc&limit=500';
   const r=await fetch(url,{headers:{'apikey':KEY,'Accept':'application/json'},cache:'no-store'});
   if(!r.ok)throw Error('Ошибка API '+r.status);
   games=normalize(await r.json());loaded=true;
  }catch(e){error=String(e.message||e);loaded=true;}
- finally{loading=false;refreshIfActive();}
+ finally{loading=false;refreshIfActive();window.dispatchEvent(new Event('quest-fixtures-updated'));}
 }
 function view(){
  if(!loaded&&!loading)Promise.resolve().then(load);
