@@ -100,7 +100,7 @@
   const legStatuses = ['pending','win','lose','return','half-win','half-loss'];
   const modes = ['original','corrected','single','pass'];
   const round = v => Math.round((v + Number.EPSILON) * 100) / 100;
-  const dataEmpty = () => ({version:1, settings:{stake:STAKE, price:PRICE}, tours:{},teams:[]});
+  const dataEmpty = () => ({version:1, settings:{stake:STAKE, price:PRICE}, tours:{},teams:[],intel:{version:1,cards:{}}});
   const emptyLeg = () => ({id: id(), enabled:true,home:'',away:'',fixtureId:'',kickoff:'',market:'1X2',pick:'',odds:null,prob:null,status:'pending',notes:'',referee:'',ycGame:null,ycFoul:null,lowCardRisk:false,rulesConfirmed:false,noCleanerMarket:false});
   const emptyTour = (date) => ({date,ticket:null,baseline:null,alternate:null,audit:[],purchased:false,mode:'original',riskClass:'D',verdict:'пропуск',independenceReviewed:false,legs:[],decisionNote:'',state:'draft',sealedAt:null,sealedSnapshot:null,manualPayout:null,review:'',xp:{sealed:false,decision:false,review:false},updatedAt:new Date().toISOString()});
   function id(){return 'x'+Math.random().toString(36).slice(2)+Date.now().toString(36);}
@@ -197,6 +197,26 @@ function sanitize(src){
  clean.tours[day]=sanitized;
  }
  clean.teams=src.teams.slice(0,300).map(t=>({id:String(t.id||E.id()).slice(0,70),name:String(t.name||'').slice(0,140),att:numeric(t.att,0,100),def:numeric(t.def,0,100),form:numeric(t.form,0,100),xi:numeric(t.xi,0,100),mot:numeric(t.mot,0,100),formation:['4-3-3','4-2-3-1','4-4-2','3-5-2'].includes(t.formation)?t.formation:'4-3-3',tacticalFit:String(t.tacticalFit||'').slice(0,3000),publicTrap:String(t.publicTrap||'').slice(0,3000),deathTest:String(t.deathTest||'').slice(0,3000),sources:String(t.sources||'').slice(0,3000)})).filter(t=>t.name);
+ const rawCards=src.intel?.cards&&typeof src.intel.cards==='object'&&!Array.isArray(src.intel.cards)?src.intel.cards:{};
+ clean.intel={version:1,cards:{}};
+ const safeNum=(v,max=10)=>v===null||v===undefined||v===''?null:numeric(Number(v),0,max);
+ for(const [id,x] of Object.entries(rawCards).slice(0,250)){
+  if(!/^[a-zA-Z0-9_-]{3,100}$/.test(id)||!x||typeof x!=='object'||Array.isArray(x))continue;
+  let card={fixtureKey:id,home:String(x.home||'').slice(0,160),away:String(x.away||'').slice(0,160),
+   competition:String(x.competition||'').slice(0,45),kickoff:String(x.kickoff||'').slice(0,40),
+   sourceUrl:String(x.sourceUrl||'').slice(0,500),sourceCheckedAt:String(x.sourceCheckedAt||'').slice(0,45),
+   ownSource:String(x.ownSource||'').slice(0,500),updatedAt:String(x.updatedAt||'').slice(0,45),
+   homeXgf:safeNum(x.homeXgf),homeXga:safeNum(x.homeXga),awayXgf:safeNum(x.awayXgf),awayXga:safeNum(x.awayXga),
+   lineupStatus:['unknown','expected','confirmed'].includes(x.lineupStatus)?x.lineupStatus:'unknown',
+   injuriesChecked:!!x.injuriesChecked,tactical:String(x.tactical||'').slice(0,3000),
+   publicTrap:String(x.publicTrap||'').slice(0,3000),deathTest:String(x.deathTest||'').slice(0,3000),
+   notes:String(x.notes||'').slice(0,5000),state:x.state==='sealed'?'sealed':'draft',
+   sealedAt:String(x.sealedAt||'').slice(0,45),snapshot:typeof x.snapshot==='string'?x.snapshot.slice(0,16000):'',
+   market:String(x.market||'').slice(0,140),modelP:safeNum(x.modelP,100)
+  };
+  if(card.state==='sealed'&&(!card.snapshot||!Number.isFinite(Date.parse(card.sealedAt)))){card.state='draft';card.sealedAt='';card.snapshot='';}
+  clean.intel.cards[id]=card;
+ }
  return clean;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data));storageOK=true;window.QuestExtra?.queueSync();}catch(err){storageOK=false;if(!storageWarned){storageWarned=true;toast('Этот браузер запрещает локальное сохранение. Экспортируй JSON перед закрытием!',true);}}}
