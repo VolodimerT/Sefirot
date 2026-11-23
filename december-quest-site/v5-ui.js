@@ -133,6 +133,6 @@ document.addEventListener('change',e=>{
  else if(el.dataset?.v5Field)updateField(el);
 });
 window.addEventListener('quest-fixtures-updated',()=>{if(/^#(scout|arena|weak)/.test(location.hash))B.refresh();});
-window.QuestV5={scoutView,arenaView,weakView,context,storage:store,day:()=>day,setDay:d=>{day=d;selected='';B.refresh();}};
+window.QuestV5={scoutView,arenaView,weakView,context,storage:store,day:()=>day,setDay:d=>{if(E.days.includes(d)){day=d;selected='';B.refresh();}},selectMatch:k=>{if(context().matches.some(x=>x.fixture_key===k)){selected=k;B.refresh();}}};
 B.refresh();
 })();
