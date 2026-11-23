@@ -111,6 +111,6 @@ document.addEventListener('change',e=>{
  else if(el.dataset?.v5Field)updateField(el);
 });
 window.addEventListener('quest-fixtures-updated',()=>{if(/^#(scout|arena|weak)/.test(location.hash))B.refresh();});
-window.QuestV5={scoutView,arenaView,weakView,context,storage,day:()=>day,setDay:d=>{day=d;selected='';B.refresh();}};
+window.QuestV5={scoutView,arenaView,weakView,context,storage:store,day:()=>day,setDay:d=>{day=d;selected='';B.refresh();}};
 B.refresh();
 })();
