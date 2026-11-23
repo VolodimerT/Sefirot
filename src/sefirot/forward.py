@@ -201,8 +201,10 @@ def settle_plan(service, plan_id, packet):
     plan = _plan(service, plan_id)
     at = service.now(); validate_packet(packet, at)
     statuses_before = {r['match_id']: r['status'] for r in inspect_plan(service, plan_id)['fixtures']}
-    if {'INVALID_OR_REVISED_SEAL', 'RESULT_REVIEW'}.intersection(statuses_before.values()):
-        raise ValueError('cohort contains an incompatible or disputed observation; review required')
+    if 'INVALID_OR_REVISED_SEAL' in statuses_before.values():
+        raise ValueError('cohort contains an incompatible or revised forecast; review required')
+    if 'RESULT_REVIEW' in statuses_before.values():
+        raise ValueError('cohort contains a disputed result; review required')
     observed = {r['fixture']['id']: r for r in packet['data']['response']}
     ready, statuses = [], []
     for member in plan['members']:
