@@ -224,7 +224,17 @@ function sanitize(src){
    publicTrap:String(x.publicTrap||'').slice(0,3000),deathTest:String(x.deathTest||'').slice(0,3000),
    notes:String(x.notes||'').slice(0,5000),state:x.state==='sealed'?'sealed':'draft',
    sealedAt:String(x.sealedAt||'').slice(0,45),snapshot:typeof x.snapshot==='string'?x.snapshot.slice(0,16000):'',
-   market:String(x.market||'').slice(0,140),modelP:safeNum(x.modelP,100)
+   market:String(x.market||'').slice(0,140),modelP:safeNum(x.modelP,100),
+   serverSealId:typeof x.serverSealId==='string'&&/^[0-9a-f-]{36}$/i.test(x.serverSealId)?x.serverSealId:'',
+   marketQuotes:Array.isArray(x.marketQuotes)?x.marketQuotes.slice(0,12).filter(v=>v&&typeof v==='object').map(v=>({
+    id:String(v.id||E.id()).slice(0,70),
+    market:E.markets.includes(v.market)?v.market:'1X2',
+    pick:String(v.pick||'').slice(0,120),
+    odds:v.odds===null||v.odds===undefined||v.odds===''?null:numeric(Number(v.odds),1.00001,10000),
+    prob:v.prob===null||v.prob===undefined||v.prob===''?null:numeric(Number(v.prob),0.00001,100),
+    source:String(v.source||'').slice(0,500),
+    observedAt:String(v.observedAt||'').slice(0,40)
+   })):[]
   };
   if(card.state==='sealed'&&(!card.snapshot||!Number.isFinite(Date.parse(card.sealedAt)))){card.state='draft';card.sealedAt='';card.snapshot='';}
   clean.intel.cards[id]=card;
@@ -428,7 +438,19 @@ if(act==='arena-a'){arenaA=value;B.refresh();return;}if(act==='arena-b'){arenaB=
 if(act==='scenario-status'){const t=B.data().tours[duelDay];if(t?.state==='draft'||!t?.[el.dataset.kind]?.legs?.[Number(el.dataset.index)])return;const leg=t[el.dataset.kind].legs[Number(el.dataset.index)];if(E.legStatuses.includes(value))leg.status=value;B.save();B.refresh();return;}
 if(act==='alt-field'){const t=B.data().tours[duelDay];if(t?.state!=='draft'||!t.alternate?.legs?.length)return;const k=el.dataset.field;const leg=t.alternate.legs[0];if(k==='odds'){const n=Number(value);leg[k]=value===''?null:(n>1&&Number.isFinite(n)?n:null);}else if(k==='market'){if(E.markets.includes(value))leg[k]=value;}else if(['home','away','pick','kickoff'].includes(k))leg[k]=value.slice(0,140);B.save();B.refresh();return;}
 });
-window.QuestExtra={arenaView,duelView,importView,syncView,queueSync,scenarioComputed,applyImportText};
+async function serverSeal(kind,fixtureKey,kickoff,payload){
+ if(!cloud.session||!cloud.userId)throw Error('Для серверной фиксации войди в аккаунт в разделе Облако.');
+ if(!['research','tour'].includes(kind))throw Error('Неизвестный вид исследования.');
+ if(typeof fixtureKey!=='string'||fixtureKey.length<5||fixtureKey.length>120)throw Error('Неверный ключ события.');
+ if(!Number.isFinite(Date.parse(kickoff))||Date.parse(kickoff)<=Date.now())throw Error('PREMATCH SEAL: событие уже началось или время неизвестно.');
+ const ref='DQ-'+(window.crypto?.randomUUID?.()||E.id());
+ const data={user_id:cloud.userId,kind,fixture_key:fixtureKey,client_ref:ref,kickoff,payload};
+ const rows=await sb('/rest/v1/sefirot_december_quest_seals?select=id,sealed_at,fixture_key,kind',
+  {method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(data)},true);
+ if(!Array.isArray(rows)||!rows[0]?.id||!rows[0]?.sealed_at)throw Error('Сервер не подтвердил неизменяемую запись; локально не фиксируем.');
+ return rows[0];
+}
+window.QuestExtra={arenaView,duelView,importView,syncView,queueSync,scenarioComputed,applyImportText,serverSeal};
 if(sessionInfo()){cloud.status='Сеанс требует повторного входа. Введи email и пароль в разделе «Облако».';}
 B.refresh();
 })();
