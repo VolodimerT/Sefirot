@@ -112,6 +112,28 @@ function sealedBrier(data){
  }
  return {n,brier:n?round(total/n):null,excludedLate:hidden,days};
 }
+function calibration(data){
+ let n=0,brierSum=0,logSum=0;const bins=Array.from({length:5},(_,i)=>({range:(i*20)+'–'+(i+1)*20+'%',count:0,pSum:0,wins:0}));
+ let withServerReference=0;
+ for(const t of Object.values(data?.tours||{})){
+  if(t?.state!=='closed'||!t.sealedSnapshot||!t.sealedAt)continue;
+  let original;try{original=JSON.parse(t.sealedSnapshot);}catch{continue;}
+  if(!Array.isArray(original.legs))continue;
+  const timestamp=Date.parse(t.sealedAt);if(!Number.isFinite(timestamp))continue;
+  for(const l of original.legs){
+   if(l.enabled===false||percent(l.prob)===null)continue;
+   const actual=(t.legs||[]).find(z=>z.id===l.id);
+   if(!actual||!['win','lose'].includes(actual.status))continue;
+   const kickoff=localKickoff(l.kickoff);if(!Number.isFinite(kickoff)||timestamp>=kickoff)continue;
+   const p=l.prob/100,y=actual.status==='win'?1:0;
+   n++;brierSum+=(p-y)**2;logSum-=y*Math.log(Math.max(1e-10,p))+(1-y)*Math.log(Math.max(1e-10,1-p));
+   const bin=bins[Math.min(4,Math.floor(p*5))];bin.count++;bin.pSum+=p;bin.wins+=y;
+   if(typeof t.serverSealId==='string'&&/^[0-9a-f-]{36}$/i.test(t.serverSealId))withServerReference++;
+  }
+ }
+ return {n,brier:n?round(brierSum/n):null,logLoss:n?round(logSum/n):null,
+  serverRefClaimCount:withServerReference,bins:bins.map(b=>({range:b.range,n:b.count,forecastP:b.count?round(100*b.pSum/b.count):null,observedP:b.count?round(100*b.wins/b.count):null}))};
+}
 function hypothesis(data,counts,threshold=5){
  const groups={busy:{days:0,wins:0,pnl:0},quiet:{days:0,wins:0,pnl:0}};
  for(const [day,t] of Object.entries(data?.tours||{})){
@@ -122,5 +144,5 @@ function hypothesis(data,counts,threshold=5){
  }
  return {groups,threshold,usable:Math.min(groups.busy.days,groups.quiet.days)>=20};
 }
-return {percent,positive,scenario,legAudit,feeGate,sensitivity,marketCompare,checkedUrl,cardReadiness,compareProb,sealedBrier,hypothesis,fixtureIdentity,matchAlias,independent,localKickoff,round};
+return {percent,positive,scenario,legAudit,feeGate,sensitivity,marketCompare,checkedUrl,cardReadiness,compareProb,sealedBrier,calibration,hypothesis,fixtureIdentity,matchAlias,independent,localKickoff,round};
 });
