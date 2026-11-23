@@ -112,7 +112,12 @@
   function id(){return 'x'+Math.random().toString(36).slice(2)+Date.now().toString(36);}
   const active = t => t.mode==='pass'?[]:t.legs.filter(l=>l.enabled);
   const fixtureKey = leg => (leg.fixtureId?.trim() || [leg.home.trim().toLowerCase(),leg.away.trim().toLowerCase()].sort().join('|')+'|'+leg.kickoff.slice(0,10)).replace(/\s+/g,'').toLowerCase();
-  const independent = legs => new Set(legs.map(fixtureKey)).size===legs.length;
+  const canonicalTeam = s => String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\b(fc|cf|sc|afc)\b/g,'').replace(/\s+/g,' ').trim();
+  const sameGameKey = l => {
+    const names=[canonicalTeam(l.home),canonicalTeam(l.away)].sort(),day=String(l.kickoff||'').slice(0,10);
+    return names[0]&&names[1]&&names[0]!==names[1]&&/^2026-12-\d\d$/.test(day)?names.join('|')+'|'+day:null;
+  };
+  const independent = legs => legs.length>0&&legs.every(x=>sameGameKey(x))&&new Set(legs.map(sameGameKey)).size===legs.length&&new Set(legs.map(l=>String(l.fixtureId||'').toLowerCase()).filter(Boolean)).size===legs.filter(l=>String(l.fixtureId||'').trim()).length;
   function odds(t){const a=active(t); if(!a.length||a.some(l=>!Number.isFinite(l.odds)||l.odds<=1))return null;return Math.round(a.reduce((n,l)=>n*l.odds,1)*10000)/10000;}
   function modelP(t){const a=active(t);if(!a.length||(a.length>1&&!t.independenceReviewed)||!independent(a)||a.some(l=>!Number.isFinite(l.prob)||l.prob<=0||l.prob>100))return null;return a.reduce((p,l)=>p*l.prob/100,1);}
   function stake(t,s){return t.mode==='pass'?0:(Number.isFinite(s.stake)?s.stake:STAKE);}
@@ -141,6 +146,7 @@
     }
     if(a.length>=2&&!independent(a))errors.push('Корреляция: один матч встречается дважды. Нельзя умножать вероятности.');
     if(a.length>=2&&!t.independenceReviewed)errors.push('Подтверди отдельную проверку возможных зависимостей между ногами.');
+    if(t.verdict==='играбельно'&&!(ev(t,{stake:STAKE,price:PRICE})>0))errors.push('Играбельно запрещено без положительного чистого EV (с ценой прогноза). Используй PASS или неиграбельно.');
     if(a.some(l=>l.market==='ЖК') && !(ev(t,{stake:STAKE,price:t.purchased?PRICE:0})>0))errors.push('Для ЖК требуется положительный модельный EV после цены прогноза.');
     return errors;
   }
