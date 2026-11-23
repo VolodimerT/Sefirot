@@ -79,6 +79,7 @@ document.addEventListener('change',e=>{
  else if(k==='pick')val=val.slice(0,120);else return;
  q[k]=val;q.observedAt=new Date().toISOString();x.updatedAt=q.observedAt;B.save();B.refresh();
 });
+window.addEventListener('quest-fixtures-updated',()=>{if(window.location.hash.startsWith('#radar'))B.refresh();});
 Object.assign(V,{radarView});
 B.refresh();
 })();
