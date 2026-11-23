@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import Core from '../core.js';
+const base=Date.parse('2026-11-23T12:00:00Z');
+const fixture={fixture_key:'EPL-2026-12-01-test',competition:'EPL',home_team:'Manchester City',away_team:'Leeds',kickoff:'2026-12-01T22:00:00+02:00'};
+let data=[];
+for(let i=0;i<16;i++){
+ const day=new Date(Date.UTC(2026,8,1+i*4,12)).toISOString().slice(0,10);
+ data.push({home:'mancity',away:'leeds',hg:2+i%3,ag:i%2,date:day,when:Date.parse(day+'T12:00:00Z')});
+ data.push({home:'leeds',away:'mancity',hg:i%3,ag:1+i%3,date:day,when:Date.parse(day+'T12:00:00Z')});
+}
+const p=Core.forecast(fixture,data,base);
+assert.equal(p.status,'MODEL_ONLY');
+assert.equal(p.verdict,'пропуск');
+assert.equal(p.risk_class,'D');
+assert.equal(p.markets.length,12);
+assert.equal(p.sample_n,32);
+assert.ok(p.markets.every(x=>x.odds===null&&x.ev===null));
+assert.ok(p.probabilities.home>0);
+assert.ok(Math.abs(p.probabilities.home+p.probabilities.draw+p.probabilities.away-1)<0.00005);
+assert.ok(p.probabilities.o15>=p.probabilities.o25&&p.probabilities.o25>=p.probabilities.o35);
+assert.ok(p.evidence.latest_training_date<'2026-11-23');
+assert.equal(Core.canonical('EPL','Manchester City'),'mancity');
+assert.equal(Core.forecast({...fixture,competition:'UCL'},data,base).status,'UNSUPPORTED_LEAGUE');
+assert.equal(Core.forecast(fixture,data.slice(0,8),base).status,'INSUFFICIENT_DATA');
+assert.equal(Core.forecast({...fixture,kickoff:'2026-11-22T21:00:00+02:00'},data,base).status,'SOURCE_ERROR');
+assert.equal(Core.parseCsv('HomeTeam,AwayTeam,FTHG,FTAG,Date\n"Man, City",Leeds,3,1,11/11/2026\n')[0].HomeTeam,'Man, City');
+assert.equal(Core.resultsFromCsv('Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\nE0,23/11/2026,Man City,Leeds,2,0\nE0,22/11/2026,Leeds,Man City,0,1\n','EPL',base).length,1);
+const odds=[{Div:'E0',Date:'01/12/2026',HomeTeam:'Man City',AwayTeam:'Leeds',B365H:'2.05',B365D:'3.5',B365A:'3.8'}];
+const attached=Core.attachQuotes(Core.forecast(fixture,data,base),odds,fixture,base);
+assert.equal(attached.status,'WAITING_ODDS');
+assert.equal(attached.verdict,'пропуск');
+assert.equal(attached.markets.find(x=>x.pick==='П1').odds,2.05);
+assert.equal(attached.markets.find(x=>x.pick==='П1').value_verified,false);
+assert.ok(attached.markets.every(x=>x.ev===null));
+assert.equal(Core.attachQuotes(Core.forecast(fixture,data,base),[{...odds[0],HomeTeam:'Wrong Team'}],fixture,base).status,'MODEL_ONLY');
+assert.equal(attached.evidence.quote_provider_timestamp,null);
+console.log('PASS — 23 autonomous model/prospective/source/odds tests');
