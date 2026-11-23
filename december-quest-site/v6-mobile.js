@@ -4,11 +4,11 @@
 const navs=[
  {id:'hub',icon:'◈',label:'Штаб'},
  {id:'fixtures',icon:'▦',label:'Матчи'},
- {id:'scout',icon:'⌕',label:'AI Scout'},
+ {id:'autopredict',icon:'∑',label:'Прогнозы'},
  {id:'tour',icon:'◆',label:'Тур'}
 ];
 const rest=[
- ['arena','⚔','Арена'],['radar','◎','Рынки'],['weak','◇','Слабая нога'],['duel','◈','Дуэль'],
+ ['scout','⌕','AI Scout'],['arena','⚔','Арена'],['radar','◎','Рынки'],['weak','◇','Слабая нога'],['duel','◈','Дуэль'],
  ['hypotheses','⌁','Гипотезы'],['calibration','≈','Калибровка'],['career','★','Карьера'],
  ['maintenance','◷','Контроль'],['sync','☁','Облако'],['imports','▤','Купоны'],
  ['analytics','↗','Итоги'],['rules','≡','Правила'],['lab','◉','Тесты']
