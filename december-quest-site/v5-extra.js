@@ -27,10 +27,10 @@ function hypothesisView(){
   bucket.days++;if(t.mode!=='pass'&&E.active(t).length&&E.active(t).every(l=>l.status==='win'))bucket.wins++;
   const pnl=E.realized(t,d.settings);if(Number.isFinite(pnl))bucket.pnl+=pnl;
  }
- const enough=Math.min(g.busy.days,g.quiet.days)>=20;
+ const enough=Math.min(g.busy.days,g.quiet.days)>=8;
  let out=heading('Лаборатория гипотез','Фиксированный тест: больше ли полных побед в вечера с пятью и более известными матчами? Порог нельзя менять под результаты.');
  out+='<section class="v5-arena"><article class="panel"><h3>Насыщенные вечера (≥5)</h3><p>Закрытых туров: <b>'+g.busy.days+'</b></p><p>Полных проходов: <b>'+g.busy.wins+'</b></p><p>Виртуальный P&L: '+currency(g.busy.pnl)+'</p></article><div class="v5-vs">VS</div><article class="panel"><h3>Спокойные (0–4)</h3><p>Закрытых туров: <b>'+g.quiet.days+'</b></p><p>Полных проходов: <b>'+g.quiet.wins+'</b></p><p>Виртуальный P&L: '+currency(g.quiet.pnl)+'</p></article></section>';
- out+='<div class="panel"><h3>'+(enough?'Достаточно наблюдений для начальной проверки':'Выборка мала: по 20 дней в каждой группе пока нет')+'</h3><p>«Интересность» здесь измеряется только количеством матчей с 21:00 до 23:00 в нашей неполной подборке из девяти турниров. Связь с проходимостью ещё не доказана.</p><p>Правила: прематч-класс дня определяется до игр; сравниваются только закрытые туры; PASS и возвраты учитываются отдельно. Корреляция не означает причинность.</p></div>';
+ out+='<div class="panel"><h3>'+(enough?'Предварительный объём достигнут — статистическая значимость не доказана':'Предварительный порог: 8 закрытых дней каждой группы пока не достигнут')+'</h3><p>«Интересность» здесь измеряется только количеством матчей с 21:00 до 23:00 в нашей неполной подборке из девяти турниров. Связь с проходимостью ещё не доказана.</p><p>Правила: прематч-класс дня определяется до игр; сравниваются только закрытые туры; PASS и возвраты учитываются отдельно. Корреляция не означает причинность. В сезоне максимум 31 день: для надёжного вывода нужно продолжение на следующие сезоны.</p></div>';
  return out;
 }
 function careerView(){
@@ -49,6 +49,7 @@ function maintenanceView(){
  out+='<article class="panel"><h3>За 48 часов до начала</h3><p>Перепроверить kickoff, составы, травмы, линию и независимость ног. Источник старше 7 дней — предупредить о необходимости повторной проверки; нет модельной P — PASS.</p><button class="button secondary" data-v5-extra="reload">Обновить из нашей базы</button><button class="button secondary" data-route="fixtures">Открыть матчи</button><p class="muted">Полная сверка внешних сайтов требует отдельного процесса. Фоновая проверка не активирована.</p></article>';return out;
 }
 document.addEventListener('click',e=>{const t=e.target.closest('[data-v5-extra]');if(t?.dataset.v5Extra==='reload')window.QuestSchedule?.load();});
+window.addEventListener('quest-fixtures-updated',()=>{if(/^#(maintenance|hypotheses|career|duel)(?:$|\?)/.test(window.location.hash))B.refresh();});
 Object.assign(V,{duelView,hypothesisView,careerView,maintenanceView});
 B.refresh();
 })();
