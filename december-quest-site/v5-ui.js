@@ -51,7 +51,7 @@ function scoutView(){
  return out;
 }
 function arenaView(){
- const g=context().match;let out=title('Match Arena 2.0','Сравнение по подтверждённым данным — игровая оценка OVR не равна вероятности победы.')+options();
+ const g=context().match;let out=title('Match Arena 2.0','Сравнение по введённым данным — источник проверяй отдельно. Игровой OVR не равен вероятности победы.')+options();
  if(!g)return out+'<div class="panel">Нет матча на дату.</div>';
  const x=card(g);
  function side(n,forX,againstX){
