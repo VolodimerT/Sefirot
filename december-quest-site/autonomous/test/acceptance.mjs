@@ -5,8 +5,8 @@ import { PGlite } from '@electric-sql/pglite';
 import Core from '../core.js';
 import { execute } from '../run.js';
 
-const tablePrefix = 'sefirot_december_quest_';
-const fixture = {
+export const tablePrefix = 'sefirot_december_quest_';
+export const fixture = {
   fixture_key: 'QA-EPL-001', competition: 'EPL', home_team: 'Coventry', away_team: 'Ipswich',
   source_quality: 'official', timing_status: 'confirmed', source_url: 'https://example.invalid/calendar',
   checked_at: '2026-11-23T17:00:00Z', kickoff: '2026-12-01T20:00:00Z'
@@ -14,16 +14,16 @@ const fixture = {
 const delayed = { ...fixture, fixture_key:'QA-EPL-002', home_team:'Leeds', away_team:'Arsenal' };
 const missing = { ...fixture, fixture_key:'QA-COPPA-001', home_team:'Genoa', away_team:'Inter',
   competition:'COPPA', checked_at:'2026-12-01T16:00:00Z' };
-const columns = 'Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HxG,AxG';
-const form = Array.from({ length: 12 }, (_, i) =>
+export const columns = 'Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HxG,AxG';
+export const form = Array.from({ length: 12 }, (_, i) =>
   ['E0,' + String(11 + i).padStart(2,'0') + '/11/2026,19:00,Coventry,Arsenal,2,1,H,1.9,0.8',
     'E0,' + String(11 + i).padStart(2,'0') + '/11/2026,21:00,Leeds,Ipswich,1,1,D,1,1.2']).flat();
-const weekly = 'Div,Date,Time,HomeTeam,AwayTeam,B365H,B365D,B365A\n'
+export const weekly = 'Div,Date,Time,HomeTeam,AwayTeam,B365H,B365D,B365A\n'
   + 'E0,01/12/2026,20:00,Coventry City,Ipswich Town,4.20,3.40,2.05\n'
   + 'E0,01/12/2026,19:45,Leeds,Arsenal,4,3.5,2\n';
 const finish = time => 'E0,01/12/2026,' + time + ',Coventry,Ipswich,2,1,H,2.1,1.0';
 const pathSuffix = path => path.split('?')[0];
-const freeze = text => text.replaceAll('statement_timestamp()', 'public.dq_test_clock()');
+export const freeze = text => text.replaceAll('statement_timestamp()', 'public.dq_test_clock()');
 
 export async function runAcceptance() {
   const [schema, migration] = await Promise.all([

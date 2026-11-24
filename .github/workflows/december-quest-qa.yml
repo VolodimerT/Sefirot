@@ -7,11 +7,19 @@ on:
       - 'december-quest-site/**'
       - '.github/workflows/december-quest-qa.yml'
 
+  pull_request:
+    branches: [feature/december-quest-web-v3-20261123]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'december-quest-site/**'
+      - '.github/workflows/december-quest-qa.yml'
+
 permissions:
   contents: read
 
 jobs:
   postgres-and-node:
+    if: github.event_name != 'pull_request' || github.head_ref == 'feature/december-quest-v63-autonomous'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -21,11 +29,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.5.6'
       - name: Install pinned staging test dependency
         run: npm ci --ignore-scripts --prefix december-quest-site/autonomous
       - name: Engine and database acceptance
         run: |
           npm --prefix december-quest-site/autonomous test
           npm --prefix december-quest-site/autonomous run test:acceptance
+          npm --prefix december-quest-site/autonomous run test:edge
       - name: Site regressions
         run: node --test december-quest-site/tests/*.test.cjs
