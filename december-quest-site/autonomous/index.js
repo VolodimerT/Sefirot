@@ -1,11 +1,9 @@
 /* Isolated December Quest model runner: public CSV only, POST requires Vault-stored cron token. */
 import Core from "./core.js";
-import Validation from "./validation.js";
-import Settlement from "./settlement.js";
+import { execute } from "./run.js";
+import { collectGateway } from "./gateway.js";
 const PROJECT=Deno.env.get("SUPABASE_URL")||"";
 const SECRET=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
-const STATIC_BASE="https://football-data.co.uk";
-const CSV_CODES=Core.LEAGUE_FILES;
 const cors={"Access-Control-Allow-Origin":"https://sefirot-december-quest-2026.vercel.app","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"content-type,apikey,x-dq-predictor-token"};
 function json(x,status=200){return new Response(JSON.stringify(x),{status,headers:{...cors,"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});}
 const headers=()=>({"apikey":SECRET,"Authorization":"Bearer "+SECRET,"Content-Type":"application/json","Accept":"application/json"});
@@ -22,7 +20,7 @@ async function rest(path,options={}){
 async function getCsv(url){
  const c=new AbortController(),timer=setTimeout(()=>c.abort(),11000);
  try{
-  const r=await fetch(url,{redirect:"follow",signal:c.signal,headers:{Accept:"text/csv,text/plain;q=0.9,*/*;q=0.1"}});
+  const r=await fetch(url,{redirect:"error",signal:c.signal,headers:{Accept:"text/csv,text/plain;q=0.9,*/*;q=0.1"}});
   if(!r.ok||r.url&&!/^https:\/\/(www\.)?football-data\.co\.uk\//.test(r.url))throw Error("PROVIDER_HTTP_OR_REDIRECT_"+r.status);
   const len=Number(r.headers.get("content-length")||"0");if(len>4500000)throw Error('CSV_TOO_LARGE');
   const text=await r.text();if(text.length>4500000)throw Error('CSV_TOO_LARGE');
@@ -37,86 +35,15 @@ async function authenticate(token){
   return data===true;
  }catch(_e){return false;}
 }
-async function execute(){
- const runStarted=new Date(),now=runStarted.getTime();
- const recent=await rest("sefirot_december_quest_auto_runs?select=started_at,run_status,model_version&order=started_at.desc&limit=1");
- if(Array.isArray(recent)&&recent[0]?.run_status==='OK'&&recent[0]?.model_version===Core.MODEL_VERSION&&now-Date.parse(recent[0].started_at)<6*3600*1000)return {ok:true,skipped:"RUN_WITHIN_SIX_HOURS",at:recent[0].started_at};
- const allFixtures=await rest("sefirot_december_quest_fixtures?select=fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status&order=kickoff.asc&limit=200");
- if(!Array.isArray(allFixtures)||allFixtures.length>200)throw Error('FIXTURE_SOURCE_SHAPE');
- const fixtures=allFixtures.filter(g=>Date.parse(g.kickoff)>now+30*60000);
- const leagues=[...new Set(allFixtures.map(f=>f.competition))].filter(x=>Object.hasOwn(CSV_CODES,x));
- const urls=[];
- for(const code of leagues){for(const season of ['2627','2526'])urls.push({code,season,url:STATIC_BASE+'/mmz4281/'+season+'/'+CSV_CODES[code]+'.csv'});}
- urls.push({code:"weekly",season:"weekly",url:STATIC_BASE+'/fixtures.csv'});
- if(urls.length>12)throw Error('TOO_MANY_SOURCE_FILES');
- const fetched=await Promise.all(urls.map(async row=>{
-  try{const text=await getCsv(row.url);return {...row,ok:true,records:Core.parseCsv(text),text};}
-  catch(e){return {...row,ok:false,error:String(e.message||e).slice(0,100)};}
- }));
- let dataByLeague={};
- for(const league of leagues){
-  let all=[];
-  for(const pack of fetched.filter(x=>x.code===league&&x.ok)){
-   try{all.push(...Core.resultsFromCsv(pack.text,league,now));}catch(e){/* do not invent */} 
-  }
-  // Exact deduplication across current and previous CSV snapshots. Only completed games are used.
-  const uniq=new Map();for(const row of all)uniq.set(row.date+'|'+row.home+'|'+row.away,row);
-  dataByLeague[league]=[...uniq.values()];
+async function fetchCsvWithRetry(url){
+ try{return await getCsv(url);}
+ catch(error){
+  if(!['AbortError','TypeError'].includes(error.name)&&!/^PROVIDER_HTTP_OR_REDIRECT_5/.test(error.message))throw error;
+  await new Promise(resolve=>setTimeout(resolve,250));
+  return getCsv(url);
  }
- const weekly=fetched.find(x=>x.code==='weekly'&&x.ok)?.records||[];
- const validations=leagues.map(x=>({...Validation.backtest(x,dataByLeague[x]||[],now),generated_at:runStarted.toISOString()}));
- const validationMap=new Map(validations.map(x=>[x.competition,x]));
- const rows=[];let ready=0,insufficient=0;
- for(const g of fixtures){
-  let r=Core.forecast(g,dataByLeague[g.competition]||[],now);
-  r=Core.attachQuotes(r,weekly,g,now);
-  r.evidence={...r.evidence,walk_forward:(()=>{const q=validationMap.get(g.competition);return q?{status:q.status,n:q.sample_n,model_brier:q.model_brier,baseline_brier:q.baseline_brier}:null;})(),upstream_sources:fetched.filter(p=>p.code===g.competition).map(p=>({season:p.season,url:p.url,ok:p.ok})),
-   fixture_source:g.source_url,fixture_source_quality:g.source_quality,fixture_timing_status:g.timing_status,
-   public_history_only:true,provider_not_betting_exchange:true,not_fitted_on_future_results:true};
-  if(r.status==='MODEL_ONLY'||r.status==='WAITING_ODDS')ready++;else insufficient++;
-  // Evidence fields are model-only; P has no bookmaker-derived calibration.
-  rows.push(r);
- }
- // Abort on total provider failure: do not overwrite credible data with unverified zeroes.
- const sourceGood=fetched.filter(x=>x.ok).length,sourceErrors=fetched.filter(x=>!x.ok).map(x=>x.code+':'+x.season+' '+x.error);
- if(sourceGood===0)throw Error('ALL_PUBLIC_CSV_SOURCES_UNAVAILABLE');
- if(validations.length)await rest('sefirot_december_quest_auto_validation?on_conflict=competition',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(validations)});
- const slices=[];for(let i=0;i<rows.length;i+=30)slices.push(rows.slice(i,i+30));
- for(const slice of slices){
-  await rest('sefirot_december_quest_auto_forecasts?on_conflict=fixture_key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(slice)});
- }
- const snapshotRows=rows.filter(x=>['MODEL_ONLY','WAITING_ODDS'].includes(x.status)).map(x=>({
-  fixture_key:x.fixture_key,model_version:x.model_version,kickoff:x.kickoff,generated_day:new Date(now).toISOString().slice(0,10),
-  probabilities:x.probabilities,markets:x.markets,status:x.status,evidence:x.evidence
- }));
- for(let i=0;i<snapshotRows.length;i+=30){
-  await rest('sefirot_december_quest_auto_snapshots?on_conflict=fixture_key,generated_day,model_version',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(snapshotRows.slice(i,i+30))});
- }
- let newSettlements=0;
- const historyFixtures=allFixtures.filter(g=>Core.LEAGUE_FILES[g.competition]&&Date.parse(g.kickoff)<now-8*3600000&&new Date(g.kickoff).toISOString().slice(0,10)<new Date(now).toISOString().slice(0,10));
- if(historyFixtures.length){
-  const [existing,snaps]=await Promise.all([
-   rest('sefirot_december_quest_auto_settlements?select=fixture_key&limit=200'),
-   rest('sefirot_december_quest_auto_snapshots?select=id,fixture_key,generated_at,status,probabilities&order=generated_at.asc&limit=1500')
-  ]);
-  const done=new Set((existing||[]).map(x=>x.fixture_key));
-  const settled=historyFixtures.filter(g=>!done.has(g.fixture_key))
-   .map(g=>Settlement.resultFromFixture(g,dataByLeague[g.competition]||[],snaps||[],now)).filter(Boolean);
-  for(let i=0;i<settled.length;i+=30){
-   await rest('sefirot_december_quest_auto_settlements?on_conflict=fixture_key',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify(settled.slice(i,i+30))});
-  }
-  newSettlements=settled.length;
- }
- const runStatus=sourceErrors.length?'PARTIAL':'OK';
- await rest('sefirot_december_quest_auto_runs',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({
-  model_version:Core.MODEL_VERSION,provider:'football-data.co.uk',
-  started_at:runStarted.toISOString(),completed_at:new Date().toISOString(),sources_attempted:urls.length,fetch_ok:sourceGood,
-  scanned:fixtures.length,forecasted:ready,insufficient,errors:sourceErrors.slice(0,20),run_status:runStatus
- })});
- return {ok:true,status:runStatus,model_version:Core.MODEL_VERSION,fixture_count:fixtures.length,with_model:ready,missing_data:insufficient,
-  sources_ok:sourceGood,sources_attempted:urls.length,source_errors:sourceErrors,
-  odds_provider_timestamp_verified:false,walk_forward:validations.map(v=>({league:v.competition,n:v.sample_n,status:v.status,model_brier:v.model_brier,baseline_brier:v.baseline_brier})),settlements_added:newSettlements,action:'SHADOW_ONLY',wagers_executed:0};
 }
+const gatewayToken=Deno.env.get('DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN')||'';
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  if(req.method==='GET')return json({ok:true,name:'december-quest-autonomous-predictor',model_version:Core.MODEL_VERSION,method:'POST_AUTH_ONLY',money_permission:false,live:false,betting_enabled:false,provider:'football-data.co.uk'});
@@ -124,7 +51,9 @@ Deno.serve(async req=>{
  const token=req.headers.get('x-dq-predictor-token')||'';
  if(!(await authenticate(token)))return json({ok:false,error:'UNAUTHORIZED'},401);
  try{
-  const result=await execute();return json(result,200);
+  const result=await execute({rest,csv:fetchCsvWithRetry,
+   gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock)});
+  return json({ok:result.status!=='SOURCE_ERROR',...result},result.status==='SOURCE_ERROR'?503:200);
  }catch(e){
   console.error('DQ_AUTOPREDICTOR_FAILURE',String(e.message||e).slice(0,100));
   return json({ok:false,error:'RUN_FAILED',reason:String(e.message||e).slice(0,150)},503);

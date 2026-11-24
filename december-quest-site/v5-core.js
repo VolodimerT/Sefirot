@@ -19,7 +19,7 @@ function independent(legs){
 }
 function scenario(t,settings){
  const price=t?.purchased?Number(settings?.price)||0:0;
- if(t?.mode==='pass')return {odds:null,implied:null,model:null,ev:-price,reason:'PASS: ставка 0'};
+ if(t?.mode==='pass')return {odds:null,implied:null,model:null,ev:price?-price:0,reason:'PASS: ставка 0'};
  const legs=(t?.legs||[]).filter(x=>x.enabled);
  if(!legs.length||legs.length>3)return {odds:null,implied:null,model:null,ev:null,reason:'Нет 1–3 активных событий'};
  const odds=legs.reduce((v,l)=>positive(l.odds)===null?NaN:v*l.odds,1);

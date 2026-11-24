@@ -22,7 +22,7 @@ function backtest(competition,rows,now=Date.now()){
   if(pre.length<30)continue;
   const fixture={fixture_key:'BACKTEST-'+competition+'-'+game.date+'-'+game.home,competition,
     home_team:game.home,away_team:game.away,kickoff:game.date+'T22:00:00Z'};
-  const prob=Core.forecast(fixture,pre,asof);
+  const prob=Core.forecast(fixture,pre,asof,false);
   if(prob.status!=='MODEL_ONLY')continue;
   const outcome=game.hg>game.ag?'H':game.hg<game.ag?'A':'D';
   const mm=measure(prob.probabilities,outcome),bb=measure(baseline(pre),outcome);

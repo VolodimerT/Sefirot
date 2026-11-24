@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import Core from '../core.js';
+import { evaluateQuote, grade, standardMarkets } from '../markets.js';
+import { duplicates, questFixture } from '../run.js';
+import { collectGateway, matchFixture } from '../gateway.js';
 const base=Date.parse('2026-11-23T12:00:00Z');
 const fixture={fixture_key:'EPL-2026-12-01-test',competition:'EPL',home_team:'Manchester City',away_team:'Leeds',kickoff:'2026-12-01T22:00:00+02:00'};
 let data=[];
@@ -12,7 +15,7 @@ const p=Core.forecast(fixture,data,base);
 assert.equal(p.status,'MODEL_ONLY');
 assert.equal(p.verdict,'пропуск');
 assert.equal(p.risk_class,'D');
-assert.equal(p.markets.length,12);
+assert.equal(p.markets.length,68);
 assert.equal(p.sample_n,32);
 assert.ok(p.markets.every(x=>x.odds===null&&x.ev===null));
 assert.ok(p.probabilities.home>0);
@@ -34,4 +37,47 @@ assert.equal(attached.markets.find(x=>x.pick==='П1').value_verified,false);
 assert.ok(attached.markets.every(x=>x.ev===null));
 assert.equal(Core.attachQuotes(Core.forecast(fixture,data,base),[{...odds[0],HomeTeam:'Wrong Team'}],fixture,base).status,'MODEL_ONLY');
 assert.equal(attached.evidence.quote_provider_timestamp,null);
-console.log('PASS — 23 autonomous model/prospective/source/odds tests');
+assert.deepEqual(Core.forecast(fixture,data,base),p);
+const sameDay={home:'mancity',away:'leeds',hg:12,ag:0,date:'2026-11-23',when:base-1000};
+assert.deepEqual(Core.forecast(fixture,[sameDay,...data],base),p);
+assert.equal(Core.attachQuotes(p,odds,fixture,Date.parse(fixture.kickoff)).status,'MODEL_ONLY');
+
+const [validXg,missingXg]=Core.resultsFromCsv(
+ '\uFEFFDiv,Date,HomeTeam,AwayTeam,FTHG,FTAG,HxG,AxG\nE0,22/11/2026,Man City,Leeds,2,0,1.6,0\nE0,21/11/2026,Man City,Leeds,2,0,,0\n',
+ 'EPL',base);
+assert.equal(validXg.hxg,1.6);
+assert.equal(validXg.axg,0);
+assert.equal(missingXg.hxg,undefined);
+assert.ok(p.markets.every(row=>Math.abs(Object.values(row.settlement).reduce((sum,n)=>sum+n,0)-1)<1e-8));
+const byId=id=>standardMarkets.find(row=>row.id===id);
+assert.equal(grade(byId('DNB:home:0'),1,1),'push');
+assert.equal(grade(byId('AH:home:-0.75'),2,1),'half_win');
+assert.equal(grade(byId('AH:away:0.75'),2,1),'half_loss');
+assert.equal(grade(byId('TG:over:2.25'),1,1),'half_loss');
+assert.equal(grade(byId('TG:under:2.25'),1,1),'half_win');
+assert.equal(grade(byId('TG:under:2'),1,1),'push');
+assert.equal(grade(byId('DC:12:0'),1,1),'loss');
+assert.equal(grade(byId('TH:over:1.25'),1,1),'half_loss');
+const forecastEV=evaluateQuote({win:.3,half_win:.2,push:.15,half_loss:.1,loss:.25},2);
+assert.equal(forecastEV.expected_value,.1);
+assert.equal(forecastEV.break_even_odds,1.75);
+assert.equal(forecastEV.sensitivity['-0.05'],.03);
+assert.equal(evaluateQuote(null,2),null);
+assert.equal(evaluateQuote({win:1},2),null);
+assert.equal(questFixture(fixture),true);
+assert.equal(questFixture({...fixture,kickoff:'2026-12-01T23:01:00+02:00'}),false);
+const alias={...fixture,fixture_key:'duplicate',home_team:'Man City'};
+assert.deepEqual([...duplicates([fixture,alias])],[fixture.fixture_key,'duplicate']);
+const providerRecord={league:{id:39},fixture:{id:27,date:fixture.kickoff,status:{short:'NS'}},
+ teams:{home:{name:'Man City'},away:{name:'Leeds'}}};
+assert.equal(matchFixture(fixture,[providerRecord]).fixture_id,27);
+assert.equal(matchFixture(fixture,[providerRecord,providerRecord]).status,'DATA_MISSING');
+assert.equal((await collectGateway('https://test.invalid','',[fixture],base,()=>assert.fail())).reason,'GATEWAY_NOT_CONFIGURED');
+let gatewayRequests=0;
+const stop=await collectGateway('https://test.invalid','synthetic',[fixture],Date.parse(fixture.kickoff)-3600000,async()=>{
+ gatewayRequests++;
+ return Response.json({error:'SHARED_BUDGET_STOP'},{status:429});
+});
+assert.equal(stop.reason,'GATEWAY_BUDGET_STOP');
+assert.equal(gatewayRequests,1);
+console.log('PASS — автономная модель, cutoff, азиатские расчёты, xG, дедупликация и gateway');
