@@ -83,10 +83,15 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
 }
 
 export async function execute({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now), clock = Date.now }) {
-  const started = clock();
-  const recent = await rest('sefirot_december_quest_auto_runs?select=started_at,run_status,model_version&order=started_at.desc&limit=1');
-  if (recent[0]?.run_status === 'OK' && recent[0].model_version === Core.MODEL_VERSION &&
-      started - Date.parse(recent[0].started_at) < 6 * hour) return { skipped: 'RUN_WITHIN_SIX_HOURS' };
+  const state = await rest('rpc/dq_predictor_run_state', { method: 'POST', body: JSON.stringify({
+    p_model_version: Core.MODEL_VERSION
+  }) });
+  const started = Date.parse(state?.checked_at);
+  if (!Number.isFinite(started)) throw Error('INVALID_RUN_STATE');
+  if (state.recent_success_at) return {
+    skipped: 'RECENT_SUCCESS_IN_CYCLE', cycle_started_at: state.cycle_started_at,
+    recent_success_at: state.recent_success_at, model_version: Core.MODEL_VERSION
+  };
   const calendar = await rest(listPath);
   if (!Array.isArray(calendar) || calendar.length > fixtureLimit) throw Error('FIXTURE_SOURCE_LIMIT');
   const all = calendar.filter(questFixture);

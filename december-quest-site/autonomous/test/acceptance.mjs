@@ -13,7 +13,7 @@ export const fixture = {
 };
 const delayed = { ...fixture, fixture_key:'QA-EPL-002', home_team:'Leeds', away_team:'Arsenal' };
 const missing = { ...fixture, fixture_key:'QA-COPPA-001', home_team:'Genoa', away_team:'Inter',
-  competition:'COPPA', checked_at:'2026-12-01T16:00:00Z' };
+  competition:'COPPA', checked_at:'2026-12-01T15:00:00Z' };
 export const columns = 'Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,FTR,HxG,AxG';
 export const form = Array.from({ length: 12 }, (_, i) =>
   ['E0,' + String(11 + i).padStart(2,'0') + '/11/2026,19:00,Coventry,Arsenal,2,1,H,1.9,0.8',
@@ -49,12 +49,12 @@ export async function runAcceptance() {
     if (resource === tablePrefix + 'fixtures') {
       return rows('select * from ' + resource + ' order by kickoff,fixture_key');
     }
-    if (resource === tablePrefix + 'auto_runs') {
-      return rows('select * from ' + resource + ' order by started_at desc limit 1');
-    }
     const params = JSON.parse(options.body);
     await db.exec('set role service_role');
     try {
+      if (resource === 'rpc/dq_predictor_run_state') {
+        return (await rows('select public.dq_predictor_run_state($1) as result',[params.p_model_version]))[0].result;
+      }
       if (resource === 'rpc/dq_pending_predictor_snapshots') {
         return rows('select * from public.dq_pending_predictor_snapshots($1,$2)',
           [params.p_fixture_keys, params.p_model_version]);
@@ -70,7 +70,7 @@ export async function runAcceptance() {
   try {
     await db.exec("create function public.dq_test_clock() returns timestamptz language sql stable "
       + "as $$select current_setting('dq_test.clock')::timestamptz$$");
-    await setTime('2026-12-01T17:00:00Z');
+    await setTime('2026-12-01T15:01:00Z');
     await db.exec(freeze(schema));
     await db.exec(freeze(migration));
     await db.exec('alter table '+tablePrefix+'auto_snapshots enable row level security; '
@@ -93,23 +93,46 @@ export async function runAcceptance() {
     assert.equal(conflict.risk_class,'RED');
     assert.deepEqual(conflict.probabilities,{});
     assert.equal(conflict.evidence.kickoff_gate,'KICKOFF_CONFLICT');
-    const seals = await read('auto_snapshots');
-    const locked = seals.find(row=>row.fixture_key===fixture.fixture_key);
+    const initialSeals = await read('auto_snapshots');
+    const locked = initialSeals.find(row=>row.fixture_key===fixture.fixture_key);
     assert.equal(locked.evidence.kickoff_confirmation,'OFFICIAL_CALENDAR_AND_WEEKLY_CSV');
     assert.ok(locked.generated_at < locked.kickoff);
     assert.equal(locked.evidence.decision.verdict,'пропуск');
     assert.equal(locked.evidence.pass_reasons.includes('QUOTE_TIMESTAMP_UNVERIFIED'),true);
     assert.equal(locked.markets.find(row=>row.pick==='П1').ev,null);
-    assert.ok(seals.some(row=>row.fixture_key===missing.fixture_key&&row.status==='UNSUPPORTED_LEAGUE'));
+    assert.ok(initialSeals.some(row=>row.fixture_key===missing.fixture_key&&row.status==='UNSUPPORTED_LEAGUE'));
 
-    assert.equal((await execute({rest,csv,clock})).skipped,'RUN_WITHIN_SIX_HOURS');
+    assert.equal((await execute({rest,csv,clock})).skipped,'RECENT_SUCCESS_IN_CYCLE');
+    assert.equal(new Date(first.cycle_started_at).toISOString(),'2026-11-30T17:00:00.000Z');
+    await setTime('2026-12-01T16:59:59Z');
+    assert.equal((await execute({rest,csv,clock})).skipped,'RECENT_SUCCESS_IN_CYCLE');
+
+    await setTime('2026-12-01T17:00:00Z');
+    const scheduled = await execute({rest,csv,clock});
+    assert.equal(scheduled.status,'OK');
+    assert.equal(scheduled.modeled,1);
+    assert.equal(scheduled.sealed,2);
+    assert.equal(new Date(scheduled.cycle_started_at).toISOString(),'2026-12-01T17:00:00.000Z');
+    const seals = await read('auto_snapshots');
+    const official = seals.find(row=>row.fixture_key===fixture.fixture_key&&row.id!==locked.id);
+    assert.deepEqual(seals.slice(0,initialSeals.length),initialSeals);
+    assert.notEqual(official.generated_day,locked.generated_day);
+    assert.equal(new Date(official.generated_at).toISOString(),'2026-12-01T17:00:00.000Z');
+    assert.equal((await execute({rest,csv,clock})).skipped,'RECENT_SUCCESS_IN_CYCLE');
+    const committedTwice = await rest('rpc/dq_commit_predictor_run',{body:JSON.stringify({
+      p_run:{model_version:Core.MODEL_VERSION,run_status:'OK',started_at:new Date(clock()).toISOString()},
+      p_forecasts:[],p_validation:[],p_settlements:[]
+    })});
+    assert.equal(committedTwice.skipped,'RUN_ALREADY_RECORDED');
+    assert.equal((await read('auto_runs')).length,2);
     for (const role of ['anon','authenticated','service_role']) {
       await db.exec('set role '+role);
       try {
-        assert.equal((await read('auto_snapshots')).length,2);
+        assert.equal((await read('auto_snapshots')).length,4);
         await assert.rejects(db.exec('delete from '+tablePrefix+'auto_snapshots'),/permission denied/);
         if (role !== 'service_role') {
           await assert.rejects(db.exec("select public.dq_commit_predictor_run('{}','[]','[]','[]')"),/permission denied/);
+          await assert.rejects(db.exec("select public.dq_predictor_run_state('test')"),/permission denied/);
         }
       } finally { await db.exec('reset role'); }
     }
@@ -127,7 +150,7 @@ export async function runAcceptance() {
     assert.equal(correct.status,'OK');
     assert.equal(correct.settled,1);
     const [result] = await read('auto_settlements');
-    assert.equal(result.snapshot_id,locked.id);
+    assert.equal(result.snapshot_id,official.id);
     assert.equal(result.result,'H');
     assert.ok(Number(result.model_brier)>0&&Number(result.model_logloss)>0);
     assert.equal(result.details.markets.length,68);
@@ -140,6 +163,7 @@ export async function runAcceptance() {
 
     return { outcome:'PASS', source:'SYNTHETIC', model:Core.MODEL_VERSION,
       saved:first.saved, sealed:first.sealed, timed_conflict:'RED', same_slot_retry:'SKIPPED',
+      manual_1701_then_cron_1900:'BOTH_COMMITTED', cycle_seals:seals.length,
       source_failure:failure.status, mismatched_ft:wrongTime.settled, correct_ft:correct.settled,
       market_scores:result.details.markets.length, rls:'PASS', snapshots_immutable:'PASS' };
   } finally { await db.close(); }

@@ -45,16 +45,20 @@ try {
       }
       if (request.headers.apikey !== testRoleToken) return send(401,{error:'MOCK_ROLE_DENIED'});
       const resource = pathname.replace('/rest/v1/','');
-      if (resource === tablePrefix+'auto_runs' || resource === tablePrefix+'fixtures') {
+      if (resource === tablePrefix+'fixtures') {
         return send(200,await rows('select * from '+resource));
       }
       let raw = '';
       for await (const chunk of request) raw += chunk;
       const payload = JSON.parse(raw);
       if (resource === 'rpc/dq_predictor_cron_authorized') return send(200,payload.p_token === cronToken);
-      assert.equal(resource,'rpc/dq_commit_predictor_run');
       await db.exec('set role service_role');
       try {
+        if (resource==='rpc/dq_predictor_run_state') {
+          const [state] = await rows('select public.dq_predictor_run_state($1) as report',[payload.p_model_version]);
+          return send(200,state.report);
+        }
+        assert.equal(resource,'rpc/dq_commit_predictor_run');
         const [result] = await rows('select public.dq_commit_predictor_run($1,$2,$3,$4) as report',
           [payload.p_run,payload.p_forecasts,payload.p_validation,payload.p_settlements].map(value=>JSON.stringify(value)));
         return send(200,result.report);
@@ -97,7 +101,7 @@ try {
   assert.equal(first.body.pass,1);
   assert.equal(first.body.wagers_executed,0);
   assert.equal(flags.currentFileAttempts,2);
-  assert.equal((await request('POST',cronToken)).body.skipped,'RUN_WITHIN_SIX_HOURS');
+  assert.equal((await request('POST',cronToken)).body.skipped,'RECENT_SUCCESS_IN_CYCLE');
   const seals = await rows('select * from '+tablePrefix+'auto_snapshots');
   assert.equal(seals.length,1);
   assert.equal(seals[0].generated_at.toISOString(),new Date(qaClock).toISOString());
