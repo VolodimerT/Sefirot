@@ -2,7 +2,8 @@ import Core from './core.js';
 import { evaluateQuote, removeMargin } from './markets.js';
 
 const hour = 3600000;
-const horizon = 48 * hour;
+export const oddsHorizonHours = 48;
+const horizon = oddsHorizonHours * hour;
 const quoteAge = hour;
 const publicationAge = 12 * hour;
 const sourceUrl = 'https://api.the-odds-api.com/v4/sports/';

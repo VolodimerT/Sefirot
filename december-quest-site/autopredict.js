@@ -38,7 +38,7 @@ const reasons={
  DUPLICATE_FIXTURE:'Обнаружен дубликат матча', KICKOFF_CONFLICT:'Источники расходятся по kickoff',
  KICKOFF_UNVERIFIED:'Нужно свежее подтверждение kickoff', UNSUPPORTED_LEAGUE:'Турнир вне модели',
  HISTORY_DATA_MISSING:'Свежая история недоступна', INSUFFICIENT_TEAM_HISTORY:'Мало матчей команд',
- ODDS_DATA_MISSING:'Нет котировок', QUOTE_TIMESTAMP_UNVERIFIED:'Время публикации котировки неизвестно',
+ ODDS_DATA_MISSING:'Нет котировок', ODDS_OUTSIDE_WINDOW:'До окна поиска котировок больше 48 ч', QUOTE_TIMESTAMP_UNVERIFIED:'Время публикации котировки неизвестно',
  LINEUPS_DATA_MISSING:'Нет подтверждённых составов', TACTICAL_FIT_UNVERIFIED:'Тактика не проверена',
  PUBLIC_TRAP_UNVERIFIED:'Рыночная ловушка не проверена', DEATH_TEST_UNVERIFIED:'Death-test без подтверждённых котировок',
  NO_EDGE:'EV по доступной строке ≤ 0', DEATH_TEST_FAIL:'При −5 п.п. условный EV ≤ 0'
@@ -107,11 +107,23 @@ function showTeamHistory(e){
   rows.map(row=>'<tr>'+row.map(cell=>'<td>'+H(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
  const metrics={shots:'Удары',shots_on_target:'Удары в створ',corners:'Угловые',fouls:'Фолы',yellow_cards:'Жёлтые карточки'};
  const venue=row=>row?.n ? fmt(row.rate?.for,2)+' / '+fmt(row.rate?.against,2)+' ('+row.n+'/'+row.total+')' : 'Н/Д';
- const sources=(e.upstream_sources||[]).map(source=>[source.season||'История',source.ok?'Получен':'Ошибка',
+ const upstream=e.upstream_sources||[];
+ const label=source=>source.url?.includes('/openfootball/')?'OpenFootball':
+  source.url?.startsWith('https://api.openligadb.de/')?'OpenLigaDB':'Football-Data';
+ const sources=upstream.map(source=>[label(source),source.season||'История',
+  source.use_status==='FALLBACK'&&source.selected?'Выбран резерв':source.use_status==='STALE'?'Устарел':
+  source.use_status==='CONFLICT'?'Разногласие':source.selected?'Выбран':source.ok?'Получен':'Ошибка',
   source.completed_rows??'Н/Д',source.latest_result_at||'Н/Д',formattedDate(source.observed_at),source.error||'']);
+ const liga=upstream.some(source=>source.selected&&label(source)==='OpenLigaDB');
+ const context=e.context_availability;
+ const contextLabels={lineups:'Составы',injuries:'Травмы',referee:'Назначение судьи',xg:'xG/xGA',
+  suspensions:'Дисквалификации',tactical_scheme:'Схема',tournament_context:'Турнирный контекст'};
+ const statusLabels={CONFIRMED:'Подтверждены',REPORTED:'Есть публикация',ASSIGNED:'Назначен',HISTORICAL:'История',UNKNOWN:'Н/Д'};
+ const sourceNames=[...new Set(upstream.filter(source=>source.selected).map(label))].join(' / ')||'Football-Data';
  const referee=profile.referee;
  return '<details class="v6-auto-detail"><summary>Форма команд и покрытие источников</summary>'+
-  '<p class="muted">Football-Data · завершённые матчи лиги до расчёта. Домашние и гостевые срезы до 20 матчей.</p>'+
+  '<p class="muted">'+H(sourceNames)+' · завершённые матчи лиги до расчёта. Домашние и гостевые срезы до 20 матчей.</p>'+
+  (liga?'<p class="muted"><a href="https://www.openligadb.de/en/license" target="_blank" rel="noopener noreferrer">Данные OpenLigaDB, ODbL 1.0</a></p>':'')+
   table('Форма 5 / 10 / 20',['Команда','Окно','Матчей','В–Н–П','Очков за матч','Голы за / против'],
    [profile.home,profile.away].flatMap((team,index)=>team.form.map(form=>[index===0?e.home_name:e.away_name,
     form.window,form.n,[form.wins,form.draws,form.losses].join('–'),fmt(form.points_per_game,2),
@@ -123,7 +135,9 @@ function showTeamHistory(e){
   (referee?'<p>Судья '+H(referee.name)+' · матчей '+referee.n+' · ЖК/матч '+fmt(referee.yc_per_game,2)+' · ЖК/фол '+
    fmt(referee.yc_per_foul,2)+' · 0–1 ЖК '+referee.low_card_matches+'/'+referee.n+'. Referee Gate требует отдельной проверки.</p>':
    '<p class="muted">Назначение судьи не подтверждено. Referee Gate закрыт.</p>')+
-  (sources.length?table('Источники',['Сезон','Состояние','Результатов','Последний FT','Получено (Киев)','Ошибка'],sources):'')+'</details>';
+  (context?table('Предматчевые данные',['Тип','Доступность'],Object.entries(contextLabels)
+   .map(([name,label])=>[label,statusLabels[context[name]]||'Н/Д'])):'')+
+  (sources.length?table('Источники',['Поставщик','Сезон','Состояние','Результатов','Последний FT','Получено (Киев)','Ошибка'],sources):'')+'</details>';
 }
 
 function showDetail(f){
@@ -244,6 +258,14 @@ function view(){
  const leagues=[...new Set(data.map(f=>f.competition))].sort();
  const next=data.find(f=>Date.parse(f.kickoff)>Date.now());
  const byFixture=new Map(settlements.map(row=>[row.fixture_key,row]));
+ const priceScope=data.filter(f=>{
+  const kickoff=Date.parse(f.kickoff);
+  if(kickoff<=Date.now())return false;
+  if(f.evidence?.odds_publication_scope)return f.evidence.odds_publication_scope==='ELIGIBLE';
+  const hours=(kickoff-Date.parse(f.source_cutoff))/3600000;
+  return hours>0&&hours<=48&&modelValid(f)&&f.evidence?.kickoff_gate==='CONFIRMED'&&f.evidence?.fixture_timing_status==='confirmed';
+ });
+ const priced=priceScope.filter(f=>f.evidence?.quote_price_verified===true).length;
  const latest=run?.completed_at?new Date(run.completed_at).toLocaleString('ru-RU',{timeZone:'Europe/Kyiv',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Нет успешного запуска';
  let out='<div class="eyebrow">AUTO PREDICTOR</div><h1 class="page-title">Автономный прогнозист</h1>';
  out+='<p class="page-intro">Модель самостоятельно получает завершённые матчи из публичных CSV, рассчитывает вероятности исходов, тоталов и ОЗ, сохраняет серверный прематч-снимок. Реальных ставок нет.</p>';
@@ -256,7 +278,8 @@ function view(){
  '<div><b>Автозапуск:</b> ежедневно в 19:00 по Киеву; версия '+H(run?.model_version||'нет')+'; дата матча и время — отдельный gate.</div>'+
  '<div><b>Котировки:</b> '+(oddsHealth?.timestamped_source_configured===false?'ключ источника не настроен':
   oddsHealth?.timestamped_source_configured?'источник настроен':'статус источника неизвестен')+
-  ' · подтверждённая цена у '+data.filter(row=>row.evidence?.quote_price_verified).length+' матчей.</div>'+
+  ' · '+(priceScope.length?'подтверждённые цены '+priced+'/'+priceScope.length+' матчей в окне 48 ч'
+   :'в окне 48 ч пока нет допущенных матчей')+'.</div>'+
  (run?.errors?.length?'<details><summary>Ошибки последнего расчёта</summary><ul>'+run.errors.map(error=>'<li>'+H(error)+'</li>').join('')+'</ul></details>':'')+
  '<div class="v6-auto-actions"><button class="button secondary" data-auto="reload">Перечитать прогнозы</button><button class="button secondary" data-route="maintenance">Контроль расписания</button></div></div>';
  if(next){

@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import Core from '../core.js';
 import Validation, { walkForward } from '../validation.js';
-import { grade, grades, removeMargin } from '../markets.js';
+import { grade, grades, removeMargin, evaluateQuote } from '../markets.js';
 
 const [directory, cutoff] = process.argv.slice(2);
 const now=Date.parse(cutoff);
@@ -39,7 +39,7 @@ function pairedInterval(rows) {
 }
 
 const results=[];
-const markets=new Map();
+const markets=new Map(), quoteChecks=new Map();
 const calibration=Array.from({length:10},()=>({n:0,probability:0,actual:0}));
 for(const [competition,division] of Object.entries(Core.LEAGUE_FILES)){
   const history=new Map(), closing=new Map(), conflicts=new Set();
@@ -58,7 +58,7 @@ for(const [competition,division] of Object.entries(Core.LEAGUE_FILES)){
       if(!date)continue;
       const id=key({date,home:Core.canonical(competition,row.HomeTeam),away:Core.canonical(competition,row.AwayTeam)});
       const margin=removeMargin(['B365CH','B365CD','B365CA'].map(k=>Number(row[k])));
-      if(margin)closing.set(id,margin.probabilities);
+      if(margin)closing.set(id,{probabilities:margin.probabilities,row});
     }
   }
   for(const id of conflicts){history.delete(id);closing.delete(id);}
@@ -73,7 +73,7 @@ for(const [competition,division] of Object.entries(Core.LEAGUE_FILES)){
     const prior=Validation.measure(baseline,outcome);
     const archived=closing.get(key(game));
     if(archived){
-      const [home,draw,away]=archived;
+      const [home,draw,away]=archived.probabilities;
       const close=Validation.measure({home,draw,away},outcome);
       fromMarket.push({date:game.date,model,reference:close,delta:model.brier-close.brier});
     }
@@ -99,6 +99,24 @@ for(const [competition,division] of Object.entries(Core.LEAGUE_FILES)){
       totals.logloss+=logloss(market.settlement);
       totals.baseline_logloss+=logloss(market.baseline);
       markets.set(market.kind,totals);
+      const quote=archived?.row;
+      if(!quote)continue;
+      let numeric;
+      if(market.kind==='1X2')numeric=quote['B365C'+({home:'H',draw:'D',away:'A'})[market.side]];
+      if(market.kind==='TG'&&market.line===2.5)numeric=quote[market.side==='over'?'B365C>2.5':'B365C<2.5'];
+      const line=quote.AHCh?.trim()?Number(quote.AHCh):null;
+      if(['DNB','AH'].includes(market.kind)&&line!==null&&market.line===(market.side==='home'?line:-line)) {
+        numeric=quote[market.side==='home'?'B365CAHH':'B365CAHA'];
+      }
+      const odds=Number(numeric);
+      if(!(odds>1&&odds<=100))continue;
+      const d=market.settlement, value=evaluateQuote(d,odds);
+      const reference=d.win*(odds-1)+d.half_win*(odds-1)/2-d.half_loss/2-d.loss;
+      assert.ok(value && Math.abs(value.expected_value-reference)<.000001);
+      assert.ok(Math.abs(value.implied-1/odds)<.000001);
+      const stress=Object.values(value.price_stress).filter(n=>n!==null);
+      assert.ok(stress.every((n,i)=>i===0||n<=stress[i-1]));
+      quoteChecks.set(market.kind,(quoteChecks.get(market.kind)||0)+1);
     }
   }
   assert.equal(observations.length,validation.sample_n);
@@ -112,5 +130,5 @@ for(const [competition,division] of Object.entries(Core.LEAGUE_FILES)){
 const marketSummary=Object.fromEntries([...markets].map(([kind,{outcomes,...totals}])=>
   [kind,{outcomes,...Object.fromEntries(Object.entries(totals).map(([name,value])=>[name,value/outcomes]))}]));
 console.log(JSON.stringify({type:'HISTORICAL_WALK_FORWARD',model_version:Core.MODEL_VERSION,cutoff,files,results,
-  markets:marketSummary,calibration:calibration.map(({n,probability,actual},i)=>
+  markets:marketSummary,archive_quote_formula_checks:Object.fromEntries(quoteChecks),calibration:calibration.map(({n,probability,actual},i)=>
     ({lower:i/10,n,probability:n?probability/n:null,actual:n?actual/n:null}))},null,2));

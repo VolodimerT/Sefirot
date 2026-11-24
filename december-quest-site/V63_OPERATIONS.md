@@ -24,6 +24,10 @@ A run before 19:00 belongs to the preceding operating day. The next 19:00 run op
 
 [December readiness and frozen-model evaluation](./DECEMBER_READINESS.md) records the historical replay, source coverage and remaining live acceptance criteria. New history and odds diagnostics do not change the production model or pass policy.
 
+## Data sources
+
+[Data Intelligence](./DATA_INTELLIGENCE.md) records source conditions, backup acceptance and the fixture-level coverage audit. Use the five-minute backup cache only for repeat reads. The scheduled run attempts a backup only for a missing or stale season.
+
 ## Freeze scope
 
 - Model `DQ-POISSON-0.3`, five domestic leagues, 68 modeled market outcomes per covered fixture, completed results strictly before the UTC cutoff date.

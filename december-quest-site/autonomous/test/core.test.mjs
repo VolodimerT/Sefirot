@@ -3,7 +3,8 @@ import Core from '../core.js';
 import { walkForward } from '../validation.js';
 import { evaluateQuote, grade, standardMarkets, removeMargin } from '../markets.js';
 import { historyProfile, matchStatistics } from '../history.js';
-import { duplicates, questFixture } from '../run.js';
+import { parseOpenFootball, parseOpenLigaDB, backupStatus, fetchResultBackup } from '../result-backups.js';
+import { duplicates, questFixture, oddsScope } from '../run.js';
 import { collectGateway, matchFixture } from '../gateway.js';
 import { attachOdds, collectTimestampedOdds } from '../odds-gateway.js';
 const base=Date.parse('2026-11-23T12:00:00Z');
@@ -167,4 +168,39 @@ const lateDraw={...data[0],date:'2026-11-20',when:Date.parse('2026-11-20T12:00:0
 const outcomes=Array.from(walkForward('EPL',[...data,lateDraw],base));
 assert.deepEqual(new Set(outcomes.map(row=>row.outcome)),new Set(['H','D','A']));
 for(const {game,outcome} of outcomes)assert.equal(outcome,Math.sign(game.hg-game.ag)===1?'H':Math.sign(game.hg-game.ag)===0?'D':'A');
+const sampleDate='2026-11-20';
+const openRecord={date:sampleDate,team1:'Arsenal FC',team2:'Leeds United FC',score:{ft:[1,2]}};
+const openFixture={name:'English Premier League 2026/27',
+ matches:[openRecord,{...openRecord,date:'2026-11-23'},{...openRecord,date:'2026-12-01'}]};
+const parsedOpen=parseOpenFootball(openFixture,'EPL','2627',base);
+assert.equal(parsedOpen.length,1);
+assert.deepEqual([parsedOpen[0].home,parsedOpen[0].away,parsedOpen[0].hg,parsedOpen[0].ag],['arsenal','leeds',1,2]);
+assert.throws(()=>parseOpenFootball({...openFixture,matches:[openRecord,{...openRecord,score:[1,1]}]},'EPL','2627',base),/CONFLICTING_RESULTS/);
+assert.throws(()=>parseOpenFootball({...openFixture,name:'Italian Serie A 2026/27'},'EPL','2627',base),/INVALID_LEAGUE_OR_SEASON/);
+const ligaEntry={leagueShortcut:'bl1',leagueSeason:2026,matchID:201,matchDateTimeUTC:'2026-11-20T19:30:00Z',
+ matchIsFinished:true,team1:{teamName:'FC Bayern München'},team2:{teamName:'TSG Hoffenheim'},
+ matchResults:[{resultTypeKind:'HalfTime',pointsTeam1:1,pointsTeam2:1},
+ {resultTypeKind:'After90Minutes',pointsTeam1:3,pointsTeam2:2}]};
+const bundes=parseOpenLigaDB([ligaEntry],'2627',base);
+assert.equal(bundes[0].home,'bayernmunich');
+assert.equal(bundes[0].hg,3);
+assert.throws(()=>parseOpenLigaDB([{...ligaEntry,matchIsFinished:false}],'2627',base),/EMPTY_RESULT_SOURCE/);
+const observed={ok:true,code:'BUNDES',season:'2627',rows:Array.from({length:24},(_,n)=>({...bundes[0],home:'bayern'+n})),
+ observedAt:base,expectedGames:24};
+assert.equal(backupStatus(observed,[],base),'FALLBACK');
+assert.equal(backupStatus({...observed,observedAt:base+1},[],base),'UNAVAILABLE');
+assert.equal(backupStatus({...observed,expectedGames:40},[],base),'INCOMPLETE_CURRENT_SEASON');
+assert.equal(backupStatus({...observed,rows:[{...bundes[0],when:base-10*86400000}]},[],base),'STALE');
+assert.equal(backupStatus(observed,[{...observed.rows[0],hg:4}],base),'CONFLICT');
+let backupRequests=0;
+const transport=async()=>{backupRequests++;return Response.json(openFixture);};
+const originalPack=await fetchResultBackup('EPL','2627',base,transport,()=>base);
+const cachedPack=await fetchResultBackup('EPL','2627',base,transport,()=>base+60_000);
+assert.equal(originalPack.observedAt,cachedPack.observedAt);
+assert.equal(cachedPack.cached,true);
+assert.equal(backupRequests,1);
+assert.equal(oddsScope(fixture,base,true,'CONFIRMED'),'OUTSIDE_WINDOW');
+assert.equal(oddsScope({...fixture,timing_status:'confirmed'},oddsCutoff,true,'CONFIRMED'),'ELIGIBLE');
+assert.equal(oddsScope(fixture,oddsCutoff,true,'CONFIRMED'),'KICKOFF_UNVERIFIED');
+
 console.log('PASS — автономная модель, cutoff, азиатские расчёты, xG, дедупликация и gateway');
