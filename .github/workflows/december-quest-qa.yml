@@ -41,3 +41,7 @@ jobs:
           npm --prefix december-quest-site/autonomous run test:edge
       - name: Site regressions
         run: node --test december-quest-site/tests/*.test.cjs
+      - name: Live public CSV source check
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: deno run --quiet --allow-net=football-data.co.uk:443 december-quest-site/autonomous/test/public-source.mjs

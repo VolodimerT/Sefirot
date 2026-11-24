@@ -2,6 +2,7 @@
 import Core from "./core.js";
 import { execute } from "./run.js";
 import { collectGateway } from "./gateway.js";
+import { fetchCsvWithRetry } from "./csv-source.js";
 const PROJECT=Deno.env.get("SUPABASE_URL")||"";
 const SECRET=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const cors={"Access-Control-Allow-Origin":"https://sefirot-december-quest-2026.vercel.app","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"content-type,apikey,x-dq-predictor-token"};
@@ -17,31 +18,12 @@ async function rest(path,options={}){
   return text?JSON.parse(text):null;
  }finally{clearTimeout(timer);}
 }
-async function getCsv(url){
- const c=new AbortController(),timer=setTimeout(()=>c.abort(),11000);
- try{
-  const r=await fetch(url,{redirect:"error",signal:c.signal,headers:{Accept:"text/csv,text/plain;q=0.9,*/*;q=0.1"}});
-  if(!r.ok||r.url&&!/^https:\/\/(www\.)?football-data\.co\.uk\//.test(r.url))throw Error("PROVIDER_HTTP_OR_REDIRECT_"+r.status);
-  const len=Number(r.headers.get("content-length")||"0");if(len>4500000)throw Error('CSV_TOO_LARGE');
-  const text=await r.text();if(text.length>4500000)throw Error('CSV_TOO_LARGE');
-  if(text.slice(0,120).toLowerCase().includes('<html'))throw Error('PROVIDER_HTML_NOT_CSV');
-  return text;
- }finally{clearTimeout(timer);}
-}
 async function authenticate(token){
  if(typeof token!=='string'||!/^[a-f0-9]{64}$/i.test(token))return false;
  try{
   const data=await rest('rpc/dq_predictor_cron_authorized',{method:'POST',body:JSON.stringify({p_token:token})});
   return data===true;
  }catch(_e){return false;}
-}
-async function fetchCsvWithRetry(url){
- try{return await getCsv(url);}
- catch(error){
-  if(!['AbortError','TypeError'].includes(error.name)&&!/^PROVIDER_HTTP_OR_REDIRECT_5/.test(error.message))throw error;
-  await new Promise(resolve=>setTimeout(resolve,250));
-  return getCsv(url);
- }
 }
 const gatewayToken=Deno.env.get('DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN')||'';
 Deno.serve(async req=>{
