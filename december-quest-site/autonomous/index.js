@@ -30,12 +30,12 @@ const gatewayToken=Deno.env.get('DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN')||'';
 const oddsKey=Deno.env.get('DQ_ODDS_API_FREE_KEY')?.trim()||'';
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
- if(req.method==='GET')return json({ok:true,name:'december-quest-autonomous-predictor',model_version:Core.MODEL_VERSION,method:'POST_AUTH_ONLY',money_permission:false,live:false,betting_enabled:false,provider:'football-data.co.uk',odds_gate:{timestamped_source_configured:Boolean(oddsKey),csv_mode:'INDICATIVE_ONLY',max_quote_age_minutes:60}});
+ if(req.method==='GET')return json({ok:true,name:'december-quest-autonomous-predictor',model_version:Core.MODEL_VERSION,method:'POST_AUTH_ONLY',money_permission:false,live:false,betting_enabled:false,provider:'football-data.co.uk',team_form_windows:[5,10,20],sports_gateway_configured:Boolean(gatewayToken),odds_gate:{timestamped_source_configured:Boolean(oddsKey),csv_mode:'INDICATIVE_ONLY',max_quote_age_minutes:60}});
  if(req.method!=='POST')return json({ok:false,error:'POST_REQUIRED'},405);
  const token=req.headers.get('x-dq-predictor-token')||'';
  if(!(await authenticate(token)))return json({ok:false,error:'UNAUTHORIZED'},401);
  try{
-  const result=await execute({rest,csv:url=>fetchCsvWithRetry(url,url.endsWith('/fixtures.csv')),
+  const result=await execute({rest,csv:url=>fetchCsvWithRetry(url,true),
    gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock),
    odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,oddsKey)});
   return json({ok:result.status!=='SOURCE_ERROR',...result},result.status==='SOURCE_ERROR'?503:200);

@@ -3,6 +3,7 @@ import Validation from './validation.js';
 import Settlement from './settlement.js';
 import { collectGateway } from './gateway.js';
 import { attachOdds, collectTimestampedOdds } from './odds-gateway.js';
+import { historyProfile } from './history.js';
 
 const provider = 'https://football-data.co.uk';
 const kyiv = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Kyiv', dateStyle: 'short', timeStyle: 'short' });
@@ -35,11 +36,19 @@ function duplicates(fixtures) {
 }
 
 function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
-  const { current, gateway, weekly, odds, check } = packet;
+  const { current, gateway, weekly, odds } = packet;
+  const fresh = entry => {
+    const stamp=Date.parse(entry?.observed_at);
+    return stamp<=cutoff&&cutoff-stamp<=hour;
+  };
+  const check = fresh(packet.check) ? packet.check : null;
+  const lineups = fresh(check?.lineups) ? check.lineups : null;
+  const injuries = fresh(check?.injuries) ? check.injuries : null;
   const stamp = Date.parse(fixture.checked_at);
   const official = fixture.timing_status === 'confirmed' && fixture.source_quality === 'official' &&
     Number.isFinite(stamp) && stamp <= cutoff && cutoff - stamp <= 72 * hour;
-  const inWeeklyWindow = weekly?.ok && weekly.observedAt <= cutoff &&
+  const inWeeklyWindow = weekly?.ok && Number.isFinite(weekly.publishedAt) &&
+    weekly.publishedAt <= weekly.observedAt && cutoff - weekly.publishedAt <= 12 * hour && weekly.observedAt <= cutoff &&
     cutoff - weekly.observedAt <= hour && Date.parse(fixture.kickoff) - cutoff <= 48 * hour;
   const weeklyCheck = inWeeklyWindow ? Core.weeklyKickoff(weekly.records,fixture) : null;
   const conflicting = check?.status === 'KICKOFF_CONFLICT' ||
@@ -50,7 +59,11 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
     : conflicting ? 'KICKOFF_CONFLICT'
     : check?.status === 'CONFIRMED' || official || crossChecked ? 'CONFIRMED'
     : 'DATA_MISSING';
-  const forecast = Core.forecast(fixture, current && !duplicate && !conflicting ? rows : [], cutoff);
+  const usableHistory = current && !duplicate && !conflicting;
+  const forecast = Core.forecast(fixture, usableHistory ? rows : [], cutoff);
+  const teamHistory = usableHistory ? historyProfile(rows, Core.canonical(fixture.competition,fixture.home_team),
+    Core.canonical(fixture.competition,fixture.away_team),new Date(fixture.kickoff).toISOString(),cutoff,
+    check?.status==='CONFIRMED' ? check.referee : null) : null;
   const row = !duplicate && !conflicting
     ? attachOdds(forecast, weekly, fixture, odds, kickoffGate === 'CONFIRMED') : forecast;
   const candidate = row.best_candidate;
@@ -60,7 +73,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
       : !current ? ['HISTORY_DATA_MISSING']
       : !row.markets.length && !duplicate && !conflicting ? ['INSUFFICIENT_TEAM_HISTORY'] : []),
     ...(row.evidence.quote_price_verified ? [] : [row.evidence.quote_found ? 'QUOTE_TIMESTAMP_UNVERIFIED' : 'ODDS_DATA_MISSING']),
-    ...(check?.lineups?.confirmed_teams === 2 ? [] : ['LINEUPS_DATA_MISSING']),
+    ...(lineups?.confirmed_teams === 2 ? [] : ['LINEUPS_DATA_MISSING']),
     'TACTICAL_FIT_UNVERIFIED', 'PUBLIC_TRAP_UNVERIFIED', 'DEATH_TEST_UNVERIFIED',
     ...(row.evidence.quote_found && (candidate.ev ?? candidate.conditional_ev_pct) <= 0 ? ['NO_EDGE'] : []),
     ...(candidate?.death_test==='FAIL_CONDITIONAL'?['DEATH_TEST_FAIL']:[])
@@ -68,7 +81,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
   if (duplicate || kickoffGate === 'KICKOFF_CONFLICT') row.risk_class = 'RED';
   row.notes = reasons.join(', ');
   row.evidence = {
-    ...row.evidence, home_name: fixture.home_team, away_name: fixture.away_team,
+    ...row.evidence, team_history:teamHistory, home_name: fixture.home_team, away_name: fixture.away_team,
     fixture_source: fixture.source_url, fixture_checked_at: fixture.checked_at,
     fixture_timing_status: fixture.timing_status, kickoff_gate: kickoffGate,
     kickoff_confirmation: kickoffGate !== 'CONFIRMED' ? null
@@ -78,7 +91,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
       source: weekly.url } : null,
     gateway_status: gateway.status, gateway_reason: gateway.reason, gateway_fixture_id: check?.fixture_id,
     odds_gateway_status: odds.status,
-    gateway_observed_at: check?.observed_at, lineups: check?.lineups, injuries: check?.injuries,
+    gateway_observed_at: check?.observed_at, lineups, injuries,
     xg_status: row.evidence.xg?.home_at_home.matches && row.evidence.xg?.away_away.matches
       ? 'HISTORICAL_ONLY' : 'DATA_MISSING', pass_reasons: reasons, upstream_sources: packet.sources
   };
@@ -130,22 +143,26 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   if (gatewayResult.reason && gatewayResult.reason !== 'GATEWAY_NOT_CONFIGURED') errors.push(gatewayResult.reason);
   for (const {league, error} of oddsResult.errors || []) errors.push('ODDS:' + league + ':' + error);
   const history = new Map();
+  const sourceFacts = new Map();
   for (const code of leagues) {
     const unique = new Map(), conflicts = new Set();
     for (const pack of sources.filter(pack => pack.code === code && pack.ok)) {
-      for (const row of Core.resultsFromCsv(pack.text, code, cutoff)) {
+      const rows = Core.resultsFromCsv(pack.text, code, cutoff);
+      const latest = rows.reduce((date,row)=>Math.max(date,row.when),-Infinity);
+      sourceFacts.set(pack.url,{completed_rows:rows.length,
+        latest_result_at:Number.isFinite(latest)?new Date(latest).toISOString().slice(0,10):null});
+      for (const row of rows) {
         const key = [row.date, row.home, row.away].join('|');
         const prior = unique.get(key);
         if (prior && (prior.hg !== row.hg || prior.ag !== row.ag || prior.kickoff !== row.kickoff)) conflicts.add(key);
-        unique.set(key, { ...row, source_url: pack.url });
+        if (!prior || pack.season==='2627') unique.set(key, { ...row, season:pack.season, source_url:pack.url });
       }
     }
     for (const key of conflicts) unique.delete(key);
     if (conflicts.size) errors.push(code + ':CONFLICTING_RESULTS');
     history.set(code, [...unique.values()]);
   }
-  const hasCurrent = code => sources.some(pack => pack.code === code && pack.season === '2627' && pack.ok) &&
-    history.get(code)?.some(row => cutoff - row.when < 35 * 24 * hour);
+  const hasCurrent = code => history.get(code)?.some(row => row.season==='2627' && cutoff - row.when < 35 * 24 * hour);
   const weekly = sources.find(pack => pack.code === 'weekly');
   const validations = leagues.filter(hasCurrent).map(code => Validation.backtest(code, history.get(code), cutoff));
   const validation = new Map(validations.map(row => [row.competition, row]));
@@ -154,7 +171,11 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
       current: hasCurrent(fixture.competition), weekly, gateway: gatewayResult, odds: oddsResult,
       check: gatewayResult.fixtures.get(fixture.fixture_key),
       sources: sources.filter(pack => pack.code === fixture.competition).map(pack => ({
-        url: pack.url, ok: pack.ok, observed_at: pack.ok ? new Date(pack.observedAt).toISOString() : null
+        url: pack.url, season:pack.season, ok:pack.ok,
+        observed_at:pack.ok ? new Date(pack.observedAt).toISOString() : null,
+        published_at:Number.isFinite(pack.publishedAt) && pack.publishedAt<=pack.observedAt
+          ? new Date(pack.publishedAt).toISOString() : null,
+        ...sourceFacts.get(pack.url), error:pack.error??null
       }))
     }, cutoff, duplicate.has(fixture.fixture_key));
     row.evidence.walk_forward = validation.get(fixture.competition) || null;

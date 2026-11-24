@@ -50,6 +50,14 @@ export function modelMarkets(grid, baselineGrid) {
   });
 }
 
+// Proportional normalization of a single bookmaker's complete market.
+export function removeMargin(prices) {
+  if (![2,3].includes(prices.length) || prices.some(price=>!Number.isFinite(price)||price<=1||price>100)) return null;
+  const implied = prices.map(price=>1/price);
+  const total = implied.reduce((sum,probability)=>sum+probability,0);
+  return {overround:total-1,probabilities:implied.map(probability=>probability/total)};
+}
+
 export function evaluateQuote(distribution, odds) {
   if (!Number.isFinite(odds) || odds <= 1 || odds > 100 ||
       !grades.every(key => Number.isFinite(distribution?.[key]) && distribution[key] >= 0 && distribution[key] <= 1) ||

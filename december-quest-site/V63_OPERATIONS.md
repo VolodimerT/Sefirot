@@ -20,6 +20,10 @@ A run before 19:00 belongs to the preceding operating day. The next 19:00 run op
 - Store the median, the actual bookmaker price used for EV, the source and timestamps for each retained offer, and the settlement rule. Stress EV independently at price drops of 2–5%. The existing PASS and quality gates continue to apply.
 - The public health response reports whether the timestamped source is configured. Full Odds Gate acceptance requires a live prospective seal carrying a verified bookmaker quote. The existing daily monitor is the operational checkpoint for this evidence.
 
+## Readiness QA
+
+[December readiness and frozen-model evaluation](./DECEMBER_READINESS.md) records the historical replay, source coverage and remaining live acceptance criteria. New history and odds diagnostics do not change the production model or pass policy.
+
 ## Freeze scope
 
 - Model `DQ-POISSON-0.3`, five domestic leagues, 68 modeled market outcomes per covered fixture, completed results strictly before the UTC cutoff date.

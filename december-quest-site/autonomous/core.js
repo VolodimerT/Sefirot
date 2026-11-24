@@ -1,5 +1,6 @@
 /* December Quest autonomous PREMATCH model: purely deterministic, no wagers, no live feeds. */
 import { modelMarkets } from './markets.js';
+import { matchStatistics } from './history.js';
 
 const MODEL_VERSION='DQ-POISSON-0.3';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
@@ -74,7 +75,8 @@ function resultsFromCsv(text,competition,cutoff){
   const xg=[x.HxG,x.AxG].map(value=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim())?Number(value):null);
   const validXg=xg.every(value=>value!==null&&value>=0&&value<=15);
   out.push({home,away,hg,ag,date:date.toISOString().slice(0,10),when:date.getTime(),
-   kickoff:decemberEnglishKickoff(competition,date,x.Time),
+   kickoff:decemberEnglishKickoff(competition,date,x.Time),metrics:matchStatistics(x),
+   referee:typeof x.Referee==='string'&&x.Referee.length<=100 ? x.Referee.trim() || null : null,
    ...(validXg?{hxg:xg[0],axg:xg[1]}:{})});
  }
  return out;

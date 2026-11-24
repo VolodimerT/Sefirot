@@ -10,15 +10,16 @@ export function matchFixture(fixture, records) {
   const matches = records.filter(row =>
     row.league?.id === leagues[fixture.competition] &&
     Number.isSafeInteger(row.fixture?.id) && row.fixture.id > 0 &&
-    ['NS', 'TBD'].includes(row.fixture.status?.short) &&
     sameTeam(fixture.competition, row.teams?.home?.name, fixture.home_team) &&
     sameTeam(fixture.competition, row.teams?.away?.name, fixture.away_team));
   const row = matches.length === 1 ? matches[0] : null;
   if (!row) return { status: 'DATA_MISSING' };
-  if (row.fixture.status.short === 'TBD' || Date.parse(row.fixture.date) !== kickoff) {
+  if (row.fixture.status?.short !== 'NS' || Date.parse(row.fixture.date) !== kickoff) {
     return { status: 'KICKOFF_CONFLICT' };
   }
-  return { status: 'CONFIRMED', fixture_id: row.fixture.id };
+  const referee=typeof row.fixture.referee==='string' && row.fixture.referee.length<=100
+    ? row.fixture.referee.trim() || null : null;
+  return { status: 'CONFIRMED', fixture_id: row.fixture.id, referee };
 }
 
 export async function collectGateway(project, token, candidates, now, fetcher = fetch) {
@@ -70,8 +71,11 @@ export async function collectGateway(project, token, candidates, now, fetcher = 
       entry.injuries = { count: injuries.records.length, observed_at: injuries.observed_at, published: injuries.records.length > 0 };
       if (Date.parse(game.kickoff) - now > 90 * 60000) continue;
       const lineups = await get('fixtures/lineups', params);
-      entry.lineups = { confirmed_teams: lineups.records.filter(row => row.startXI?.length === 11).length,
-        observed_at: lineups.observed_at };
+      const confirmedTeams=[game.home_team,game.away_team].filter(team=>{
+        const matches=lineups.records.filter(row=>sameTeam(game.competition,row.team?.name,team));
+        return matches.length===1 && matches[0].startXI?.length===11;
+      });
+      entry.lineups = { confirmed_teams: confirmedTeams.length, observed_at: lineups.observed_at };
     }
     return { status: grouped.size ? 'OK' : 'WAITING_WINDOW', fixtures: out };
   } catch (error) {

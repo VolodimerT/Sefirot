@@ -12,20 +12,25 @@ function baseline(rows){
  for(const r of rows){if(r.hg>r.ag)h++;else if(r.hg===r.ag)d++;else a++;}
  const sum=h+d+a;return {home:h/sum,draw:d/sum,away:a/sum};
 }
-function backtest(competition,rows,now=Date.now()){
+export function* walkForward(competition,rows,now,includeMarkets=false){
  const today=new Date(now).toISOString().slice(0,10);
  const eligible=rows.filter(x=>x.date>='2026-09-01'&&x.date<today&&x.when<now).sort((a,b)=>a.when-b.when).slice(-limit);
- let n=0,modelBrier=0,modelLL=0,baseBrier=0,baseLL=0,first=null,last=null;
  for(const game of eligible){
-  const asof=Date.parse(game.date+'T00:00:00Z')-86400000; // explicitly one day before fixture date
+  const asof=Date.parse(game.date+'T00:00:00Z')-86400000; // one day before fixture date
   const pre=rows.filter(r=>r.date<game.date&&r.when<asof);
   if(pre.length<30)continue;
   const fixture={fixture_key:'BACKTEST-'+competition+'-'+game.date+'-'+game.home,competition,
     home_team:game.home,away_team:game.away,kickoff:game.date+'T22:00:00Z'};
-  const prob=Core.forecast(fixture,pre,asof,false);
-  if(prob.status!=='MODEL_ONLY')continue;
-  const outcome=game.hg>game.ag?'H':game.hg<game.ag?'A':'D';
-  const mm=measure(prob.probabilities,outcome),bb=measure(baseline(pre),outcome);
+  const forecast=Core.forecast(fixture,pre,asof,includeMarkets);
+  if(forecast.status==='MODEL_ONLY')yield {game,forecast,asof,
+    outcome:game.hg>game.ag?'H':game.hg<game.ag?'D':'A',baseline:baseline(pre)};
+ }
+}
+
+function backtest(competition,rows,now=Date.now()){
+ let n=0,modelBrier=0,modelLL=0,baseBrier=0,baseLL=0,first=null,last=null;
+ for(const {game,forecast,outcome,baseline} of walkForward(competition,rows,now)){
+  const mm=measure(forecast.probabilities,outcome),bb=measure(baseline,outcome);
   n++;modelBrier+=mm.brier;modelLL+=mm.logloss;baseBrier+=bb.brier;baseLL+=bb.logloss;
   if(!first||game.date<first)first=game.date;if(!last||game.date>last)last=game.date;
  }

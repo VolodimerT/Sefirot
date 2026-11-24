@@ -100,6 +100,9 @@ export async function runAcceptance() {
     assert.equal(locked.evidence.decision.verdict,'пропуск');
     assert.equal(locked.evidence.pass_reasons.includes('QUOTE_TIMESTAMP_UNVERIFIED'),true);
     assert.equal(locked.markets.find(row=>row.pick==='П1').ev,null);
+    assert.equal(locked.evidence.team_history.home.form[0].n,5);
+    assert.equal(locked.evidence.team_history.home.metrics.fouls.n,0);
+    assert.equal(locked.evidence.upstream_sources[0].completed_rows,24);
     assert.ok(initialSeals.some(row=>row.fixture_key===missing.fixture_key&&row.status==='UNSUPPORTED_LEAGUE'));
 
     assert.equal((await execute({rest,csv,clock})).skipped,'RECENT_SUCCESS_IN_CYCLE');

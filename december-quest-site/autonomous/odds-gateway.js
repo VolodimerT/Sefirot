@@ -1,5 +1,5 @@
 import Core from './core.js';
-import { evaluateQuote } from './markets.js';
+import { evaluateQuote, removeMargin } from './markets.js';
 
 const hour = 3600000;
 const horizon = 48 * hour;
@@ -100,32 +100,36 @@ function apiOffers(fixture, collected, cutoff, kickoff, confirmed) {
       if (!(updated<=batch.observedAt && cutoff-updated<=quoteAge)) continue;
       const outcomes=packet.outcomes.filter(x=>validPrice(x?.price));
       const home=team(fixture,fixture.home_team), away=team(fixture,fixture.away_team);
-      let matches;
+      let ordered, selected;
       if (key==='h2h') {
         const names=new Set(outcomes.map(x=>team(fixture,x.name)));
         if (outcomes.length!==3||names.size!==3||!names.has(home)||!names.has(away)||!names.has('draw')) continue;
-        const target=({home,away,draw:'draw'})[market.side];
-        matches=outcomes.filter(x=>team(fixture,x.name)===target);
+        ordered=[home,'draw',away].map(name=>outcomes.find(x=>team(fixture,x.name)===name).price);
+        selected=['home','draw','away'].indexOf(market.side);
       } else {
         const line=outcomes.filter(x=>typeof x.point==='number'&&x.point===market.line);
         const names=new Set(line.map(x=>String(x.name).toLowerCase()));
         if (line.length!==2||!names.has('over')||!names.has('under')) continue;
-        matches=line.filter(x=>String(x.name).toLowerCase()===market.side);
+        ordered=['over','under'].map(name=>line.find(x=>String(x.name).toLowerCase()===name).price);
+        selected=['over','under'].indexOf(market.side);
       }
-      if (matches.length!==1) continue;
+      if (selected<0) continue;
+      const fair=removeMargin(ordered);
       const prior=offers.get(id);
-      const odds=matches[0].price;
+      const odds=ordered[selected], combination=ordered.join('|');
       if (prior && prior.updated>updated) continue;
-      if (prior?.updated===updated && (prior.ambiguous||prior.odds!==odds)) {
+      if (prior?.updated===updated && (prior.ambiguous||prior.combination!==combination)) {
         offers.set(id,{updated,ambiguous:true});
         continue;
       }
       offers.set(id,{bookmaker:book.title,bookmaker_id:id,odds,source:batch.endpoint,
-        observed_at:iso(batch.observedAt),published_at:null,quote_updated_at:iso(updated),updated});
+        observed_at:iso(batch.observedAt),published_at:null,quote_updated_at:iso(updated),updated,combination,
+        fair_probability:round(fair.probabilities[selected]), fair_odds:round(1/fair.probabilities[selected]),
+        overround:round(fair.overround)});
     }
     return [...offers.values()].filter(x=>!x.ambiguous)
       .sort((a,b)=>b.updated-a.updated||a.bookmaker_id.localeCompare(b.bookmaker_id)).slice(0,10)
-      .map(({updated,...offer})=>offer);
+      .map(({updated,combination,...offer})=>offer);
   };
 }
 

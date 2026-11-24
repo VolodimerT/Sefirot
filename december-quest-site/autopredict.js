@@ -5,7 +5,7 @@ const B=window.questBridge,KEY='sb_publishable_ue9huxLpXqo4iJxRGfd3yw_WRM0sHBO';
 const API='https://kxqpwgwihtjmqlcxgfxp.supabase.co/rest/v1/';
 const H=B.escape;
 const latestRun='sefirot_december_quest_auto_runs?select=started_at,completed_at,model_version,run_status,fetch_ok,sources_attempted,scanned,forecasted,insufficient,errors&order=started_at.desc&limit=1';
-let data=[],run=null,validation=[],settlements=[],ready=false,loading=false,error='',checkedAt=0,day='all',league='all',modelOnly=false;
+let data=[],run=null,validation=[],settlements=[],oddsHealth=null,ready=false,loading=false,error='',checkedAt=0,day='all',league='all',modelOnly=false;
 const dateFmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'});
 const timeFmt=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit',hour12:false});
 const fmt=(v,d=1)=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d}):'Н/Д';
@@ -28,7 +28,7 @@ async function request(path){
 }
 const stat=()=>({total:data.length,ready:data.filter(modelValid).length,
  unsupported:data.filter(x=>x.status==='UNSUPPORTED_LEAGUE').length,validated_leagues:validation.length,settled:settlements.length,last:run?.completed_at||null});
-const historyByFixture=new Map();
+const historyByFixture=new Map(), marketsByCutoff=new Map();
 let marketFixture=null;
 const sealByFixture=new Map();
 const formattedDate=value=>Number.isFinite(Date.parse(value))
@@ -48,16 +48,23 @@ function active(){return location.hash.slice(1).split('?')[0]==='autopredict';}
 async function load(){
  if(loading)return;loading=true;error='';checkedAt=Date.now();
  try{
-  const [forecasts,runs,checks,finished,seals]=await Promise.all([
-   request('sefirot_december_quest_auto_forecasts?select=fixture_key,competition,kickoff,generated_at,source_cutoff,model_version,status,verdict,risk_class,probabilities,markets,best_candidate,evidence,sample_n,notes&order=kickoff.asc&limit=200'),
+  const [forecasts,runs,checks,finished,seals,health]=await Promise.all([
+   request('sefirot_december_quest_auto_forecasts?select=fixture_key,competition,kickoff,generated_at,source_cutoff,model_version,status,verdict,risk_class,probabilities,best_candidate,evidence,sample_n,notes&order=kickoff.asc&limit=200'),
    request(latestRun),
    request('sefirot_december_quest_auto_validation?select=*&order=competition.asc&limit=20'),
    request('sefirot_december_quest_auto_settlements?select=*&order=settled_at.desc&limit=300'),
-   request('sefirot_december_quest_auto_snapshots?select=id,fixture_key,kickoff,generated_at,model_version&order=generated_at.desc,id.desc&limit=300').catch(()=>[])
+   request('sefirot_december_quest_auto_snapshots?select=id,fixture_key,kickoff,generated_at,model_version&order=generated_at.desc,id.desc&limit=300').catch(()=>[]),
+   fetch(new URL('/functions/v1/dq-autonomous-predictor-v63',API),{cache:'no-store',signal:AbortSignal.timeout(4000)})
+    .then(response=>response.ok?response.json():null).catch(()=>null)
 
   ]);
   data=forecasts.filter(x=>typeof x.fixture_key==='string'&&Number.isFinite(Date.parse(x.kickoff))&&x.probabilities);
-  run=runs[0]||null;validation=checks;settlements=finished;ready=true;
+  run=runs[0]||null;validation=checks;settlements=finished;oddsHealth=health?.odds_gate||null;ready=true;
+  const currentCutoffs=new Set(data.map(marketKey));
+  for(const key of marketsByCutoff.keys())if(!currentCutoffs.has(key))marketsByCutoff.delete(key);
+  const open=data.find(row=>row.fixture_key===marketFixture);
+  if(open&&!marketsByCutoff.has(marketKey(open)))void loadMarkets(open);
+
   sealByFixture.clear();
   for(const seal of seals){
    const key=sealKey(seal);
@@ -80,8 +87,49 @@ function emptyState(){
  return '<div class="panel v6-auto-empty">'+text+' <button class="button secondary" data-auto="reload">Повторить чтение</button></div>';
 }
 function sealKey(f){return [f.fixture_key,f.model_version,Date.parse(f.kickoff)].join('|');}
+const marketKey=f=>f.fixture_key+'|'+f.source_cutoff;
+async function loadMarkets(f){
+ const key=marketKey(f);
+ marketsByCutoff.set(key,'loading');
+ try{
+  const [row]=await request('sefirot_december_quest_auto_forecasts?select=markets&fixture_key=eq.'+
+   encodeURIComponent(f.fixture_key)+'&source_cutoff=eq.'+encodeURIComponent(f.source_cutoff)+'&limit=1');
+  marketsByCutoff.set(key,Array.isArray(row?.markets)?row.markets:'error');
+ }catch(error){marketsByCutoff.set(key,'error');}
+ if(active())B.refresh();
+}
+
+function showTeamHistory(e){
+ const profile=e.team_history;
+ if(!profile)return '';
+ const table=(head,headers,rows)=>'<h3>'+H(head)+'</h3><div class="table-scroll"><table class="table"><thead><tr>'+
+  headers.map(label=>'<th>'+H(label)+'</th>').join('')+'</tr></thead><tbody>'+
+  rows.map(row=>'<tr>'+row.map(cell=>'<td>'+H(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ const metrics={shots:'Удары',shots_on_target:'Удары в створ',corners:'Угловые',fouls:'Фолы',yellow_cards:'Жёлтые карточки'};
+ const venue=row=>row?.n ? fmt(row.rate?.for,2)+' / '+fmt(row.rate?.against,2)+' ('+row.n+'/'+row.total+')' : 'Н/Д';
+ const sources=(e.upstream_sources||[]).map(source=>[source.season||'История',source.ok?'Получен':'Ошибка',
+  source.completed_rows??'Н/Д',source.latest_result_at||'Н/Д',formattedDate(source.observed_at),source.error||'']);
+ const referee=profile.referee;
+ return '<details class="v6-auto-detail"><summary>Форма команд и покрытие источников</summary>'+
+  '<p class="muted">Football-Data · завершённые матчи лиги до расчёта. Домашние и гостевые срезы до 20 матчей.</p>'+
+  table('Форма 5 / 10 / 20',['Команда','Окно','Матчей','В–Н–П','Очков за матч','Голы за / против'],
+   [profile.home,profile.away].flatMap((team,index)=>team.form.map(form=>[index===0?e.home_name:e.away_name,
+    form.window,form.n,[form.wins,form.draws,form.losses].join('–'),fmt(form.points_per_game,2),
+    fmt(form.goals?.for,2)+' / '+fmt(form.goals?.against,2)])))+
+  table('За / против в среднем',['Показатель','Хозяева дома','Гости на выезде'],
+   Object.entries(metrics).map(([key,label])=>[label,venue(profile.home.metrics[key]),venue(profile.away.metrics[key])]))+
+  '<p class="muted">Дней после последнего матча лиги до kickoff: '+H(String(profile.home.days_since_latest_league_result??'Н/Д'))+
+  ' / '+H(String(profile.away.days_since_latest_league_result??'Н/Д'))+' · кубки и еврокубки вне этого среза.</p>'+
+  (referee?'<p>Судья '+H(referee.name)+' · матчей '+referee.n+' · ЖК/матч '+fmt(referee.yc_per_game,2)+' · ЖК/фол '+
+   fmt(referee.yc_per_foul,2)+' · 0–1 ЖК '+referee.low_card_matches+'/'+referee.n+'. Referee Gate требует отдельной проверки.</p>':
+   '<p class="muted">Назначение судьи не подтверждено. Referee Gate закрыт.</p>')+
+  (sources.length?table('Источники',['Сезон','Состояние','Результатов','Последний FT','Получено (Киев)','Ошибка'],sources):'')+'</details>';
+}
+
 function showDetail(f){
- const probs=f.probabilities||{},e=f.evidence||{},markets=Array.isArray(f.markets)?f.markets:[];
+ const probs=f.probabilities||{},e=f.evidence||{},markets=marketsByCutoff.get(marketKey(f));
+ if(markets==='error')return '<p>Котировки и рынки временно недоступны. <button class="button secondary" data-auto-market-retry="'+H(f.fixture_key)+'">Повторить</button></p>';
+ if(!Array.isArray(markets))return '<p class="muted">Загрузка рынков…</p>';
  const gradeLabel={win:'выигрыш',half_win:'½ выигрыш',push:'возврат',half_loss:'½ проигрыш',loss:'проигрыш'};
  const rows=markets.map(m=>{
   const distribution=m.settlement?Object.entries(gradeLabel).filter(([key])=>m.settlement[key]>0.00001)
@@ -94,7 +142,7 @@ function showDetail(f){
   const quoteTime=m.quote_updated_at?' · обновлено БК '+formattedDate(m.quote_updated_at):' · время БК Н/Д';
   return '<tr><td>'+H(m.market||'')+'</td><td>'+H(m.pick||'')+'</td><td>'+pct(m.probability)+
    (distribution?'<small class="v6-auto-distribution">'+H(distribution)+'</small>':'')+'</td><td>'+fmt(m.odds,2)+' / '+fmt(m.market_odds,2)+
-   '</td><td>'+pct(m.implied)+'</td><td>'+percentDelta(m.edge)+'</td><td>'+ev+
+   '</td><td>'+pct(m.implied)+'</td><td>'+pct(m.fair_probability)+' / '+fmt(m.fair_odds,2)+'</td><td>'+percentDelta(m.edge)+'</td><td>'+ev+
    '</td><td>'+fmt(m.break_even_odds,2)+' / '+fmt(m.odds_margin,2)+'</td><td>'+stress+'</td><td>'+priceStress+'</td><td>'+H(m.source||'')+
    (m.observed_at?H(' · получено '+formattedDate(m.observed_at)+quoteTime):'')+
    (m.quotes?.length?'<small class="v6-auto-distribution">'+H(m.quotes.map(q=>q.bookmaker+' '+fmt(q.odds,2)).join(' · '))+'</small>':'')+'</td></tr>';
@@ -108,27 +156,41 @@ function showDetail(f){
  '<span>Домашние / гостевые наблюдения: '+H(String(e.home_at_home??'Н/Д'))+' / '+H(String(e.away_away??'Н/Д'))+'</span>'+
  '<span>Исторические xG/xGA дома: '+xgDisplay(e.xg?.home_at_home)+' · в гостях: '+xgDisplay(e.xg?.away_away)+'</span>'+
  '<span>Составы: '+H(String(e.lineups?.confirmed_teams??'Н/Д'))+' · данные о травмах: '+(e.injuries?.published?e.injuries.count:'Н/Д')+'</span>'+
- (alternative?'<span>Альтернативный рынок: '+H(alternative.market+' '+alternative.pick)+' · '+(typeof alternative.ev==='number'?percentDelta(alternative.ev):percentDelta(alternative.conditional_ev_pct)+' (условно)')+'</span>':'')+'</div>'+
- '<div class="table-scroll"><table class="table"><thead><tr><th>Рынок</th><th>Исход</th><th>P выигрыша</th><th>КФ БК / медиана</th><th>Implied P</th><th>Edge</th><th>EV</th><th>Безубыт. КФ / запас</th><th>EV при −5 / −3 / +3 / +5 п.п.</th><th>EV при снижении КФ на 2 / 3 / 4 / 5%</th><th>Источник</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+ (alternative?'<span>Альтернативный рынок: '+H(alternative.market+' '+alternative.pick)+' · '+(typeof alternative.ev==='number'?percentDelta(alternative.ev):percentDelta(alternative.conditional_ev_pct)+' (условно)')+'</span>':'')+'</div>'+showTeamHistory(e)+
+ '<div class="table-scroll"><table class="table"><thead><tr><th>Рынок</th><th>Исход</th><th>P выигрыша</th><th>КФ БК / медиана</th><th>Implied P</th><th>P / КФ БК без маржи</th><th>Edge</th><th>EV</th><th>Безубыт. КФ / запас</th><th>EV при −5 / −3 / +3 / +5 п.п.</th><th>EV при снижении КФ на 2 / 3 / 4 / 5%</th><th>Источник</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function showHistory(f){
  const items=historyByFixture.get(f.fixture_key);
  if(!Array.isArray(items))return items==='error'?'<p class="muted">Не удалось загрузить снимки. Повторите запрос.</p>':'';
- return items.length?'<ul>'+items.map(item=>'<li>'+H(formattedDate(item.generated_at)+' · '+item.model_version+' · '+(item.evidence?.decision?.verdict||'модельный снимок'))+'</li>').join('')+'</ul>'
+ const latest=items.find(item=>item.model_version===f.model_version&&Date.parse(item.kickoff)===Date.parse(f.kickoff)&&
+  item.evidence?.decision?.best_candidate?.price_verified);
+ const reference=latest?.evidence.decision.best_candidate;
+ const compatible=item=>{
+  const price=item.evidence?.decision?.best_candidate;
+  return reference&&price?.price_verified&&item.model_version===latest.model_version&&
+   Date.parse(item.kickoff)===Date.parse(latest.kickoff)&&['id','settlement_rules','bookmaker_id','source'].every(k=>price[k]&&price[k]===reference[k]) &&
+   Date.parse(price.quote_updated_at)<=Date.parse(item.generated_at)&&Date.parse(item.generated_at)<Date.parse(item.kickoff);
+ };
+ return items.length?'<ul>'+items.map(item=>{
+  const price=item.evidence?.decision?.best_candidate;
+  const log=compatible(item)?' · '+price.market+' '+price.pick+' · '+price.bookmaker+' '+fmt(price.odds,2):'';
+  return '<li>'+H(formattedDate(item.generated_at)+' · '+item.model_version+' · '+
+   (item.evidence?.decision?.verdict||'модельный снимок')+log)+'</li>';
+ }).join('')+'</ul>'+(reference?'<p class="muted">Движение цены по сопоставимым снимкам. CLV требует отдельной закрывающей котировки.</p>':'')
   :'<p class="muted">Снимков пока нет.</p>';
 }
 async function loadHistory(key){
  historyByFixture.set(key,'loading');
  if(active())B.refresh();
  try{
-  const rows=await request('sefirot_december_quest_auto_snapshots?select=id,fixture_key,model_version,generated_at,evidence&fixture_key=eq.'+
+  const rows=await request('sefirot_december_quest_auto_snapshots?select=id,fixture_key,model_version,kickoff,generated_at,evidence&fixture_key=eq.'+
    encodeURIComponent(key)+'&order=generated_at.desc,id.desc&limit=60');
   historyByFixture.set(key,rows);
  }catch(error){historyByFixture.set(key,'error');}
  if(active())B.refresh();
 }
 function diagnostics(items){
- const leagues=new Map(),markets=new Map(),buckets=Array.from({length:10},()=>({n:0,p:0,y:0}));
+ const leagues=new Map(),markets=new Map(),classes=new Map(),buckets=Array.from({length:10},()=>({n:0,p:0,y:0}));
  const add=(map,key,model,baseline)=>{
   if(!model||model.brier==null)return;
   const stat=map.get(key)||{n:0,brier:0,logloss:0,base:0,baseCount:0};
@@ -140,6 +202,7 @@ function diagnostics(items){
   const d=item.details;
   if(!d?.probabilities)continue;
   add(leagues,d.competition,{brier:Number(item.model_brier),logloss:Number(item.model_logloss)},d.baseline);
+  add(classes,d.decision?.risk_class||'Н/Д',{brier:Number(item.model_brier),logloss:Number(item.model_logloss)},d.baseline);
   for(const market of d.markets||[])add(markets,market.market,market.model,market.baseline);
   for(const key of ['home','draw','away']){
    const p=d.probabilities[key];
@@ -152,8 +215,26 @@ function diagnostics(items){
  const rows=map=>[...map].map(([key,v])=>'<tr><td>'+H(competitionNames[key]||key)+'</td><td>'+v.n+'</td><td>'+fmt(v.brier/v.n,4)+
   '</td><td>'+fmt(v.logloss/v.n,4)+'</td><td>'+fmt(v.baseCount?v.base/v.baseCount:null,4)+'</td></tr>').join('');
  const table=(label,map)=>'<h3>'+label+'</h3><div class="table-scroll"><table class="table"><thead><tr><th>Группа</th><th>N</th><th>Brier модели</th><th>Log Loss</th><th>Brier базы</th></tr></thead><tbody>'+rows(map)+'</tbody></table></div>';
- return '<details class="v6-auto-detail"><summary>Постматчевая оценка и калибровка</summary>'+table('По лигам',leagues)+table('По рынкам',markets)+
+ return '<details class="v6-auto-detail"><summary>Постматчевая оценка и калибровка</summary>'+table('По лигам',leagues)+table('По рынкам',markets)+table('По классам',classes)+
   '<h3>Калибровка 1X2</h3><ul>'+buckets.map((b,i)=>b.n?'<li>'+i*10+'–'+(i+1)*10+'% · '+b.n+' наблюдений · средняя P '+pct(b.p/b.n)+' · частота '+pct(b.y/b.n)+'</li>':'').join('')+'</ul></details>';
+}
+function weeklyReport(fixtures,results){
+ const buckets=Array.from({length:5},()=>({n:0,modeled:0,pass:0,priced:0,settled:0,nBrier:0,brier:0}));
+ const finished=new Map(results.map(result=>[result.fixture_key,result]));
+ for(const row of fixtures){
+  const week=Math.floor((Number(localDay(row).slice(-2))-1)/7);
+  const bucket=buckets[week],result=finished.get(row.fixture_key);
+  bucket.n++;bucket.modeled+=Number(modelValid(row));bucket.pass+=Number(row.verdict==='пропуск');
+  bucket.priced+=Number(row.evidence?.quote_price_verified===true);
+  if(!result)continue;
+  bucket.settled++;
+  if(result.model_brier!=null){bucket.nBrier++;bucket.brier+=Number(result.model_brier);}
+ }
+ return '<details class="panel v6-auto-audit"><summary>Недельные отчёты декабря</summary><div class="table-scroll"><table class="table">'+
+ '<thead><tr><th>Декабрь</th><th>Матчи</th><th>Модель</th><th>PASS</th><th>С ценой</th><th>FT</th><th>Brier</th></tr></thead><tbody>'+
+ buckets.map((b,i)=>'<tr><td>'+(i*7+1)+'–'+Math.min(31,i*7+7)+'</td><td>'+b.n+'</td><td>'+b.modeled+
+ '</td><td>'+b.pass+'</td><td>'+b.priced+'</td><td>'+b.settled+'</td><td>'+fmt(b.nBrier?b.brier/b.nBrier:null,4)+'</td></tr>').join('')+
+ '</tbody></table></div></details>';
 }
 function view(){
  if(!ready&&!loading)Promise.resolve().then(load);
@@ -173,6 +254,10 @@ function view(){
  '<article><small>PASS</small><strong>'+data.filter(row=>row.verdict==='пропуск').length+'</strong></article></div>';
  out+='<div class="panel v6-auto-intro"><div><b>Последний расчёт:</b> '+H(latest)+' (Киев) · '+H(run?.run_status||'нет')+' · источники '+H(String(run?.fetch_ok??0))+'/'+H(String(run?.sources_attempted??0))+'</div>'+
  '<div><b>Автозапуск:</b> ежедневно в 19:00 по Киеву; версия '+H(run?.model_version||'нет')+'; дата матча и время — отдельный gate.</div>'+
+ '<div><b>Котировки:</b> '+(oddsHealth?.timestamped_source_configured===false?'ключ источника не настроен':
+  oddsHealth?.timestamped_source_configured?'источник настроен':'статус источника неизвестен')+
+  ' · подтверждённая цена у '+data.filter(row=>row.evidence?.quote_price_verified).length+' матчей.</div>'+
+ (run?.errors?.length?'<details><summary>Ошибки последнего расчёта</summary><ul>'+run.errors.map(error=>'<li>'+H(error)+'</li>').join('')+'</ul></details>':'')+
  '<div class="v6-auto-actions"><button class="button secondary" data-auto="reload">Перечитать прогнозы</button><button class="button secondary" data-route="maintenance">Контроль расписания</button></div></div>';
  if(next){
   const fixture=fixtureMap.get(next.fixture_key);
@@ -193,6 +278,7 @@ function view(){
  const avgSettle=measured.length?measured.reduce((a,z)=>a+Number(z.model_brier),0)/measured.length:null;
  out+='<p class="muted small">Проспективно проверенных исходов: <b>'+measured.length+'</b> · средний Brier '+(avgSettle===null?'Н/Д':fmt(avgSettle,4))+'. Исторический результат может отличаться от будущего. Букмекерское преимущество не доказано.</p></section>';
  out+=diagnostics(settlements);
+ if(data.length)out+=weeklyReport(data,settlements);
  if(!data.length)return out+emptyState();
  out+='<div class="panel v6-auto-filter"><label>День<select id="v6-auto-day"><option value="all"'+(day==='all'?' selected':'')+'>Все 31 дня</option>';
  for(let d=1;d<=31;d++){const val='2026-12-'+String(d).padStart(2,'0');out+='<option value="'+val+'"'+(day===val?' selected':'')+'>'+d+' декабря</option>';}
@@ -213,12 +299,11 @@ function view(){
   out+='<h3>'+H(home)+' <span class="muted">—</span> '+H(away)+'</h3>';
   if(!hasModel){out+='<p class="v5-warning">Нет проверяемой модельной вероятности: '+H(f.evidence?.pass_reasons?'DATA_MISSING':f.notes||'Отсутствуют данные')+'</p>'; }
   else{
-   out+='<div class="v6-auto-probs"><div>П1 <b>'+pct(P.home)+'</b><small>Честный КФ '+fair(P.home)+'</small></div><div>Х <b>'+pct(P.draw)+'</b><small>Честный КФ '+fair(P.draw)+'</small></div><div>П2 <b>'+pct(P.away)+'</b><small>Честный КФ '+fair(P.away)+'</small></div></div>';
+   out+='<div class="v6-auto-probs"><div>П1 <b>'+pct(P.home)+'</b><small>КФ модели '+fair(P.home)+'</small></div><div>Х <b>'+pct(P.draw)+'</b><small>КФ модели '+fair(P.draw)+'</small></div><div>П2 <b>'+pct(P.away)+'</b><small>КФ модели '+fair(P.away)+'</small></div></div>';
    out+='<div class="v6-auto-bar"><i style="width:'+Math.round(P.home*100)+'%"></i><i style="width:'+Math.round(P.draw*100)+'%"></i><i style="width:'+Math.round(P.away*100)+'%"></i></div>';
    out+='<div class="v6-auto-secondary"><span>ТБ 2.5: <strong>'+pct(P.o25)+'</strong></span><span>ОЗ: <strong>'+pct(P.btts)+'</strong></span><span>Выборка: <strong>'+H(String(f.sample_n))+'</strong></span></div>';
    const expanded=marketFixture===f.fixture_key;
-   out+='<div><button class="button secondary" data-auto-markets="'+H(f.fixture_key)+'" aria-expanded="'+expanded+'">Модель и рынки ('+
-    (Array.isArray(f.markets)?f.markets.length:0)+')</button>'+(expanded?showDetail(f):'')+'</div>';
+   out+='<div><button class="button secondary" data-auto-markets="'+H(f.fixture_key)+'" aria-expanded="'+expanded+'">Модель и рынки</button>'+(expanded?showDetail(f):'')+'</div>';
   }
   const e=f.evidence||{},seal=sealByFixture.get(sealKey(f)),finished=byFixture.get(f.fixture_key);
   if(e.pass_reasons?.length)out+='<p class="v6-auto-reasons"><b>Причины PASS</b> '+H(e.pass_reasons.map(code=>reasons[code]||code).join(' · '))+'</p>';
@@ -234,16 +319,21 @@ function view(){
   if(hasModel&&g)out+='<button class="button secondary" data-auto-match="'+H(f.fixture_key)+'">Проверить вручную</button>';
   out+='</div></article>';
  }
- out+='<div class="notice warn">История содержит завершённые матчи и счёт FT. Честный КФ = 1/P. Пока котировка и фильтры качества не подтверждены, решение ВСЕГДА PASS.</div>';
+ out+='<div class="notice warn">История содержит завершённые матчи и счёт FT. КФ модели = 1/P. Пока котировка и фильтры качества не подтверждены, решение ВСЕГДА PASS.</div>';
  return out;
 }
 document.addEventListener('click',e=>{
- const btn=e.target.closest('[data-auto],[data-auto-match],[data-auto-history],[data-auto-markets]');if(!btn)return;
+ const btn=e.target.closest('[data-auto],[data-auto-match],[data-auto-history],[data-auto-markets],[data-auto-market-retry]');if(!btn)return;
  if(btn.dataset.auto==='reload')load();
  if(btn.dataset.autoHistory)loadHistory(btn.dataset.autoHistory);
+ if(btn.dataset.autoMarketRetry){
+  const row=data.find(f=>f.fixture_key===btn.dataset.autoMarketRetry);if(row)void loadMarkets(row);
+ }
  if(btn.dataset.autoMarkets){
   const key=btn.dataset.autoMarkets;
   marketFixture=marketFixture===key?null:key;
+  const row=data.find(f=>f.fixture_key===marketFixture);
+  if(row&&!marketsByCutoff.has(marketKey(row)))void loadMarkets(row);
   B.refresh();
   for(const button of document.querySelectorAll('[data-auto-markets]')){
    if(button.dataset.autoMarkets===key){button.focus({preventScroll:true});break;}
