@@ -1,5 +1,5 @@
 /* Offline app shell only; never cache Supabase REST/auth or per-user cloud records. */
-const CACHE='sefirot-quest-shell-v63-20261124-1';
+const CACHE='sefirot-quest-shell-v63-20261124-2';
 const WHITELIST=new Set(['/','/index.html','/fixtures.js','/v5-core.js','/v5-ui.js','/v5-extra.js','/v6-radar.js','/v6-tour-seal.js','/v6-mobile.js','/v5.css','/v6-mobile.css','/autopredict.js','/autopredict.css','/icon.svg','/manifest.webmanifest']);
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([...WHITELIST])).then(()=>self.skipWaiting()));

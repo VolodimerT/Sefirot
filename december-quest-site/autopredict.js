@@ -3,7 +3,9 @@
 'use strict';
 const B=window.questBridge,KEY='sb_publishable_ue9huxLpXqo4iJxRGfd3yw_WRM0sHBO';
 const API='https://kxqpwgwihtjmqlcxgfxp.supabase.co/rest/v1/';
-const H=B.escape;let data=[],run=null,validation=[],settlements=[],ready=false,loading=false,error='',lastLoaded=0,day='all',league='all',modelOnly=false;
+const H=B.escape;
+const latestRun='sefirot_december_quest_auto_runs?select=started_at,completed_at,model_version,run_status,fetch_ok,sources_attempted,scanned,forecasted,insufficient,errors&order=started_at.desc&limit=1';
+let data=[],run=null,validation=[],settlements=[],ready=false,loading=false,error='',checkedAt=0,day='all',league='all',modelOnly=false;
 const dateFmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'});
 const timeFmt=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit',hour12:false});
 const fmt=(v,d=1)=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d}):'Н/Д';
@@ -44,18 +46,18 @@ const reasons={
 const percentDelta=value=>typeof value==='number'?fmt(value*100,1)+'%':'Н/Д';
 function active(){return location.hash.slice(1).split('?')[0]==='autopredict';}
 async function load(){
- if(loading)return;loading=true;error='';
+ if(loading)return;loading=true;error='';checkedAt=Date.now();
  try{
   const [forecasts,runs,checks,finished,seals]=await Promise.all([
    request('sefirot_december_quest_auto_forecasts?select=fixture_key,competition,kickoff,generated_at,source_cutoff,model_version,status,verdict,risk_class,probabilities,markets,best_candidate,evidence,sample_n,notes&order=kickoff.asc&limit=200'),
-   request('sefirot_december_quest_auto_runs?select=started_at,completed_at,model_version,run_status,fetch_ok,sources_attempted,scanned,forecasted,insufficient,errors&order=started_at.desc&limit=1'),
+   request(latestRun),
    request('sefirot_december_quest_auto_validation?select=*&order=competition.asc&limit=20'),
    request('sefirot_december_quest_auto_settlements?select=*&order=settled_at.desc&limit=300'),
    request('sefirot_december_quest_auto_snapshots?select=id,fixture_key,kickoff,generated_at,model_version&order=generated_at.desc,id.desc&limit=300').catch(()=>[])
 
   ]);
   data=forecasts.filter(x=>typeof x.fixture_key==='string'&&Number.isFinite(Date.parse(x.kickoff))&&x.probabilities);
-  run=runs[0]||null;validation=checks;settlements=finished;lastLoaded=Date.now();ready=true;
+  run=runs[0]||null;validation=checks;settlements=finished;ready=true;
   sealByFixture.clear();
   for(const seal of seals){
    const key=sealKey(seal);
@@ -63,6 +65,15 @@ async function load(){
   }
  }catch(e){error=String(e.message||e);ready=true;}
  finally{loading=false;if(active())B.refresh();}
+}
+async function refreshIfChanged(){
+ if(!active()||document.visibilityState!=='visible'||loading||Date.now()-checkedAt<30000)return;
+ checkedAt=Date.now();
+ if(error||!ready){await load();return;}
+ try{
+  const [current]=await request(latestRun);
+  if(current?.completed_at!==run?.completed_at)await load();
+ }catch(e){error=String(e.message||e);if(active())B.refresh();}
 }
 function emptyState(){
  const text=error?'Невозможно получить прогнозы: '+H(error):'Прогнозы ещё не созданы. Регулярный расчёт работает на сервере, а не в браузере.';
@@ -249,5 +260,8 @@ document.addEventListener('change',e=>{
  if(e.target?.id==='v6-auto-covered'){modelOnly=e.target.checked;B.refresh();}
 });
 window.QuestAutoPredict={view,load,stat,get:()=>data.slice()};
+window.addEventListener('hashchange',refreshIfChanged);
+document.addEventListener('visibilitychange',refreshIfChanged);
+setInterval(refreshIfChanged,180000);
 Promise.resolve().then(load);
 })();
