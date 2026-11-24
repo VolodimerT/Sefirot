@@ -40,8 +40,13 @@ try {
         const current = pathname.endsWith('/2627/E0.csv');
         if (current && flags.currentFileAttempts++ === 0) return send(503,{error:'QA_TRANSIENT'});
         const history = current ? form : form.map(line=>line.replace('/2026,','/2025,'));
-        response.writeHead(200,{'Content-Type':'text/csv'});
+        response.writeHead(200,{'Content-Type':'text/csv','Last-Modified':'Tue, 01 Dec 2026 16:00:00 GMT'});
         return response.end(pathname.endsWith('/fixtures.csv') ? weekly : [columns,...history].join('\n'));
+      }
+      if (pathname==='/odds/v4/sports/soccer_epl/odds') {
+        return send(200,[{sport_key:'soccer_epl',commence_time:fixture.kickoff,home_team:'Coventry City',away_team:'Ipswich Town',
+          bookmakers:[4,4.2,4.4,4.6].map((price,index)=>({title:'QA Book '+index,last_update:'2026-12-01T16:45:00Z',
+            markets:[{key:'h2h',outcomes:[{name:'Coventry City',price},{name:'Ipswich Town',price:2.05},{name:'Draw',price:3.4}]}]}))}]);
       }
       if (request.headers.apikey !== testRoleToken) return send(401,{error:'MOCK_ROLE_DENIED'});
       const resource = pathname.replace('/rest/v1/','');
@@ -70,9 +75,9 @@ try {
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const restAddress = 'http://127.0.0.1:'+server.address().port;
   const env = {PATH:process.env.PATH,DQ_QA_REST:restAddress,SUPABASE_URL:restAddress,
-    SUPABASE_SERVICE_ROLE_KEY:testRoleToken,DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN:''};
+    SUPABASE_SERVICE_ROLE_KEY:testRoleToken,DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN:'',DQ_ODDS_API_FREE_KEY:'qa-synthetic-odds'};
   deno = spawn(process.env.DQ_QA_DENO_BIN || 'deno',
-    ['run','--quiet','--allow-env=DQ_QA_REST,SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN',
+    ['run','--quiet','--allow-env=DQ_QA_REST,SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN,DQ_ODDS_API_FREE_KEY',
       '--allow-net=127.0.0.1',fileURLToPath(new URL('./edge-entry.mjs',import.meta.url))],
     {env,stdio:['ignore','pipe','inherit']});
   const lines = createInterface({input:deno.stdout});
@@ -92,6 +97,7 @@ try {
   const health = await request('GET');
   assert.equal(health.status,200);
   assert.equal(health.body.betting_enabled,false);
+  assert.equal(health.body.odds_gate.timestamped_source_configured,true);
   assert.equal((await request('POST')).status,401);
   assert.equal((await request('POST','b'.repeat(64))).status,401);
   const first = await request('POST',cronToken);
@@ -100,13 +106,24 @@ try {
   assert.equal(first.body.sealed,1);
   assert.equal(first.body.pass,1);
   assert.equal(first.body.wagers_executed,0);
+  assert.equal(first.body.odds_gateway,'OK');
+  assert.equal(first.body.verified_odds_fixtures,1);
   assert.equal(flags.currentFileAttempts,2);
   assert.equal((await request('POST',cronToken)).body.skipped,'RECENT_SUCCESS_IN_CYCLE');
   const seals = await rows('select * from '+tablePrefix+'auto_snapshots');
   assert.equal(seals.length,1);
   assert.equal(seals[0].generated_at.toISOString(),new Date(qaClock).toISOString());
   assert.equal(seals[0].evidence.decision.verdict,'пропуск');
-  console.log('PASS: HTTP Deno, ACL, one 503 retry, one compatible seal and idempotent rerun');
+  const price = seals[0].markets.find(row=>row.id==='1X2:home:0');
+  assert.equal(price.price_verified,true);
+  assert.equal(price.market_odds,4.3);
+  assert.equal(price.odds,4.2);
+  assert.equal(price.quote_updated_at,'2026-12-01T16:45:00.000Z');
+  assert.equal(price.observed_at,'2026-12-01T17:00:00.000Z');
+  assert.equal(price.value_verified,false);
+  assert.equal(seals[0].evidence.pass_reasons.includes('QUOTE_TIMESTAMP_UNVERIFIED'),false);
+  assert.equal(seals[0].evidence.pass_reasons.includes('TACTICAL_FIT_UNVERIFIED'),true);
+  console.log('PASS: HTTP Deno, ACL, retry, sealed verified quote, PASS gate and idempotent rerun');
 } finally {
   if (deno?.pid && deno.exitCode===null && deno.signalCode===null) {
     const exited = once(deno,'exit');

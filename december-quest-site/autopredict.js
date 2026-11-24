@@ -86,14 +86,17 @@ function showDetail(f){
  const rows=markets.map(m=>{
   const distribution=m.settlement?Object.entries(gradeLabel).filter(([key])=>m.settlement[key]>0.00001)
    .map(([key,label])=>label+' '+pct(m.settlement[key])).join(' · '):'';
-  const conditional=typeof m.conditional_ev_pct==='number'?percentDelta(m.conditional_ev_pct)+' (условно)'
+  const ev=m.price_verified&&typeof m.ev==='number'?percentDelta(m.ev)
+   :typeof m.conditional_ev_pct==='number'?percentDelta(m.conditional_ev_pct)+' (условно)'
    :typeof m.conditional_ev==='number'?fmt(m.conditional_ev,0)+' ₴ (условно)':'Н/Д';
   const stress=m.sensitivity?[-0.05,-0.03,0.03,0.05].map(shift=>percentDelta(m.sensitivity[String(shift)])).join(' / '):'Н/Д';
+  const priceStress=m.price_stress?[2,3,4,5].map(percent=>percentDelta(m.price_stress[percent])).join(' / '):'Н/Д';
+  const quoteTime=m.quote_updated_at?' · обновлено БК '+formattedDate(m.quote_updated_at):' · время БК Н/Д';
   return '<tr><td>'+H(m.market||'')+'</td><td>'+H(m.pick||'')+'</td><td>'+pct(m.probability)+
-   (distribution?'<small class="v6-auto-distribution">'+H(distribution)+'</small>':'')+'</td><td>'+fmt(m.odds,2)+
-   '</td><td>'+pct(m.implied)+'</td><td>'+percentDelta(m.edge)+'</td><td>'+conditional+
-   '</td><td>'+fmt(m.break_even_odds,2)+' / '+fmt(m.odds_margin,2)+'</td><td>'+stress+'</td><td>'+H(m.source||'')+
-   (m.observed_at?' · '+H(formattedDate(m.observed_at))+' · время БК Н/Д':'')+
+   (distribution?'<small class="v6-auto-distribution">'+H(distribution)+'</small>':'')+'</td><td>'+fmt(m.odds,2)+' / '+fmt(m.market_odds,2)+
+   '</td><td>'+pct(m.implied)+'</td><td>'+percentDelta(m.edge)+'</td><td>'+ev+
+   '</td><td>'+fmt(m.break_even_odds,2)+' / '+fmt(m.odds_margin,2)+'</td><td>'+stress+'</td><td>'+priceStress+'</td><td>'+H(m.source||'')+
+   (m.observed_at?H(' · получено '+formattedDate(m.observed_at)+quoteTime):'')+
    (m.quotes?.length?'<small class="v6-auto-distribution">'+H(m.quotes.map(q=>q.bookmaker+' '+fmt(q.odds,2)).join(' · '))+'</small>':'')+'</td></tr>';
  }).join('');
  const alternative=f.best_candidate?.alternative;
@@ -105,8 +108,8 @@ function showDetail(f){
  '<span>Домашние / гостевые наблюдения: '+H(String(e.home_at_home??'Н/Д'))+' / '+H(String(e.away_away??'Н/Д'))+'</span>'+
  '<span>Исторические xG/xGA дома: '+xgDisplay(e.xg?.home_at_home)+' · в гостях: '+xgDisplay(e.xg?.away_away)+'</span>'+
  '<span>Составы: '+H(String(e.lineups?.confirmed_teams??'Н/Д'))+' · данные о травмах: '+(e.injuries?.published?e.injuries.count:'Н/Д')+'</span>'+
- (alternative?'<span>Альтернативный рынок: '+H(alternative.market+' '+alternative.pick)+' · '+percentDelta(alternative.conditional_ev_pct)+' (условно)</span>':'')+'</div>'+
- '<div class="table-scroll"><table class="table"><thead><tr><th>Рынок</th><th>Исход</th><th>P выигрыша</th><th>КФ</th><th>Implied P</th><th>Edge</th><th>EV</th><th>Безубыт. КФ / запас</th><th>EV при −5 / −3 / +3 / +5 п.п.</th><th>Источник</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+ (alternative?'<span>Альтернативный рынок: '+H(alternative.market+' '+alternative.pick)+' · '+(typeof alternative.ev==='number'?percentDelta(alternative.ev):percentDelta(alternative.conditional_ev_pct)+' (условно)')+'</span>':'')+'</div>'+
+ '<div class="table-scroll"><table class="table"><thead><tr><th>Рынок</th><th>Исход</th><th>P выигрыша</th><th>КФ БК / медиана</th><th>Implied P</th><th>Edge</th><th>EV</th><th>Безубыт. КФ / запас</th><th>EV при −5 / −3 / +3 / +5 п.п.</th><th>EV при снижении КФ на 2 / 3 / 4 / 5%</th><th>Источник</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function showHistory(f){
  const items=historyByFixture.get(f.fixture_key);

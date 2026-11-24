@@ -12,6 +12,14 @@ The December calendar covers 1–31 December 2026 and kickoffs from 21:00 to 23:
 
 A run before 19:00 belongs to the preceding operating day. The next 19:00 run opens a fresh cycle. The Edge worker retries a transient CSV error once. The database atomically commits forecasts, seals, run metrics and eligible settlements. If the source stays down, the run records an error and retains the PASS gate.
 
+## Odds Gate
+
+- The Edge secret `DQ_ODDS_API_FREE_KEY` enables the authorized The Odds API Starter feed. Confirm the account stays on Starter. The daily request uses one region and at most two markets for each of five league endpoints. One successful run per day across 31 days uses at most 310 credits from the 500-credit monthly plan.
+- Match only exact teams, league and UTC kickoff within the next 48 hours. Keep quotes updated no more than 60 minutes before cutoff, received before cutoff, and tied to a confirmed kickoff. Eligible markets are regulation-time 1X2 and supported half-goal totals.
+- If the free feed is unavailable for a market, use the public Football-Data December EPL fixture CSV as an indicative fallback, with exact kickoff and file publication no older than 12 hours. Without a bookmaker update time it permits only conditional EV.
+- Store the median, the actual bookmaker price used for EV, the source and timestamps for each retained offer, and the settlement rule. Stress EV independently at price drops of 2–5%. The existing PASS and quality gates continue to apply.
+- The public health response reports whether the timestamped source is configured. Full Odds Gate acceptance requires a live prospective seal carrying a verified bookmaker quote. The existing daily monitor is the operational checkpoint for this evidence.
+
 ## Freeze scope
 
 - Model `DQ-POISSON-0.3`, five domestic leagues, 68 modeled market outcomes per covered fixture, completed results strictly before the UTC cutoff date.

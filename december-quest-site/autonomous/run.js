@@ -2,6 +2,7 @@ import Core from './core.js';
 import Validation from './validation.js';
 import Settlement from './settlement.js';
 import { collectGateway } from './gateway.js';
+import { attachOdds, collectTimestampedOdds } from './odds-gateway.js';
 
 const provider = 'https://football-data.co.uk';
 const kyiv = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Kyiv', dateStyle: 'short', timeStyle: 'short' });
@@ -34,7 +35,7 @@ function duplicates(fixtures) {
 }
 
 function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
-  const { current, gateway, weekly, check } = packet;
+  const { current, gateway, weekly, odds, check } = packet;
   const stamp = Date.parse(fixture.checked_at);
   const official = fixture.timing_status === 'confirmed' && fixture.source_quality === 'official' &&
     Number.isFinite(stamp) && stamp <= cutoff && cutoff - stamp <= 72 * hour;
@@ -50,18 +51,19 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
     : check?.status === 'CONFIRMED' || official || crossChecked ? 'CONFIRMED'
     : 'DATA_MISSING';
   const forecast = Core.forecast(fixture, current && !duplicate && !conflicting ? rows : [], cutoff);
-  const row = weekly?.ok && !duplicate && !conflicting
-    ? Core.attachQuotes(forecast, weekly.records, fixture, weekly.observedAt) : forecast;
+  const row = !duplicate && !conflicting
+    ? attachOdds(forecast, weekly, fixture, odds, kickoffGate === 'CONFIRMED') : forecast;
+  const candidate = row.best_candidate;
   const reasons = [
     ...(kickoffGate === 'CONFIRMED' ? [] : [kickoffGate === 'DATA_MISSING' ? 'KICKOFF_UNVERIFIED' : kickoffGate]),
     ...(!Core.LEAGUE_FILES[fixture.competition] ? ['UNSUPPORTED_LEAGUE']
       : !current ? ['HISTORY_DATA_MISSING']
       : !row.markets.length && !duplicate && !conflicting ? ['INSUFFICIENT_TEAM_HISTORY'] : []),
-    row.evidence.quote_found ? 'QUOTE_TIMESTAMP_UNVERIFIED' : 'ODDS_DATA_MISSING',
+    ...(row.evidence.quote_price_verified ? [] : [row.evidence.quote_found ? 'QUOTE_TIMESTAMP_UNVERIFIED' : 'ODDS_DATA_MISSING']),
     ...(check?.lineups?.confirmed_teams === 2 ? [] : ['LINEUPS_DATA_MISSING']),
     'TACTICAL_FIT_UNVERIFIED', 'PUBLIC_TRAP_UNVERIFIED', 'DEATH_TEST_UNVERIFIED',
-    ...(row.evidence.quote_found&&row.best_candidate.conditional_ev_pct<=0?['NO_EDGE']:[]),
-    ...(row.evidence.quote_found&&row.best_candidate.death_test==='FAIL_CONDITIONAL'?['DEATH_TEST_FAIL']:[])
+    ...(row.evidence.quote_found && (candidate.ev ?? candidate.conditional_ev_pct) <= 0 ? ['NO_EDGE'] : []),
+    ...(candidate?.death_test==='FAIL_CONDITIONAL'?['DEATH_TEST_FAIL']:[])
   ];
   if (duplicate || kickoffGate === 'KICKOFF_CONFLICT') row.risk_class = 'RED';
   row.notes = reasons.join(', ');
@@ -75,6 +77,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
     weekly_kickoff: weeklyCheck ? { ...weeklyCheck, observed_at: new Date(weekly.observedAt).toISOString(),
       source: weekly.url } : null,
     gateway_status: gateway.status, gateway_reason: gateway.reason, gateway_fixture_id: check?.fixture_id,
+    odds_gateway_status: odds.status,
     gateway_observed_at: check?.observed_at, lineups: check?.lineups, injuries: check?.injuries,
     xg_status: row.evidence.xg?.home_at_home.matches && row.evidence.xg?.away_away.matches
       ? 'HISTORICAL_ONLY' : 'DATA_MISSING', pass_reasons: reasons, upstream_sources: packet.sources
@@ -82,7 +85,8 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
   return row;
 }
 
-export async function execute({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now), clock = Date.now }) {
+export async function execute({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now),
+  odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), clock = Date.now }) {
   const state = await rest('rpc/dq_predictor_run_state', { method: 'POST', body: JSON.stringify({
     p_model_version: Core.MODEL_VERSION
   }) });
@@ -103,24 +107,28 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   })));
   if (leagues.length) urls.push({ code: 'weekly', season: 'weekly', url: provider + '/fixtures.csv' });
 
-  const [sources, gatewayResult] = await Promise.all([
+  const eligible = upcoming.filter(fixture => !duplicate.has(fixture.fixture_key));
+  const [sources, gatewayResult, oddsResult] = await Promise.all([
     Promise.all(urls.map(async row => {
       try {
-        const text = await csv(row.url);
+        const input = await csv(row.url);
+        const text = typeof input === 'string' ? input : input.text;
+        const publishedAt = typeof input === 'string' ? null : input.publishedAt;
         const records = Core.parseCsv(text);
         if (row.code !== 'weekly' && !records.some(record =>
           record.Div === Core.LEAGUE_FILES[row.code] && Core.csvDate(record.Date) &&
           /^\d+$/.test(record.FTHG) && /^\d+$/.test(record.FTAG))) throw Error('EMPTY_RESULT_SOURCE');
-        return { ...row, text, records, ok: true, observedAt: clock() };
+        return { ...row, text, records, ok: true, publishedAt, observedAt: clock() };
       } catch (error) {
         return { ...row, ok: false, error: String(error.message).slice(0, 80) };
       }
     })),
-    gateway(upcoming.filter(fixture => !duplicate.has(fixture.fixture_key)), started)
+    gateway(eligible, started), odds(eligible, started)
   ]);
   const cutoff = clock();
   const errors = sources.filter(pack => !pack.ok).map(pack => pack.code + ':' + pack.season + ' ' + pack.error);
   if (gatewayResult.reason && gatewayResult.reason !== 'GATEWAY_NOT_CONFIGURED') errors.push(gatewayResult.reason);
+  for (const {league, error} of oddsResult.errors || []) errors.push('ODDS:' + league + ':' + error);
   const history = new Map();
   for (const code of leagues) {
     const unique = new Map(), conflicts = new Set();
@@ -143,7 +151,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   const validation = new Map(validations.map(row => [row.competition, row]));
   const forecasts = upcoming.filter(fixture => Date.parse(fixture.kickoff) > cutoff + 20 * 60000).map(fixture => {
     const row = fixtureDecision(fixture, history.get(fixture.competition), {
-      current: hasCurrent(fixture.competition), weekly, gateway: gatewayResult,
+      current: hasCurrent(fixture.competition), weekly, gateway: gatewayResult, odds: oddsResult,
       check: gatewayResult.fixtures.get(fixture.fixture_key),
       sources: sources.filter(pack => pack.code === fixture.competition).map(pack => ({
         url: pack.url, ok: pack.ok, observed_at: pack.ok ? new Date(pack.observedAt).toISOString() : null
@@ -177,7 +185,9 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
     p_run: run, p_forecasts: forecasts, p_validation: validations, p_settlements: settled
   }) });
   return { ...committed, status: run.run_status, model_version: Core.MODEL_VERSION, sources_ok: success,
-    sources_attempted: urls.length, source_errors: run.errors, gateway: gatewayResult.status, wagers_executed: 0 };
+    sources_attempted: urls.length, source_errors: run.errors, gateway: gatewayResult.status,
+    odds_gateway: oddsResult.status, verified_odds_fixtures: forecasts.filter(row=>row.evidence.quote_price_verified).length,
+    wagers_executed: 0 };
 }
 
 export { questFixture, duplicates };

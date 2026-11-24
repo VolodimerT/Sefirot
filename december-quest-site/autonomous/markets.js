@@ -69,6 +69,10 @@ export function evaluateQuote(distribution, odds) {
     implied: round(implied), equivalent_probability: round(effective),
     edge: round(effective - implied), expected_value: round(evAt(0)),
     break_even_odds: round(breakEven), odds_margin: round(odds - breakEven),
-    sensitivity: Object.fromEntries([-0.05, -0.03, 0.03, 0.05].map(shift => [String(shift), round(evAt(shift))]))
+    sensitivity: Object.fromEntries([-0.05, -0.03, 0.03, 0.05].map(shift => [String(shift), round(evAt(shift))])),
+    price_stress: Object.fromEntries([2, 3, 4, 5].map(percent => {
+      const reduced = odds * (1 - percent / 100);
+      return [percent, reduced > 1 ? round(reduced * winning - active) : null];
+    }))
   };
 }

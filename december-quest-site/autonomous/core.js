@@ -1,5 +1,5 @@
 /* December Quest autonomous PREMATCH model: purely deterministic, no wagers, no live feeds. */
-import { evaluateQuote, modelMarkets } from './markets.js';
+import { modelMarkets } from './markets.js';
 
 const MODEL_VERSION='DQ-POISSON-0.3';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
@@ -170,45 +170,6 @@ function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true){
  status.notes='Автоматические модельные вероятности. Тактический fit, составы, калибровка и котировки не подтверждены: PASS.';
  return status;
 }
-function attachQuotes(pred,weeklyRows,fixture,observedAt){
- if(pred.status!=='MODEL_ONLY'||!Array.isArray(weeklyRows)||!Number.isFinite(observedAt)||
-    observedAt>=Date.parse(fixture.kickoff)||observedAt>Date.parse(pred.source_cutoff))return pred;
- const found=matchWeekly(weeklyRows,fixture);
- if(found.length!==1)return pred;
- const raw=found[0];
- const books={B365:'Bet365',BFD:'Betfred',BV:'Betvictor',BW:'Bwin',PP:'Paddy Power',SKB:'Sky Bet'};
- const resultSuffix={home:'H',draw:'D',away:'A'};
- const rawLine=typeof raw.AHh==='string'&&raw.AHh.trim()?Number(raw.AHh):null;
- const marketOdds=pred.markets.map(m=>{
-  const offers=[];
-  for(const [prefix,bookmaker] of Object.entries(books)){
-   let field;
-   if(m.kind==='1X2')field=prefix+resultSuffix[m.side];
-   else if(prefix==='B365'&&m.kind==='TG'&&m.line===2.5)field=prefix+(m.side==='over'?'>':'<')+'2.5';
-   else if(prefix==='B365'&&rawLine!==null&&['DNB','AH'].includes(m.kind)&&
-      m.line===(m.side==='home'?rawLine:-rawLine))field=prefix+(m.side==='home'?'AHH':'AHA');
-   if(!field)continue;
-   const price=Number(raw[field]);
-   const metrics=evaluateQuote(m.settlement,price);
-   if(!metrics)continue;
-   const {expected_value,...diagnostics}=metrics;
-   offers.push({...diagnostics,odds:price,conditional_ev_pct:expected_value,
-    source:'football-data.co.uk/fixtures.csv',bookmaker,observed_at:new Date(observedAt).toISOString(),
-    quote_timestamp_verified:false,value_verified:false,
-    death_test:diagnostics.sensitivity['-0.05']>0?'PASS_CONDITIONAL':'FAIL_CONDITIONAL'});
-  }
-  offers.sort((a,b)=>b.odds-a.odds);
-  return offers.length?{...m,...offers[0],quotes:offers}:m;
- });
- const quoted=marketOdds.filter(m=>m.odds!==null).sort((a,b)=>b.conditional_ev_pct-a.conditional_ev_pct);
- if(!quoted.length)return pred;
- const alternative=quoted.find(m=>m.market!==quoted[0].market);
- return {...pred,markets:marketOdds,status:'WAITING_ODDS',
-  best_candidate:{...quoted[0],alternative:alternative?{market:alternative.market,pick:alternative.pick,conditional_ev_pct:alternative.conditional_ev_pct}:null},
-  evidence:{...pred.evidence,quote_found:true,quote_observed_fetch_at:new Date(observedAt).toISOString(),
-   quote_provider_timestamp:null,quote_source:'https://football-data.co.uk/fixtures.csv'},
-  notes:'Время публикации котировки не подтверждено. EV условный.'};
-}
 const Core={MODEL_VERSION,LEAGUE_FILES,ALIASES,canonical,parseCsv,csvDate,resultsFromCsv,poisson,
- outcomes:(home,away)=>outcomes(scoreGrid(home,away)),forecast,attachQuotes,weeklyKickoff};
+ outcomes:(home,away)=>outcomes(scoreGrid(home,away)),forecast,matchWeekly,weeklyKickoff};
 export default Core;

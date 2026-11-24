@@ -1,8 +1,9 @@
-/* Isolated December Quest model runner: public CSV only, POST requires Vault-stored cron token. */
+/* Isolated December Quest runner. POST requires the Vault-stored cron token. */
 import Core from "./core.js";
 import { execute } from "./run.js";
 import { collectGateway } from "./gateway.js";
 import { fetchCsvWithRetry } from "./csv-source.js";
+import { collectTimestampedOdds } from "./odds-gateway.js";
 const PROJECT=Deno.env.get("SUPABASE_URL")||"";
 const SECRET=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const cors={"Access-Control-Allow-Origin":"https://sefirot-december-quest-2026.vercel.app","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Access-Control-Allow-Headers":"content-type,apikey,x-dq-predictor-token"};
@@ -26,15 +27,17 @@ async function authenticate(token){
  }catch(_e){return false;}
 }
 const gatewayToken=Deno.env.get('DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN')||'';
+const oddsKey=Deno.env.get('DQ_ODDS_API_FREE_KEY')?.trim()||'';
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
- if(req.method==='GET')return json({ok:true,name:'december-quest-autonomous-predictor',model_version:Core.MODEL_VERSION,method:'POST_AUTH_ONLY',money_permission:false,live:false,betting_enabled:false,provider:'football-data.co.uk'});
+ if(req.method==='GET')return json({ok:true,name:'december-quest-autonomous-predictor',model_version:Core.MODEL_VERSION,method:'POST_AUTH_ONLY',money_permission:false,live:false,betting_enabled:false,provider:'football-data.co.uk',odds_gate:{timestamped_source_configured:Boolean(oddsKey),csv_mode:'INDICATIVE_ONLY',max_quote_age_minutes:60}});
  if(req.method!=='POST')return json({ok:false,error:'POST_REQUIRED'},405);
  const token=req.headers.get('x-dq-predictor-token')||'';
  if(!(await authenticate(token)))return json({ok:false,error:'UNAUTHORIZED'},401);
  try{
-  const result=await execute({rest,csv:fetchCsvWithRetry,
-   gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock)});
+  const result=await execute({rest,csv:url=>fetchCsvWithRetry(url,url.endsWith('/fixtures.csv')),
+   gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock),
+   odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,oddsKey)});
   return json({ok:result.status!=='SOURCE_ERROR',...result},result.status==='SOURCE_ERROR'?503:200);
  }catch(e){
   console.error('DQ_AUTOPREDICTOR_FAILURE',String(e.message||e).slice(0,100));

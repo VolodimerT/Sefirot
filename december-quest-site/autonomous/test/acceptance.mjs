@@ -40,7 +40,7 @@ export async function runAcceptance() {
   };
   const clock = () => timestamp;
   const csv = async (url, resultTime = null) => {
-    if (url.endsWith('/fixtures.csv')) return weekly;
+    if (url.endsWith('/fixtures.csv')) return {text:weekly,publishedAt:clock()-60000};
     const complete = (url.includes('/2627/') ? form : form.map(row => row.replace('/2026,','/2025,')));
     return [columns, ...complete, ...(url.includes('/2627/') && resultTime ? [finish(resultTime)] : [])].join('\n');
   };

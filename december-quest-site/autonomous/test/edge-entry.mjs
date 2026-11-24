@@ -5,10 +5,12 @@ const serve = Deno.serve.bind(Deno);
 Deno.serve = handler => serve({ hostname:'127.0.0.1', port:0, onListen:({port})=>console.log('DQ_PORT='+port) }, handler);
 const fetchNetwork = globalThis.fetch.bind(globalThis);
 globalThis.fetch = async (url, options) => {
-  if (typeof url !== 'string' || !url.startsWith('https://football-data.co.uk/')) {
-    return fetchNetwork(url,options);
-  }
-  const output = await fetchNetwork(Deno.env.get('DQ_QA_REST') + '/source' + new URL(url).pathname,options);
+  if (typeof url !== 'string') return fetchNetwork(url,options);
+  const origin = new URL(url).origin;
+  const route = origin === 'https://football-data.co.uk' ? '/source'
+    : origin === 'https://api.the-odds-api.com' ? '/odds' : null;
+  if (!route) return fetchNetwork(url,options);
+  const output = await fetchNetwork(Deno.env.get('DQ_QA_REST') + route + new URL(url).pathname,options);
   Object.defineProperty(output,'url',{value:url});
   return output;
 };
