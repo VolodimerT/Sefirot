@@ -23,7 +23,7 @@ export function* walkForward(competition,rows,now,includeMarkets=false){
     home_team:game.home,away_team:game.away,kickoff:game.date+'T22:00:00Z'};
   const forecast=Core.forecast(fixture,pre,asof,includeMarkets);
   if(forecast.status==='MODEL_ONLY')yield {game,forecast,asof,
-    outcome:game.hg>game.ag?'H':game.hg<game.ag?'D':'A',baseline:baseline(pre)};
+    outcome:game.hg===game.ag?'D':game.hg>game.ag?'H':'A',baseline:baseline(pre)};
  }
 }
 

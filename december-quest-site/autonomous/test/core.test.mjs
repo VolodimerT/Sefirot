@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import Core from '../core.js';
+import { walkForward } from '../validation.js';
 import { evaluateQuote, grade, standardMarkets, removeMargin } from '../markets.js';
 import { historyProfile, matchStatistics } from '../history.js';
 import { duplicates, questFixture } from '../run.js';
@@ -162,4 +163,8 @@ const stop=await collectGateway('https://test.invalid','synthetic',[fixture],Dat
 });
 assert.equal(stop.reason,'GATEWAY_BUDGET_STOP');
 assert.equal(gatewayRequests,1);
+const lateDraw={...data[0],date:'2026-11-20',when:Date.parse('2026-11-20T12:00:00Z'),hg:1,ag:1};
+const outcomes=Array.from(walkForward('EPL',[...data,lateDraw],base));
+assert.deepEqual(new Set(outcomes.map(row=>row.outcome)),new Set(['H','D','A']));
+for(const {game,outcome} of outcomes)assert.equal(outcome,Math.sign(game.hg-game.ag)===1?'H':Math.sign(game.hg-game.ag)===0?'D':'A');
 console.log('PASS — автономная модель, cutoff, азиатские расчёты, xG, дедупликация и gateway');
