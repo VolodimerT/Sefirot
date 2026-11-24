@@ -7,7 +7,15 @@ const H=B.escape;let data=[],run=null,validation=[],settlements=[],ready=false,l
 const dateFmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'});
 const timeFmt=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Kyiv',hour:'2-digit',minute:'2-digit',hour12:false});
 const fmt=(v,d=1)=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d}):'Н/Д';
-const pct=v=>typeof v==='number'&&Number.isFinite(v)?fmt(v*100,1)+'%':'Н/Д';
+const pct=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=1?fmt(v*100,1)+'%':'Н/Д';
+const fair=v=>typeof v==='number'&&Number.isFinite(v)&&v>0&&v<=1?fmt(1/v,2):'Н/Д';
+const modelValid=f=>{
+ const p=f?.probabilities||{},generated=Date.parse(f?.generated_at),kickoff=Date.parse(f?.kickoff),cutoff=Date.parse(f?.source_cutoff);
+ return ['MODEL_ONLY','WAITING_ODDS'].includes(f?.status)&&Number.isFinite(generated)&&Number.isFinite(kickoff)&&generated<kickoff&&Number.isFinite(cutoff)&&cutoff<=generated+1000
+ &&Number.isFinite(f?.sample_n)&&f.sample_n>=6
+ &&['home','draw','away'].every(k=>typeof p[k]==='number'&&Number.isFinite(p[k])&&p[k]>0&&p[k]<1)
+ &&Math.abs(p.home+p.draw+p.away-1)<0.02;
+};
 const localDay=x=>dateFmt.format(new Date(x.kickoff)),localTime=x=>timeFmt.format(new Date(x.kickoff));
 const competitionNames={EPL:'АПЛ',LALIGA:'Ла Лига',SERIEA:'Серия А',BUNDES:'Бундеслига',LIGUE1:'Лига 1',UCL:'Лига чемпионов',UEL:'Лига Европы',UECL:'Лига конференций',COPPA:'Кубок Италии'};
 async function request(path){
@@ -16,7 +24,7 @@ async function request(path){
  const x=await r.json();if(!Array.isArray(x))throw Error('Некорректный формат автономного результата');
  return x;
 }
-const stat=()=>({total:data.length,ready:data.filter(x=>x.status==='MODEL_ONLY'||x.status==='WAITING_ODDS').length,
+const stat=()=>({total:data.length,ready:data.filter(modelValid).length,
  unsupported:data.filter(x=>x.status==='UNSUPPORTED_LEAGUE').length,validated_leagues:validation.length,settled:settlements.length,last:run?.completed_at||null});
 function active(){return location.hash.slice(1).split('?')[0]==='autopredict';}
 async function load(){
@@ -45,7 +53,7 @@ function showDetail(f,index){
  '<span>Последний исходный матч: '+H(e.latest_training_date||'нет данных')+'</span>'+
  '<span>Лига, матчей в обучении: '+H(String(e.training_matches??'Н/Д'))+'</span>'+
  '<span>Домашние/гостевые наблюдения: '+H(String(e.home_at_home??'Н/Д'))+'/'+H(String(e.away_away??'Н/Д'))+'</span>'+
- '<span>Составы: не проверены · Tactical fit: не проверен</span></div>'+
+ '<span>Составы и tactical fit: не проверены · исторические голы ≠ xG</span></div>'+
  '<div class="table-scroll"><table class="table"><thead><tr><th>Рынок</th><th>Исход</th><th>P модели</th><th>КФ</th><th>Условный EV</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
  '<p class="muted small">Вероятности из результатов команд. Ни одна P не является подтверждённым value. Введите проверенную котировку в Market Radar, затем проведите независимый аудит.</p>'+
  '</details>';
@@ -53,7 +61,7 @@ function showDetail(f,index){
 function view(){
  if(!ready&&!loading)Promise.resolve().then(load);
  const counts=stat();
- const candidates=data.filter(f=>day==='all'||localDay(f)===day).filter(f=>league==='all'||f.competition===league).filter(f=>!modelOnly||f.status==='MODEL_ONLY'||f.status==='WAITING_ODDS');
+ const candidates=data.filter(f=>day==='all'||localDay(f)===day).filter(f=>league==='all'||f.competition===league).filter(f=>!modelOnly||modelValid(f));
  const fixtureMap=new Map((window.QuestSchedule?.get()||[]).map(g=>[g.fixture_key,g]));
  const leagues=[...new Set(data.map(f=>f.competition))].sort();
  const latest=run?.completed_at?new Date(run.completed_at).toLocaleString('ru-RU',{timeZone:'Europe/Kyiv',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Нет успешного запуска';
@@ -89,7 +97,7 @@ function view(){
  if(!candidates.length)out+='<div class="panel">На эту дату нет доступных прогнозов или матчей.</div>';
  let lastDay='';
  for(const f of candidates){
-  const g=fixtureMap.get(f.fixture_key),hasModel=f.status==='MODEL_ONLY'||f.status==='WAITING_ODDS';
+  const g=fixtureMap.get(f.fixture_key),hasModel=modelValid(f);
   const age=Date.now()-Date.parse(f.generated_at),stale=!Number.isFinite(age)||age>36*3600000;
   const prematch=Date.now()<Date.parse(f.kickoff);const d=localDay(f);
   if(d!==lastDay){lastDay=d;out+='<h3 class="v6-auto-daytitle">'+Number(d.slice(-2))+' декабря 2026</h3>';}
@@ -97,9 +105,9 @@ function view(){
   const P=f.probabilities;
   out+='<article class="panel v6-auto-match"><div class="v6-auto-cardhead"><span class="v6-auto-time">'+H(localTime(f))+'</span><span class="v6-auto-league">'+H(competitionNames[f.competition]||f.competition)+'</span><span class="v6-auto-tag">PASS / Класс D</span></div>';
   out+='<h3>'+H(home)+' <span class="muted">—</span> '+H(away)+'</h3>';
-  if(!hasModel){out+='<p class="v5-warning">Нет прогноза: '+H(f.notes||'Отсутствуют данные')+'</p>';}
+  if(!hasModel){out+='<p class="v5-warning">Нет проверяемой модельной вероятности: '+H(f.notes||'Отсутствуют данные либо нарушен временной/вероятностный gate')+'</p>'; }
   else{
-   out+='<div class="v6-auto-probs"><div>П1 <b>'+pct(P.home)+'</b></div><div>Х <b>'+pct(P.draw)+'</b></div><div>П2 <b>'+pct(P.away)+'</b></div></div>';
+   out+='<div class="v6-auto-probs"><div>П1 <b>'+pct(P.home)+'</b><small>Честный КФ '+fair(P.home)+'</small></div><div>Х <b>'+pct(P.draw)+'</b><small>Честный КФ '+fair(P.draw)+'</small></div><div>П2 <b>'+pct(P.away)+'</b><small>Честный КФ '+fair(P.away)+'</small></div></div>';
    out+='<div class="v6-auto-bar"><i style="width:'+Math.round(P.home*100)+'%"></i><i style="width:'+Math.round(P.draw*100)+'%"></i><i style="width:'+Math.round(P.away*100)+'%"></i></div>';
    out+='<div class="v6-auto-secondary"><span>ТБ 2.5: <strong>'+pct(P.o25)+'</strong></span><span>ОЗ: <strong>'+pct(P.btts)+'</strong></span><span>Выборка: <strong>'+H(String(f.sample_n))+'</strong></span></div>';
    out+=showDetail(f);
@@ -108,7 +116,7 @@ function view(){
   if(hasModel&&g)out+='<button class="button secondary" data-auto-match="'+H(f.fixture_key)+'">Проверить вручную</button>';
   out+='</div></article>';
  }
- out+='<div class="notice warn">Внимание: модель Пуассона 0.1 не откалибрована независимым walk-forward тестом; данные ограничены пятью лигами, тактика, составы и актуальность букмекерской линии пока не подтверждены. Даже большая P не даёт основания ставить. Никаких live/догонов.</div>';
+ out+='<div class="notice warn">Внимание: DQ-POISSON-0.2 прошла предварительную внутреннюю walk-forward проверку на 5 лигах, но преимущество над букмекерской линией НЕ доказано. Честный КФ = 1/P без маржи — это расчёт, а не предложение букмекера. Используются голы итоговых матчей, не xG; нет подтверждённых составов, tactical fit и реальных прематч-котировок. Поэтому ВСЕГДА PASS. Live, догон и реальные ставки запрещены.</div>';
  return out;
 }
 document.addEventListener('click',e=>{
