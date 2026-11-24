@@ -1,0 +1,31 @@
+name: December Quest staging QA
+
+on:
+  push:
+    branches: [feature/december-quest-v63-autonomous]
+    paths:
+      - 'december-quest-site/**'
+      - '.github/workflows/december-quest-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-and-node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned staging test dependency
+        run: npm ci --ignore-scripts --prefix december-quest-site/autonomous
+      - name: Engine and database acceptance
+        run: |
+          npm --prefix december-quest-site/autonomous test
+          npm --prefix december-quest-site/autonomous run test:acceptance
+      - name: Site regressions
+        run: node --test december-quest-site/tests/*.test.cjs

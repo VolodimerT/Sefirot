@@ -38,17 +38,25 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
   const stamp = Date.parse(fixture.checked_at);
   const official = fixture.timing_status === 'confirmed' && fixture.source_quality === 'official' &&
     Number.isFinite(stamp) && stamp <= cutoff && cutoff - stamp <= 72 * hour;
+  const inWeeklyWindow = weekly?.ok && weekly.observedAt <= cutoff &&
+    cutoff - weekly.observedAt <= hour && Date.parse(fixture.kickoff) - cutoff <= 48 * hour;
+  const weeklyCheck = inWeeklyWindow ? Core.weeklyKickoff(weekly.records,fixture) : null;
+  const conflicting = check?.status === 'KICKOFF_CONFLICT' ||
+    ['KICKOFF_CONFLICT','KICKOFF_AMBIGUOUS'].includes(weeklyCheck?.status);
+  const crossChecked = weeklyCheck?.status === 'MATCH' &&
+    fixture.timing_status === 'confirmed' && fixture.source_quality === 'official';
   const kickoffGate = duplicate ? 'DUPLICATE_FIXTURE'
-    : check?.status === 'KICKOFF_CONFLICT' ? 'KICKOFF_CONFLICT'
-    : check?.status === 'CONFIRMED' || official ? 'CONFIRMED'
+    : conflicting ? 'KICKOFF_CONFLICT'
+    : check?.status === 'CONFIRMED' || official || crossChecked ? 'CONFIRMED'
     : 'DATA_MISSING';
-  const forecast = Core.forecast(fixture, current && !duplicate ? rows : [], cutoff);
-  const row = weekly?.ok ? Core.attachQuotes(forecast, weekly.records, fixture, weekly.observedAt) : forecast;
+  const forecast = Core.forecast(fixture, current && !duplicate && !conflicting ? rows : [], cutoff);
+  const row = weekly?.ok && !duplicate && !conflicting
+    ? Core.attachQuotes(forecast, weekly.records, fixture, weekly.observedAt) : forecast;
   const reasons = [
     ...(kickoffGate === 'CONFIRMED' ? [] : [kickoffGate === 'DATA_MISSING' ? 'KICKOFF_UNVERIFIED' : kickoffGate]),
     ...(!Core.LEAGUE_FILES[fixture.competition] ? ['UNSUPPORTED_LEAGUE']
       : !current ? ['HISTORY_DATA_MISSING']
-      : !row.markets.length && !duplicate ? ['INSUFFICIENT_TEAM_HISTORY'] : []),
+      : !row.markets.length && !duplicate && !conflicting ? ['INSUFFICIENT_TEAM_HISTORY'] : []),
     row.evidence.quote_found ? 'QUOTE_TIMESTAMP_UNVERIFIED' : 'ODDS_DATA_MISSING',
     ...(check?.lineups?.confirmed_teams === 2 ? [] : ['LINEUPS_DATA_MISSING']),
     'TACTICAL_FIT_UNVERIFIED', 'PUBLIC_TRAP_UNVERIFIED', 'DEATH_TEST_UNVERIFIED',
@@ -61,6 +69,11 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
     ...row.evidence, home_name: fixture.home_team, away_name: fixture.away_team,
     fixture_source: fixture.source_url, fixture_checked_at: fixture.checked_at,
     fixture_timing_status: fixture.timing_status, kickoff_gate: kickoffGate,
+    kickoff_confirmation: kickoffGate !== 'CONFIRMED' ? null
+      : check?.status === 'CONFIRMED' ? 'GATEWAY'
+      : official ? 'OFFICIAL_CALENDAR' : 'OFFICIAL_CALENDAR_AND_WEEKLY_CSV',
+    weekly_kickoff: weeklyCheck ? { ...weeklyCheck, observed_at: new Date(weekly.observedAt).toISOString(),
+      source: weekly.url } : null,
     gateway_status: gateway.status, gateway_reason: gateway.reason, gateway_fixture_id: check?.fixture_id,
     gateway_observed_at: check?.observed_at, lineups: check?.lineups, injuries: check?.injuries,
     xg_status: row.evidence.xg?.home_at_home.matches && row.evidence.xg?.away_away.matches
@@ -110,7 +123,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
       for (const row of Core.resultsFromCsv(pack.text, code, cutoff)) {
         const key = [row.date, row.home, row.away].join('|');
         const prior = unique.get(key);
-        if (prior && (prior.hg !== row.hg || prior.ag !== row.ag)) conflicts.add(key);
+        if (prior && (prior.hg !== row.hg || prior.ag !== row.ag || prior.kickoff !== row.kickoff)) conflicts.add(key);
         unique.set(key, { ...row, source_url: pack.url });
       }
     }

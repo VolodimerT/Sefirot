@@ -25,6 +25,7 @@ function resultFromFixture(fixture, history, snapshots, now = Date.now()) {
   const away = Core.canonical(fixture.competition, fixture.away_team);
   const actual = history.filter(row => row.date === day && row.home === home && row.away === away);
   if (actual.length !== 1) return null;
+  if (fixture.competition === 'EPL' && actual[0].kickoff !== kickoff) return null;
   const seal = snapshots.find(row => row.fixture_key === fixture.fixture_key &&
     row.model_version === Core.MODEL_VERSION && Date.parse(row.kickoff) === kickoff &&
     Date.parse(row.generated_at) < kickoff && row.evidence?.fixture_timing_status === 'confirmed');

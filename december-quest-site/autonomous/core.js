@@ -4,7 +4,7 @@ import { evaluateQuote, modelMarkets } from './markets.js';
 const MODEL_VERSION='DQ-POISSON-0.3';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
 const ALIASES={
- EPL:{'Hull City':'Hull','Nottingham Forest':"Nott'm Forest",'Manchester City':'Man City','Manchester United':'Man United'},
+ EPL:{'Coventry City':'Coventry','Ipswich Town':'Ipswich','Hull City':'Hull','Nottingham Forest':"Nott'm Forest",'Manchester City':'Man City','Manchester United':'Man United'},
  LALIGA:{'Deportivo Alavés':'Alaves','FC Barcelona':'Barcelona','Celta Vigo':'Celta','Atlético Madrid':'Ath Madrid','Real Betis':'Betis','Sevilla FC':'Sevilla','Málaga CF':'Malaga','Elche CF':'Elche','Racing Santander':'Santander','Real Madrid CF':'Real Madrid','CA Osasuna':'Osasuna','Espanyol':'Espanol'},
  SERIEA:{'Bologna FC 1909':'Bologna','AS Roma':'Roma','SSC Napoli':'Napoli','US Lecce':'Lecce','AC Milan':'Milan','Parma Calcio 1913':'Parma','ACF Fiorentina':'Fiorentina','Cagliari Calcio':'Cagliari','Udinese Calcio':'Udinese','Frosinone Calcio':'Frosinone','Como 1907':'Como','Juventus FC':'Juventus','AC Monza':'Monza'},
  BUNDES:{'Bayern München':'Bayern Munich','SC Paderborn 07':'Paderborn','Hamburger SV':'Hamburg','FC Schalke 04':'Schalke 04'},
@@ -39,6 +39,31 @@ function csvDate(v){
  const d=new Date(Date.UTC(y,Number(m[2])-1,Number(m[1]),12));
  return d.getUTCFullYear()===y&&d.getUTCMonth()===Number(m[2])-1&&d.getUTCDate()===Number(m[1])?d:null;
 }
+// The December English feed uses UK winter time. Other league/time formats remain unverified.
+function decemberEnglishKickoff(competition,date,time){
+ if(competition!=='EPL'||!date||date.getUTCMonth()!==11||
+    !/^(?:[01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(String(time||'').trim()))return null;
+ const [hours,minutes]=time.trim().split(':').map(Number);
+ return Date.UTC(date.getUTCFullYear(),11,date.getUTCDate(),hours,minutes);
+}
+function matchWeekly(weeklyRows,fixture){
+ if(!Array.isArray(weeklyRows))return [];
+ const day=new Date(fixture.kickoff).toISOString().slice(0,10);
+ return weeklyRows.filter(row=>csvDate(row.Date)?.toISOString().slice(0,10)===day&&
+  row.Div===LEAGUE_FILES[fixture.competition]&&
+  canonical(fixture.competition,row.HomeTeam)===canonical(fixture.competition,fixture.home_team)&&
+  canonical(fixture.competition,row.AwayTeam)===canonical(fixture.competition,fixture.away_team));
+}
+function weeklyKickoff(weeklyRows,fixture){
+ if(fixture.competition!=='EPL')return null;
+ const found=matchWeekly(weeklyRows,fixture);
+ if(found.length>1)return {status:'KICKOFF_AMBIGUOUS'};
+ if(found.length!==1)return null;
+ const observed=decemberEnglishKickoff(fixture.competition,csvDate(found[0].Date),found[0].Time);
+ if(observed===null)return null;
+ return {status:observed===Date.parse(fixture.kickoff)?'MATCH':'KICKOFF_CONFLICT',
+  kickoff:new Date(observed).toISOString()};
+}
 function resultsFromCsv(text,competition,cutoff){
  const records=parseCsv(text),out=[],today=new Date(cutoff).toISOString().slice(0,10);
  for(const x of records){
@@ -49,6 +74,7 @@ function resultsFromCsv(text,competition,cutoff){
   const xg=[x.HxG,x.AxG].map(value=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim())?Number(value):null);
   const validXg=xg.every(value=>value!==null&&value>=0&&value<=15);
   out.push({home,away,hg,ag,date:date.toISOString().slice(0,10),when:date.getTime(),
+   kickoff:decemberEnglishKickoff(competition,date,x.Time),
    ...(validXg?{hxg:xg[0],axg:xg[1]}:{})});
  }
  return out;
@@ -147,11 +173,7 @@ function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true){
 function attachQuotes(pred,weeklyRows,fixture,observedAt){
  if(pred.status!=='MODEL_ONLY'||!Array.isArray(weeklyRows)||!Number.isFinite(observedAt)||
     observedAt>=Date.parse(fixture.kickoff)||observedAt>Date.parse(pred.source_cutoff))return pred;
- const day=new Date(fixture.kickoff).toISOString().slice(0,10);
- const found=weeklyRows.filter(row=>csvDate(row.Date)?.toISOString().slice(0,10)===day&&
-  row.Div===LEAGUE_FILES[fixture.competition]&&
-  canonical(fixture.competition,row.HomeTeam)===canonical(fixture.competition,fixture.home_team)&&
-  canonical(fixture.competition,row.AwayTeam)===canonical(fixture.competition,fixture.away_team));
+ const found=matchWeekly(weeklyRows,fixture);
  if(found.length!==1)return pred;
  const raw=found[0];
  const books={B365:'Bet365',BFD:'Betfred',BV:'Betvictor',BW:'Bwin',PP:'Paddy Power',SKB:'Sky Bet'};
@@ -188,5 +210,5 @@ function attachQuotes(pred,weeklyRows,fixture,observedAt){
   notes:'Время публикации котировки не подтверждено. EV условный.'};
 }
 const Core={MODEL_VERSION,LEAGUE_FILES,ALIASES,canonical,parseCsv,csvDate,resultsFromCsv,poisson,
- outcomes:(home,away)=>outcomes(scoreGrid(home,away)),forecast,attachQuotes};
+ outcomes:(home,away)=>outcomes(scoreGrid(home,away)),forecast,attachQuotes,weeklyKickoff};
 export default Core;
