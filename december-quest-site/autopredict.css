@@ -17,6 +17,7 @@
 .v6-auto-probs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .v6-auto-probs>div{background:#19283c;border:1px solid #2e4256;border-radius:10px;padding:10px;text-align:center;font-size:12px;color:#adbed2}
 .v6-auto-probs b{display:block;color:#f1f8fb;font-size:20px;margin-top:5px;font-variant-numeric:tabular-nums}
+.v6-auto-probs small{display:block;margin-top:4px;color:#8aafc5;font-size:10px;white-space:nowrap}
 .v6-auto-bar{height:11px;display:flex;margin:11px 0 15px;border-radius:15px;overflow:hidden;background:#1c3045;gap:2px}
 .v6-auto-bar i:nth-child(1){background:#63cfa8}.v6-auto-bar i:nth-child(2){background:#d1bd7b}.v6-auto-bar i:nth-child(3){background:#82a7de}
 .v6-auto-secondary{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:#9fb4cd}
