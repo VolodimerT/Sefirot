@@ -6,6 +6,7 @@ const MODEL_VERSION='DQ-POISSON-0.3';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
 const ALIASES={
  CHAMPIONSHIP:{'Bolton Wanderers':'Bolton','West Bromwich Albion':'West Brom','Birmingham City':'Birmingham','Blackburn Rovers':'Blackburn','Stoke City':'Stoke'},
+ NATIONAL_LEAGUE:{'Aldershot Town':'Aldershot','Harrogate Town':'Harrogate','Kidderminster Harriers':'Kidderminster','Hartlepool United':'Hartlepool','Solihull Moors':'Solihull'},
  EPL:{'Coventry City':'Coventry','Ipswich Town':'Ipswich','Hull City':'Hull','Nottingham Forest':"Nott'm Forest",'Manchester City':'Man City','Manchester United':'Man United'},
  LALIGA:{'Deportivo Alavés':'Alaves','FC Barcelona':'Barcelona','Celta Vigo':'Celta','Atlético Madrid':'Ath Madrid','Real Betis':'Betis','Sevilla FC':'Sevilla','Málaga CF':'Malaga','Elche CF':'Elche','Racing Santander':'Santander','Real Madrid CF':'Real Madrid','CA Osasuna':'Osasuna','Espanyol':'Espanol'},
  SERIEA:{'Bologna FC 1909':'Bologna','AS Roma':'Roma','SSC Napoli':'Napoli','US Lecce':'Lecce','AC Milan':'Milan','Parma Calcio 1913':'Parma','ACF Fiorentina':'Fiorentina','Cagliari Calcio':'Cagliari','Udinese Calcio':'Udinese','Frosinone Calcio':'Frosinone','Como 1907':'Como','Juventus FC':'Juventus','AC Monza':'Monza'},

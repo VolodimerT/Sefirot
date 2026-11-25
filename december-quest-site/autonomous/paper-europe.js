@@ -30,11 +30,23 @@ const namePairs={
   'FC Brügge':'Club Brugge','Inter Mailand':'Inter','AS Rom':'AS Roma','FC Liverpool':'Liverpool',
   'FC Barcelona':'Barcelona','FC Arsenal':'Arsenal','SSC Neapel':'SSC Napoli','Manchester United':'Manchester United FC',
   'Sabah FK':'Sabah','Slavia Prague':'Slavia Prag','Fenerbahçe':'Fenerbahçe SK','Atlético de Madrid':'Atletico Madrid',
-  'Tottenham Hotspur FC':'Tottenham Hotspur'
+  'Tottenham Hotspur FC':'Tottenham Hotspur','AS Monaco FC':'AS Monaco','Paris Saint-Germain FC':'Paris Saint-Germain',
+  'Real Madrid CF':'Real Madrid','Club Atlético de Madrid':'Atletico Madrid','Arsenal FC':'Arsenal','Liverpool FC':'Liverpool',
+  'Sport Lisboa e Benfica':'Benfica Lissabon','Sporting Clube de Portugal':'Sporting CP','FK Bodø/Glimt':'FK Bodö/Glimt',
+  'PAE Olympiakos SFP':'Olympiakos Piräus','Olympiakos Piraeus':'Olympiakos Piräus','PSV':'PSV Eindhoven',
+  'FC Internazionale Milano':'Inter','Atalanta BC':'Atalanta Bergamo','Viktoria Plzeň':'Viktoria Pilsen',
+  'SK Slavia Praha':'Slavia Prag','Slavia Praha':'Slavia Prag','FC København':'FC Kopenhagen','Galatasaray SK':'Galatasaray Istanbul',
+  'Qarabağ Ağdam FK':'Qarabag FK','Club Brugge KV':'Club Brugge','FC Twente':'FC Twente Enschede','Panathinaikos':'Panathinaikos FC',
+  'Royale Union Saint-Gilloise':'Union Saint-Gilloise','Heart of Midlothian':'Heart of Midlothian FC',
+  'Jagiellonia Białystok':'Jagiellonia Bialystok','FC St. Pauli 1910':'FC St. Pauli'
 };
 const canonical=name=>Core.canonical('UCL',Object.hasOwn(namePairs,name?.trim())?namePairs[name.trim()]:name);
 const association=new Map(Object.entries(groups).flatMap(([country,names])=>names.split('|').map(n=>[canonical(n),country])));
+export const europeTeam=canonical;
+export const europeAssociation=key=>association.get(key);
 const clamped=x=>Math.min(3.2,Math.max(.35,x));
+
+const cupRound=/^(?:[12]\. Runde|Achtelfinale|Viertelfinale|Halbfinale|Endspiel|Finale)$/i;
 
 export function europeResults(games, competition, league, season, cutoff) {
   if(!Array.isArray(games)||games.length>250)throw Error('INTERNATIONAL_SOURCE_SHAPE');
@@ -43,7 +55,8 @@ export function europeResults(games, competition, league, season, cutoff) {
     if(match.leagueShortcut!==league||Number(match.leagueSeason)!==season||!Number.isSafeInteger(match.matchID)
       ||ids.has(match.matchID))throw Error('INTERNATIONAL_COMPETITION_MISMATCH');
     ids.add(match.matchID);
-    if(match.matchIsFinished!==true||!/^\d{1,2}\.\s*Spieltag$/i.test(match.group?.groupName)||!match.matchDateTimeUTC?.endsWith('Z'))continue;
+    const phase=competition==='DFB_POKAL'?cupRound:/^\d{1,2}\.\s*Spieltag$/i;
+    if(match.matchIsFinished!==true||!phase.test(match.group?.groupName)||!match.matchDateTimeUTC?.endsWith('Z'))continue;
     const kickoff=Date.parse(match.matchDateTimeUTC);
     if(!Number.isFinite(kickoff)||kickoff>=cutoff-3*3600000)continue;
     const date=new Date(kickoff).toISOString().slice(0,10);
@@ -56,7 +69,10 @@ export function europeResults(games, competition, league, season, cutoff) {
     if(!home||!away||home===away)throw Error('INTERNATIONAL_TEAM_MAPPING');
     const key=[competition,date,home,away].join('|');
     if(rows.has(key))throw Error('DUPLICATE_INTERNATIONAL_RESULT');
-    rows.set(key,{home,away,hg,ag,kickoff,date,when:kickoff,season,competition});
+    rows.set(key,{home,away,hg,ag,kickoff,date,when:kickoff,season,competition,
+      homeCountry:competition==='DFB_POKAL'?'GER':europeAssociation(home),
+      awayCountry:competition==='DFB_POKAL'?'GER':europeAssociation(away),
+      neutral:competition==='DFB_POKAL'&&/^(?:Endspiel|Finale)$/i.test(match.group.groupName)});
   }
   return [...rows.values()];
 }

@@ -5,13 +5,13 @@ const leagues = { EPL: 39, LALIGA: 140, SERIEA: 135, BUNDES: 78, LIGUE1: 61 };
 const sameTeam = (league, provider, calendar) =>
   Core.canonical(league, provider) === Core.canonical(league, calendar);
 
-export function matchFixture(fixture, records) {
+export function matchFixture(fixture, records, leagueIds=leagues, same=sameTeam) {
   const kickoff = Date.parse(fixture.kickoff);
   const matches = records.filter(row =>
-    row.league?.id === leagues[fixture.competition] &&
+    row.league?.id === leagueIds[fixture.competition] &&
     Number.isSafeInteger(row.fixture?.id) && row.fixture.id > 0 &&
-    sameTeam(fixture.competition, row.teams?.home?.name, fixture.home_team) &&
-    sameTeam(fixture.competition, row.teams?.away?.name, fixture.away_team));
+    same(fixture.competition, row.teams?.home?.name, fixture.home_team) &&
+    same(fixture.competition, row.teams?.away?.name, fixture.away_team));
   const row = matches.length === 1 ? matches[0] : null;
   if (!row) return { status: 'DATA_MISSING' };
   if (row.fixture.status?.short !== 'NS' || Date.parse(row.fixture.date) !== kickoff) {
@@ -22,14 +22,16 @@ export function matchFixture(fixture, records) {
   return { status: 'CONFIRMED', fixture_id: row.fixture.id, referee };
 }
 
-export async function collectGateway(project, token, candidates, now, fetcher = fetch) {
+export async function collectGateway(project, token, candidates, now, fetcher=fetch, paperLeagueIds, same=sameTeam) {
+  const leagueIds=paperLeagueIds??leagues;
   const out = new Map();
   if (!project || !token) return { status: 'DATA_MISSING', reason: 'GATEWAY_NOT_CONFIGURED', fixtures: out };
   const grouped = new Map();
   for (const fixture of candidates) {
     const ahead = Date.parse(fixture.kickoff) - now;
-    if (!Object.hasOwn(leagues, fixture.competition) || ahead <= 0 || ahead > 8 * 3600000) continue;
-    const key = fixture.competition + '|' + fixture.kickoff.slice(0, 10);
+    if (!Object.hasOwn(leagueIds, fixture.competition) || ahead <= 0 || ahead > 8 * 3600000) continue;
+    const day=paperLeagueIds?new Date(fixture.kickoff).toISOString().slice(0,10):fixture.kickoff.slice(0,10);
+    const key = fixture.competition + '|' + day;
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key).push(fixture);
   }
@@ -52,13 +54,14 @@ export async function collectGateway(project, token, candidates, now, fetcher = 
     return { records: body.data.response, observed_at: body.received_at };
   };
   try {
-    for (const group of grouped.values()) {
+    for (const [key, group] of grouped) {
       if (remaining < 1) break;
       const sample = group[0];
-      const gameList = await get('fixtures', { league: String(leagues[sample.competition]),
-        season: '2026', date: sample.kickoff.slice(0, 10) });
+      const date=key.split('|')[1];
+      const season=paperLeagueIds?String(Number(date.slice(0,4))-Number(Number(date.slice(5,7))<7)):'2026';
+      const gameList = await get('fixtures', { league: String(leagueIds[sample.competition]),season,date });
       for (const fixture of group) {
-        const check = matchFixture(fixture, gameList.records);
+        const check = matchFixture(fixture, gameList.records,leagueIds,same);
         out.set(fixture.fixture_key, { ...check, observed_at: gameList.observed_at });
       }
     }
@@ -71,11 +74,17 @@ export async function collectGateway(project, token, candidates, now, fetcher = 
       entry.injuries = { count: injuries.records.length, observed_at: injuries.observed_at, published: injuries.records.length > 0 };
       if (Date.parse(game.kickoff) - now > 90 * 60000) continue;
       const lineups = await get('fixtures/lineups', params);
-      const confirmedTeams=[game.home_team,game.away_team].filter(team=>{
-        const matches=lineups.records.filter(row=>sameTeam(game.competition,row.team?.name,team));
-        return matches.length===1 && matches[0].startXI?.length===11;
+      const formations={};
+      const confirmedTeams=[game.home_team,game.away_team].filter((team,index)=>{
+        const matches=lineups.records.filter(row=>same(game.competition,row.team?.name,team));
+        const match=matches.length===1?matches[0]:null;
+        const valid=match?.startXI?.length===11;
+        if(paperLeagueIds&&valid&&typeof match.formation==='string'&&/^\d(?:-\d){2,4}$/.test(match.formation))
+          formations[index===0?'home':'away']=match.formation;
+        return valid;
       });
       entry.lineups = { confirmed_teams: confirmedTeams.length, observed_at: lineups.observed_at };
+      if(paperLeagueIds)entry.lineups.formations=formations;
     }
     return { status: grouped.size ? 'OK' : 'WAITING_WINDOW', fixtures: out };
   } catch (error) {

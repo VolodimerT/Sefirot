@@ -79,14 +79,17 @@ function csvOffers(fixture, weekly, cutoff, kickoff) {
   });
 }
 
-function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports) {
+function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports, paperIdentity) {
   if (!confirmed || !isPrematch(cutoff,kickoff)) return () => [];
   const batch=collected?.batches?.find(x=>x.league===fixture.competition);
   if (!batch || !(batch.observedAt<=cutoff && cutoff-batch.observedAt<=quoteAge)) return () => [];
+  const identify=label=>paperIdentity?paperIdentity(fixture.competition,label):team(fixture,label);
   const events=batch.events.filter(event=>event?.sport_key===sports[fixture.competition] &&
     verifiedTime(event.commence_time)===kickoff && event.completed!==true && event.live!==true &&
-    team(fixture,event.home_team)===team(fixture,fixture.home_team) && team(fixture,event.away_team)===team(fixture,fixture.away_team));
+    identify(event.home_team)===identify(fixture.home_team) && identify(event.away_team)===identify(fixture.away_team));
   if (events.length!==1 || !Array.isArray(events[0].bookmakers)) return () => [];
+  const eventId=events[0].id;
+  if (paperIdentity&&(typeof eventId!=='string'||!/^[-_a-zA-Z0-9]{1,100}$/.test(eventId)))return () => [];
   return market => {
     const key=market.kind==='1X2'?'h2h':market.kind==='TG'&&market.line%1===0.5?'totals':null;
     if (!key) return [];
@@ -100,12 +103,12 @@ function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports) {
       const updated=verifiedTime(packet.last_update ?? book.last_update);
       if (!(updated<=batch.observedAt && cutoff-updated<=quoteAge)) continue;
       const outcomes=packet.outcomes.filter(x=>validPrice(x?.price));
-      const home=team(fixture,fixture.home_team), away=team(fixture,fixture.away_team);
+      const home=identify(fixture.home_team), away=identify(fixture.away_team);
       let ordered, selected;
       if (key==='h2h') {
-        const names=new Set(outcomes.map(x=>team(fixture,x.name)));
+        const names=new Set(outcomes.map(x=>identify(x.name)));
         if (outcomes.length!==3||names.size!==3||!names.has(home)||!names.has(away)||!names.has('draw')) continue;
-        ordered=[home,'draw',away].map(name=>outcomes.find(x=>team(fixture,x.name)===name).price);
+        ordered=[home,'draw',away].map(name=>outcomes.find(x=>identify(x.name)===name).price);
         selected=['home','draw','away'].indexOf(market.side);
       } else {
         const line=outcomes.filter(x=>typeof x.point==='number'&&x.point===market.line);
@@ -116,6 +119,7 @@ function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports) {
       }
       if (selected<0) continue;
       const fair=removeMargin(ordered);
+      if(paperIdentity&&(!fair||fair.overround<0||fair.overround>.20))continue;
       const prior=offers.get(id);
       const odds=ordered[selected], combination=ordered.join('|');
       if (prior && prior.updated>updated) continue;
@@ -125,6 +129,7 @@ function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports) {
       }
       offers.set(id,{bookmaker:book.title,bookmaker_id:id,odds,source:batch.endpoint,
         observed_at:iso(batch.observedAt),published_at:null,quote_updated_at:iso(updated),updated,combination,
+        ...(paperIdentity?{provider_event_id:eventId,quote_timestamp_scope:packet.last_update?'MARKET':'BOOKMAKER'}:{}),
         fair_probability:round(fair.probabilities[selected]), fair_odds:round(1/fair.probabilities[selected]),
         overround:round(fair.overround)});
     }
@@ -152,10 +157,10 @@ function collectMarket(market, alternatives, verified) {
     quotes:sorted};
 }
 
-export function attachOdds(forecast, weekly, fixture, collected, confirmed, sports=decemberSports) {
+export function attachOdds(forecast, weekly, fixture, collected, confirmed, sports=decemberSports, paperIdentity) {
   if (forecast.status!=='MODEL_ONLY') return forecast;
   const cutoff=Date.parse(forecast.source_cutoff),kickoff=Date.parse(fixture.kickoff);
-  const primary=apiOffers(fixture,collected,cutoff,kickoff,confirmed,sports);
+  const primary=apiOffers(fixture,collected,cutoff,kickoff,confirmed,sports,paperIdentity);
   const fallback=csvOffers(fixture,weekly,cutoff,kickoff);
   const markets=forecast.markets.map(market=>{
     const verified=primary(market);

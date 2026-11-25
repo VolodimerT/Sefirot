@@ -12,11 +12,18 @@ const keys=['home','draw','away'];
 const result=({hg,ag})=>hg===ag?'D':hg>ag?'H':'A';
 const round=n=>Number(n.toFixed(6));
 
+function improvementInterval(blocks,n,mean,key){
+  if(blocks.size<2)return null;
+  const residual=[...blocks.values()].reduce((sum,block)=>sum+(block[key]-mean*block.n)**2,0);
+  const margin=1.96*Math.sqrt(blocks.size/(blocks.size-1)*residual)/n;
+  return [round(mean-margin),round(mean+margin)];
+}
+
 export function leagueWalkForward(rows, forecast, end, policy=paperPolicy){
   const cutoffDay=new Date(end).toISOString().slice(0,10);
   const games=rows.filter(g=>g.date<cutoffDay&&g.when<end).sort((a,b)=>a.when-b.when);
   const cohorts=Object.fromEntries(['archive','recent'].map(key=>[key,{n:0,total:0,modelBrier:0,baselineBrier:0,
-    modelLogLoss:0,baselineLogLoss:0,bins:Array.from({length:10},()=>({n:0,p:0,y:0}))}]));
+    modelLogLoss:0,baselineLogLoss:0,blocks:new Map(),bins:Array.from({length:10},()=>({n:0,p:0,y:0}))}]));
   for(const game of games){
     const name=['archive','recent'].find(key=>game.date>=policy[key].since
       &&(!policy[key].before||game.date<policy[key].before));
@@ -35,6 +42,9 @@ export function leagueWalkForward(rows, forecast, end, policy=paperPolicy){
     const baseline=Validation.measure(Validation.baseline(training),actual);
     sums.n++;sums.modelBrier+=model.brier;sums.baselineBrier+=baseline.brier;
     sums.modelLogLoss+=model.logloss;sums.baselineLogLoss+=baseline.logloss;
+    const block=sums.blocks.get(game.date)??{n:0,brier:0,logLoss:0};
+    block.n++;block.brier+=baseline.brier-model.brier;block.logLoss+=baseline.logloss-model.logloss;
+    sums.blocks.set(game.date,block);
     for(const [i,key] of keys.entries()){
       const bin=sums.bins[Math.min(9,Math.floor(p[key]*10))];
       bin.n++;bin.p+=p[key];bin.y+=Number(['H','D','A'][i]===actual);
@@ -45,7 +55,9 @@ export function leagueWalkForward(rows, forecast, end, policy=paperPolicy){
     if(!n)return [name,{n,total:sum.total,brier:null,baseline_brier:null,log_loss:null,baseline_log_loss:null,ece:null}];
     return [name,{n,total:sum.total,brier:round(sum.modelBrier/n),baseline_brier:round(sum.baselineBrier/n),
       log_loss:round(sum.modelLogLoss/n),baseline_log_loss:round(sum.baselineLogLoss/n),
-      ece:round(sum.bins.reduce((total,bin)=>total+Math.abs(bin.p-bin.y),0)/(3*n))}];
+      ece:round(sum.bins.reduce((total,bin)=>total+Math.abs(bin.p-bin.y),0)/(3*n)),
+      validation_dates:sum.blocks.size,brier_gain_approx95:improvementInterval(sum.blocks,n,(sum.baselineBrier-sum.modelBrier)/n,'brier'),
+      log_loss_gain_approx95:improvementInterval(sum.blocks,n,(sum.baselineLogLoss-sum.modelLogLoss)/n,'logLoss')}];
   }));
   const failures=Object.entries(scored).flatMap(([key,metric])=>{
     if(metric.n<policy[key].minimum)return [key.toUpperCase()+'_INSUFFICIENT_VALIDATION_SAMPLE'];

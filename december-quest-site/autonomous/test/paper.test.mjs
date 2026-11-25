@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import Core from '../core.js';
 import { executeDaily, executeReplay, modes } from '../paper-runner.js';
 import { auditWeekly } from '../paper-sources.js';
-import { europeResults } from '../paper-europe.js';
+import { readEuropeArchive } from '../paper-europe-archive.js';
+import { forecastInternational, internationalState } from '../paper-international.js';
+import { collectGateway } from '../gateway.js';
+import { europeResults, europeTeam } from '../paper-europe.js';
 import { paperCompetitions, paperDomestic, paperOddsSports } from '../paper-registry.js';
-import { collectTimestampedOdds, decemberSports } from '../odds-gateway.js';
+import { attachOdds, collectTimestampedOdds, decemberSports } from '../odds-gateway.js';
 
 const now=Date.parse('2026-11-25T09:30:00Z');
 const booth=['https://league.example.test/match','https://archive.example.test/match'];
@@ -49,7 +52,7 @@ assert.deepEqual(auditWeekly(indicative,fixture,now),{status:'STALE_CSV_PUBLICAT
 assert.equal(auditWeekly(indicative,{...fixture,kickoff:'2026-11-25T16:01:00+02:00'},now).status,'ODDS_EVENT_NOT_FOUND');
 assert.equal(auditWeekly({...indicative,publishedAt:now-3600000},fixture,now).status,'PER_QUOTE_TIMESTAMP_UNKNOWN');
 assert.equal(auditWeekly({...indicative,observedAt:NaN},fixture,now).status,'QUOTE_FEED_UNAVAILABLE');
-assert.deepEqual(Object.keys(paperOddsSports).sort(),[...paperCompetitions.keys()].filter(code=>code!=='UPL').sort());
+assert.deepEqual(Object.keys(paperOddsSports).sort(),[...paperCompetitions.keys()].filter(code=>!['UPL','NATIONAL_LEAGUE'].includes(code)).sort());
 const routes=[];
 const provider=async input=>{routes.push(new URL(input).pathname);return Response.json([]);};
 const additional=[{...fixture,competition:'BUNDES_2'},{...fixture,competition:'NETHERLANDS'}];
@@ -68,3 +71,70 @@ assert.equal(europeResults([game,{...game,matchID:2,matchDateTimeUTC:'2026-11-25
 assert.equal(europeResults([{...game,group:{groupName:'Finale'}}],'UCL','ucl',2026,now).length,0);
 assert.throws(()=>europeResults([game],'UEL','uel2026',2026,now),/INTERNATIONAL_COMPETITION_MISMATCH/);
 console.log('PASS — isolated paper/replay modes, kickoff/cutoff, fixture receipts, stale odds and UEFA phase');
+
+const archive=readEuropeArchive([
+  '= UEFA Champions League - Quali 2025/26','▪ 1. Round','  Tue Jul 8 2025',
+  '  20:00 Sabah (AZE) v FC Barcelona (ESP) 1-2 (0-1)',
+  '  20:00 Inter (ITA) v AS Roma (ITA) 3-2 a.e.t. (2-2, 2-2)',
+  '▪ Round of 16','  Thu Dec 4 2025','  20:00 Sabah (AZE) v FC Barcelona (ESP) 2-1'
+].join('\n'),'UCL',2025,true,now);
+assert.equal(archive.length,1);
+assert.equal(archive[0].competition,'UCL_QUAL');
+assert.equal(archive[0].away,'barcelona');
+assert.equal(archive[0].homeCountry,'AZE');
+assert.throws(()=>readEuropeArchive('unexpected','UCL',2025,true,now),/ARCHIVE_COMPETITION_MISMATCH/);
+
+const internationalRows=Array.from({length:64},(_,index)=>{
+  const when=now-(66-index)*86400000;
+  return {competition:'UCL',home:'sabah',away:'barcelona',homeCountry:'AZE',awayCountry:'ESP',
+    when,date:new Date(when).toISOString().slice(0,10),hg:index%2,ag:2};
+});
+const candidate={competition:'UCL',home_team:'Sabah FK',away_team:'Barcelona'};
+const model='DQ-INTERNATIONAL-POISSON-0.1';
+const good=forecastInternational(candidate,internationalRows,now,model);
+assert.equal(good.model_version,model);
+assert.equal(good.markets.length,68);
+assert.ok(Math.abs(good.probabilities.home+good.probabilities.draw+good.probabilities.away-1)<0.0001);
+const sameDay={...internationalRows[0],when:now-3600000,date:new Date(now).toISOString().slice(0,10),hg:10,ag:0};
+assert.deepEqual(forecastInternational(candidate,[...internationalRows,sameDay],now,model),good);
+assert.equal(forecastInternational({...candidate,displaced_home:true},internationalRows,now,model).reason,
+  'VENUE_OUTSIDE_VALIDATION');
+assert.equal(internationalState(internationalRows,now).state.tournaments.get('UCL').n,64);
+
+const when=new Date(now+50*60_000).toISOString();
+const sample={...candidate,kickoff:when,fixture_key:'qa-ucl',timing_status:'confirmed'};
+const timestamp=new Date(now-60000).toISOString();
+const artifact=(home,away)=>{
+  const squad=Array.from({length:11},(_,id)=>({player:{id:id+1}}));
+  return [{team:{name:home},formation:'4-3-3',startXI:squad},{team:{name:away},formation:'4-4-2',startXI:squad}];
+};
+const observed=[];
+const gateway=await collectGateway('https://test.invalid','local-qa',[sample],now,async(_url,req)=>{
+  const called=JSON.parse(req.body); observed.push(called.endpoint);
+  const response=called.endpoint==='fixtures'?[{fixture:{id:123,date:when,status:{short:'NS'},referee:'Test Referee'},
+    league:{id:2},teams:{home:{name:'Sabah'},away:{name:'FC Barcelona'}}}]
+    :called.endpoint==='injuries'?[]:artifact('Sabah','FC Barcelona');
+  return Response.json({ok:true,received_at:timestamp,data:{response}});
+},{UCL:2},(_league,a,b)=>europeTeam(a)===europeTeam(b));
+assert.deepEqual(observed,['fixtures','injuries','fixtures/lineups']);
+assert.deepEqual(gateway.fixtures.get(sample.fixture_key).lineups.formations,{home:'4-3-3',away:'4-4-2'});
+assert.equal(gateway.fixtures.get(sample.fixture_key).injuries.published,false);
+
+const oddsFixture={...sample,home_team:'Sabah FK',away_team:'Barcelona'};
+const oddsEvent={id:'event-1',sport_key:paperOddsSports.UCL,commence_time:when,home_team:'Sabah',away_team:'FC Barcelona',
+  bookmakers:[{title:'Book One',last_update:timestamp,markets:[{key:'h2h',outcomes:[
+    {name:'Sabah',price:3.2},{name:'Draw',price:3.6},{name:'FC Barcelona',price:2}
+  ]}]}]};
+const wire=events=>({batches:[{league:'UCL',endpoint:'https://api.the-odds-api.com/test',observedAt:now,events}]});
+const output=attachOdds({...good,source_cutoff:new Date(now).toISOString(),status:'MODEL_ONLY'},null,oddsFixture,
+  wire([oddsEvent]),true,paperOddsSports,(_league,name)=>europeTeam(name));
+assert.equal(output.evidence.quote_price_verified,true);
+assert.equal(output.best_candidate.provider_event_id,'event-1');
+assert.equal(output.best_candidate.quote_timestamp_scope,'BOOKMAKER');
+for(const bad of [{...oddsEvent,live:true},{...oddsEvent,id:''},{...oddsEvent,
+  bookmakers:[{...oddsEvent.bookmakers[0],last_update:new Date(now+1).toISOString()}]}]){
+  const blocked=attachOdds({...good,source_cutoff:new Date(now).toISOString(),status:'MODEL_ONLY'},null,oddsFixture,
+    wire([bad]),true,paperOddsSports,(_league,name)=>europeTeam(name));
+  assert.ok(blocked.markets.every(m=>m.ev===null));
+}
+console.log('PASS — international archive and day-batched model, tactical gateway receipts and market provenance');
