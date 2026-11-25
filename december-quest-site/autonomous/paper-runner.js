@@ -1,18 +1,14 @@
 import Core from './core.js';
 import { duplicates } from './run.js';
-import { paperCompetitions, paperDomestic } from './paper-registry.js';
+import { paperCompetitions, paperDomestic, paperOddsSports } from './paper-registry.js';
 import { domesticReplay } from './paper-validation.js';
 import { europeReplay, europeVersion, transnationalForecast } from './paper-europe.js';
-import { attachOdds, collectTimestampedOdds, decemberSports } from './odds-gateway.js';
+import { attachOdds, collectTimestampedOdds } from './odds-gateway.js';
 import { auditWeekly } from './paper-sources.js';
 import { historyProfile } from './history.js';
 
 export const modes=Object.freeze({december:'DECEMBER_QUEST',daily:'DAILY_PAPER_TEST',replay:'HISTORICAL_REPLAY'});
 const kyiv=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'});
-const sports=Object.freeze({...decemberSports, CHAMPIONSHIP:'soccer_efl_champ', ENGLAND_LEAGUE_1:'soccer_england_league1',
-  SEGUNDA:'soccer_spain_segunda_division',BELGIUM:'soccer_belgium_first_div',PORTUGAL:'soccer_portugal_primeira_liga',
-  TURKEY:'soccer_turkey_super_league',UCL:'soccer_uefa_champs_league',UEL:'soccer_uefa_europa_league',
-  UECL:'soccer_uefa_europa_conference_league'});
 const numericTime=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)$/.test(value)
   ? Date.parse(value) : NaN;
 
@@ -83,7 +79,7 @@ export async function executeDaily({date,calendar,sources,oddsKey='',clock=Date.
   const oddsTime=clock();
   const withModel=candidates.filter(row=>lookup.get(row.competition)?.quality?.admitted&&confirmed(row,oddsTime)&&
     !distinct.has(row.fixture_key)&&Date.parse(row.kickoff)>oddsTime+20*60_000);
-  const odds=await collectTimestampedOdds(withModel,oddsTime,oddsKey,fetcher,clock,sports);
+  const odds=await collectTimestampedOdds(withModel,oddsTime,oddsKey,fetcher,clock,paperOddsSports);
   const cutoff=clock(), cutoffText=new Date(cutoff).toISOString();
   const fixtures=candidates.filter(row=>Date.parse(row.kickoff)>cutoff+20*60_000).map(row=>{
     const data=lookup.get(row.competition), reasons=[];
@@ -114,7 +110,7 @@ export async function executeDaily({date,calendar,sources,oddsKey='',clock=Date.
       }
     }
     const quote_audit=kickoffVerified?auditWeekly(weekly,row,cutoff):{status:'KICKOFF_NOT_REVERIFIED'};
-    if(forecast)forecast=attachOdds({...forecast,source_cutoff:cutoffText,evidence:forecast.evidence??{}},null,row,odds,true,sports);
+    if(forecast)forecast=attachOdds({...forecast,source_cutoff:cutoffText,evidence:forecast.evidence??{}},null,row,odds,true,paperOddsSports);
     if(!forecast?.evidence?.quote_price_verified){
       reasons.push(quote_audit.status==='UNSUPPORTED_QUOTE_FEED'?'TIMESTAMPED_ODDS_UNAVAILABLE':quote_audit.status,
         'DEATH_TEST_NOT_VERIFIED');

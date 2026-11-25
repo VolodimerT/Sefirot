@@ -3,7 +3,8 @@ import Core from '../core.js';
 import { executeDaily, executeReplay, modes } from '../paper-runner.js';
 import { auditWeekly } from '../paper-sources.js';
 import { europeResults } from '../paper-europe.js';
-import { paperDomestic } from '../paper-registry.js';
+import { paperCompetitions, paperDomestic, paperOddsSports } from '../paper-registry.js';
+import { collectTimestampedOdds, decemberSports } from '../odds-gateway.js';
 
 const now=Date.parse('2026-11-25T09:30:00Z');
 const booth=['https://league.example.test/match','https://archive.example.test/match'];
@@ -48,6 +49,13 @@ assert.deepEqual(auditWeekly(indicative,fixture,now),{status:'STALE_CSV_PUBLICAT
 assert.equal(auditWeekly(indicative,{...fixture,kickoff:'2026-11-25T16:01:00+02:00'},now).status,'ODDS_EVENT_NOT_FOUND');
 assert.equal(auditWeekly({...indicative,publishedAt:now-3600000},fixture,now).status,'PER_QUOTE_TIMESTAMP_UNKNOWN');
 assert.equal(auditWeekly({...indicative,observedAt:NaN},fixture,now).status,'QUOTE_FEED_UNAVAILABLE');
+assert.deepEqual(Object.keys(paperOddsSports).sort(),[...paperCompetitions.keys()].filter(code=>code!=='UPL').sort());
+const routes=[];
+const provider=async input=>{routes.push(new URL(input).pathname);return Response.json([]);};
+const additional=[{...fixture,competition:'BUNDES_2'},{...fixture,competition:'NETHERLANDS'}];
+assert.equal((await collectTimestampedOdds(additional,now,'qa',provider,()=>now,paperOddsSports)).status,'OK');
+assert.deepEqual(routes.sort(),['/v4/sports/soccer_germany_bundesliga2/odds','/v4/sports/soccer_netherlands_eredivisie/odds']);
+assert.equal((await collectTimestampedOdds(additional,now,'qa',provider,()=>now,decemberSports)).status,'NO_FIXTURES');
 const summer=Date.parse('2026-08-25T09:00:00Z');
 assert.equal(auditWeekly({...indicative,observedAt:summer,publishedAt:summer-3600000,
   records:[{...indicative.records[0],Date:'25/08/2026',Time:'15:00'}]},
