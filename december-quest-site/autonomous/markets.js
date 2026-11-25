@@ -116,3 +116,44 @@ export function evaluateQuote(distribution, odds) {
     }))
   };
 }
+
+// The caller supplies the provider-side decision separately from editable tour fields.
+export function prematchReview(row, now) {
+  const e = row?.evidence ?? {};
+  const m = row?.best_candidate ?? {};
+  const reasons = [];
+  const time = value => typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) : NaN;
+  const cutoff = time(row?.source_cutoff), generated = time(row?.generated_at), kickoff = time(row?.kickoff);
+  const observed = time(m.observed_at), quoted = time(m.quote_updated_at);
+  const red = row?.risk_class === 'RED' || e.kickoff_gate === 'KICKOFF_CONFLICT' ||
+    e.kickoff_gate === 'DUPLICATE_FIXTURE' || (row && !(cutoff <= generated && generated <= now && now < kickoff)) ||
+    observed > cutoff || quoted > observed;
+  if (red) reasons.push('TIME_OR_IDENTITY_CONFLICT');
+  if (!row || e.kickoff_gate !== 'CONFIRMED' || e.fixture_timing_status !== 'confirmed') reasons.push('PREMATCH_TIME');
+  if (!(quoted <= observed && observed <= cutoff && now - quoted <= 3600000) ||
+      m.price_verified !== true || m.quote_timestamp_verified !== true) reasons.push('QUOTE_UNVERIFIED');
+  const priced=evaluateQuote(m.settlement,m.odds);
+  if (!priced || priced.expected_value !== m.ev || !(m.ev > 0) || m.value_verified !== true ||
+      !Number.isFinite(m.probability) || m.probability !== round(m.settlement.win + m.settlement.half_win))
+    reasons.push('EV_GATE');
+  if (!(Number.isInteger(row?.sample_n) && row.sample_n >= 6 && e.lineups_gate === 'CONFIRMED' &&
+      e.latest_training_date && /^\d{4}-\d{2}-\d{2}$/.test(e.latest_training_date) &&
+      Date.parse(e.latest_training_date+'T23:59:59.999Z') < cutoff)) reasons.push('DATA_QUALITY');
+  if (e.fit_gate !== 'VERIFIED') reasons.push('TACTICAL_FIT');
+  if (e.public_trap_gate !== 'VERIFIED') reasons.push('PUBLIC_TRAP');
+  if (e.death_test_gate !== 'VERIFIED' || m.death_test !== 'PASS_CONDITIONAL' ||
+      !(Number.isFinite(m.sensitivity?.['-0.05']) && m.sensitivity['-0.05'] > 0 && priced?.sensitivity['-0.05'] === m.sensitivity['-0.05'])) reasons.push('DEATH_TEST');
+  const main = ['1X2','Двойной шанс','DNB','Фора','Азиатская фора','Тотал','ОЗ','Индивидуальный тотал','ИТ хозяев','ИТ гостей'];
+  if (e.alternative_market_gate !== 'VERIFIED' || !main.includes(m.alternative?.market) ||
+      m.alternative.market === m.market || !Number.isFinite(m.alternative.ev) || !(m.ev > m.alternative.ev) ||
+      (!main.includes(m.market) && !(typeof e.market_rationale==='string' && e.market_rationale.trim())))
+    reasons.push('ALTERNATIVE_MARKET');
+  if (m.market === 'ЖК' && !(e.referee_gate === 'VERIFIED' && typeof e.referee === 'string' && e.referee.trim() &&
+      Number.isFinite(e.yc_game) && e.yc_game > 0 && Number.isFinite(e.yc_foul) && e.yc_foul > 0 &&
+      e.low_card_risk === true && e.rules_confirmed === true && e.no_cleaner_market === true)) reasons.push('REFEREE_GATE');
+  if(e.selection_basis !== 'SPORTING_EDGE') reasons.push('ODDS_FILLER');
+  if (e.calibration_gate !== 'VERIFIED' || !['A','B'].includes(row?.risk_class)) reasons.push('CONFIDENCE');
+  if (row?.verdict !== 'играбельно' || !Array.isArray(e.pass_reasons) || e.pass_reasons.length) reasons.push('SOURCE_PASS');
+  const riskClass = red ? 'RED' : Number.isFinite(m.ev) && m.ev <= 0 ? 'D' : reasons.length ? 'C' : row.risk_class;
+  return {eligible: reasons.length === 0, riskClass, reasons};
+}

@@ -375,7 +375,7 @@ document.addEventListener('change',e=>{
  if(e.target?.id==='v6-auto-league'){league=e.target.value;B.refresh();}
  if(e.target?.id==='v6-auto-covered'){modelOnly=e.target.checked;B.refresh();}
 });
-window.QuestAutoPredict={view,load,stat,get:()=>data.slice()};
+window.QuestAutoPredict={view,load,stat,get:()=>structuredClone(data)};
 window.addEventListener('hashchange',refreshIfChanged);
 document.addEventListener('visibilitychange',refreshIfChanged);
 setInterval(refreshIfChanged,180000);

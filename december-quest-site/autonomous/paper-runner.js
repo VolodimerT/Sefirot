@@ -1,3 +1,4 @@
+import {prematchReview} from './markets.js';
 import Core from './core.js';
 import { duplicates } from './run.js';
 import { paperCompetitions, paperDomestic, paperOddsSports } from './paper-registry.js';
@@ -185,6 +186,8 @@ export async function executeDaily({date,calendar,sources,oddsKey='',reserveOdds
     const marketEvaluated=marketGate(forecast);
     if(['NO_EDGE','FRAGILE_EDGE'].includes(marketEvaluated.status))reasons.push(marketEvaluated.status);
     if(!facts?.lineups)reasons.push('LINEUPS_NOT_VERIFIED');
+    const policy=prematchReview(forecast,cutoff);
+    reasons.push(...policy.reasons);
     reasons.push('TACTICAL_FIT_NOT_VERIFIED','PUBLIC_TRAP_NOT_VERIFIED','V21_2_FULL_GATE_NOT_VERIFIED');
     return {fixture_key:row.fixture_key,competition:row.competition,home:row.home_team,away:row.away_team,
       kickoff:row.kickoff,kickoff_verified:kickoffVerified,verdict:'PASS',reasons,

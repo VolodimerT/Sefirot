@@ -6,6 +6,9 @@ export async function flightRpc(rows,resource,p) {
     await rows('select public.dq_release_predictor_run($1)',[p.p_token]);
     return null;
   }
+  if(resource==='rpc/dq_finish_scheduled_predictor')
+    return (await rows('select public.dq_finish_scheduled_predictor($1,$2,$3,$4,$5,$6) as r',
+      [p.p_token,p.p_until,...[p.p_run,p.p_forecasts,p.p_validation,p.p_settlements].map(x=>JSON.stringify(x))]))[0].r;
   if(resource==='rpc/dq_finish_predictor_run')
     return (await rows('select public.dq_finish_predictor_run($1,$2,$3,$4,$5) as r',
       [p.p_token,...[p.p_run,p.p_forecasts,p.p_validation,p.p_settlements].map(x=>JSON.stringify(x))]))[0].r;

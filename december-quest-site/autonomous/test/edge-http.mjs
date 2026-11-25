@@ -13,7 +13,7 @@ const qaClock = '2026-12-01T17:00:00Z';
 const cronToken = 'a'.repeat(64);
 const testRoleToken = 'qa-local-rest';
 const db = new PGlite();
-const flags = { currentFileAttempts:0 };
+const flags = { currentFileAttempts:0, oddsCalls:0, failCalendar:false };
 const rows = async (sql,params) => (await db.query(sql,params)).rows;
 let server, deno;
 
@@ -25,6 +25,7 @@ try {
   await db.exec(freeze(schema));
   await db.exec(freeze(migration));
   await db.exec(freeze(await readFile(new URL('../single-flight.sql',import.meta.url),'utf8')));
+  await db.exec(freeze(await readFile(new URL('../recovery-finish.sql',import.meta.url),'utf8')));
   await db.query('insert into '+tablePrefix+'fixtures '
     +'(fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,checked_at) '
     +'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
@@ -46,6 +47,7 @@ try {
         return response.end(pathname.endsWith('/fixtures.csv') ? weekly : [columns,...history].join('\n'));
       }
       if (pathname==='/odds/v4/sports/soccer_epl/odds') {
+        flags.oddsCalls++;
         return send(200,[{sport_key:'soccer_epl',commence_time:fixture.kickoff,home_team:'Coventry City',away_team:'Ipswich Town',
           bookmakers:[4,4.2,4.4,4.6].map((price,index)=>({title:'QA Book '+index,last_update:'2026-12-01T16:45:00Z',
             markets:[{key:'h2h',outcomes:[{name:'Coventry City',price},{name:'Ipswich Town',price:2.05},{name:'Draw',price:3.4}]}]}))}]);
@@ -53,6 +55,7 @@ try {
       if (request.headers.apikey !== testRoleToken) return send(401,{error:'MOCK_ROLE_DENIED'});
       const resource = pathname.replace('/rest/v1/','');
       if (resource === tablePrefix+'fixtures') {
+        if(flags.failCalendar)return send(503,{error:'sensitive-test-sentinel'});
         return send(200,await rows('select * from '+resource));
       }
       request.setEncoding('utf8');
@@ -94,9 +97,9 @@ try {
     timer=setTimeout(()=>reject(Error('Deno start timed out')),10000);
   }).finally(()=>clearTimeout(timer));
   const address = 'http://127.0.0.1:'+denoPort;
-  const request = async (method,token) => {
+  const request = async (method,token,query='') => {
     const headers = token ? {'x-dq-predictor-token':token} : {};
-    const response = await fetch(address,{method,headers,signal:AbortSignal.timeout(15000)});
+    const response = await fetch(address+query,{method,headers,signal:AbortSignal.timeout(15000)});
     return {status:response.status,retryAfter:response.headers.get('Retry-After'),body:await response.json()};
   };
   const health = await request('GET');
@@ -112,6 +115,17 @@ try {
   assert.equal(busy.retryAfter,'600');
   assert.equal(flags.currentFileAttempts,0);
   await rows('select public.dq_release_predictor_run($1)',[held.claim.token]);
+  assert.equal((await request('POST',cronToken,'?retry_until='+Date.parse(qaClock))).status,409);
+  flags.failCalendar=true;
+  const denied=await request('POST',cronToken);
+  assert.equal(denied.status,503);
+  assert.equal(denied.body.reason,'SUPABASE_HTTP_503');
+  flags.failCalendar=false;
+  const fallback=await request('POST',cronToken,'?retry_until='+(Date.parse(qaClock)+600000));
+  assert.equal(fallback.body.status,'PARTIAL');
+  assert.equal(fallback.body.sealed,0);
+  assert.equal(flags.oddsCalls,0);
+  const priorAttempts=flags.currentFileAttempts;
   const first = await request('POST',cronToken);
   assert.equal(first.status,200,JSON.stringify(first.body));
   assert.equal(first.body.modeled,1);
@@ -120,7 +134,7 @@ try {
   assert.equal(first.body.wagers_executed,0);
   assert.equal(first.body.odds_gateway,'OK');
   assert.equal(first.body.verified_odds_fixtures,1);
-  assert.equal(flags.currentFileAttempts,2);
+  assert.equal(flags.currentFileAttempts,priorAttempts+1);
   assert.equal((await request('POST',cronToken)).body.skipped,'RECENT_SUCCESS_IN_CYCLE');
   const seals = await rows('select * from '+tablePrefix+'auto_snapshots');
   assert.equal(seals.length,1);

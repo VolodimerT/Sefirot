@@ -164,22 +164,52 @@
   const realized=(t,s)=>t.state==='closed'?pnl(t,s):null;
   function status(t){if(!t)return 'empty';if(t.mode==='pass'&&t.state!=='draft')return 'pass';return t.state;}
   function outcome(t,s){if(t.state!=='closed')return null;if(t.mode==='pass')return 'pass';const p=payout(t,s),a=active(t);if(p===null)return null;if(p===0)return 'lose';if(a.length&&a.every(l=>l.status==='win'))return 'win';if(a.every(l=>l.status==='return'))return 'return';return 'partial';}
-  function validateSeal(t,now=new Date()){
+  function legKickoff(value){
+    if(typeof value!=='string')return NaN;
+    if(/^2026-12-\d{2}T\d{2}:\d{2}$/.test(value))return Date.parse(value+':00+02:00');
+    return /(?:Z|[+-]\d{2}:\d{2})$/.test(value)?Date.parse(value):NaN;
+  }
+  function validateSeal(t,now=new Date(),forecasts=globalThis.QuestAutoPredict?.get()||[]){
     const errors=[];
-    if(t.mode==='pass'){if(!t.decisionNote.trim())errors.push('Для PASS укажи причину решения.');return errors;}
+    if(!t || !modes.includes(t.mode) || !Array.isArray(t.legs) || !Number.isFinite(now.getTime()))
+      return ['PASS: недействительные данные тура.'];
+    if(t.mode==='pass'){if(t.verdict!=='пропуск'||!['C','D','RED'].includes(t.riskClass))errors.push('PASS требует вердикт пропуск и класс C/D/RED.');if(typeof t.decisionNote!=='string'||!t.decisionNote.trim())errors.push('Для PASS укажи причину решения.');return errors;}
+    if(t.legs.some(l=>!l || typeof l.home!=='string'||typeof l.away!=='string'||typeof l.fixtureId!=='string'||typeof l.kickoff!=='string'||typeof l.pick!=='string'))return ['PASS: недействительные данные события.'];
     const a=active(t),min=t.mode==='single'?1:2,max=t.mode==='single'?1:3;
     if(a.length<min||a.length>max)errors.push(`Для этого режима требуется ${min===max?min:'2–3'} участвующих событий.`);
     if(a.length>3)errors.push('Максимум три ноги.');
     for(const [i,l] of a.entries()){
-      if(!l.home.trim()||!l.away.trim()||l.home.trim().toLowerCase()===l.away.trim().toLowerCase())errors.push(`Нога ${i+1}: укажи двух разных участников.`);
-      if(!l.market||!l.pick.trim())errors.push(`Нога ${i+1}: укажи рынок и исход.`);
+      if(typeof l.home!=='string'||typeof l.away!=='string'||!l.home.trim()||!l.away.trim()||l.home.trim().toLowerCase()===l.away.trim().toLowerCase())errors.push(`Нога ${i+1}: укажи двух разных участников.`);
+      if(!markets.includes(l.market)||!l.pick.trim())errors.push(`Нога ${i+1}: укажи рынок и исход.`);
       if(!Number.isFinite(l.odds)||l.odds<=1)errors.push(`Нога ${i+1}: коэффициент должен быть больше 1.`);
-      if(!l.kickoff||isNaN(new Date(l.kickoff).getTime()))errors.push(`Нога ${i+1}: укажи дату и время старта.`);
-      else if(new Date(l.kickoff).getTime()<=now.getTime())errors.push(`Нога ${i+1}: прематч-фиксация после kickoff запрещена.`);
+      if(!Number.isFinite(legKickoff(l.kickoff)))errors.push(`Нога ${i+1}: укажи дату и время старта.`);
+      else if(legKickoff(l.kickoff)<=now.getTime())errors.push(`Нога ${i+1}: прематч-фиксация после kickoff запрещена.`);
       if(l.prob!==null&&(!Number.isFinite(l.prob)||l.prob<=0||l.prob>100))errors.push(`Нога ${i+1}: P модели должна быть от 0 до 100%.`);
-      if(l.market==='ЖК'&&(!l.referee?.trim()||!(l.ycGame>0)||!(l.ycFoul>0)||!l.lowCardRisk||!l.rulesConfirmed||!l.noCleanerMarket||l.prob===null))errors.push(`Нога ${i+1}: строгий Referee Gate не пройден.`);
+      if(l.market==='ЖК'&&(typeof l.referee!=='string'||!l.referee.trim()||!(l.ycGame>0)||!(l.ycFoul>0)||!l.lowCardRisk||!l.rulesConfirmed||!l.noCleanerMarket||l.prob===null))errors.push(`Нога ${i+1}: строгий Referee Gate не пройден.`);
     }
-    if(a.length>=2&&!independent(a))errors.push('Корреляция: один матч встречается дважды. Нельзя умножать вероятности.');
+    if(!['single','original','corrected'].includes(t.mode)||t.verdict!=='играбельно'||!['A','B'].includes(t.riskClass))
+      errors.push('Для допуска нужен подтверждённый класс A/B. При неполных данных выбери PASS.');
+    const classes=[];
+    for(const leg of a){
+      const matches=forecasts.filter(row=>leg.fixtureId && row.fixture_key===leg.fixtureId);
+      const row=matches.length===1?matches[0]:null;
+      const reviewed=globalThis.QuestPrematchReview?.(row,now.getTime());
+      const candidate=row?.best_candidate;
+      const independentKeys=row?.evidence?.independent_fixture_keys;
+      if(a.length>1 && !a.every(other=>other===leg || (Array.isArray(independentKeys) && independentKeys.includes(other.fixtureId))))
+        errors.push('Связь между событиями не проверена источником.');
+      if(!reviewed?.eligible || !candidate || leg.status!=='pending' ||
+        canonicalTeam(row.evidence.home_name)!==canonicalTeam(leg.home) ||
+        canonicalTeam(row.evidence.away_name)!==canonicalTeam(leg.away) ||
+        Date.parse(row.kickoff)!==legKickoff(leg.kickoff) || candidate.market!==leg.market || candidate.pick!==leg.pick ||
+        candidate.odds!==leg.odds || !Number.isFinite(leg.prob) || !Number.isFinite(candidate.probability) ||
+        Math.abs(candidate.probability*100-leg.prob)>1e-9 || !(candidate.probability*leg.odds>1) ||
+        !candidate.settlement || ['half_win','half_loss','push'].some(key=>candidate.settlement[key]!==0))
+        errors.push('PASS: нога не подтверждена автономным решением по этой линии. '+(reviewed?.reasons.join(', ')||''));
+      else classes.push(reviewed.riskClass);
+    }
+    if(classes.includes('B')&&t.riskClass==='A')errors.push('Класс экспресса не может превышать класс слабейшей ноги.');
+    if(a.length>=2&&(!independent(a)||new Set(a.flatMap(l=>[canonicalTeam(l.home),canonicalTeam(l.away)])).size!==2*a.length))errors.push('Корреляция: один матч встречается дважды. Нельзя умножать вероятности.');
     if(a.length>=2&&!t.independenceReviewed)errors.push('Подтверди отдельную проверку возможных зависимостей между ногами.');
     if(t.verdict==='играбельно'&&!(ev(t,{stake:STAKE,price:PRICE})>0))errors.push('Играбельно запрещено без положительного чистого EV (с ценой прогноза). Используй PASS или неиграбельно.');
     if(a.some(l=>l.market==='ЖК') && !(ev(t,{stake:STAKE,price:t.purchased?PRICE:0})>0))errors.push('Для ЖК требуется положительный модельный EV после цены прогноза.');
@@ -197,7 +227,7 @@
   }
   function rank(xp){if(xp>=1600)return ['МАСТЕР',1600,2500];if(xp>=700)return ['АНАЛИТИК',700,1600];if(xp>=250)return ['СКАУТ',250,700];return ['НОВИЧОК',0,250];}
   function over(team){const a=['att','def','form','xi','mot'].map(k=>team[k]).filter(v=>Number.isFinite(v));return a.length===5?round(a.reduce((x,y)=>x+y,0)/5):null;}
-  return {STAKE,PRICE,YEAR,days,markets,legStatuses,modes,round,dataEmpty,emptyLeg,emptyTour,active,fixtureKey,independent,odds,modelP,stake,price,ev,payout,pnl,realized,status,outcome,validateSeal,analytics,flatReplay,rank,over,id};
+  return {STAKE,PRICE,YEAR,days,markets,legStatuses,modes,round,dataEmpty,emptyLeg,emptyTour,active,fixtureKey,independent,odds,modelP,stake,price,ev,payout,pnl,realized,status,outcome,legKickoff,validateSeal,analytics,flatReplay,rank,over,id};
 });
 
 </script>
@@ -304,7 +334,7 @@ function daySelect(){return `<div class="field day-selector"><label for="day-sel
 function num(x,digits=2){return Number.isFinite(x)?fmt(x,digits):'Н/Д';}
 function alertSeal(t){if(t.state!=='draft')return `<div class="notice success mt-2"><strong>PREMATCH SEAL:</strong> ${h(t.sealedAt||'нет времени')}. Исходный прогноз заблокирован. Время фиксации сохранено на устройстве и не является независимым доказательством.</div>`;return `<div class="notice mt-2">Не забудь зафиксировать предматчевый прогноз до начала каждого матча. После фиксации коэффициенты и ноги нельзя изменять.</div>`;}
 function legEdit(l,i,locked){const dis=locked?'disabled':'';const field=(key,label,value,type='text',attrs='')=>`<div class="field"><label>${label}</label><input data-action="leg-field" data-index="${i}" data-field="${key}" type="${type}" value="${a(value??'')}" ${attrs} ${dis}/></div>`;const markets=E.markets.map(m=>[m,m]);return `<article class="leg-card"><div class="section-head"><div class="flex"><strong>НОГА ${i+1}</strong> ${pill(l.enabled?'В купоне':'Исключена',l.enabled?'good':'neutral')}</div><div class="actions-row"><label class="toggle-row"><input data-action="leg-enabled" data-index="${i}" type="checkbox" ${l.enabled?'checked':''} ${dis}/> Участвует</label>${locked?'':`<button class="button small danger" data-action="delete-leg" data-index="${i}" type="button">Удалить</button>`}</div></div><div class="form-grid four">
- ${field('home','Хозяева',l.home)}${field('away','Гости',l.away)}${field('fixtureId','ID матча (опционально)',l.fixtureId)}${field('kickoff','Kickoff (локальное время)',l.kickoff,'datetime-local')}
+ ${field('home','Хозяева',l.home)}${field('away','Гости',l.away)}${field('fixtureId','ID матча для проверки допуска',l.fixtureId)}${field('kickoff','Kickoff (Киев)',l.kickoff,'datetime-local')}
  <div class="field"><label>Маркет</label><select data-action="leg-field" data-index="${i}" data-field="market" ${dis}>${opt(markets,l.market)}</select></div>
  ${field('pick','Выбранный исход',l.pick)}${field('odds','Коэффициент',l.odds,'number','min="1.01" step="0.01"')}${field('prob','P модели, %',l.prob,'number','min="0.01" max="100" step="0.1"')}
  <div class="field span-all"><label>Заметки по ноге</label><textarea data-action="leg-field" data-index="${i}" data-field="notes" rows="2" ${dis}>${h(l.notes)}</textarea></div>
@@ -346,7 +376,7 @@ function analyticsView(){const x=E.analytics(data),settled=x.played.length;retur
 ${flatReplayView(E.flatReplay(data.tours))}<div class="section-head mt-3"><h2 class="section-heading">Журнал решений</h2><div class="actions-row"><button class="button secondary small" data-action="export-csv">Экспорт CSV</button><button class="button secondary small" data-action="export-json">Резервная копия JSON</button><button class="button ghost small" data-action="import-json">Импорт JSON</button></div></div>${tourTable(x.arr)}<section class="panel mt-2"><h2 class="panel-title">Настройки расчёта</h2><p class="panel-sub">Изменять флет и цену прогноза можно только до первой зафиксированной записи, чтобы не переписывать историю.</p><div class="form-grid two mt-2"><div class="field"><label>Флет симуляции, грн</label><input data-action="setting" data-field="stake" type="number" value="${a(data.settings.stake)}" min="1" step="1" ${x.seal?'disabled':''}/></div><div class="field"><label>Прогноз в день, грн</label><input data-action="setting" data-field="price" type="number" value="${a(data.settings.price)}" min="0" step="1" ${x.seal?'disabled':''}/></div></div><div class="notice mt-2">Данные хранятся только в браузере этого устройства. Используй резервный JSON для переноса и защиты от очистки браузера.</div></section>`;}
 function rulesView(){const rules=[['PREMATCH ONLY','Все решения фиксируются до старта. Лайв и догон исключены.'],['EV важнее коэффициента','Модельная вероятность — независимый показатель. Если P модели неизвестна, EV не объявляется.'],['Экспресс 2–3 ноги','Не добавляем третью ногу ради красивого коэффициента; связанные ноги в одном матче запрещены.'],['Big Markets сначала','Исходы, двойной шанс, DNB, форы, тоталы, ОЗ, индивидуальные тоталы.'],['Small Markets только если чище','Угловые, фолы, удары; для ЖК отдельная строгая проверка.'],['Фолы ≠ ЖК','Фолы — действия игроков, жёлтые карточки — решение судьи.'],['Referee Gate','Судья подтверждён; YC/game и YC/foul; низкий риск 0–1 ЖК; правила расчёта БК; нет более чистого рынка; EV подтверждён.'],['Death-test','Одна неоправданно рискованная нога разрушает весь экспресс.'],['Данные и честность','Никаких подставных результатов, утечки будущих исходов, изменения запечатанных прогнозов.'],['PASS — законный выбор','Покупка прогноза не заставляет дополнительно ставить 1000 грн.']];return `${subtitle('Регламент игры','Официальные правила декабрьского сезона. Игровые очки измеряют дисциплину аналитика, а не готовность рисковать.')}
 <section class="rule-cards mt-3"><div class="panel"><h2 class="panel-title">Принципы SEFIROT v21.2</h2><ul class="rule-list mt-2">${rules.map(([k,v])=>`<li><strong>${h(k)}.</strong> ${h(v)}</li>`).join('')}</ul></div><div class="panel"><h2 class="panel-title">Опыт и классы</h2><div class="xp-box mt-2"><div class="big">+40 XP</div><div>PREMATCH SEAL до старта матча</div></div><div class="xp-box mt-2"><div class="big">+20 XP</div><div>Обоснованный выбор или PASS</div></div><div class="xp-box mt-2"><div class="big">+40 XP</div><div>Разбор закрытого тура (от 20 символов)</div></div><div class="levels mt-2">${['A','B','C','D','RED'].map(x=>`<span class="level-item">${x}</span>`).join('')}</div><p class="footnote">Классы: A — сильный подтверждённый value; B — приемлемый; C — только с оговорками; D — неиграбельно; RED — критический запрет. Сайт не присваивает классы автоматически без данных.</p></div></section><div class="notice warn mt-2">Режим не подключён к букмекеру и ничего не ставит. Финансовые показатели — моделирование на введённых пользователем исходах, не гарантия доходности.</div>`;}
-function updateTourField(field,value){patch(t=>{if(field==='mode'&&E.modes.includes(value)){t.mode=value;t.manualPayout=null;}else if(field==='purchased'||field==='independenceReviewed')t[field]=!!value;else if(field==='riskClass'&&['A','B','C','D','RED'].includes(value))t.riskClass=value;else if(field==='verdict'&&['играбельно','неиграбельно','только с оговорками','пропуск'].includes(value))t.verdict=value;else if(field==='decisionNote')t.decisionNote=String(value).slice(0,10000);});}
+function updateTourField(field,value){patch(t=>{if(field==='mode'&&E.modes.includes(value)){t.mode=value;t.manualPayout=null;if(value==='pass'){t.verdict='пропуск';t.riskClass='D';}}else if(field==='purchased'||field==='independenceReviewed')t[field]=!!value;else if(field==='riskClass'&&['A','B','C','D','RED'].includes(value))t.riskClass=value;else if(field==='verdict'&&['играбельно','неиграбельно','только с оговорками','пропуск'].includes(value))t.verdict=value;else if(field==='decisionNote')t.decisionNote=String(value).slice(0,10000);});}
 function updateLegField(i,field,val){patch(t=>{const l=t.legs[i];if(!l)return;const decimals=['odds','prob','ycGame','ycFoul'];if(decimals.includes(field))l[field]=val===''?null:Number(val);else if(field==='enabled')l.enabled=!!val;else if(field==='lowCardRisk'||field==='rulesConfirmed'||field==='noCleanerMarket')l[field]=!!val;else if(['home','away','fixtureId','kickoff','market','pick','notes','referee'].includes(field))l[field]=String(val).slice(0,3000);});}
 function seal(){const t=ensure();if(t.state!=='draft')return;const errors=E.validateSeal(t);if(errors.length){lastSealErrors=errors;toast('Найдены ошибки фиксации. Проверь детали.',true);refresh();return;}lastSealErrors=[];const now=new Date().toISOString();t.sealedSnapshot=JSON.stringify({date:t.date,purchased:t.purchased,mode:t.mode,riskClass:t.riskClass,verdict:t.verdict,independenceReviewed:t.independenceReviewed,decisionNote:t.decisionNote,legs:t.legs,baseline:t.baseline,alternate:t.alternate,ticketHash:t.ticket?.sha256||null});t.sealedAt=now;t.state='sealed';t.audit.push({at:now,action:'PREMATCH SEAL'});t.xp.sealed=true;t.xp.decision=t.mode==='pass'||t.decisionNote.trim().length>=20;t.updatedAt=now;save();refresh();toast('Тур запечатан: локальная PREMATCH-фиксация.');}
 function closeTour(){const t=ensure();if(t.state!=='sealed')return;if(t.mode!=='pass'&&E.active(t).some(l=>l.status==='pending')){toast('Укажи результат каждой участвующей ноги перед закрытием.',true);return;}const p=E.payout(t,data.settings);if(p===null||!Number.isFinite(p)||p<0){toast('Не удалось рассчитать выплату.',true);return;}t.state='closed';t.audit.push({at:new Date().toISOString(),action:'SETTLED'});t.xp.review=t.review.trim().length>=20;t.updatedAt=new Date().toISOString();save();refresh();toast('Тур закрыт, результат внесён в аналитику.');}
@@ -484,6 +514,7 @@ if(act==='alt-field'){const t=B.data().tours[duelDay];if(t?.state!=='draft'||!t.
 });
 async function serverSeal(kind,fixtureKey,kickoff,payload){
  if(!cloud.session||!cloud.userId)throw Error('Для серверной фиксации войди в аккаунт в разделе Облако.');
+ if(kind==='tour'){const errors=E.validateSeal(payload?.snapshot);if(errors.length)throw Error(errors.join(' '));}
  if(!['research','tour'].includes(kind))throw Error('Неизвестный вид исследования.');
  if(typeof fixtureKey!=='string'||fixtureKey.length<5||fixtureKey.length>120)throw Error('Неверный ключ события.');
  if(!Number.isFinite(Date.parse(kickoff))||Date.parse(kickoff)<=Date.now())throw Error('PREMATCH SEAL: событие уже началось или время неизвестно.');
@@ -582,7 +613,7 @@ function testEngine(){let passed=0,errors=[];const check=(name,test)=>{try{if(!t
  check('implied',()=>Math.abs(1/E.odds(t)-.2)<1e-9);
  check('model P',()=>Math.abs(E.modelP(t)-.3)<1e-9);
  check('EV',()=>E.ev(t,s)===150);
- check('seal future',()=>E.validateSeal(t,new Date('2026-11-23T17:00:00Z')).length===0);
+ check('missing autonomous evidence means PASS',()=>E.validateSeal(t,new Date('2026-11-23T17:00:00Z')).length>0);
  check('pending',()=>E.payout(t,s)===null);
  t.legs[0].status='win';t.legs[1].status='win';check('win',()=>E.payout(t,s)===5000);
  t.legs[0].status='lose';check('lose',()=>E.payout(t,s)===0);
@@ -658,6 +689,7 @@ window.QuestAgent={validate,example,userRequest};
 })();
 
 </script>
+<script type="module">import {prematchReview} from "./autonomous/markets.js";globalThis.QuestPrematchReview=prematchReview;</script>
 <script defer src="fixtures.js"></script><script defer src="v5-core.js"></script><script defer src="v5-ui.js"></script><script defer src="v5-extra.js"></script><script defer src="v6-radar.js"></script><script defer src="v6-tour-seal.js"></script><script defer src="v6-mobile.js"></script><script defer src="autopredict.js"></script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(err=>console.warn('Offline PWA unavailable',err)));}
