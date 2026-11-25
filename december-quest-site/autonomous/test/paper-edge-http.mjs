@@ -14,6 +14,7 @@ try {
   Deno.env.set('SUPABASE_URL', `http://127.0.0.1:${auth.addr.port}`);
   Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'qa-rest-role');
   Deno.env.delete('DQ_ODDS_API_FREE_KEY');
+  Deno.env.delete('DQ_ODDSBUNCH_FREE_KEY');
   Deno.env.delete('DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN');
   Deno.serve = handler => (edge = listen(settings, handler));
   await import('../paper-index.js');
@@ -25,7 +26,7 @@ try {
     return {status:response.status,body:await response.json()};
   };
   assert.deepEqual(await call('GET'),{status:200,body:{ok:true,mode:'DAILY_PAPER_TEST',publication_allowed:false,
-    database_writes:false,financial_operations:false,odds_configured:false,context_configured:false}});
+    database_writes:false,financial_operations:false,odds_configured:false,reserve_odds_configured:false,context_configured:false}});
   assert.equal((await call('PUT')).status,405);
   assert.equal((await call('POST','{}')).status,401);
   assert.equal((await call('POST','{}','b'.repeat(64))).status,401);

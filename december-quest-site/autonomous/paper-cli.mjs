@@ -10,7 +10,9 @@ const decoded=JSON.parse(raw);
 const sources=paperSources();
 let result;
 if(mode===modes.daily) {
-  result=await executeDaily({date,calendar:decoded,sources,oddsKey:process.env.DQ_ODDS_API_FREE_KEY??''});
+  result=await executeDaily({date,calendar:decoded,sources,oddsKey:process.env.DQ_ODDS_API_FREE_KEY??'',
+    reserveOddsKey:process.env.DQ_ODDSBUNCH_FREE_KEY??'',
+    contextGateway:{project:process.env.SUPABASE_URL,token:process.env.DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN}});
 }else if(mode===modes.replay) {
   const cutoff=Date.parse(date);
   if(!date.endsWith('Z')||cutoff>Date.now())throw Error('Historical cutoff must be UTC and no later than now');

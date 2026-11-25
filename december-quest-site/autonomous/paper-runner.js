@@ -5,6 +5,7 @@ import { domesticReplay } from './paper-validation.js';
 import { europeTeam } from './paper-europe.js';
 import { internationalState, validateInternational, forecastInternational } from './paper-international.js';
 import { attachOdds, collectTimestampedOdds } from './odds-gateway.js';
+import { collectOddsbunch, oddsbunchOffers } from './oddsbunch.js';
 import { auditWeekly } from './paper-sources.js';
 import { historyProfile } from './history.js';
 import { collectGateway } from './gateway.js';
@@ -121,7 +122,7 @@ function unsupportedCompetition(code){
   return 'COMPETITION_NOT_REGISTERED';
 }
 
-export async function executeDaily({date,calendar,sources,oddsKey='',contextGateway={},clock=Date.now,fetcher=fetch}){
+export async function executeDaily({date,calendar,sources,oddsKey='',reserveOddsKey='',contextGateway={},clock=Date.now,fetcher=fetch}){
   const rows=dailyInput(date,calendar),start=clock();
   const distinct=duplicates(rows);
   const candidates=rows.filter(row=>Date.parse(row.kickoff)>start+20*60_000);
@@ -136,8 +137,9 @@ export async function executeDaily({date,calendar,sources,oddsKey='',contextGate
       providerKickoff(row,data.packet,oddsTime).status!=='PROVIDER_KICKOFF_CONFLICT'&&
       !distinct.has(row.fixture_key)&&Date.parse(row.kickoff)>oddsTime+20*60_000;
   });
-  const [odds,context]=await Promise.all([
+  const [odds,reserve,context]=await Promise.all([
     collectTimestampedOdds(withModel,oddsTime,oddsKey,fetcher,clock,paperOddsSports),
+    collectOddsbunch(withModel,oddsTime,reserveOddsKey,identity,fetcher,clock),
     collectGateway(contextGateway.project,contextGateway.token,withModel,oddsTime,fetcher,contextLeagues,
       (competition,a,b)=>identity(competition,a)===identity(competition,b))]);
   const cutoff=clock(), cutoffText=new Date(cutoff).toISOString();
@@ -173,11 +175,12 @@ export async function executeDaily({date,calendar,sources,oddsKey='',contextGate
       }
     }
     const quote_audit=kickoffVerified?auditWeekly(weekly,row,cutoff):{status:'KICKOFF_NOT_REVERIFIED'};
-    if(forecast)forecast=attachOdds({...forecast,source_cutoff:cutoffText,evidence:forecast.evidence??{}},null,row,odds,true,paperOddsSports,identity);
+    if(forecast)forecast=attachOdds({...forecast,source_cutoff:cutoffText,evidence:forecast.evidence??{}},null,row,odds,true,
+      paperOddsSports,identity,oddsbunchOffers(reserve,row,cutoff));
     if(!forecast?.evidence?.quote_price_verified){
       reasons.push(quote_audit.status==='UNSUPPORTED_QUOTE_FEED'?'TIMESTAMPED_ODDS_UNAVAILABLE':quote_audit.status,
         'DEATH_TEST_NOT_VERIFIED');
-      if(odds.status==='NOT_CONFIGURED')reasons.push('TIMESTAMPED_ODDS_SOURCE_NOT_CONFIGURED');
+      if(odds.status==='NOT_CONFIGURED'&&reserve.status==='NOT_CONFIGURED')reasons.push('TIMESTAMPED_ODDS_SOURCE_NOT_CONFIGURED');
     }
     const marketEvaluated=marketGate(forecast);
     if(['NO_EDGE','FRAGILE_EDGE'].includes(marketEvaluated.status))reasons.push(marketEvaluated.status);
@@ -195,7 +198,7 @@ export async function executeDaily({date,calendar,sources,oddsKey='',contextGate
     input_fixtures:rows.length,excluded_by_time:rows.length-fixtures.length,
     cutoff:cutoffText,markets_evaluated:fixtures.reduce((n,row)=>n+(row.forecast?.markets.length??0),0),
     eligible_legs:0,bank_open:1000,bank_close:1000,virtual_stake:0,real_cost:0,
-    odds_gateway:odds.status,odds_failures:odds.errors??[],context_gateway:context.reason??context.status,
+    odds_gateway:odds.status,reserve_odds_gateway:reserve.status,odds_failures:odds.errors??[],context_gateway:context.reason??context.status,
     fixtures,qualifications:Object.fromEntries(completed.map(([code,data])=>[code,
       {quality:data.quality??null,error:data.error??null,sources:data.packet?.sources??[]}]))};
 }

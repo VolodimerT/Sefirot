@@ -138,3 +138,60 @@ for(const bad of [{...oddsEvent,live:true},{...oddsEvent,id:''},{...oddsEvent,
   assert.ok(blocked.markets.every(m=>m.ev===null));
 }
 console.log('PASS — international archive and day-batched model, tactical gateway receipts and market provenance');
+
+const { collectOddsbunch, oddsbunchOffers } = await import('../oddsbunch.js');
+const reserveIdentity=(_league,name)=>europeTeam(name);
+const reserveMatch={id:942,sport:'soccer',status:'scheduled',league:{id:1},start_time:when,
+  home:{name_en:'Sabah'},away:{name_en:'FC Barcelona'}};
+const reserveAsOf=new Date(now-6*60000).toISOString();
+const reserveSeen=new Date(now-8*60000).toISOString();
+const reserveChanged=new Date(now-10*60000).toISOString();
+const reserveRow={bookmaker:'pinnacle',suspended:false,changed_at:reserveChanged,seen_at:reserveSeen,age_sec:600,home:3.2,draw:3.6,away:2,over:2,under:1.9};
+const reserveEvent={match:reserveMatch,pass:'odds_free',source:'free_snapshot',markets:[
+  {market:'1x2',lines:[{market:'1x2',line:null,books:[reserveRow]}]},
+  {market:'handicap',lines:[{market:'handicap',line:-.25,books:[{...reserveRow,home:2,away:1.9}]}]},
+  {market:'totals',lines:[{market:'totals',line:2.25,books:[reserveRow]}]}
+]};
+const reserveRequests=[];
+const providerReserve=({
+  matches=[reserveMatch], odds=[reserveEvent], tier='free', asOf=reserveAsOf, charge=0
+}={})=>async(url,options)=>{
+  const request=new URL(url);
+  assert.equal(request.host,'oddsbunch.com');
+  assert.equal(options.redirect,'error');
+  assert.equal(options.headers.Authorization,'Bearer fake-reserve');
+  reserveRequests.push(request.pathname);
+  if(request.pathname.endsWith('/matches')){
+    assert.equal(request.searchParams.get('status'),'scheduled');
+    return Response.json({ok:true,data:matches,meta:{tier}});
+  }
+  assert.equal(request.searchParams.get('ids'),'942');
+  assert.equal(request.searchParams.get('max_charge'),'0');
+  assert.equal(request.searchParams.get('main_only'),'true');
+  return Response.json({ok:true,data:odds,billing:{charged:charge},meta:{tier,generated_at:new Date(now).toISOString(),data_as_of:asOf}});
+};
+const fromReserve=(options)=>collectOddsbunch([sample],now,'fake-reserve',reserveIdentity,providerReserve(options),()=>now);
+const reserveGood=await fromReserve();
+assert.equal(reserveGood.status,'OK');
+const offers=oddsbunchOffers(reserveGood,sample,now);
+assert.equal(offers({kind:'1X2',side:'home',line:0})[0].provider_event_id,'942');
+assert.equal(offers({kind:'AH',side:'away',line:.25})[0].odds,1.9);
+assert.equal(offers({kind:'AH',side:'away',line:-.25}).length,0);
+assert.equal(offers({kind:'TG',side:'under',line:2.25})[0].odds,1.9);
+const reserveForecast=attachOdds({...good,source_cutoff:new Date(now).toISOString(),status:'MODEL_ONLY'},
+  null,sample,null,true,paperOddsSports,reserveIdentity,offers);
+assert.equal(reserveForecast.evidence.quote_price_verified,true);
+assert.equal(reserveForecast.markets.find(m=>m.id==='TG:under:2.25').settlement_rules,'REGULATION_90_PLUS_STOPPAGE_ASIAN_SPLIT_PUSH');
+assert.deepEqual(reserveRequests,['/api/data/v1/matches','/api/data/v1/odds']);
+assert.equal((await fromReserve({tier:'paid'})).status,'UNSAFE_PROVIDER_ENVELOPE');
+assert.equal((await fromReserve({charge:.03})).status,'UNSAFE_PROVIDER_ENVELOPE');
+assert.equal((await fromReserve({asOf:new Date(now-16*60000).toISOString()})).status,'STALE_OR_INVALID_SNAPSHOT');
+assert.equal((await fromReserve({odds:[{...reserveEvent,match:{...reserveMatch,status:'live'}}]})).matches.size,0);
+assert.equal((await fromReserve({odds:[{...reserveEvent,source:'closing_snapshot'}]})).matches.size,0);
+assert.equal((await fromReserve({matches:[{...reserveMatch,start_time:new Date(now+55*60000).toISOString()}]})).status,'NO_MATCHED_EVENTS');
+for(const changedBook of [{...reserveRow,suspended:true},{...reserveRow,seen_at:new Date(now+1000).toISOString()},
+  {...reserveRow,changed_at:new Date(now-61*60000).toISOString(),age_sec:3660}]){
+  const got=await fromReserve({odds:[{...reserveEvent,markets:[{market:'1x2',lines:[{market:'1x2',line:null,books:[changedBook]}]}]}]});
+  assert.equal(oddsbunchOffers(got,sample,now)({kind:'1X2',side:'home',line:0}).length,0);
+}
+console.log('PASS — free reserve caps, exact event and line, prematch timestamps, and quarter-market settlement');

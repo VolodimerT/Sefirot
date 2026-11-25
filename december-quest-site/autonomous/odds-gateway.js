@@ -157,13 +157,14 @@ function collectMarket(market, alternatives, verified) {
     quotes:sorted};
 }
 
-export function attachOdds(forecast, weekly, fixture, collected, confirmed, sports=decemberSports, paperIdentity) {
+export function attachOdds(forecast, weekly, fixture, collected, confirmed, sports=decemberSports, paperIdentity, reserve) {
   if (forecast.status!=='MODEL_ONLY') return forecast;
   const cutoff=Date.parse(forecast.source_cutoff),kickoff=Date.parse(fixture.kickoff);
   const primary=apiOffers(fixture,collected,cutoff,kickoff,confirmed,sports,paperIdentity);
   const fallback=csvOffers(fixture,weekly,cutoff,kickoff);
   const markets=forecast.markets.map(market=>{
-    const verified=primary(market);
+    const first=primary(market);
+    const verified=first.length?first:confirmed&&isPrematch(cutoff,kickoff)?reserve?.(market)??[]:[];
     return verified.length?collectMarket(market,verified,true):collectMarket(market,fallback(market),false);
   });
   const ranked=markets.filter(x=>x.odds!==null).sort((a,b)=>
