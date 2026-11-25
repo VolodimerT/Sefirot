@@ -1,3 +1,4 @@
+import {flightRpc} from './flight-rpc.mjs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -23,6 +24,7 @@ try {
     +"$$select '2026-12-01T17:00:00Z'::timestamptz$$");
   await db.exec(freeze(schema));
   await db.exec(freeze(migration));
+  await db.exec(freeze(await readFile(new URL('../single-flight.sql',import.meta.url),'utf8')));
   await db.query('insert into '+tablePrefix+'fixtures '
     +'(fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,checked_at) '
     +'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
@@ -53,12 +55,15 @@ try {
       if (resource === tablePrefix+'fixtures') {
         return send(200,await rows('select * from '+resource));
       }
+      request.setEncoding('utf8');
       let raw = '';
       for await (const chunk of request) raw += chunk;
       const payload = JSON.parse(raw);
       if (resource === 'rpc/dq_predictor_cron_authorized') return send(200,payload.p_token === cronToken);
       await db.exec('set role service_role');
       try {
+        const flight = await flightRpc(rows,resource,payload);
+        if (flight !== undefined) return send(200,flight);
         if (resource==='rpc/dq_predictor_run_state') {
           const [state] = await rows('select public.dq_predictor_run_state($1) as report',[payload.p_model_version]);
           return send(200,state.report);
@@ -92,7 +97,7 @@ try {
   const request = async (method,token) => {
     const headers = token ? {'x-dq-predictor-token':token} : {};
     const response = await fetch(address,{method,headers,signal:AbortSignal.timeout(15000)});
-    return {status:response.status,body:await response.json()};
+    return {status:response.status,retryAfter:response.headers.get('Retry-After'),body:await response.json()};
   };
   const health = await request('GET');
   assert.equal(health.status,200);
@@ -100,6 +105,13 @@ try {
   assert.equal(health.body.odds_gate.timestamped_source_configured,true);
   assert.equal((await request('POST')).status,401);
   assert.equal((await request('POST','b'.repeat(64))).status,401);
+  const [held] = await rows("select public.dq_claim_predictor_run('DQ-POISSON-0.3') as claim");
+  const busy = await request('POST',cronToken);
+  assert.equal(busy.status,202);
+  assert.equal(busy.body.skipped,'RUN_IN_PROGRESS');
+  assert.equal(busy.retryAfter,'600');
+  assert.equal(flags.currentFileAttempts,0);
+  await rows('select public.dq_release_predictor_run($1)',[held.claim.token]);
   const first = await request('POST',cronToken);
   assert.equal(first.status,200,JSON.stringify(first.body));
   assert.equal(first.body.modeled,1);

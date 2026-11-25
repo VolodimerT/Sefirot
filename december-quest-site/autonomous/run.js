@@ -121,17 +121,34 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
   return row;
 }
 
-export async function execute({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now),
-  odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), backup = null, clock = Date.now }) {
-  const state = await rest('rpc/dq_predictor_run_state', { method: 'POST', body: JSON.stringify({
-    p_model_version: Core.MODEL_VERSION
-  }) });
-  const started = Date.parse(state?.checked_at);
-  if (!Number.isFinite(started)) throw Error('INVALID_RUN_STATE');
-  if (state.recent_success_at) return {
-    skipped: 'RECENT_SUCCESS_IN_CYCLE', cycle_started_at: state.cycle_started_at,
-    recent_success_at: state.recent_success_at, model_version: Core.MODEL_VERSION
-  };
+export async function execute(options) {
+  const {rest} = options;
+  const claim = await rest('rpc/dq_claim_predictor_run', {method:'POST',
+    body:JSON.stringify({p_model_version:Core.MODEL_VERSION})});
+  if (claim?.skipped) return {...claim, model_version:Core.MODEL_VERSION};
+  const started = Date.parse(claim?.checked_at);
+  if (!claim?.token || !Number.isFinite(started)) throw Error('INVALID_RUN_CLAIM');
+  try {
+    return await runClaimed(options, started, claim.token);
+  } catch (error) {
+    // A disconnected caller may have committed. Only this token can be released.
+    try {
+      await rest('rpc/dq_release_predictor_run', {method:'POST',body:JSON.stringify({p_token:claim.token})});
+    } catch { /* DB expiry recovers a lost release. Preserve the original error. */ }
+    throw error;
+  }
+}
+
+// A failed source must not release ownership while its sibling reads are still running.
+async function finishReads(reads) {
+  const results = await Promise.allSettled(reads);
+  const failure = results.find(result => result.status === 'rejected');
+  if (failure) throw failure.reason;
+  return results.map(result => result.value);
+}
+
+async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now),
+  odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), backup = null, clock = Date.now }, started, token) {
   const calendar = await rest(listPath);
   if (!Array.isArray(calendar) || calendar.length > fixtureLimit) throw Error('FIXTURE_SOURCE_LIMIT');
   const all = calendar.filter(questFixture);
@@ -144,7 +161,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   if (leagues.length) urls.push({ code: 'weekly', season: 'weekly', url: provider + '/fixtures.csv' });
 
   const eligible = upcoming.filter(fixture => !duplicate.has(fixture.fixture_key));
-  const [sources, gatewayResult, oddsResult] = await Promise.all([
+  const [sources, gatewayResult, oddsResult] = await finishReads([
     Promise.all(urls.map(async row => {
       try {
         const input = await csv(row.url);
@@ -159,7 +176,8 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
         return { ...row, ok: false, error: String(error.message).slice(0, 80) };
       }
     })),
-    gateway(eligible, started), odds(eligible, started)
+    Promise.resolve().then(() => gateway(eligible, started)),
+    Promise.resolve().then(() => odds(eligible, started))
   ]);
   const initialCutoff = clock();
   const errors = sources.filter(pack => !pack.ok).map(pack => pack.code + ':' + pack.season + ' ' + pack.error);
@@ -192,7 +210,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
     .filter(season=>season===currentSeason?!freshSeason(primaryHistory.get(code),initialCutoff)
       :!primaryHistory.get(code).some(row=>row.season===season))
     .map(season=>({code,season}))):[];
-  const alternativePacks=await Promise.all(requests.map(({code,season})=>backup(code,season,initialCutoff)));
+  const alternativePacks=await finishReads(requests.map(async ({code,season})=>backup(code,season,initialCutoff)));
   const cutoff=clock();
   for(const [i,pack] of alternativePacks.entries()){
     const {code,season}=requests[i];
@@ -257,8 +275,8 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   const run = { started_at: new Date(started).toISOString(), model_version: Core.MODEL_VERSION,
     fetch_ok: success, sources_attempted: urls.length + requests.length, errors: errors.slice(0,20),
     run_status: errors.length ? success ? 'PARTIAL' : 'SOURCE_ERROR' : 'OK' };
-  const committed = await rest('rpc/dq_commit_predictor_run', { method: 'POST', body: JSON.stringify({
-    p_run: run, p_forecasts: forecasts, p_validation: validations, p_settlements: settled
+  const committed = await rest('rpc/dq_finish_predictor_run', { method: 'POST', body: JSON.stringify({
+    p_token: token, p_run: run, p_forecasts: forecasts, p_validation: validations, p_settlements: settled
   }) });
   return { ...committed, status: run.run_status, model_version: Core.MODEL_VERSION, sources_ok: success,
     sources_attempted: urls.length + requests.length, source_errors: run.errors, gateway: gatewayResult.status,

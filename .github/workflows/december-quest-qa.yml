@@ -8,7 +8,7 @@ on:
       - '.github/workflows/december-quest-qa.yml'
 
   pull_request:
-    branches: [feature/december-quest-web-v3-20261123]
+    branches: [feature/december-quest-web-v3-20261123, work/offline-market-optimization]
     types: [opened, synchronize, reopened]
     paths:
       - 'december-quest-site/**'
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   postgres-and-node:
-    if: github.event_name != 'pull_request' || github.head_ref == 'feature/december-quest-v63-autonomous'
+    if: github.event_name != 'pull_request' || github.head_ref == 'feature/december-quest-v63-autonomous' || github.base_ref == 'work/offline-market-optimization'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -41,7 +41,12 @@ jobs:
           npm --prefix december-quest-site/autonomous run test:edge
       - name: Site regressions
         run: node --test december-quest-site/tests/*.test.cjs
+      - name: Offline PostgreSQL multi-process load and recovery
+        if: github.base_ref == 'work/offline-market-optimization'
+        run: |
+          npm install --ignore-scripts --no-audit --prefix "$RUNNER_TEMP/dq-load" embedded-postgres@19.0.0-beta.20 pg@8.23.1
+          NODE_PATH="$RUNNER_TEMP/dq-load/node_modules" node december-quest-site/autonomous/test/cycle-load.mjs
       - name: Live public CSV source check
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref == 'feature/december-quest-v63-autonomous'
         continue-on-error: true
         run: deno run --quiet --allow-net=football-data.co.uk:443 december-quest-site/autonomous/test/public-source.mjs
