@@ -132,6 +132,8 @@ def ledger_bridge(database,prediction,quotes,at,decision_id=None):
         d=min(aligned,key=lambda x:x['id'])
         if d['id']!=digest({k:v for k,v in d.items() if k!='id'}) or d['decision'] not in ('BET','PASS'):
             raise ValueError('invalid original decision')
+        if d['match_id'] != p['sports']['match']['id']:
+            raise ValueError('original decision fixture mismatch')
         if not time(p['sealed_at'])<=time(d['at'])<time(p['sports']['match']['kickoff']):raise ValueError('not a prematch decision')
         out.update(original_status='ORIGINAL_DECISION_RECORDED',original={
             'id':d['id'],'decision':d['decision'],'selected_market':d['selected_market'],

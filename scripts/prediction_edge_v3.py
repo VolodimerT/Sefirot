@@ -52,7 +52,7 @@ def main():
                'historical_context':{'viewed_test_matches':380,'previous_calibration_assigned':17,'previous_calibration_scored':0,
                                      'source':'docs/FORWARD_SCORECARD.md; reports/FROZEN_EFFECTIVENESS_AUDIT_20261006.json; not a new run'},
                'blockers':['Original timestamped training archive missing','New predeclared HOLDOUT not registered',
-                           'Research-to-original-ledger adapter not implemented','Verified prematch/closing/combined quotes missing'],
+                           'No candidate rows admitted from the read-only original-source adapter','Verified prematch/closing/combined quotes missing'],
                'monetary_permission':False}
     args.output_dir.mkdir(parents=True,exist_ok=True)
     for name,value in [('MANIFEST',manifest),('DATA_READINESS',readiness),('BENCHMARK',benchmark)]:
