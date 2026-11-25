@@ -1,13 +1,26 @@
 import assert from 'node:assert/strict';
 import Core from '../core.js';
 import { walkForward } from '../validation.js';
-import { evaluateQuote, grade, standardMarkets, removeMargin } from '../markets.js';
+import { distribution, modelMarkets, evaluateQuote, grade, standardMarkets, removeMargin } from '../markets.js';
 import { historyProfile, matchStatistics } from '../history.js';
 import { parseOpenFootball, parseOpenLigaDB, backupStatus, fetchResultBackup } from '../result-backups.js';
 import { duplicates, questFixture, oddsScope } from '../run.js';
 import { collectGateway, matchFixture } from '../gateway.js';
 import { attachOdds, collectTimestampedOdds } from '../odds-gateway.js';
+// Every grade, including Asian half wins and pushes, must retain exact addition order.
+const narrow = Core.scoreGrid(.35, 3.2), wide = Core.scoreGrid(2.7, .9);
+for (const [grid, baseline] of [[narrow, wide], [wide, narrow], [wide, narrow.toReversed()], [wide.slice(1), narrow]]) {
+  for (const market of modelMarkets(grid, baseline)) {
+    assert.deepEqual(market.settlement, distribution(market, grid));
+    assert.deepEqual(market.baseline, distribution(market, baseline));
+  }
+}
 const base=Date.parse('2026-11-23T12:00:00Z');
+const sampleCsv = 'Div,Date,HomeTeam,AwayTeam,FTHG,FTAG\n' +
+  'E0,01/11/26,Home,Away,2,0\nE0,02/11/26,Home,Away, ,1\nE0,03/11/26,Home,Away,1,  \n';
+const parsedResults = Core.resultsFromRecords(Core.parseCsv(sampleCsv), 'EPL', base);
+assert.deepEqual(parsedResults, Core.resultsFromCsv(sampleCsv, 'EPL', base));
+assert.deepEqual(parsedResults.map(row => [row.hg, row.ag]), [[2, 0]]);
 const fixture={fixture_key:'EPL-2026-12-01-test',competition:'EPL',home_team:'Manchester City',away_team:'Leeds',kickoff:'2026-12-01T22:00:00+02:00'};
 let data=[];
 for(let i=0;i<16;i++){

@@ -39,11 +39,43 @@ export function distribution(market, grid) {
   return result;
 }
 
+// Only score coordinates are reusable. Each forecast supplies its own probabilities.
+const gridWidth = 13;
+const gradePlans = new WeakMap();
+
+function hasStandardLayout(grid) {
+  return Array.isArray(grid) && grid.length === gridWidth ** 2 &&
+    grid.every(({home, away}, i) => home === Math.floor(i / gridWidth) && away === i % gridWidth);
+}
+
+function gradePlan(spec) {
+  const prior = gradePlans.get(spec);
+  if (prior && prior.kind === spec.kind && prior.side === spec.side && prior.line === spec.line) return prior.groups;
+  const groups = Object.fromEntries(grades.map(key => [key, []]));
+  for (let i = 0; i < gridWidth ** 2; i++) {
+    groups[grade(spec, Math.floor(i / gridWidth), i % gridWidth)].push(i);
+  }
+  gradePlans.set(spec, {kind: spec.kind, side: spec.side, line: spec.line, groups});
+  return groups;
+}
+
+function sumGroups(groups, grid) {
+  const result = {};
+  for (const key of grades) {
+    let sum = 0;
+    for (const index of groups[key]) sum += grid[index].probability;
+    result[key] = sum;
+  }
+  return result;
+}
+
 export function modelMarkets(grid, baselineGrid) {
+  const standard = hasStandardLayout(grid) && hasStandardLayout(baselineGrid);
   return standardMarkets.map(spec => {
-    const settlement = distribution(spec, grid);
+    const groups = standard && gradePlan(spec);
+    const settlement = groups ? sumGroups(groups, grid) : distribution(spec, grid);
     return {
-      ...spec, settlement, baseline: distribution(spec, baselineGrid),
+      ...spec, settlement, baseline: groups ? sumGroups(groups, baselineGrid) : distribution(spec, baselineGrid),
       probability: round(settlement.win + settlement.half_win),
       odds: null, implied: null, ev: null, source: 'MODEL_ONLY', verdict: 'пропуск'
     };

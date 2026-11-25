@@ -68,10 +68,13 @@ function weeklyKickoff(weeklyRows,fixture){
   kickoff:new Date(observed).toISOString()};
 }
 function resultsFromCsv(text,competition,cutoff,division=LEAGUE_FILES[competition]){
- const records=parseCsv(text),out=[],today=new Date(cutoff).toISOString().slice(0,10);
+ return resultsFromRecords(parseCsv(text),competition,cutoff,division);
+}
+function resultsFromRecords(records,competition,cutoff,division=LEAGUE_FILES[competition]){
+ const out=[],today=new Date(cutoff).toISOString().slice(0,10);
  for(const x of records){
   const date=csvDate(x.Date),hg=Number(x.FTHG),ag=Number(x.FTAG);
-  if(x.Div!==division||!date||date.toISOString().slice(0,10)>=today||x.FTHG===''||x.FTAG===''||!Number.isInteger(hg)||!Number.isInteger(ag)||hg<0||ag<0||hg>12||ag>12)continue;
+  if(x.Div!==division||!date||date.toISOString().slice(0,10)>=today||!x.FTHG?.trim()||!x.FTAG?.trim()||!Number.isInteger(hg)||!Number.isInteger(ag)||hg<0||ag<0||hg>12||ag>12)continue;
   const home=canonical(competition,x.HomeTeam),away=canonical(competition,x.AwayTeam);
   if(!home||!away||home===away)continue;
   const xg=[x.HxG,x.AxG].map(value=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim())?Number(value):null);
@@ -174,6 +177,6 @@ function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true,leagueFiles
  status.notes='Автоматические модельные вероятности. Тактический fit, составы, калибровка и котировки не подтверждены: PASS.';
  return status;
 }
-const Core={MODEL_VERSION,LEAGUE_FILES,ALIASES,canonical,parseCsv,csvDate,resultsFromCsv,poisson,
+const Core={MODEL_VERSION,LEAGUE_FILES,ALIASES,canonical,parseCsv,csvDate,resultsFromCsv,resultsFromRecords,poisson,
  outcomes:(home,away)=>outcomes(scoreGrid(home,away)),scoreGrid,forecast,matchWeekly,weeklyKickoff};
 export default Core;
