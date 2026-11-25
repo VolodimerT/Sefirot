@@ -39,6 +39,7 @@ const reasons={
  KICKOFF_UNVERIFIED:'Нужно свежее подтверждение kickoff', UNSUPPORTED_LEAGUE:'Турнир вне модели',
  HISTORY_DATA_MISSING:'Свежая история недоступна', INSUFFICIENT_TEAM_HISTORY:'Мало матчей команд',
  ODDS_DATA_MISSING:'Нет котировок', ODDS_OUTSIDE_WINDOW:'До окна поиска котировок больше 48 ч', QUOTE_TIMESTAMP_UNVERIFIED:'Время публикации котировки неизвестно',
+ RECOVERY_PROVIDER_CONTEXT_UNAVAILABLE:'Резервный запуск без данных внешних поставщиков',
  LINEUPS_DATA_MISSING:'Нет подтверждённых составов', TACTICAL_FIT_UNVERIFIED:'Тактика не проверена',
  PUBLIC_TRAP_UNVERIFIED:'Рыночная ловушка не проверена', DEATH_TEST_UNVERIFIED:'Death-test без подтверждённых котировок',
  NO_EDGE:'EV по доступной строке ≤ 0', DEATH_TEST_FAIL:'При −5 п.п. условный EV ≤ 0'
@@ -375,7 +376,7 @@ document.addEventListener('change',e=>{
  if(e.target?.id==='v6-auto-league'){league=e.target.value;B.refresh();}
  if(e.target?.id==='v6-auto-covered'){modelOnly=e.target.checked;B.refresh();}
 });
-window.QuestAutoPredict={view,load,stat,get:()=>data.slice()};
+window.QuestAutoPredict={view,load,stat,get:()=>structuredClone(data)};
 window.addEventListener('hashchange',refreshIfChanged);
 document.addEventListener('visibilitychange',refreshIfChanged);
 setInterval(refreshIfChanged,180000);

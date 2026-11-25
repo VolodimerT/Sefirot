@@ -17,6 +17,9 @@ const {default:Postgres}=await import(pathToFileURL(require.resolve('embedded-po
 const {Pool}=require('pg');
 const root=resolve(process.argv[2] || fileURLToPath(new URL('..',import.meta.url)));
 const base=process.argv.includes('--baseline');
+const profile=process.argv.includes('--profile');
+const scheduled=process.argv.includes('--scheduled');
+const deadlineMigration=scheduled?await readFile(join(root,'recovery-finish.sql'),'utf8'):'';
 const dir=await mkdtemp(join(tmpdir(),'dq-load-'));
 const password=randomUUID();
 const pg=new Postgres({databaseDir:join(dir,'db'),user:'postgres',password,port:18473,
@@ -39,6 +42,7 @@ let pool,server,stamp,size,counts,holdSource=false,seenSource,slowCalendar=false
 const rpc={
   dq_predictor_run_state:['p_model_version'],dq_claim_predictor_run:['p_model_version'],
   dq_release_predictor_run:['p_token'],dq_finish_predictor_run:['p_token','p_run','p_forecasts','p_validation','p_settlements'],
+  dq_finish_scheduled_predictor:['p_token','p_until','p_run','p_forecasts','p_validation','p_settlements'],
   dq_commit_predictor_run:['p_run','p_forecasts','p_validation','p_settlements'],
   dq_pending_predictor_snapshots:['p_fixture_keys','p_model_version']
 };
@@ -65,7 +69,23 @@ async function http(req,res) {
     const data=JSON.parse(body);
     const values=rpc[name].map(k=>['p_run','p_forecasts','p_validation','p_settlements'].includes(k)?JSON.stringify(data[k]):data[k]);
     const fn='public.'+name+'('+values.map((_,i)=>'$'+(i+1)).join(',')+')';
-    rows=name==='dq_pending_predictor_snapshots'?(await pool.query('select * from '+fn,values)).rows:
+    const query=name==='dq_pending_predictor_snapshots'?'select * from '+fn:'select '+fn+' as r';
+    if(profile){
+      const client=await pool.connect();
+      try{
+        await client.query('begin');
+        const lockStart=performance.now();
+        if(['dq_commit_predictor_run','dq_finish_predictor_run','dq_finish_scheduled_predictor'].includes(name))
+          await client.query('select pg_advisory_xact_lock(721735,202612)');
+        const sqlStart=performance.now();
+        const result=await client.query(query,values);
+        const commitStart=performance.now();
+        await client.query('commit');
+        counts.sql[name]={lock:sqlStart-lockStart,execution:commitStart-sqlStart,commit:performance.now()-commitStart};
+        rows=name==='dq_pending_predictor_snapshots'?result.rows:result.rows[0].r;
+      }catch(error){await client.query('rollback');throw error;}
+      finally{client.release();}
+    }else rows=name==='dq_pending_predictor_snapshots'?(await pool.query('select * from '+fn,values)).rows:
       (await pool.query('select '+fn+' as r',values)).rows[0].r;
   }
   counts.restHandlerMs+=Math.round(performance.now()-dbStart);
@@ -77,13 +97,13 @@ async function reset(n){
   await pool.query('drop schema public cascade; create schema public; grant usage on schema public to public');
   await pool.query("create table qa_clock(stamp timestamptz); create function qa_now() returns timestamptz language sql stable as 'select stamp from public.qa_clock'");
   await pool.query('insert into qa_clock values ($1)',[stamp]);
-  await pool.query((schema.replace(/^create role .*;$/gm,'')+migration+feature).replaceAll('statement_timestamp()','public.qa_now()').replaceAll('clock_timestamp()','public.qa_now()'));
+  await pool.query((schema.replace(/^create role .*;$/gm,'')+migration+feature+deadlineMigration).replaceAll('statement_timestamp()','public.qa_now()').replaceAll('clock_timestamp()','public.qa_now()'));
   await pool.query('insert into '+table+"fixtures(fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,checked_at) select h||'-'||a,'EPL',h,a,'2026-12-01 20:00Z','local','https://example.invalid','official','confirmed',$3 from unnest($1::text[],$2::text[]) f(h,a)",[fixtures.slice(0,n).map(x=>x[0]),fixtures.slice(0,n).map(x=>x[1]),first]);
 }
 async function batch(n,timeoutCalendar=false){
-  counts={csv:0,rest:0,restHandlerMs:0};
+  counts={csv:0,rest:0,restHandlerMs:0,...(profile?{sql:{}}:{})};
   const children=Array.from({length:n},()=>fork(fileURLToPath(new URL('cycle-worker.mjs',import.meta.url)),
-    [root,'http://127.0.0.1:'+server.address().port,timeoutCalendar?'timeout':'normal'],{stdio:['ignore','inherit','inherit','ipc']}));
+    [root,'http://127.0.0.1:'+server.address().port,timeoutCalendar?'timeout':profile?'profile':'normal',scheduled?'scheduled':'default'],{stdio:['ignore','inherit','inherit','ipc']}));
   let timer, workersRssKiB=0;
   function sampleMemory(){
     let rss=0;
@@ -105,14 +125,14 @@ async function batch(n,timeoutCalendar=false){
     return {ms:Math.round(performance.now()-start),...counts,workersRssKiB,workerPeakKiB:Math.max(...messages.map(r=>r.rssKiB||0)),messages};
   } finally {clearInterval(timer);for(const child of children)child.kill();}
 }
-function summary(result){const {messages,...metrics}=result;return metrics;}
+function summary(result){const {messages,...metrics}=result;return profile?{...metrics,...messages[0].profile}:metrics;}
 try {
   await pg.initialise();await pg.start();
   pool=new Pool({host:'127.0.0.1',port:18473,user:'postgres',password,database:'postgres',max:24});
   await pool.query('create role anon;create role authenticated;create role service_role bypassrls');
   server=createServer((req,res)=>http(req,res).catch(error=>{res.statusCode=500;res.end(error.message);}));
   server.listen(0,'127.0.0.1');await once(server,'listening');
-  for(const workers of [2,5,10,20]){
+  for(const workers of (profile?[]:[2,5,10,20])){
     await reset(1);holdSource=true;
     const run=await batch(workers);
     assert.ok(run.messages.every(m=>!m.error),JSON.stringify(run.messages));
@@ -120,7 +140,7 @@ try {
     assert.equal((await pool.query('select count(*) from '+table+'auto_runs')).rows[0].count,'1');
     console.log(JSON.stringify({workers,...summary(run)}));
   }
-  if(!base){
+  if(!base && !profile){
     await reset(1);
     const reached=new Promise(r=>{seenSource=r;});
     const child=fork(fileURLToPath(new URL('cycle-worker.mjs',import.meta.url)),
@@ -157,7 +177,7 @@ try {
     console.log('PASS SIGKILL, busy, expiry, stale finish/release, REST timeout, lost commit reply, one seal');
   }
   holdSource=false;
-  for(const n of [1,100,300,301]){
+  for(const n of (profile?[300]:[1,100,300,301])){
     await reset(n);
     const forecast=await batch(1);
     if(n===301){assert.equal(forecast.messages[0].error,'FIXTURE_SOURCE_LIMIT');assert.equal(forecast.csv,0);continue;}

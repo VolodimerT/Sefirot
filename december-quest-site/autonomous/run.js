@@ -1,3 +1,4 @@
+import {prematchReview} from './markets.js';
 import Core from './core.js';
 import Validation from './validation.js';
 import Settlement from './settlement.js';
@@ -12,6 +13,7 @@ const hour = 3600000;
 const historyAge = 35 * 24 * hour;
 const currentSeason = '2627';
 const fixtureLimit = 300;
+const recoveryProviderReason = 'RECOVERY_PROVIDER_CONTEXT_UNAVAILABLE';
 const columns = 'fixture_key,competition,home_team,away_team,kickoff,source_url,source_quality,timing_status,checked_at';
 const listPath = 'sefirot_december_quest_fixtures?select=' + columns + '&order=kickoff.asc,fixture_key.asc&limit=' + (fixtureLimit + 1);
 
@@ -90,6 +92,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
       : !row.markets.length && !duplicate && !conflicting ? ['INSUFFICIENT_TEAM_HISTORY'] : []),
     ...(row.evidence.quote_price_verified ? [] : [row.evidence.quote_found ? 'QUOTE_TIMESTAMP_UNVERIFIED' : scope==='OUTSIDE_WINDOW' ? 'ODDS_OUTSIDE_WINDOW' : 'ODDS_DATA_MISSING']),
     ...(lineups?.confirmed_teams === 2 ? [] : ['LINEUPS_DATA_MISSING']),
+    ...(packet.recoveryProviderContextUnavailable ? [recoveryProviderReason] : []),
     'TACTICAL_FIT_UNVERIFIED', 'PUBLIC_TRAP_UNVERIFIED', 'DEATH_TEST_UNVERIFIED',
     ...(row.evidence.quote_found && (candidate.ev ?? candidate.conditional_ev_pct) <= 0 ? ['NO_EDGE'] : []),
     ...(candidate?.death_test==='FAIL_CONDITIONAL'?['DEATH_TEST_FAIL']:[])
@@ -118,6 +121,7 @@ function fixtureDecision(fixture, rows, packet, cutoff, duplicate) {
     xg_status: row.evidence.xg?.home_at_home.matches && row.evidence.xg?.away_away.matches
       ? 'HISTORICAL_ONLY' : 'DATA_MISSING', pass_reasons: reasons, upstream_sources: packet.sources
   };
+  if(row.verdict!=='пропуск' && !prematchReview(row,cutoff).eligible) throw Error('PREMATCH_POLICY_CONFLICT');
   return row;
 }
 
@@ -129,6 +133,8 @@ export async function execute(options) {
   const started = Date.parse(claim?.checked_at);
   if (!claim?.token || !Number.isFinite(started)) throw Error('INVALID_RUN_CLAIM');
   try {
+    if(options.retryUntil!=null && !(started<options.retryUntil && options.retryUntil-started<=600000))
+      throw Error('RECOVERY_WINDOW_CLOSED');
     return await runClaimed(options, started, claim.token);
   } catch (error) {
     // A disconnected caller may have committed. Only this token can be released.
@@ -148,7 +154,8 @@ async function finishReads(reads) {
 }
 
 async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now),
-  odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), backup = null, clock = Date.now }, started, token) {
+  odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), backup = null, clock = Date.now, retryUntil = null,
+  recoveryProviderContextUnavailable = false }, started, token) {
   const calendar = await rest(listPath);
   if (!Array.isArray(calendar) || calendar.length > fixtureLimit) throw Error('FIXTURE_SOURCE_LIMIT');
   const all = calendar.filter(questFixture);
@@ -237,9 +244,12 @@ async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGatew
   const validations = leagues.filter(code=>freshSeason(primaryHistory.get(code),cutoff)&&primaryHistory.get(code).some(row=>row.season==='2526'))
     .map(code => Validation.backtest(code, primaryHistory.get(code), cutoff));
   const validation = new Map(validations.map(row => [row.competition, row]));
+  // Recovery keeps the optional providers disabled. Preserve a prematch PASS using available data.
+  if(recoveryProviderContextUnavailable && upcoming.length)errors.push(recoveryProviderReason);
   const forecasts = upcoming.filter(fixture => Date.parse(fixture.kickoff) > cutoff + 20 * 60000).map(fixture => {
     const row = fixtureDecision(fixture, history.get(fixture.competition), {
       current: hasCurrent(fixture.competition), weekly, gateway: gatewayResult, odds: oddsResult,
+      recoveryProviderContextUnavailable,
       check: gatewayResult.fixtures.get(fixture.fixture_key),
       sources: sources.filter(pack => pack.code === fixture.competition).map(pack => ({
         url: pack.url, season:pack.season, ok:pack.ok,
@@ -275,7 +285,10 @@ async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGatew
   const run = { started_at: new Date(started).toISOString(), model_version: Core.MODEL_VERSION,
     fetch_ok: success, sources_attempted: urls.length + requests.length, errors: errors.slice(0,20),
     run_status: errors.length ? success ? 'PARTIAL' : 'SOURCE_ERROR' : 'OK' };
-  const committed = await rest('rpc/dq_finish_predictor_run', { method: 'POST', body: JSON.stringify({
+  if(retryUntil!==null && clock()>=retryUntil)throw Error('RECOVERY_WINDOW_CLOSED');
+  const scheduled = retryUntil!==null;
+  const committed = await rest(scheduled?'rpc/dq_finish_scheduled_predictor':'rpc/dq_finish_predictor_run', { method: 'POST', body: JSON.stringify({
+    ...(scheduled?{p_until:new Date(retryUntil).toISOString()}:{}),
     p_token: token, p_run: run, p_forecasts: forecasts, p_validation: validations, p_settlements: settled
   }) });
   return { ...committed, status: run.run_status, model_version: Core.MODEL_VERSION, sources_ok: success,

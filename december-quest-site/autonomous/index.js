@@ -16,7 +16,7 @@ async function rest(path,options={}){
  try{
   const r=await fetch(PROJECT+"/rest/v1/"+path,{...options,headers:{...headers(),...(options.headers||{})},signal:controller.signal});
   const text=await r.text();
-  if(!r.ok)throw Error('SUPABASE_HTTP_'+r.status+'_'+text.slice(0,100));
+  if(!r.ok)throw Error('SUPABASE_HTTP_'+r.status);
   return text?JSON.parse(text):null;
  }finally{clearTimeout(timer);}
 }
@@ -36,9 +36,16 @@ Deno.serve(async req=>{
  const token=req.headers.get('x-dq-predictor-token')||'';
  if(!(await authenticate(token)))return json({ok:false,error:'UNAUTHORIZED'},401);
  try{
-  const result=await execute({rest,csv:url=>fetchCsvWithRetry(url,true),
-   gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock),
-   odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,oddsKey),backup:fetchResultBackup});
+  const query=new URL(req.url).searchParams;
+  const recovery=query.has('retry_until');
+  const deadline=query.get('retry_until')??query.get('run_until');
+  const retryUntil=deadline===null?null:Number(deadline);
+  if(deadline!==null && (!/^\d{13}$/.test(deadline)||Date.now()>=retryUntil||retryUntil-Date.now()>600000))
+    return json({ok:false,error:'RECOVERY_WINDOW_CLOSED'},409);
+  const result=await execute({rest,retryUntil,recoveryProviderContextUnavailable:recovery&&Boolean(gatewayToken||oddsKey),
+   csv:url=>fetchCsvWithRetry(url,true),
+   gateway:(fixtures,clock)=>collectGateway(PROJECT,recovery?null:gatewayToken,fixtures,clock),
+   odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,recovery?null:oddsKey),backup:recovery?null:fetchResultBackup});
   if(result.skipped==='RUN_IN_PROGRESS'){
    const response=json({ok:true,...result},202);
    response.headers.set('Retry-After',String(result.retry_after_seconds));
@@ -46,7 +53,9 @@ Deno.serve(async req=>{
   }
   return json({ok:result.status!=='SOURCE_ERROR',...result},result.status==='SOURCE_ERROR'?503:200);
  }catch(e){
-  console.error('DQ_AUTOPREDICTOR_FAILURE',String(e.message||e).slice(0,100));
-  return json({ok:false,error:'RUN_FAILED',reason:String(e.message||e).slice(0,150)},503);
+  const reason=/^SUPABASE_HTTP_\d{3}$/.test(e.message) || ['RECOVERY_WINDOW_CLOSED','INVALID_RUN_CLAIM','FIXTURE_SOURCE_LIMIT','PREMATCH_POLICY_CONFLICT'].includes(e.message)
+    ? e.message : 'PREDICTOR_FAILED';
+  console.error('DQ_AUTOPREDICTOR_FAILURE',reason);
+  return json({ok:false,error:'RUN_FAILED',reason},503);
  }
 });
