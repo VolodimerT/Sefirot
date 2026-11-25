@@ -1,3 +1,4 @@
+import {flightRpc} from './flight-rpc.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -23,7 +24,7 @@ export const weekly = 'Div,Date,Time,HomeTeam,AwayTeam,B365H,B365D,B365A\n'
   + 'E0,01/12/2026,19:45,Leeds,Arsenal,4,3.5,2\n';
 const finish = time => 'E0,01/12/2026,' + time + ',Coventry,Ipswich,2,1,H,2.1,1.0';
 const pathSuffix = path => path.split('?')[0];
-export const freeze = text => text.replaceAll('statement_timestamp()', 'public.dq_test_clock()');
+export const freeze = text => text.replaceAll('statement_timestamp()', 'public.dq_test_clock()').replaceAll('clock_timestamp()', 'public.dq_test_clock()');
 
 export async function runAcceptance() {
   const [schema, migration] = await Promise.all([
@@ -52,6 +53,8 @@ export async function runAcceptance() {
     const params = JSON.parse(options.body);
     await db.exec('set role service_role');
     try {
+      const flight = await flightRpc(rows,resource,params);
+      if (flight !== undefined) return flight;
       if (resource === 'rpc/dq_predictor_run_state') {
         return (await rows('select public.dq_predictor_run_state($1) as result',[params.p_model_version]))[0].result;
       }
@@ -73,6 +76,7 @@ export async function runAcceptance() {
     await setTime('2026-12-01T15:01:00Z');
     await db.exec(freeze(schema));
     await db.exec(freeze(migration));
+    await db.exec(freeze(await readFile(new URL('../single-flight.sql',import.meta.url),'utf8')));
     await db.exec('alter table '+tablePrefix+'auto_snapshots enable row level security; '
       +'grant select on '+tablePrefix+'auto_snapshots to anon,authenticated; '
       +'create policy snapshots_read on '+tablePrefix+'auto_snapshots for select to anon,authenticated using (true)');
@@ -135,6 +139,11 @@ export async function runAcceptance() {
         await assert.rejects(db.exec('delete from '+tablePrefix+'auto_snapshots'),/permission denied/);
         if (role !== 'service_role') {
           await assert.rejects(db.exec("select public.dq_commit_predictor_run('{}','[]','[]','[]')"),/permission denied/);
+          for (const call of ["dq_claim_predictor_run('test')", "dq_release_predictor_run(null)",
+            "dq_finish_predictor_run(null,'{}','[]','[]','[]')"]) {
+            await assert.rejects(db.exec('select public.'+call),/permission denied/);
+          }
+          await assert.rejects(db.exec('select token from public.dq_predictor_leases'),/permission denied/);
           await assert.rejects(db.exec("select public.dq_predictor_run_state('test')"),/permission denied/);
         }
       } finally { await db.exec('reset role'); }

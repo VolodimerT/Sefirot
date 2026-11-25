@@ -30,9 +30,9 @@ const compare=await Promise.all(Object.entries(Core.LEAGUE_FILES).flatMap(([comp
 async function stage(outage){
   let stored;
   const rest=async (path,options)=>{
-    if(path==='rpc/dq_predictor_run_state')return {checked_at:stamp};
+    if(path==='rpc/dq_claim_predictor_run')return {checked_at:stamp,token:'offline'};
     if(path.startsWith('sefirot_december_quest_fixtures?'))return calendar;
-    assert.equal(path,'rpc/dq_commit_predictor_run');
+    assert.equal(path,'rpc/dq_finish_predictor_run');
     stored=JSON.parse(options.body);
     return {saved:stored.p_forecasts.length};
   };

@@ -1,3 +1,4 @@
+import {flightRpc} from './flight-rpc.mjs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -23,6 +24,7 @@ try {
     +"$$select '2026-12-01T17:00:00Z'::timestamptz$$");
   await db.exec(freeze(schema));
   await db.exec(freeze(migration));
+  await db.exec(freeze(await readFile(new URL('../single-flight.sql',import.meta.url),'utf8')));
   await db.query('insert into '+tablePrefix+'fixtures '
     +'(fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,checked_at) '
     +'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
@@ -53,12 +55,15 @@ try {
       if (resource === tablePrefix+'fixtures') {
         return send(200,await rows('select * from '+resource));
       }
+      request.setEncoding('utf8');
       let raw = '';
       for await (const chunk of request) raw += chunk;
       const payload = JSON.parse(raw);
       if (resource === 'rpc/dq_predictor_cron_authorized') return send(200,payload.p_token === cronToken);
       await db.exec('set role service_role');
       try {
+        const flight = await flightRpc(rows,resource,payload);
+        if (flight !== undefined) return send(200,flight);
         if (resource==='rpc/dq_predictor_run_state') {
           const [state] = await rows('select public.dq_predictor_run_state($1) as report',[payload.p_model_version]);
           return send(200,state.report);

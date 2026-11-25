@@ -39,6 +39,11 @@ Deno.serve(async req=>{
   const result=await execute({rest,csv:url=>fetchCsvWithRetry(url,true),
    gateway:(fixtures,clock)=>collectGateway(PROJECT,gatewayToken,fixtures,clock),
    odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,oddsKey),backup:fetchResultBackup});
+  if(result.skipped==='RUN_IN_PROGRESS'){
+   const response=json({ok:true,...result},202);
+   response.headers.set('Retry-After',String(result.retry_after_seconds));
+   return response;
+  }
   return json({ok:result.status!=='SOURCE_ERROR',...result},result.status==='SOURCE_ERROR'?503:200);
  }catch(e){
   console.error('DQ_AUTOPREDICTOR_FAILURE',String(e.message||e).slice(0,100));
