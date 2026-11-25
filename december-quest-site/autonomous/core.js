@@ -5,6 +5,7 @@ import { matchStatistics } from './history.js';
 const MODEL_VERSION='DQ-POISSON-0.3';
 const LEAGUE_FILES={EPL:'E0',LALIGA:'SP1',SERIEA:'I1',BUNDES:'D1',LIGUE1:'F1'};
 const ALIASES={
+ CHAMPIONSHIP:{'Bolton Wanderers':'Bolton','West Bromwich Albion':'West Brom','Birmingham City':'Birmingham','Blackburn Rovers':'Blackburn','Stoke City':'Stoke'},
  EPL:{'Coventry City':'Coventry','Ipswich Town':'Ipswich','Hull City':'Hull','Nottingham Forest':"Nott'm Forest",'Manchester City':'Man City','Manchester United':'Man United'},
  LALIGA:{'Deportivo Alavés':'Alaves','FC Barcelona':'Barcelona','Celta Vigo':'Celta','Atlético Madrid':'Ath Madrid','Real Betis':'Betis','Sevilla FC':'Sevilla','Málaga CF':'Malaga','Elche CF':'Elche','Racing Santander':'Santander','Real Madrid CF':'Real Madrid','CA Osasuna':'Osasuna','Espanyol':'Espanol'},
  SERIEA:{'Bologna FC 1909':'Bologna','AS Roma':'Roma','SSC Napoli':'Napoli','US Lecce':'Lecce','AC Milan':'Milan','Parma Calcio 1913':'Parma','ACF Fiorentina':'Fiorentina','Cagliari Calcio':'Cagliari','Udinese Calcio':'Udinese','Frosinone Calcio':'Frosinone','Como 1907':'Como','Juventus FC':'Juventus','AC Monza':'Monza'},
@@ -65,11 +66,11 @@ function weeklyKickoff(weeklyRows,fixture){
  return {status:observed===Date.parse(fixture.kickoff)?'MATCH':'KICKOFF_CONFLICT',
   kickoff:new Date(observed).toISOString()};
 }
-function resultsFromCsv(text,competition,cutoff){
+function resultsFromCsv(text,competition,cutoff,division=LEAGUE_FILES[competition]){
  const records=parseCsv(text),out=[],today=new Date(cutoff).toISOString().slice(0,10);
  for(const x of records){
   const date=csvDate(x.Date),hg=Number(x.FTHG),ag=Number(x.FTAG);
-  if(x.Div!==LEAGUE_FILES[competition]||!date||date.toISOString().slice(0,10)>=today||x.FTHG===''||x.FTAG===''||!Number.isInteger(hg)||!Number.isInteger(ag)||hg<0||ag<0||hg>12||ag>12)continue;
+  if(x.Div!==division||!date||date.toISOString().slice(0,10)>=today||x.FTHG===''||x.FTAG===''||!Number.isInteger(hg)||!Number.isInteger(ag)||hg<0||ag<0||hg>12||ag>12)continue;
   const home=canonical(competition,x.HomeTeam),away=canonical(competition,x.AwayTeam);
   if(!home||!away||home===away)continue;
   const xg=[x.HxG,x.AxG].map(value=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim())?Number(value):null);
@@ -121,13 +122,13 @@ function xgSummary(rows,homeSide){
   xg:rounded(available.reduce((sum,row)=>sum+(homeSide?row.hxg:row.axg),0)/count,3),
   xga:rounded(available.reduce((sum,row)=>sum+(homeSide?row.axg:row.hxg),0)/count,3)};
 }
-function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true){
+function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true,leagueFiles=LEAGUE_FILES){
  const kickoff=Date.parse(fixt.kickoff);
  const status={fixture_key:fixt.fixture_key,competition:fixt.competition,kickoff:fixt.kickoff,
   generated_at:new Date(now).toISOString(),source_cutoff:new Date(now).toISOString(),
   model_version:MODEL_VERSION,status:'INSUFFICIENT_DATA',verdict:'пропуск',risk_class:'D',
   probabilities:{},markets:[],best_candidate:{},sample_n:0,evidence:{},notes:'Не подтверждено value: SHADOW / PASS'};
- if(!LEAGUE_FILES[fixt.competition]){status.status='UNSUPPORTED_LEAGUE';status.notes='Турнир вне покрытия публичной исторической модели. PASS.';return status;}
+ if(!Object.hasOwn(leagueFiles,fixt.competition)){status.status='UNSUPPORTED_LEAGUE';status.notes='Турнир вне покрытия публичной исторической модели. PASS.';return status;}
  if(!(Number.isFinite(kickoff)&&kickoff>now+20*60000)){status.status='SOURCE_ERROR';status.notes='Матч уже начался или слишком близко: прогноз запрещён.';return status;}
  if(!Array.isArray(seasonRows)||!seasonRows.length){status.status='SOURCE_ERROR';status.notes='Нет актуальной истории в разрешённых CSV. PASS.';return status;}
  const day=new Date(now).toISOString().slice(0,10);
@@ -173,5 +174,5 @@ function forecast(fixt,seasonRows,now=Date.now(),includeMarkets=true){
  return status;
 }
 const Core={MODEL_VERSION,LEAGUE_FILES,ALIASES,canonical,parseCsv,csvDate,resultsFromCsv,poisson,
- outcomes:(home,away)=>outcomes(scoreGrid(home,away)),forecast,matchWeekly,weeklyKickoff};
+ outcomes:(home,away)=>outcomes(scoreGrid(home,away)),scoreGrid,forecast,matchWeekly,weeklyKickoff};
 export default Core;

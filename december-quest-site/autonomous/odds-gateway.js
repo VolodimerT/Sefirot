@@ -8,8 +8,8 @@ const quoteAge = hour;
 const publicationAge = 12 * hour;
 const sourceUrl = 'https://api.the-odds-api.com/v4/sports/';
 const csvUrl = 'https://football-data.co.uk/fixtures.csv';
-const sports = { EPL:'soccer_epl', LALIGA:'soccer_spain_la_liga', SERIEA:'soccer_italy_serie_a',
-  BUNDES:'soccer_germany_bundesliga', LIGUE1:'soccer_france_ligue_one' };
+export const decemberSports = Object.freeze({ EPL:'soccer_epl', LALIGA:'soccer_spain_la_liga', SERIEA:'soccer_italy_serie_a',
+  BUNDES:'soccer_germany_bundesliga', LIGUE1:'soccer_france_ligue_one' });
 const csvBooks = { B365:'Bet365', BFD:'Betfred', BV:'Betvictor', BW:'Bwin', PP:'Paddy Power', SKB:'Sky Bet' };
 const resultSuffix = {home:'H',draw:'D',away:'A'};
 const iso = epoch => new Date(epoch).toISOString();
@@ -25,7 +25,7 @@ const bookIdentity = value => String(value||'').toLowerCase().replace(/[^a-z0-9]
 const validPrice = value => typeof value==='number' && Number.isFinite(value) && value>1 && value<=100;
 const isPrematch = (cutoff,kickoff) => Number.isFinite(cutoff) && Number.isFinite(kickoff) && kickoff>cutoff && kickoff-cutoff<=horizon;
 
-export async function collectTimestampedOdds(fixtures, now, key, fetcher=fetch, clock=Date.now) {
+export async function collectTimestampedOdds(fixtures, now, key, fetcher=fetch, clock=Date.now, sports=decemberSports) {
   if (!key) return {status:'NOT_CONFIGURED',batches:[]};
   const leagues = [...new Set(fixtures.filter(f=>sports[f.competition] && f.timing_status==='confirmed' &&
     isPrematch(now,Date.parse(f.kickoff))).map(f=>f.competition))];
@@ -79,7 +79,7 @@ function csvOffers(fixture, weekly, cutoff, kickoff) {
   });
 }
 
-function apiOffers(fixture, collected, cutoff, kickoff, confirmed) {
+function apiOffers(fixture, collected, cutoff, kickoff, confirmed, sports) {
   if (!confirmed || !isPrematch(cutoff,kickoff)) return () => [];
   const batch=collected?.batches?.find(x=>x.league===fixture.competition);
   if (!batch || !(batch.observedAt<=cutoff && cutoff-batch.observedAt<=quoteAge)) return () => [];
@@ -152,10 +152,10 @@ function collectMarket(market, alternatives, verified) {
     quotes:sorted};
 }
 
-export function attachOdds(forecast, weekly, fixture, collected, confirmed) {
+export function attachOdds(forecast, weekly, fixture, collected, confirmed, sports=decemberSports) {
   if (forecast.status!=='MODEL_ONLY') return forecast;
   const cutoff=Date.parse(forecast.source_cutoff),kickoff=Date.parse(fixture.kickoff);
-  const primary=apiOffers(fixture,collected,cutoff,kickoff,confirmed);
+  const primary=apiOffers(fixture,collected,cutoff,kickoff,confirmed,sports);
   const fallback=csvOffers(fixture,weekly,cutoff,kickoff);
   const markets=forecast.markets.map(market=>{
     const verified=primary(market);
