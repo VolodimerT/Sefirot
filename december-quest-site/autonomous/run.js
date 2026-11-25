@@ -154,7 +154,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
         if (row.code !== 'weekly' && !records.some(record =>
           record.Div === Core.LEAGUE_FILES[row.code] && Core.csvDate(record.Date) &&
           /^\d+$/.test(record.FTHG) && /^\d+$/.test(record.FTAG))) throw Error('EMPTY_RESULT_SOURCE');
-        return { ...row, text, records, ok: true, publishedAt, observedAt: clock() };
+        return { ...row, records, ok: true, publishedAt, observedAt: clock() };
       } catch (error) {
         return { ...row, ok: false, error: String(error.message).slice(0, 80) };
       }
@@ -170,7 +170,7 @@ export async function execute({ rest, csv, gateway = (fixtures, now) => collectG
   for (const code of leagues) {
     const unique = new Map(), conflicts = new Set();
     for (const pack of sources.filter(pack => pack.code === code && pack.ok)) {
-      const rows = Core.resultsFromCsv(pack.text, code, initialCutoff);
+      const rows = Core.resultsFromRecords(pack.records, code, initialCutoff);
       const latest = rows.reduce((date,row)=>Math.max(date,row.when),-Infinity);
       sourceFacts.set(pack.url,{completed_rows:rows.length,
         latest_result_at:Number.isFinite(latest)?new Date(latest).toISOString().slice(0,10):null});
