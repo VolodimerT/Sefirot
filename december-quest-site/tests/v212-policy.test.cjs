@@ -73,6 +73,7 @@ test('cards require independent referee evidence; express cardinality, duplicate
   assert.ok(E.validateSeal(t,now,rows).length);
   const fields={referee_gate:'VERIFIED',referee:'test',yc_game:4,yc_foul:.2,low_card_risk:true,rules_confirmed:true,no_cleaner_market:true};
   Object.assign(r.evidence,fields);assert.deepEqual(E.validateSeal(t,now,rows),[]);
+  assert.ok(E.validateSeal({...t,legs:[{...l,referee:'different'},t.legs[1]]},now,rows).length);
   for(const key of Object.keys(fields)){
     const copy=structuredClone(rows);delete copy[0].evidence[key];assert.ok(E.validateSeal(t,now,copy).length,key);
   }
@@ -89,4 +90,12 @@ test('three independently reviewed legs may pass and malformed imported legs fai
   for(const row of rows)row.evidence.independent_fixture_keys=rows.filter(other=>other!==row).map(other=>other.fixture_key);
   assert.deepEqual(E.validateSeal(t,now,rows),[]);
   for(const broken of [null,{...leg(1),pick:4}])assert.ok(E.validateSeal({...t,legs:[leg(0),broken]},now,rows).length);
+});
+
+test('missing timestamps and the final twenty minutes independently close admission',()=>{
+  const {rows}=sample(), r=rows[0];
+  const review=()=>globalThis.QuestPrematchReview(r,now.getTime());
+  r.kickoff='2026-12-01T17:20:00Z';assert.ok(review().reasons.includes('PREMATCH_TIME'));
+  r.kickoff=ko;delete r.generated_at;
+  assert.equal(review().eligible,false);assert.equal(review().riskClass,'C');
 });

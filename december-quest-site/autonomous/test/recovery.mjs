@@ -25,7 +25,7 @@ async function rest(path,options){
   const p=JSON.parse(options?.body||'{}');
   if(path.includes('_fixtures?')){
     if(fault==='REST')throw Error('simulated REST timeout');
-    return [fixture];
+    return [{...fixture,checked_at:'2026-12-01T16:55:00Z'}];
   }
   if(path==='rpc/dq_finish_scheduled_predictor'){
     stats.commit++;
@@ -69,7 +69,7 @@ try{
   // Owner dies after claiming. The existing job re-dispatches after TTL.
   await tick(0);await db.exec('delete from qa_queue');
   const [old]=await rows("select dq_claim_predictor_run('DQ-POISSON-0.3') as claim");
-  await tick(12);await tick(12);assert.ok((await deliver()).saved>=1);
+  await tick(12);await tick(12);assert.equal((await deliver()).sealed,1);
   await assert.rejects(rows("select dq_finish_predictor_run($1,'{}','[]','[]','[]')",[old.claim.token]),/LEASE_LOST/);
   await tick(24);assert.equal((await rows('select * from qa_queue')).length,0);
   for(const problem of ['REST','SQL','DELAYED_COMMIT','LOST_ACK','PARTIAL']){
@@ -93,6 +93,7 @@ try{
   await db.query("select set_config('qa.clock',$1,false)",[new Date(now).toISOString()]);
   const before=stats.csv;await assert.rejects(deliver(),/RECOVERY_WINDOW_CLOSED/);assert.equal(stats.csv,before);
   const beforeRows=await rows('select * from '+tablePrefix+'auto_snapshots');
+  assert.equal(beforeRows.length,1);
   await db.exec(await sql('../recovery-rollback.sql'));
   assert.deepEqual(await rows('select jobid,schedule,command from cron.job'),[{jobid:71,schedule:'0 17 * * *',command:original}]);
   assert.deepEqual(await rows('select * from '+tablePrefix+'auto_snapshots'),beforeRows);

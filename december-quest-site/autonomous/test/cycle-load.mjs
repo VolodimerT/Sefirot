@@ -18,6 +18,8 @@ const {Pool}=require('pg');
 const root=resolve(process.argv[2] || fileURLToPath(new URL('..',import.meta.url)));
 const base=process.argv.includes('--baseline');
 const profile=process.argv.includes('--profile');
+const scheduled=process.argv.includes('--scheduled');
+const deadlineMigration=scheduled?await readFile(join(root,'recovery-finish.sql'),'utf8'):'';
 const dir=await mkdtemp(join(tmpdir(),'dq-load-'));
 const password=randomUUID();
 const pg=new Postgres({databaseDir:join(dir,'db'),user:'postgres',password,port:18473,
@@ -40,6 +42,7 @@ let pool,server,stamp,size,counts,holdSource=false,seenSource,slowCalendar=false
 const rpc={
   dq_predictor_run_state:['p_model_version'],dq_claim_predictor_run:['p_model_version'],
   dq_release_predictor_run:['p_token'],dq_finish_predictor_run:['p_token','p_run','p_forecasts','p_validation','p_settlements'],
+  dq_finish_scheduled_predictor:['p_token','p_until','p_run','p_forecasts','p_validation','p_settlements'],
   dq_commit_predictor_run:['p_run','p_forecasts','p_validation','p_settlements'],
   dq_pending_predictor_snapshots:['p_fixture_keys','p_model_version']
 };
@@ -72,7 +75,7 @@ async function http(req,res) {
       try{
         await client.query('begin');
         const lockStart=performance.now();
-        if(['dq_commit_predictor_run','dq_finish_predictor_run'].includes(name))
+        if(['dq_commit_predictor_run','dq_finish_predictor_run','dq_finish_scheduled_predictor'].includes(name))
           await client.query('select pg_advisory_xact_lock(721735,202612)');
         const sqlStart=performance.now();
         const result=await client.query(query,values);
@@ -94,13 +97,13 @@ async function reset(n){
   await pool.query('drop schema public cascade; create schema public; grant usage on schema public to public');
   await pool.query("create table qa_clock(stamp timestamptz); create function qa_now() returns timestamptz language sql stable as 'select stamp from public.qa_clock'");
   await pool.query('insert into qa_clock values ($1)',[stamp]);
-  await pool.query((schema.replace(/^create role .*;$/gm,'')+migration+feature).replaceAll('statement_timestamp()','public.qa_now()').replaceAll('clock_timestamp()','public.qa_now()'));
+  await pool.query((schema.replace(/^create role .*;$/gm,'')+migration+feature+deadlineMigration).replaceAll('statement_timestamp()','public.qa_now()').replaceAll('clock_timestamp()','public.qa_now()'));
   await pool.query('insert into '+table+"fixtures(fixture_key,competition,home_team,away_team,kickoff,source_name,source_url,source_quality,timing_status,checked_at) select h||'-'||a,'EPL',h,a,'2026-12-01 20:00Z','local','https://example.invalid','official','confirmed',$3 from unnest($1::text[],$2::text[]) f(h,a)",[fixtures.slice(0,n).map(x=>x[0]),fixtures.slice(0,n).map(x=>x[1]),first]);
 }
 async function batch(n,timeoutCalendar=false){
   counts={csv:0,rest:0,restHandlerMs:0,...(profile?{sql:{}}:{})};
   const children=Array.from({length:n},()=>fork(fileURLToPath(new URL('cycle-worker.mjs',import.meta.url)),
-    [root,'http://127.0.0.1:'+server.address().port,timeoutCalendar?'timeout':profile?'profile':'normal'],{stdio:['ignore','inherit','inherit','ipc']}));
+    [root,'http://127.0.0.1:'+server.address().port,timeoutCalendar?'timeout':profile?'profile':'normal',scheduled?'scheduled':'default'],{stdio:['ignore','inherit','inherit','ipc']}));
   let timer, workersRssKiB=0;
   function sampleMemory(){
     let rss=0;

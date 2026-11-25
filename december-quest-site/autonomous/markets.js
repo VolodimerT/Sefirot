@@ -126,10 +126,10 @@ export function prematchReview(row, now) {
   const cutoff = time(row?.source_cutoff), generated = time(row?.generated_at), kickoff = time(row?.kickoff);
   const observed = time(m.observed_at), quoted = time(m.quote_updated_at);
   const red = row?.risk_class === 'RED' || e.kickoff_gate === 'KICKOFF_CONFLICT' ||
-    e.kickoff_gate === 'DUPLICATE_FIXTURE' || (row && !(cutoff <= generated && generated <= now && now < kickoff)) ||
+    e.kickoff_gate === 'DUPLICATE_FIXTURE' || cutoff > generated || generated > now || now >= kickoff ||
     observed > cutoff || quoted > observed;
   if (red) reasons.push('TIME_OR_IDENTITY_CONFLICT');
-  if (!row || e.kickoff_gate !== 'CONFIRMED' || e.fixture_timing_status !== 'confirmed') reasons.push('PREMATCH_TIME');
+  if (!(cutoff <= generated && generated <= now && kickoff - now > 20 * 60000) || e.kickoff_gate !== 'CONFIRMED' || e.fixture_timing_status !== 'confirmed') reasons.push('PREMATCH_TIME');
   if (!(quoted <= observed && observed <= cutoff && now - quoted <= 3600000) ||
       m.price_verified !== true || m.quote_timestamp_verified !== true) reasons.push('QUOTE_UNVERIFIED');
   const priced=evaluateQuote(m.settlement,m.odds);
@@ -154,6 +154,6 @@ export function prematchReview(row, now) {
   if(e.selection_basis !== 'SPORTING_EDGE') reasons.push('ODDS_FILLER');
   if (e.calibration_gate !== 'VERIFIED' || !['A','B'].includes(row?.risk_class)) reasons.push('CONFIDENCE');
   if (row?.verdict !== 'играбельно' || !Array.isArray(e.pass_reasons) || e.pass_reasons.length) reasons.push('SOURCE_PASS');
-  const riskClass = red ? 'RED' : Number.isFinite(m.ev) && m.ev <= 0 ? 'D' : reasons.length ? 'C' : row.risk_class;
+  const riskClass = red ? 'RED' : row?.risk_class === 'D' || (Number.isFinite(m.ev) && m.ev <= 0) ? 'D' : reasons.length ? 'C' : row.risk_class;
   return {eligible: reasons.length === 0, riskClass, reasons};
 }

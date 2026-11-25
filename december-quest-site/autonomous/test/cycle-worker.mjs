@@ -27,7 +27,8 @@ process.once('message', async stamp => {
       if (!response.ok) throw Error('CSV_HTTP_' + response.status);
       return response.text();
     };
-    const result = await execute({rest, csv, clock: () => Date.parse(stamp)});
+    const result = await execute({rest, csv, clock: () => Date.parse(stamp),
+      retryUntil:process.argv[5]==='scheduled'?Date.parse(stamp)+600000:null});
     JSON.stringify=stringify;
     process.send({result, profile, rssKiB:process.resourceUsage().maxRSS});
   } catch (error) { process.send({error:error.message}); }

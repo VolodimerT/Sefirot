@@ -199,6 +199,7 @@
       if(a.length>1 && !a.every(other=>other===leg || (Array.isArray(independentKeys) && independentKeys.includes(other.fixtureId))))
         errors.push('Связь между событиями не проверена источником.');
       if(!reviewed?.eligible || !candidate || leg.status!=='pending' ||
+        (leg.market==='ЖК' && (leg.referee!==row.evidence.referee || leg.ycGame!==row.evidence.yc_game || leg.ycFoul!==row.evidence.yc_foul)) ||
         canonicalTeam(row.evidence.home_name)!==canonicalTeam(leg.home) ||
         canonicalTeam(row.evidence.away_name)!==canonicalTeam(leg.away) ||
         Date.parse(row.kickoff)!==legKickoff(leg.kickoff) || candidate.market!==leg.market || candidate.pick!==leg.pick ||
