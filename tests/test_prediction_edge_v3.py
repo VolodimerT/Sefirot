@@ -254,9 +254,6 @@ class FinalGuardTests(unittest.TestCase):
         f.pop('hash');f['hash']=digest(f)
         with self.assertRaises(ValueError):evaluate(m,[f],[r])
 
-if __name__=='__main__':unittest.main()
-
-
 class ReadinessReportTests(unittest.TestCase):
     def test_readiness_requires_original_rows_even_with_source_adapter(self):
         root = Path(__file__).resolve().parents[1]
@@ -270,3 +267,6 @@ class ReadinessReportTests(unittest.TestCase):
         self.assertEqual(report['externally_verified_holdout_matches'], 0)
         self.assertIn('No candidate rows admitted from the read-only original-source adapter', report['blockers'])
         self.assertFalse(report['monetary_permission'])
+
+
+if __name__=='__main__':unittest.main()
