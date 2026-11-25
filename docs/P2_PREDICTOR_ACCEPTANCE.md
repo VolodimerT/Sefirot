@@ -56,3 +56,26 @@ drop function public.dq_claim_predictor_run(text);
 drop table public.dq_predictor_leases;
 commit;
 ```
+
+## Measurements
+
+Linux, Node 24.22.3, disposable PostgreSQL 19, three runs per revision. Each cell is the median for its metric. The before tree is #87. The after tree includes the source-draining fix. The isolated HTTP origin served identical bytes. Forecast measurements are single-worker unless a worker count is specified.
+
+| Concurrent workers, one fixture | CSV before → after | REST before → after | Wall ms before → after | Summed worker RSS KiB before → after |
+|---:|---:|---:|---:|---:|
+| 2 | 6 → 3 | 6 → 4 | 869 → 652 | 143792 → 94232 |
+| 5 | 15 → 3 | 15 → 7 | 1259 → 752 | 359752 → 227264 |
+| 10 | 30 → 3 | 30 → 12 | 2180 → 830 | 731436 → 455528 |
+| 20 | 60 → 3 | 60 → 22 | 4745 → 1314 | 1425144 → 884712 |
+
+| Fixtures | Forecast and persist ms | FT settlement ms | Forecast peak KiB | Settlement peak KiB | Forecast REST handler ms | Settlement REST handler ms |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 184 → 143 | 137 → 168 | 78308 → 80528 | 82292 → 79520 | 14 → 17 | 11 → 12 |
+| 100 | 691 → 720 | 555 → 467 | 105976 → 105744 | 104328 → 103860 | 329 → 414 | 141 → 176 |
+| 300 | 1765 → 2227 | 920 → 1201 | 163032 → 162140 | 176884 → 155968 | 1175 → 1603 | 358 → 493 |
+
+The 300-fixture uncontended cycles were slower in this sample. Most of the additional wall time occurred inside the REST handler, which includes JSON transport and PostgreSQL. These measurements do not isolate a SQL planner or lock cause. Keep the current cap pending independent Edge profiling. Every size used three CSV requests per phase, three REST requests for a forecast and four for settlement. A 301-row calendar issued zero CSV requests. The measured group-memory reduction primarily reflects idle contenders exiting early.
+
+The complete saved content matched across revisions at each size. The 300-seal SHA-256 was `5b547e59b6ebb25f13292fb99178e6f3a5b7cd0724e6c2ec05feaf6784258172`. The historical replay on 360 matches with the prior frozen data retained report SHA-256 `c60f5f91c3502fa32a01ffe22842db7dc818530d776a38ee02d39469db66939b`. No model or policy was retuned.
+
+The SHADOW #85 head was 0fae05487b97e4dab9faa5f8257f57fca17161cb. A local merge-tree simulation was clean and preserved the entire SHADOW src, tests, schema, supabase and research subtrees. Its independent 1752-test suite passed with nine native-only skips. Those nine subsequently passed against disposable native PostgreSQL databases. The P2 branch passed its 191 Python tests, Node and Paper tests, immutable-seal and PGlite acceptance, loopback Deno HTTP tests and site regressions.

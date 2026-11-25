@@ -180,6 +180,10 @@ try {
   }
 } finally {
   if(server)await new Promise(r=>server.close(r));
-  if(pool)await pool.end();
+  if(pool){
+    await pool.end();
+    // Some pg clients report the local server's shutdown after the pool has ended.
+    pool.on('error',error=>{if(error.code!=='57P01')throw error;});
+  }
   await pg.stop();await rm(dir,{recursive:true,force:true});
 }

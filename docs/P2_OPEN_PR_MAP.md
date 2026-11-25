@@ -9,6 +9,8 @@
 3. For research and SHADOW, review each declared parent before its child. The RC base of #62 needs independent acceptance. Keep the #62 → #63 → #25 → #65 → #66 → #67 line separate from the #78 → #79 → #80 → #81 → #82 → #83 → #84 → #85 line. #78 ports the facts-first work from #77 onto a different deployment baseline. Select the intended baseline before integrating either port.
 4. Resolve conflict rows on an isolated integration branch and rerun their original gate suites. Treat old update dates as a triage signal. Review each contained or patch-equivalent candidate with its owner before retiring it.
 
+All 63 were drafts. All declared target/head pairs merged cleanly in the local simulation. No complete PR patch had the same stable patch ID as another. Thirty heads were already ancestors of a separate integration candidate, so their standalone integration may be obsolete for that target. #77 and #78 have documented functional overlap on different bases. Independent release gates still block #85 (prospective SHADOW evidence) and #86 (scheduled run and real FT acceptance); #87 and P2 depend on the selected December Quest baseline. These are acceptance blockers even with a clean merge tree.
+
 ## Inventory
 
 “Included” identifies exact commit ancestry in a different integration stack, excluding the normal PR base chain. It makes the individual PR a candidate for redundant integration. “Active” means an independent review increment. “Blocked” marks a tree conflict. Draft status and business acceptance are separate. A closed parent is shown explicitly when one exists. Table rows link to the original evidence and discussions.
