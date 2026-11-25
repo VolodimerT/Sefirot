@@ -2,6 +2,9 @@ import copy
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import json
+import subprocess
+import tempfile
 import sys
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -250,5 +253,20 @@ class FinalGuardTests(unittest.TestCase):
         m,f,r=experiment();f['models']['BASELINE_V1']['raw']['BTTS:YES']=[.4,.2,.4]
         f.pop('hash');f['hash']=digest(f)
         with self.assertRaises(ValueError):evaluate(m,[f],[r])
+
+class ReadinessReportTests(unittest.TestCase):
+    def test_readiness_requires_original_rows_even_with_source_adapter(self):
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as path:
+            subprocess.run(
+                [sys.executable, str(root / 'scripts/prediction_edge_v3.py'), '--output-dir', path],
+                check=True, capture_output=True,
+            )
+            report = json.loads((Path(path) / 'PREDICTION_EDGE_V3_DATA_READINESS.json').read_text(encoding='utf-8'))
+        self.assertEqual(report['status'], 'INSUFFICIENT_REAL_DATA')
+        self.assertEqual(report['externally_verified_holdout_matches'], 0)
+        self.assertIn('No candidate rows admitted from the read-only original-source adapter', report['blockers'])
+        self.assertFalse(report['monetary_permission'])
+
 
 if __name__=='__main__':unittest.main()
