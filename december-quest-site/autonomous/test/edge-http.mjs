@@ -97,7 +97,7 @@ try {
   const request = async (method,token) => {
     const headers = token ? {'x-dq-predictor-token':token} : {};
     const response = await fetch(address,{method,headers,signal:AbortSignal.timeout(15000)});
-    return {status:response.status,body:await response.json()};
+    return {status:response.status,retryAfter:response.headers.get('Retry-After'),body:await response.json()};
   };
   const health = await request('GET');
   assert.equal(health.status,200);
@@ -105,6 +105,13 @@ try {
   assert.equal(health.body.odds_gate.timestamped_source_configured,true);
   assert.equal((await request('POST')).status,401);
   assert.equal((await request('POST','b'.repeat(64))).status,401);
+  const [held] = await rows("select public.dq_claim_predictor_run('DQ-POISSON-0.3') as claim");
+  const busy = await request('POST',cronToken);
+  assert.equal(busy.status,202);
+  assert.equal(busy.body.skipped,'RUN_IN_PROGRESS');
+  assert.equal(busy.retryAfter,'600');
+  assert.equal(flags.currentFileAttempts,0);
+  await rows('select public.dq_release_predictor_run($1)',[held.claim.token]);
   const first = await request('POST',cronToken);
   assert.equal(first.status,200,JSON.stringify(first.body));
   assert.equal(first.body.modeled,1);

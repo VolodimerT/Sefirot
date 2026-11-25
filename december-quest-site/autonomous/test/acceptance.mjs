@@ -87,6 +87,19 @@ export async function runAcceptance() {
         [source.fixture_key,source.competition,source.home_team,source.away_team,source.kickoff,
           'synthetic',source.source_url,source.source_quality,source.timing_status,source.checked_at]);
     }
+    const draining = Promise.withResolvers();
+    const startedReads = Promise.withResolvers();
+    const failed = assert.rejects(execute({rest, clock,
+      csv: async url => { await draining.promise; return csv(url); },
+      gateway() { startedReads.resolve(); throw Error('TEST_GATEWAY_FAILURE'); }
+    }), /TEST_GATEWAY_FAILURE/);
+    await startedReads.promise;
+    await new Promise(resolve => setImmediate(resolve));
+    try {
+      const follower = await execute({rest, clock, csv:() => assert.fail('duplicate CSV read')});
+      assert.equal(follower.skipped, 'RUN_IN_PROGRESS');
+    } finally { draining.resolve(); }
+    await failed;
     const first = await execute({ rest, csv, clock });
     assert.equal(first.saved, 3);
     assert.equal(first.modeled, 1);

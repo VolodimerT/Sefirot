@@ -139,6 +139,14 @@ export async function execute(options) {
   }
 }
 
+// A failed source must not release ownership while its sibling reads are still running.
+async function finishReads(reads) {
+  const results = await Promise.allSettled(reads);
+  const failure = results.find(result => result.status === 'rejected');
+  if (failure) throw failure.reason;
+  return results.map(result => result.value);
+}
+
 async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGateway(null, null, fixtures, now),
   odds = (fixtures, now) => collectTimestampedOdds(fixtures, now, null), backup = null, clock = Date.now }, started, token) {
   const calendar = await rest(listPath);
@@ -153,7 +161,7 @@ async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGatew
   if (leagues.length) urls.push({ code: 'weekly', season: 'weekly', url: provider + '/fixtures.csv' });
 
   const eligible = upcoming.filter(fixture => !duplicate.has(fixture.fixture_key));
-  const [sources, gatewayResult, oddsResult] = await Promise.all([
+  const [sources, gatewayResult, oddsResult] = await finishReads([
     Promise.all(urls.map(async row => {
       try {
         const input = await csv(row.url);
@@ -168,7 +176,8 @@ async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGatew
         return { ...row, ok: false, error: String(error.message).slice(0, 80) };
       }
     })),
-    gateway(eligible, started), odds(eligible, started)
+    Promise.resolve().then(() => gateway(eligible, started)),
+    Promise.resolve().then(() => odds(eligible, started))
   ]);
   const initialCutoff = clock();
   const errors = sources.filter(pack => !pack.ok).map(pack => pack.code + ':' + pack.season + ' ' + pack.error);
@@ -201,7 +210,7 @@ async function runClaimed({ rest, csv, gateway = (fixtures, now) => collectGatew
     .filter(season=>season===currentSeason?!freshSeason(primaryHistory.get(code),initialCutoff)
       :!primaryHistory.get(code).some(row=>row.season===season))
     .map(season=>({code,season}))):[];
-  const alternativePacks=await Promise.all(requests.map(({code,season})=>backup(code,season,initialCutoff)));
+  const alternativePacks=await finishReads(requests.map(async ({code,season})=>backup(code,season,initialCutoff)));
   const cutoff=clock();
   for(const [i,pack] of alternativePacks.entries()){
     const {code,season}=requests[i];
