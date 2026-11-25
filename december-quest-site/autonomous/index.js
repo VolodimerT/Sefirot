@@ -42,7 +42,8 @@ Deno.serve(async req=>{
   const retryUntil=deadline===null?null:Number(deadline);
   if(deadline!==null && (!/^\d{13}$/.test(deadline)||Date.now()>=retryUntil||retryUntil-Date.now()>600000))
     return json({ok:false,error:'RECOVERY_WINDOW_CLOSED'},409);
-  const result=await execute({rest,retryUntil,deferForecasts:recovery&&Boolean(gatewayToken||oddsKey),csv:url=>fetchCsvWithRetry(url,true),
+  const result=await execute({rest,retryUntil,recoveryProviderContextUnavailable:recovery&&Boolean(gatewayToken||oddsKey),
+   csv:url=>fetchCsvWithRetry(url,true),
    gateway:(fixtures,clock)=>collectGateway(PROJECT,recovery?null:gatewayToken,fixtures,clock),
    odds:(fixtures,clock)=>collectTimestampedOdds(fixtures,clock,recovery?null:oddsKey),backup:recovery?null:fetchResultBackup});
   if(result.skipped==='RUN_IN_PROGRESS'){
