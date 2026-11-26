@@ -1,0 +1,44 @@
+/* V5 Football Intelligence; additive, mobile-first */
+.v5-select{display:grid;grid-template-columns:minmax(110px,160px) minmax(160px,1fr) auto;align-items:end;gap:13px;margin:20px 0}
+.v5-select label,.v5-field{display:flex;flex-direction:column;gap:6px;color:#a9bcd0;font-size:12px;font-weight:650}
+.v5-select select,.v5-field input,.v5-field textarea,.v5-field select{width:100%;min-width:0;border:1px solid #38495f;border-radius:11px;background:#15243a;color:#f1f5fc;padding:11px;line-height:1.4;outline-offset:2px}
+.v5-field textarea{resize:vertical;min-height:82px}
+.v5-field input:disabled,.v5-field textarea:disabled{opacity:.7}
+.v5-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.v5-pair>.v5-field:nth-child(5){grid-column:1/-1}
+.v5-check{padding:6px 0;display:flex;align-items:center;gap:10px;color:#aebfd3;font-size:12px}
+.v5-check input{height:18px;width:18px;accent-color:#55d8a8}
+.v5-spot{margin:16px 0}
+.v5-spot h2{font-size:clamp(20px,3vw,30px);letter-spacing:-.5px}
+.v5-record{margin-top:12px}
+.v5-record fieldset{border:0;margin:0;padding:0;min-width:0}
+.v5-record fieldset>label{margin:12px 0}
+.v5-record fieldset:disabled{opacity:.8}
+.v5-record h3{margin-top:0}
+.v5-record .v5-pair{margin:14px 0 18px}
+.v5-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.v5-buttons>button{max-width:100%}
+.v5-sealed{font-size:12px;color:#76d6a7;padding:10px}
+.v5-arena{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);align-items:stretch;gap:10px;margin:18px 0}
+.v5-vs{display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:20px;color:#f5c875}
+.v5-arena h2{font-size:18px;line-height:1.15;margin-top:4px}
+.v5-arena>article{min-width:0}
+.v5-arena p{font-size:13px}
+.v5-warning{color:#f1ac83;font-size:12px;border-left:2px solid #c78f5a;padding-left:8px}
+.v5-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:17px 0}
+.v5-metrics article{border:1px solid #314358;background:#142238;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:7px}
+.v5-metrics small{font-size:11px;color:#9db0c8}
+.v5-metrics strong{font-size:clamp(15px,2.5vw,25px);color:#66f0b7;overflow-wrap:anywhere}
+.v5-duel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.v5-duel>div{background:#15273a;border:1px solid #34465b;border-radius:13px;padding:13px}
+.v5-duel strong{color:#66f0b7}.v5-duel small{color:#9eafc3}
+.v5-achieve{margin:9px 0;border:1px solid #34465b;padding:12px;background:#14273b;border-radius:10px;color:#dbefef}
+.v5-meter{height:8px;background:#23374b;border-radius:8px;overflow:hidden;margin:15px 0 7px}
+.v5-meter span{display:block;height:100%;background:#66f0b7}
+.v5-record>p{color:#9aabbf}
+details.panel{margin-top:15px}
+details.panel>summary{cursor:pointer;color:#97e6d0;font-weight:700}
+.mobile-nav{overflow-x:auto!important;justify-content:flex-start!important;scrollbar-width:thin}
+.mobile-nav button{flex:0 0 72px!important;min-width:68px!important;max-width:88px!important}
+.crumb{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:670px){.v5-select{display:grid;grid-template-columns:1fr 1fr}.v5-select label:nth-child(2){grid-column:1/-1}.v5-select>button{grid-column:1/-1}.v5-metrics{grid-template-columns:repeat(2,1fr)}.v5-arena{grid-template-columns:1fr 36px 1fr;gap:5px}.v5-arena>.panel{padding:11px}.v5-vs{font-size:13px}.v5-arena h2{font-size:14px}.v5-arena p{font-size:11px}.v5-duel{grid-template-columns:1fr}}

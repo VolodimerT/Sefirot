@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/core.test.mjs && node test/paper.test.mjs",
+    "test:acceptance": "node test/acceptance.mjs",
+    "test:edge": "node test/edge-http.mjs && node test/edge-http.mjs --recovery && deno run --quiet --allow-env=SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,DQ_ODDS_API_FREE_KEY,DQ_ODDSBUNCH_FREE_KEY,DQ_AUTHORIZED_GATEWAY_RUNNER_TOKEN --allow-net=127.0.0.1 test/paper-edge-http.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.4.1"
+  }
+}
