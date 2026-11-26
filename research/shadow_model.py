@@ -33,8 +33,12 @@ def preview(repo, *, as_of=None, ids=None, limit=MAX_SHADOW_TARGETS):
     candidates = []
     for league in LEAGUES:
         coverage = league_view(repo, league, SEASON, as_of=stamp)
+        # A bounded explicit target does not require importing calendars from
+        # unrelated leagues. Keep the whole-ledger quarantine checks, and still
+        # require a complete calendar for every selected fixture's own league.
+        selected_league = ids is None or any(int(fid) in ids for fid in coverage["fixtures"])
         if (coverage["qc_rejected_packets"] or coverage["pending_qc_packets"] or
-                not coverage["calendar_complete"]):
+                selected_league and not coverage["calendar_complete"]):
             return {"status": "SHADOW_SOURCE_QC_STOP", "league": league,
                     "probability_calibrated": False, "monetary_permission": False}
         for fid, row in coverage["fixtures"].items():
