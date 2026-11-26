@@ -148,7 +148,7 @@ def _report_rows(views, ledger, now):
     return rows
 
 
-def _collection_plan(views, rows, ledger, attempts, now):
+def _collection_plan(views, rows, ledger, attempts, now, *, qc_blocked):
     def key(endpoint, params):
         return endpoint.lstrip('/'), tuple(sorted((k, str(v)) for k, v in params.items()))
 
@@ -240,8 +240,8 @@ def _collection_plan(views, rows, ledger, attempts, now):
                 offer(4, -cutoff.timestamp(), 'HISTORY',
                       'fixtures/statistics', {'fixture': fid}, 'FIRST_BOUND_FT_STATISTICS')
 
-    fenced = any(v['pending_qc_packets'] or v['qc_rejected_packets'] or v['rejected_matches']
-                 or v['reasons'].get('CROSS_SCOPE_FIXTURE_CONFLICT') for v in views)
+    fenced = qc_blocked or any(v['rejected_matches'] or v['reasons'].get('CROSS_SCOPE_FIXTURE_CONFLICT')
+                               for v in views)
     used = sum(time(a['at']).date() == today for a in attempts)
     room = max(0, 5 - used)
     ordered = sorted(proposals.values(), key=lambda v: (v[0], v[1], v[3]))
@@ -289,9 +289,15 @@ def inspect(repo, scopes, *, as_of=None):
                                                  for r in historical) for f in FIELDS},
                         'issues': v['reasons']})
     attempts = [a for a in pipeline._records(repo, pipeline.ATTEMPT) if time(a['at']) <= now]
+    # The legacy league view also reports current QC counters. Queue decisions
+    # during replay must attach only sources and QC decisions known at cutoff.
+    source_ids = {r['id'] for r in pipeline._records(repo, pipeline.SOURCE) if time(r['at']) <= now}
+    successful_qc = {r['source_id'] for r in pipeline._records(repo, pipeline.QC)
+                     if r['adapter_hash'] == pipeline.ADAPTER and r['accepted'] and time(r['at']) <= now}
     return {'as_of': stamp, 'leagues': leagues, 'fixtures': rows,
             'teams': [{'league': l, 'season': s, 'team_id': t, 'coverage': dict(c)}
                       for (l, s, t), c in sorted(teams.items())],
-            'queue': _collection_plan(views, rows, ledger, attempts, now),
+            'queue': _collection_plan(views, rows, ledger, attempts, now,
+                                      qc_blocked=bool(source_ids - successful_qc)),
             'verified_quotes': None, 'decision': 'PASS', 'provider_requests': 0,
             'fit_allowed': False, 'monetary_permission': False}

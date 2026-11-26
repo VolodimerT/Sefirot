@@ -99,6 +99,17 @@ class V7DataTests(unittest.TestCase):
             self.assertFalse(any(q['endpoint'] == 'fixtures/statistics' for q in queue['queries']))
             self.assertFalse(queue['execution_enabled'])
 
+    def test_future_qc_failure_does_not_change_frozen_queue(self):
+        self.put(packet())
+        before = inspect(self.repo, [(39, 2026)], as_of=NOW)['queue']
+        bad = stats()
+        bad['receipt']['payload_hash'] = 'a' * 64
+        self.assertFalse(self.put(bad, '2026-10-17T13:00:00Z')['accepted'])
+        self.assertEqual(inspect(self.repo, [(39, 2026)], as_of=NOW)['queue'], before)
+        later = inspect(self.repo, [(39, 2026)], as_of='2026-10-17T13:01:00Z')['queue']
+        self.assertTrue(later['quality_fenced'])
+        self.assertEqual(later['queries'], [])
+
     def test_lineup_requires_two_full_XI_before_start(self):
         self.put(packet())
         lineups = [{'team': {'id': tid}, 'startXI': [{'player': {'id': tid*100+i}}
