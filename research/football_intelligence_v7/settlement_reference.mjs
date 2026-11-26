@@ -10,6 +10,10 @@ function makeReference(){
     return grades.map((k,i)=>({grade:k,p: settlement[k],factor:factor[i]})).filter(x=>x.p>0);
   }
   function summarize(outcomes){
+    if (!Array.isArray(outcomes) || !outcomes.length ||
+        outcomes.some(row => !Number.isFinite(row?.p) || row.p < 0 ||
+          !Number.isFinite(row.factor) || row.factor < 0))
+      throw Error("invalid joint outcome");
     const mass=outcomes.reduce((s,x)=>s+x.p,0);
     if(Math.abs(mass-1)>1e-8)throw Error("invalid joint mass");
     const expected=outcomes.reduce((s,x)=>s+x.p*(x.factor-1),0);

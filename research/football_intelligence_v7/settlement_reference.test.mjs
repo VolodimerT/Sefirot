@@ -49,6 +49,9 @@ test('shared adverse ranks change the loss tail while preserving single marginal
   assert.equal(reference.stressPortfolio([legs[0]], 1).expected, 0);
   assert.throws(() => reference.stressPortfolio([legs[0], {...legs[1],fixtureId:' a '}], 1));
   assert.throws(() => reference.stressPortfolio(legs, NaN));
+  assert.throws(() => reference.summarize([{p:NaN, factor:1}]));
+  assert.throws(() => reference.summarize([{p:1, factor:Infinity}]));
+  assert.throws(() => reference.summarize([{p:1.25, factor:2}, {p:-0.25, factor:0}]));
 });
 
 const selectedAt = '2026-10-12T17:05:00Z';
