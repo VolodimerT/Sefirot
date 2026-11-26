@@ -22,3 +22,7 @@ Virtual only. Compare preregistered single/2/3-event research strategies and abs
 
 ## Next acceptance
 First recover field-level source coverage and a real chronological fixture receipt in an isolated authorized research environment. Reuse C1/C2 and existing SHADOW; no new pipeline or repeated broad audit. Then independently validate the reference against existing settle code and bookmaker rules (no external calls by this patch). Production release and physical Android acceptance remain independent. Frozen V6.3 continues unchanged.
+
+## Реализация и результаты
+
+Матрица, правила очереди, повторяемый replay, описание рынков и открытые условия приёмки приведены в [VALIDATION.md](VALIDATION.md). Исследовательский CLI читает существующий Repository. Эталон экспрессов и ранговый стресс работают изолированно, существующие settlement и Policy остаются без изменений.
