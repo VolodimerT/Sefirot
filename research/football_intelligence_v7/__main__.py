@@ -5,6 +5,7 @@ from pathlib import Path
 
 from sefirot.repository import Repository
 from .data import inspect
+from .dispatch import next_plan
 from .tactical import profile
 
 
@@ -15,12 +16,21 @@ def main():
                         metavar=('LEAGUE', 'SEASON'))
     parser.add_argument('--as-of')
     parser.add_argument('--fixture', type=int)
+    parser.add_argument('--budget-status', type=Path,
+                        help='Emit read-only probe handoff and budget block from a saved observer record')
     args = parser.parse_args()
     repo = Repository(args.source_db, read_only=True)
     try:
-        report = inspect(repo, map(tuple, args.scope), as_of=args.as_of)
-        if args.fixture is not None:
-            report['tactical_profile'] = profile(report, args.fixture)
+        scopes = tuple(map(tuple, args.scope))
+        if args.budget_status:
+            if not args.as_of or args.fixture is not None:
+                parser.error('--budget-status requires --as-of and is incompatible with --fixture')
+            budget = json.loads(args.budget_status.read_bytes())
+            report = next_plan(repo, scopes, budget, at=args.as_of)
+        else:
+            report = inspect(repo, scopes, as_of=args.as_of)
+            if args.fixture is not None:
+                report['tactical_profile'] = profile(report, args.fixture)
         print(json.dumps(report, indent=2, ensure_ascii=False, allow_nan=False))
     finally:
         repo.close()

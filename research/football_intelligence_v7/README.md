@@ -26,3 +26,7 @@ First recover field-level source coverage and a real chronological fixture recei
 ## Реализация и результаты
 
 Матрица, правила очереди, повторяемый replay, описание рынков и открытые условия приёмки приведены в [VALIDATION.md](VALIDATION.md). Исследовательский CLI читает существующий Repository. Эталон экспрессов и ранговый стресс работают изолированно, существующие settlement и Policy остаются без изменений.
+
+## V7.1 Data Acquisition
+
+Проверка полного оригинального архива, KPI, паспорт пилота и контракт guarded dispatch описаны в [ACQUISITION.md](ACQUISITION.md). Сохранённый снимок бюджета можно передать CLI через `--budget-status` для офлайн-проверки запроса.

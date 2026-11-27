@@ -9,7 +9,8 @@ from sefirot.football_provider import validate_prematch_state
 from sefirot.small_market import METRICS
 
 FIELDS = {**METRICS, 'POSSESSION': 'Ball Possession', 'XG': 'expected_goals',
-          'CROSSES': 'Total Crosses', 'PASSES': 'Total passes'}
+          'CROSSES': 'Total Crosses', 'PASSES': 'Total passes',
+          'PASSES_ACCURATE': 'Passes accurate', 'RED_CARDS': 'Red Cards'}
 WINDOW_END = timedelta(minutes=20)
 WINDOW_START = timedelta(minutes=65)
 
